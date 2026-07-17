@@ -1,0 +1,25 @@
+{
+  "name": "duckdb-topology-spike",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "bunx tsc -p tsconfig.json --noEmit",
+    "benchmark": "bun run src/benchmarks/run.ts results/benchmark.json",
+    "clean": "rm -rf dist results"
+  },
+  "dependencies": {
+    "@duckdb/node-api": "1.5.4-r.1",
+    "@duckdb/node-bindings": "1.5.4-r.1"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "bun-types": "latest",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": "18.x",
+    "bun": "1.x"
+  }
+}

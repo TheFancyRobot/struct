@@ -5,17 +5,22 @@ contract_version: 1
 title: Spike DuckDB Bun Parquet and Isolation Topology
 step_id: STEP-00-03
 phase: '[[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Phase|Phase 00 architecture spikes and delivery foundations]]'
-status: planned
-owner: ''
+status: completed
+owner: step-00-03-closure-implementor
 created: '2026-07-17'
 updated: '2026-07-17'
 depends_on:
   - '[[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_02_spike-live-events-cancellation-and-checkpoint-recovery|STEP-00-02 Spike Live Events Cancellation and Checkpoint Recovery]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-17-151121-spike-duckdb-bun-parquet-and-isolation-topology-step-00-03-implementor|SESSION-2026-07-17-151121 step-00-03-implementor session for Spike DuckDB Bun Parquet and Isolation Topology]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-17-151121
+active_session_id: 05_Sessions/2026-07-17-151121-spike-duckdb-bun-parquet-and-isolation-topology-step-00-03-implementor
+context_status: completed
+context_summary: Advance [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_03_spike-duckdb-bun-parquet-and-isolation-topology|STEP-00-03 Spike DuckDB Bun Parquet and Isolation Topology]].
 ---
 
 # Step 03 - Spike DuckDB Bun Parquet and Isolation Topology
@@ -49,10 +54,11 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner: 
+- Status: completed
+- Current owner: step-00-03-closure-implementor
 - Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_03_spike-duckdb-bun-parquet-and-isolation-topology/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_03_spike-duckdb-bun-parquet-and-isolation-topology/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Outcome: Fixed per-topology crash-containment defect in src/benchmarks/run.ts (global worker-only gate let in-process direct win). winner=worker (isolated child process), simplest crash-contained isolation within 2x. 16 tests pass; tsc exit 0; benchmark regenerated.
+- Next action: Lead reviews and marks STEP-00-03 complete; STEP-00-04/05 proceed with the worker-process boundary.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -77,7 +83,8 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-17 - [[05_Sessions/2026-07-17-151121-spike-duckdb-bun-parquet-and-isolation-topology-step-00-03-implementor|SESSION-2026-07-17-151121 step-00-03-implementor session for Spike DuckDB Bun Parquet and Isolation Topology]] - Session created.
+- 2026-07-17 - step-00-03-closure-implementor - Fixed per-topology crash-containment defect; regenerated benchmark (winner=worker); 16 tests pass; vault notes updated with measured results.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

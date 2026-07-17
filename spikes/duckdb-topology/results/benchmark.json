@@ -1,0 +1,338 @@
+{
+  "generatedAt": "2026-07-17T17:43:31.974Z",
+  "machine": {
+    "hostname": "Mac.gozer.tfr.one",
+    "osType": "Darwin",
+    "freeMemBytes": 8458764288,
+    "totalMemBytes": 34359738368,
+    "nodeVersion": "v24.3.0",
+    "bunVersion": "1.3.13",
+    "duckdbVersion": "v1.5.4"
+  },
+  "topologies": [
+    {
+      "name": "direct",
+      "isolation": "none",
+      "measurements": [
+        {
+          "operation": "initialize",
+          "durationMs": 7,
+          "peakRssBytes": 86097920,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "importJSON (smoke)",
+          "durationMs": 1,
+          "peakRssBytes": 88997888,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "importCSV (smoke)",
+          "durationMs": 2,
+          "peakRssBytes": 96043008,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "importJSON (scale 25k)",
+          "durationMs": 35,
+          "peakRssBytes": 121077760,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "query (bounded read)",
+          "durationMs": 3,
+          "peakRssBytes": 126140416,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "exportParquet (atomic)",
+          "durationMs": 1,
+          "peakRssBytes": 127778816,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "readParquet back",
+          "durationMs": 0,
+          "peakRssBytes": 127975424,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "cancel",
+          "durationMs": 0,
+          "peakRssBytes": 127975424,
+          "ok": true,
+          "detail": "ok"
+        }
+      ],
+      "correctness": {
+        "passed": true,
+        "rowsHash": "73d08d56dc1adbcf92784235846b5de7b6bbd94b90a36ccf78c9dd0178d07db7",
+        "detail": "expected=73d08d56dc1adbcf92784235846b5de7b6bbd94b90a36ccf78c9dd0178d07db7 actual=73d08d56dc1adbcf92784235846b5de7b6bbd94b90a36ccf78c9dd0178d07db7"
+      },
+      "crashContained": null
+    },
+    {
+      "name": "worker",
+      "isolation": "process",
+      "measurements": [
+        {
+          "operation": "initialize",
+          "durationMs": 60,
+          "peakRssBytes": 129204224,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "importJSON (smoke)",
+          "durationMs": 1,
+          "peakRssBytes": 129236992,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "importCSV (smoke)",
+          "durationMs": 2,
+          "peakRssBytes": 129269760,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "importJSON (scale 25k)",
+          "durationMs": 36,
+          "peakRssBytes": 129368064,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "query (bounded read)",
+          "durationMs": 2,
+          "peakRssBytes": 129368064,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "exportParquet (atomic)",
+          "durationMs": 1,
+          "peakRssBytes": 129400832,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "readParquet back",
+          "durationMs": 1,
+          "peakRssBytes": 129417216,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "cancel",
+          "durationMs": 0,
+          "peakRssBytes": 129417216,
+          "ok": true,
+          "detail": "ok"
+        }
+      ],
+      "correctness": {
+        "passed": true,
+        "rowsHash": "73d08d56dc1adbcf92784235846b5de7b6bbd94b90a36ccf78c9dd0178d07db7",
+        "detail": "expected=73d08d56dc1adbcf92784235846b5de7b6bbd94b90a36ccf78c9dd0178d07db7 actual=73d08d56dc1adbcf92784235846b5de7b6bbd94b90a36ccf78c9dd0178d07db7"
+      },
+      "crashContained": true
+    },
+    {
+      "name": "service",
+      "isolation": "service",
+      "measurements": [
+        {
+          "operation": "initialize",
+          "durationMs": 73,
+          "peakRssBytes": 134578176,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "importJSON (smoke)",
+          "durationMs": 2,
+          "peakRssBytes": 134627328,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "importCSV (smoke)",
+          "durationMs": 2,
+          "peakRssBytes": 134627328,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "importJSON (scale 25k)",
+          "durationMs": 37,
+          "peakRssBytes": 134709248,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "query (bounded read)",
+          "durationMs": 3,
+          "peakRssBytes": 134758400,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "exportParquet (atomic)",
+          "durationMs": 1,
+          "peakRssBytes": 134774784,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "readParquet back",
+          "durationMs": 1,
+          "peakRssBytes": 134823936,
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "operation": "cancel",
+          "durationMs": 1,
+          "peakRssBytes": 134856704,
+          "ok": true,
+          "detail": "ok"
+        }
+      ],
+      "correctness": {
+        "passed": true,
+        "rowsHash": "73d08d56dc1adbcf92784235846b5de7b6bbd94b90a36ccf78c9dd0178d07db7",
+        "detail": "expected=73d08d56dc1adbcf92784235846b5de7b6bbd94b90a36ccf78c9dd0178d07db7 actual=73d08d56dc1adbcf92784235846b5de7b6bbd94b90a36ccf78c9dd0178d07db7"
+      },
+      "crashContained": true
+    }
+  ],
+  "probes": [
+    {
+      "name": "allowlist: read inside root",
+      "denied": false,
+      "message": "ok (carve-out works)"
+    },
+    {
+      "name": "allowlist: read /etc/passwd",
+      "denied": true,
+      "message": "Permission Error: Cannot access file \"/etc/passwd\" - file system operations are disabled by configuration"
+    },
+    {
+      "name": "allowlist: ATTACH outside root",
+      "denied": true,
+      "message": "Permission Error: Cannot access file \"/private/tmp/probe-rogue-30347.db\" - file system operations are disabled by configuration"
+    },
+    {
+      "name": "allowlist: INSTALL httpfs",
+      "denied": true,
+      "message": "Permission Error: Cannot access directory \"/Users/dino/.duckdb/extensions/v1.5.4/osx_arm64\" - file system operations are disabled by configuration"
+    },
+    {
+      "name": "allowlist: COPY TO /tmp (outside root)",
+      "denied": true,
+      "message": "path rejected: '/tmp/probe-leak-30347.parquet' resolves outside sandbox root '/var/folders/gt/86vbhphn2hl8361_yrlcpdm80000gn/T/duckdb-bench-27N6nE'"
+    },
+    {
+      "name": "allowlist: path traversal ../",
+      "denied": true,
+      "message": "path rejected: '/var/folders/gt/86vbhphn2hl8361_yrlcpdm80000gn/T/etc/passwd' resolves outside sandbox root '/var/folders/gt/86vbhphn2hl8361_yrlcpdm80000gn/T/duc"
+    },
+    {
+      "name": "cancellation: interrupt() long scan",
+      "denied": true,
+      "message": "outcome=cancelled latencyMs=93"
+    },
+    {
+      "name": "timeout: wall-clock cap rejects long op",
+      "denied": true,
+      "message": "timedOut=true elapsedMs=255"
+    },
+    {
+      "name": "child-crash:worker: parent alive after spawn",
+      "denied": true,
+      "message": "parent process continued after spawning child"
+    },
+    {
+      "name": "child-crash:worker: recover + retry after crash",
+      "denied": true,
+      "message": "recovered=1 retryOk=true result={\"columns\":[\"one\"],\"rows\":[{\"one\":1}],\"rowCount\":1,\"truncated\":false,\"rowsHash\":\"30f3b9a7c130ce473b8dbdaa9442f67886add20ae013ceb6ef0248958963cd80\"}"
+    },
+    {
+      "name": "child-crash:worker: parent survives crash",
+      "denied": true,
+      "message": "parent pid 30347 still running after 1 crash(s)"
+    },
+    {
+      "name": "child-crash:service: parent alive after spawn",
+      "denied": true,
+      "message": "parent process continued after spawning service"
+    },
+    {
+      "name": "child-crash:service: recover + retry after crash",
+      "denied": true,
+      "message": "recovered=1 retryOk=true result={\"columns\":[\"one\"],\"rows\":[{\"one\":1}],\"rowCount\":1,\"truncated\":false,\"rowsHash\":\"30f3b9a7c130ce473b8dbdaa9442f67886add20ae013ceb6ef0248958963cd80\"}"
+    },
+    {
+      "name": "child-crash:service: parent survives crash",
+      "denied": true,
+      "message": "parent pid 30347 still running after 1 crash(s)"
+    },
+    {
+      "name": "temp-cleanup: atomic promote, no partial",
+      "denied": true,
+      "message": "final-exists; tmp artifacts removed on success"
+    },
+    {
+      "name": "temp-cleanup: output over byte cap rejected",
+      "denied": true,
+      "message": "output rejected: 320 bytes exceeds cap 8"
+    },
+    {
+      "name": "temp-cleanup: root removed on shutdown",
+      "denied": true,
+      "message": "rootDir /var/folders/gt/86vbhphn2hl8361_yrlcpdm80000gn/T/duckdb-bench-27N6nE exists=false"
+    },
+    {
+      "name": "resource-limits: required config options present",
+      "denied": true,
+      "message": "all required options present"
+    },
+    {
+      "name": "resource-limits: memory_limit applied",
+      "denied": true,
+      "message": "memory_limit=244.1 MiB (configured 256MB)"
+    },
+    {
+      "name": "resource-limits: threads applied",
+      "denied": true,
+      "message": "threads=2 (configured 2)"
+    },
+    {
+      "name": "resource-limits: pathological query bounded by timeout",
+      "denied": true,
+      "message": "bounded=true elapsedMs=10393"
+    }
+  ],
+  "limitations": [
+    "Results are machine-specific evidence from a single run on this host; they are not universal performance claims.",
+    "OS/container isolation (Docker/seccomp/namespaces) is NOT exercised by this harness; container-level isolation is an unproven assumption documented as a limitation. The harness proves DuckDB's own filesystem allowlist + extension blocking, not OS-level sandboxing.",
+    "Cancellation for the direct in-process topology relies on DuckDB conn.interrupt(); a truly CPU-bound native scan that ignores interrupt() would fall back to the wall-clock timeout, which rejects the promise but cannot forcibly terminate the native thread inside the same process. This is recorded as a topology caveat, not a claim of hard preemption.",
+    "The narrow local service binds to 127.0.0.1 only and has no authentication; it is a proving harness, not a production service. Network exposure beyond localhost is out of scope.",
+    "Disk-pressure simulation is not exercised (would require fs manipulation outside the sandbox); maxOutputBytes byte cap and temp cleanup are exercised instead.",
+    "Concurrency is exercised at the level of two overlapping long scans in the cancellation probe; a full multi-client load test is out of scope for this spike."
+  ],
+  "selection": {
+    "winner": "worker",
+    "rationale": "simplest crash-contained isolation (process) within 2x of fastest crash-contained candidate (103ms total)",
+    "blocker": null
+  }
+}

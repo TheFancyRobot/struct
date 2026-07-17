@@ -49,6 +49,23 @@
 - Record tradeoffs and rejected options explicitly so later implementation steps do not need to rediscover them.
 
 ## Related Notes
+## Execution Summary (measured)
+
+### Completed Tasks
+- Fixed the per-topology crash-containment defect in `src/benchmarks/run.ts` (global worker-only gate let in-process `direct` win).
+- Extended `src/probes/child-crash.ts` to measure worker AND service crash containment independently.
+- Added selection regression tests; regenerated `results/benchmark.json`.
+
+### Measured Results (actual, from results/benchmark.json)
+- direct: 49ms total, crashContained=null (cannot qualify). worker: 103ms, crashContained=true (winner). service: 120ms, crashContained=true.
+- rowsHash identical across all three. Cancellation ~93ms; timeout ~255ms; pathological query bounded ~10393ms.
+- No fabricated "security scores (70-100)" or "isolation (60-100%)" — not measured; removed.
+
+### Recommendation
+- **Selected Topology: `worker`** (isolated child process). `direct` rejected: native crash not containable.
+- **Next Steps:** Phase 04 implementation using the isolated worker-process boundary.
+
+
 
 - Step: [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_03_spike-duckdb-bun-parquet-and-isolation-topology|STEP-00-03 Spike DuckDB Bun Parquet and Isolation Topology]]
 - Phase: [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Phase|Phase 00 architecture spikes and delivery foundations]]
