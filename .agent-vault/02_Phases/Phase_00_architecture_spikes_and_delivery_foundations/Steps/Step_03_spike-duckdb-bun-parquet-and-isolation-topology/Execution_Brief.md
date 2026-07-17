@@ -1,0 +1,92 @@
+# Execution Brief
+
+## Exact Outcome
+
+- Produce the concrete contracts, artifacts, and bounded implementation/design surfaces for DuckDB Bun Parquet and Isolation Topology that this step is responsible for before any broader follow-on work begins.
+
+## Prerequisites
+
+- Re-read [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Phase|Phase 00 architecture spikes and delivery foundations]] and confirm the step still matches the current roadmap sequence.
+- Confirm the handoff from [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_02_spike-live-events-cancellation-and-checkpoint-recovery|STEP-00-02 Spike Live Events Cancellation and Checkpoint Recovery]] before widening scope.
+- Keep deterministic work in typed Effect services, repositories, and tools; reserve Fred for agentic orchestration only.
+- Treat the listed files as planned starting points; create only the smallest set needed to land the slice.
+
+## Planned Starting Files
+
+- These paths may not exist yet; use them as the first bounded implementation or design surface.
+- `docs/spikes/duckdb-bun-parquet-and-isolation-topology.md`
+- `packages/data-engine/src/duckdb/runtime.ts`
+- `packages/data-engine/src/duckdb/query-runner.ts`
+- `apps/worker/src/data/duckdb-executor.ts`
+- `docker-compose.yml`
+
+## Required Reading
+
+- [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Phase|Phase 00 architecture spikes and delivery foundations]]
+- [[01_Architecture/System_Overview|System Overview]]
+- [[01_Architecture/Code_Map|Code Map]]
+- [[01_Architecture/Agent_Workflow|Agent Workflow]]
+- [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_02_spike-live-events-cancellation-and-checkpoint-recovery|STEP-00-02 Spike Live Events Cancellation and Checkpoint Recovery]]
+- `docs/product-brief.md` sections 5-7, 13, 18-19, 21, 24, 26, and 29-31.
+
+## Concrete Deliverables
+
+- Compare direct Bun/Node DuckDB access, an isolated worker process, and a narrow local service for dataset execution and Parquet materialization.
+- Document the exact isolation topology: where DuckDB file access is allowed, how temp data is bounded, and how query resource limits are enforced.
+- Produce a benchmark-oriented recommendation that is specific about Parquet write paths, failure recovery, and deployment implications.
+
+## Smallest Bounded Checklist
+
+- First, compare direct Bun/Node DuckDB access, an isolated worker process, and a narrow local service for dataset execution and Parquet materialization.
+- Then, document the exact isolation topology: where DuckDB file access is allowed, how temp data is bounded, and how query resource limits are enforced.
+- Next, produce a benchmark-oriented recommendation that is specific about Parquet write paths, failure recovery, and deployment implications.
+- Finish by leaving one observable typed path—test, route, worker flow, or UI state—that proves the slice is ready for the next dependent step.
+
+## Constraints and Non-Goals
+
+- Keep Phase 0 work decision-oriented: prove boundaries, not broad production scaffolding.
+- Keep deterministic work in typed Effect services and adapters; use Fred only where agentic judgment is actually required.
+- Record tradeoffs and rejected options explicitly so later implementation steps do not need to rediscover them.
+
+## Related Notes
+
+- Step: [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_03_spike-duckdb-bun-parquet-and-isolation-topology|STEP-00-03 Spike DuckDB Bun Parquet and Isolation Topology]]
+- Phase: [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Phase|Phase 00 architecture spikes and delivery foundations]]
+
+## Refinement Addendum
+
+### Starting Points and Required Reading
+
+- Use `docs/spikes/duckdb-bun-parquet-and-isolation-topology.md`, `spikes/duckdb-topology/`, and deterministic spike fixtures; production data-engine/worker paths do not yet exist.
+- Read DEC-0003, DEC-0005, and DEC-0009; `docs/architecture.md` sections 6.3, 10, and 13-14; the DuckDB boundaries in `docs/security-model.md`; and the scale/structured-data gates in `docs/evaluation-strategy.md`.
+- Record exact resolved versions. The researched baseline is `@duckdb/node-api@1.5.4-r.1` and `@duckdb/node-bindings@1.5.4-r.1`, but the spike lockfile is authoritative.
+
+### Candidates and Workloads
+
+Compare one adapter contract across: (1) official Node API directly under Bun, (2) isolated child data worker, and (3) narrow local service.
+
+Run each against a small smoke fixture and a seeded approximately 25,000-JSON-file scale fixture; JSON import/schema inspection; Parquet materialization/reopen; exact bounded queries; concurrency/backpressure; cancellation during scan; invalid path and `ATTACH`/extension/network attempts; temp-directory failure; forced child crash; and cleanup/retry after partial output. Reconcile the spike fixture seed/manifest with STEP-00-06 before finalizing.
+
+### Evidence and Selection Rule
+
+For every candidate record correctness and hashes, startup/import/materialization/query duration, peak RSS, peak temp bytes, cancellation latency, concurrency behavior, crash containment, partial-output cleanup, deployment complexity, and Bun/Node portability.
+
+Select the simplest candidate that returns 100% correct deterministic results; denies arbitrary filesystem/network/extension/process reach; supports bounded output and cooperative cancellation; contains a native crash without killing the parent control process; leaves no accepted partial Parquet artifact; and performs within 2x the fastest candidate that also passes every safety/correctness gate on the recorded machine.
+
+If no Bun candidate qualifies, default to an isolated Node-compatible product-local boundary and record whether DEC-0003 or DEC-0005 needs revision. Unsafe filesystem reach or a crash that kills the parent is a blocker.
+
+### Commands and Handoff
+
+```bash
+cd spikes/duckdb-topology
+bun --version
+node --version
+npm view @duckdb/node-api version
+npm view @duckdb/node-bindings version
+bun install --frozen-lockfile
+bun test
+bunx tsc -p tsconfig.json --noEmit
+bun run benchmark -- --seed phase-00 --json results.json
+```
+
+Hand off the chosen process/runtime boundary, staged/temp roots, resource/cancel/output limits or calibration owners, Parquet atomic-write rule, artifact-reference rule, telemetry fields, and Node-compatible fallback.

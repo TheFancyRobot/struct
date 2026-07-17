@@ -1,0 +1,36 @@
+# Validation Plan
+
+## Acceptance Checks
+
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: The narrowest typed slice for Recursive Fred Synthesis and Contradiction Handling that is callable by the next step without broadening scope.
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: The orchestration or synthesis rules in `packages/research-engine/src/merge-findings.ts`, `packages/research-engine/src/contradiction-detection.ts` without moving deterministic work out of services/tools.
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: Fred-specific graph/agent wiring isolated to `packages/fred-workflows/src/agents/corpus-analyst.ts`, `packages/fred-workflows/src/agents/evidence-critic.ts` and typed at every boundary.
+- The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
+
+## Planned Verification
+
+- Planned command once these packages exist: `bun test packages/fred-workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
+
+## Edge Cases
+
+- Partial progress, retries, or restarts should leave this step in a typed, inspectable state rather than a silent half-success.
+- Cancellation, duplicate actions, replay after restart, and stale source-version assumptions should produce deterministic terminal states.
+
+## Regression Expectations
+
+- This step should remain a clean successor to [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_03_implement-deterministic-batch-extraction-and-evidence-artifacts|STEP-06-03 Implement Deterministic Batch Extraction and Evidence Artifacts]] rather than reworking already-planned scope upstream.
+- Do not regress bounded execution, cancellation, or checkpoint/recovery while adding parallel corpus analysis.
+- Keep minority findings and contradictions visible instead of flattening them into averages.
+- Make sure large-corpus UX still points back to exact evidence rather than only synthesized prose.
+
+## Security / Observability / Evaluation Focus
+
+- Bound partition size, concurrency, intermediate artifact size, and model budgets before attempting 25,000-file analysis.
+- Persist structured findings and evidence references so replay and audit remain possible.
+- Carry prompt-injection defenses into batch extraction, partition prompts, and recursive merges.
+- Evaluation should verify provenance opening paths, contradiction reporting, and prompt-injection resistance for the evidence types touched here.
+
+## Related Notes
+
+- Step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_04_implement-recursive-fred-synthesis-and-contradiction-handling|STEP-06-04 Implement Recursive Fred Synthesis and Contradiction Handling]]
+- Phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
