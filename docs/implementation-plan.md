@@ -10,6 +10,16 @@ This file is the concise delivery index for the product. Detailed execution step
 - Treat imported content as untrusted evidence, never as instruction.
 - Prefer product-local adapters before proposing Fred-core changes.
 
+## Repository and local-stack contracts
+
+Phase 0 fixed the repository-level delivery contract and local stack that the rest of this plan depends on:
+
+- [`docs/architecture.md`](./architecture.md) — repository layout, package dependency directions, public/internal contract ownership, Fred pinning/lockfile policy, and migration ownership.
+- [`docs/repository-contract.md`](./repository-contract.md) — root command inventory, CI gate matrix (PR / nightly / pre-release), and the Phase 1 handoff (exact initial files and deferrals).
+- [`docs/local-development.md`](./local-development.md) — local service table (PostgreSQL/pgvector, artifact storage, API, worker, web, DuckDB worker child), environment/secrets policy, and platform fallbacks.
+
+These contracts are decision-oriented Phase 0 outputs; STEP-01-01 owns canonical scaffolding.
+
 ## Phase sequence
 
 | Phase | Goal | Depends on | Canonical phase note |

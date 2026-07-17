@@ -113,6 +113,74 @@ packages/
 | `packages/evaluation` | Corpus generation, benchmark harnesses, deterministic assertions, regression reporting | Production request handling |
 | `packages/observability` | Trace/log/metric wiring and correlation | Product logic |
 
+### 4.2 Dependency direction rules
+
+Package dependency flows downward only. No package may depend on an app, and no app may depend on another app. The canonical layers are:
+
+| Layer | Packages | May depend on |
+| --- | --- | --- |
+| 0 — leaf | `domain` | nothing internal; Effect/Schema only |
+| 1 — storage & wiring | `persistence`, `source-storage`, `observability`, `shared-ui` | `domain` |
+| 2 — processing | `ingestion`, `document-processing`, `retrieval`, `data-engine` | `domain`, layer 1 |
+| 3 — orchestration & eval | `research-engine`, `fred-workflows`, `evaluation` | `domain`, layers 1–2 |
+| 4 — applications | `apps/web`, `apps/api`, `apps/worker` | any package; never another app |
+
+Allowed directions (downward only, acyclic):
+
+- `apps/worker` is the only app that imports `fred-workflows`, `research-engine`, `ingestion`, `data-engine`, and `source-storage` execution paths.
+- `apps/api` imports `domain`, `persistence`, `retrieval` (query side only), and `observability`; it must not import `fred-workflows`, `research-engine`, `ingestion`, `data-engine`, or `apps/worker`.
+- `apps/web` imports `domain`, `shared-ui`, and `observability` only; it must not import `persistence`, `retrieval`, `data-engine`, `research-engine`, `fred-workflows`, or any other app.
+- `fred-workflows` imports `research-engine`, `domain`, and `observability`; it must not import `persistence` internals (DEC-0012).
+- `research-engine` imports `retrieval`, `data-engine`, `persistence`, `domain`, and `observability`; it must not import `fred-workflows` (one-directional: `fred-workflows → research-engine`).
+- `data-engine` and `retrieval` are separate planes: `retrieval` must not import `data-engine` and `data-engine` must not import `retrieval`.
+
+Forbidden cycles and imports:
+
+- No app may import another app (`apps/web` ↔ `apps/api` ↔ `apps/worker` are forbidden).
+- No package may import any `apps/*` package.
+- `domain` may import nothing internal; it is the leaf.
+- No package may import deep internal modules of another package; only the package's public root surface (`index.ts`) is consumable.
+- An import-boundary check (e.g. `dependency-cruiser` or `eslint-plugin-import` rules) enforces these directions and is a required root command (see [`docs/repository-contract.md`](./repository-contract.md)).
+
+### 4.3 Public and internal contract ownership
+
+Each package owns one public surface and keeps the rest internal.
+
+| Package | Public contract (exported from root) | Internal (not importable cross-package) |
+| --- | --- | --- |
+| `domain` | identifiers, Effect Schemas, typed errors, value/event contracts, invariants | nothing internal — this is the canonical type source |
+| `persistence` | repository interfaces, migration runner contract | SQL schema files, connection pool internals, migration SQL bodies |
+| `source-storage` | artifact store interface, content-addressed reference types | local FS adapter, S3 adapter internals |
+| `ingestion` | ingestion plan/manifest types, source-classification contract | extractor routing internals |
+| `document-processing` | parsed artifact, section, chunk, provenance-anchor types | parser implementations |
+| `retrieval` | search request/result types, context-assembly contract | index tuning, reranker adapter internals |
+| `data-engine` | dataset catalog, SQL validation contract, query result snapshot types | DuckDB worker child, hardening internals |
+| `research-engine` | research plan, evidence-sufficiency, synthesis contract types | plan revision internals |
+| `fred-workflows` | agent/tool/graph/workflow definitions and run boundary | Fred runtime wiring, hook capture internals |
+| `evaluation` | corpus spec, benchmark harness, gate assertion contract | generator internals |
+| `observability` | trace/log/metric wiring interfaces | exporter/sink internals |
+| `shared-ui` | UI component contracts, design tokens | component internals |
+
+Ownership rules:
+
+- `packages/domain` is the single source of canonical Effect Schemas and identifiers. Other packages re-export or consume; they must not redefine a schema that `domain` already owns.
+- `apps/api` owns the HTTP API contract: request/response schemas and SSE event shapes. `apps/web` consumes a generated typed client, never internal handlers.
+- `apps/worker` owns the durable execution contract: job/run identity, checkpoint record, journal appender, and the DuckDB worker-child lifecycle.
+- Cross-package consumption of a deep path (e.g. `packages/persistence/src/sql/...`) is a contract violation even if it compiles.
+
+### 4.4 Fred pinning, lockfile, and dev-only override policy
+
+This concretizes DEC-0001 and the STEP-00-01 compatibility evidence.
+
+- **Pinned production versions** (recorded in the root lockfile; no floating ranges in release dependencies):
+  - `@fancyrobot/fred@2.0.0` — workflow execution, typed agents/tools, hooks, checkpoints, eval primitives.
+  - `@fancyrobot/fred-http@1.0.0` — optional Bun-only enhancer for smoke/admin surfaces only; never the product event contract (DEC-0008, DEC-0012).
+- **Toolchain baseline:** Bun `1.3.13`, Node-compatible fallback `v24.15.0`, TypeScript `7.0.2`. Versions are pinned via `engines`, `tsconfig.base.json`, and CI image tags. Any step upgrade requires an ADR update.
+- **Provider packages** are resolved through Fred's provider registry as runtime configuration, never added as domain or compile-time dependencies.
+- **Lockfile ownership:** the root `bun.lockb` is the single source of truth for resolved versions. Releases use the published npm pins; the lockfile is committed and reproduced with `bun install --frozen-lockfile`.
+- **Dev-only local override (excluded from releases):** a developer may link a local Fred checkout (planning reference commit `b964f3480c177ba3e3805cb66356c1e0f3f30cce`) through a gitignored `.env.local` / dev-script mechanism only. The local link must never be written to the committed lockfile and must be stripped before any release build. A CI check verifies the release lockfile resolves to the published pins, not a `file:` link.
+- **Boundary:** Fred owns workflow graph execution, typed workflow IO validation, hook callbacks, and coarse SSE lifecycle. Product code owns run identity, journals, checkpoint records, artifact references, auth, replay, retrieval, persistence, citation validation, SQL, and security (DEC-0012; STEP-00-01 gap register).
+
 ## 5. Runtime topology
 
 ### 5.1 Web application (`apps/web`)
@@ -240,6 +308,16 @@ Three immutability rules anchor the system:
 3. **`QueryResultSnapshot` is immutable.** A persisted result references the exact validated SQL, parameters, engine version, and result hash.
 
 This preserves reproducibility, makes citations stable, and prevents historical research from silently changing.
+
+### 6.5 Migration ownership, ordering, and rollback policy
+
+- **Ownership:** `packages/persistence` owns migration files and the schema definition. `apps/api` is the sole executor of migrations — it owns the connection pool, the schema boundary, and the typed migration CLI. No other app or package may run migrations; `apps/worker` consumes the schema and never mutates it.
+- **Baseline ordering:** the first migration creates the `pgvector` extension (`CREATE EXTENSION IF NOT EXISTS vector`) before any table or index migration. Subsequent migrations run in strict timestamped order. Full-text search indexes and `pgvector` HNSW/IVFFlat indexes migrate after their owning tables.
+- **Forward:** `bun run migrations:up` (executed by `apps/api`) applies all pending migrations in order.
+- **Rollback:** `bun run migrations:down` (executed by `apps/api`) reverts exactly one migration. A migration must be reversible or explicitly marked irreversible with a recorded reason; irreversible, data-losing migrations require an ADR.
+- **Test contract:** `migrations:up && migrations:down && migrations:up` against an ephemeral PostgreSQL instance must be idempotent and leave a clean schema. This round-trip is a required CI gate (see [`docs/repository-contract.md`](./repository-contract.md)).
+- **Recovery policy:** forward-only is the production default. Rollback is permitted in dev and CI for reversible migrations only. No production rollback may be executed without a matching ADR for irreversible steps.
+- **Executor uniqueness:** a CI/static check verifies that migration-runner imports live only in `apps/api`; any migration import in `apps/worker` or `apps/web` fails the gate.
 
 ## 7. Product event journal and SSE model
 

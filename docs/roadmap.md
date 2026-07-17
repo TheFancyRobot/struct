@@ -9,6 +9,7 @@ This roadmap mirrors the current 16-phase vault plan and keeps delivery aligned 
 - **Every phase must ship tests, documentation, migrations, and observability updates** alongside feature work.
 - **Exact answers stay deterministic.** Dataset questions are answered through bounded read-only SQL, not prose summarization.
 - **Evidence quality is a release gate.** Citation validity, source-version lineage, and evaluation performance are core roadmap requirements.
+- **Repository and local-stack contracts are fixed in Phase 0.** See [`docs/repository-contract.md`](./repository-contract.md) (command inventory, CI gate matrix, Phase 1 handoff) and [`docs/local-development.md`](./local-development.md) (local service table, environment/secrets, platform fallbacks). Package dependency directions, Fred pinning, and migration ownership live in [`docs/architecture.md`](./architecture.md).
 
 ## Horizon 1: Foundations through v1
 
