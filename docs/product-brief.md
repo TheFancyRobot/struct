@@ -215,7 +215,7 @@ Suggested responsibilities:
 - Report editor and export
 - Streaming job and research progress
 
-Use a mature React-based web framework. Default to Next.js unless a different choice is clearly justified.
+Use SolidJS + Vite 8 + Solid Router (DEC-0014); no SSR. Communicate with `apps/api` over HTTP and SSE only.
 
 ### `apps/api`
 

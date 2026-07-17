@@ -36,7 +36,7 @@ tags:
 ## Key Components
 
 <!-- AGENT-START:architecture-key-components -->
-- `apps/web`: Next.js research interface, source browser, progress streaming, evidence inspector, and report editor.
+- `apps/web`: SolidJS + Vite 8 + Solid Router research interface, source browser, progress streaming (SSE), evidence inspector, and report editor (DEC-0014).
 - `apps/api`: typed Effect HTTP boundary for projects, sources, research runs, citations, and SSE events.
 - `apps/worker`: durable ingestion, refresh, embedding, recursive analysis, retry, cancellation, and resume execution.
 - Domain packages: schemas, identifiers, invariants, source versions, evidence, citations, and research records.
@@ -80,5 +80,6 @@ tags:
 - [[01_Architecture/Code_Map|Code Map]]
 - [[01_Architecture/Integration_Map|Integration Map]]
 - [[01_Architecture/Agent_Workflow|Agent Workflow]]
+- [[04_Decisions/DEC-0014_use-solidjs-vite-8-and-solid-router-for-frontend-runtime|DEC-0014 Use SolidJS, Vite 8, and Solid Router for Frontend Runtime]]
 <!-- AGENT-END:architecture-related-notes -->
 - [[04_Decisions/DEC-0013_use-tailwind-css-and-daisyui-with-a-custom-theme-for-frontend-styling|DEC-0013 Use Tailwind CSS and DaisyUI with a Custom Theme for Frontend Styling]]

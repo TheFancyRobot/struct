@@ -17,6 +17,7 @@ related_notes:
   - '[[01_Architecture/Code_Map|Code Map]]'
   - '[[02_Phases/Phase_01_walking_skeleton/Phase|PHASE-01 Walking Skeleton]]'
   - '[[02_Phases/Phase_01_walking_skeleton/Steps/Step_01_scaffold-monorepo-and-runtime-applications|STEP-01-01 Scaffold Monorepo and Runtime Applications]]'
+  - '[[04_Decisions/DEC-0014_use-solidjs-vite-8-and-solid-router-for-frontend-runtime|DEC-0014]] — frontend framework that consumes this styling system'
 tags:
   - agent-vault
   - decision
@@ -68,6 +69,7 @@ Use one note per durable choice. Record what was chosen, why, tradeoffs, and sup
 - Architecture: [[01_Architecture/Code_Map|Code Map]]
 - Phase: [[02_Phases/Phase_01_walking_skeleton/Phase|PHASE-01 Walking Skeleton]]
 - Step: [[02_Phases/Phase_01_walking_skeleton/Steps/Step_01_scaffold-monorepo-and-runtime-applications|STEP-01-01 Scaffold Monorepo and Runtime Applications]]
+- Decision: [[04_Decisions/DEC-0014_use-solidjs-vite-8-and-solid-router-for-frontend-runtime|DEC-0014]] — frontend framework that consumes this styling system
 <!-- AGENT-END:decision-related-notes -->
 
 ## Change Log

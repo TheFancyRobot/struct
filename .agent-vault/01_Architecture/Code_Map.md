@@ -45,7 +45,7 @@ tags:
 - `README.md` — current empty project entry document.
 - `AGENTS.md` — vault usage contract.
 - `docs/product-brief.md` — complete product requirements and delivery phases.
-- `apps/web` — planned Next.js UI.
+- `apps/web` — SolidJS + Vite 8 + Solid Router SPA (DEC-0014).
 - `apps/api` — planned Effect HTTP API.
 - `apps/worker` — planned asynchronous worker.
 - `packages/domain` — planned infrastructure-independent schemas and invariants.
@@ -72,5 +72,6 @@ tags:
 <!-- AGENT-START:architecture-related-notes -->
 - [[01_Architecture/System_Overview|System Overview]]
 - [[01_Architecture/Code_Graph|Code Graph]]
+- [[04_Decisions/DEC-0014_use-solidjs-vite-8-and-solid-router-for-frontend-runtime|DEC-0014 Use SolidJS, Vite 8, and Solid Router for Frontend Runtime]]
 <!-- AGENT-END:architecture-related-notes -->
 - [[04_Decisions/DEC-0013_use-tailwind-css-and-daisyui-with-a-custom-theme-for-frontend-styling|DEC-0013 Use Tailwind CSS and DaisyUI with a Custom Theme for Frontend Styling]]

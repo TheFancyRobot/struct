@@ -96,7 +96,7 @@ Repository root:
 
 Applications (minimal surfaces for the walking skeleton):
 
-- `apps/web/package.json` — Next.js + Tailwind CSS + DaisyUI (DEC-0013), typed client, SSE consumption; no direct DB or orchestration.
+- `apps/web/package.json` — SolidJS + Vite 8 + Solid Router + Tailwind CSS + DaisyUI (DEC-0014, DEC-0013), typed client, SSE consumption; no direct DB or orchestration.
 - `apps/api/package.json` — Effect HTTP boundary, auth, typed query/command, SSE, sole migration executor.
 - `apps/worker/package.json` — durable ingestion, research execution, DuckDB worker-child supervisor, recovery.
 

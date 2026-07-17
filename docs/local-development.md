@@ -15,7 +15,7 @@ All services run on the developer host. Only PostgreSQL uses a container; DuckDB
 | DuckDB worker child | `apps/worker` (spawns + supervises) | none — JSON-over-stdio IPC, no TCP port | `./.local/duckdb-sandbox` (gitignored, ephemeral) | parent reports child liveness; child survives forced `exit 137` and respawns (STEP-00-03) | spawned on demand by worker (3) | parent kills child + removes `.tmp-*` partials | delete `./.local/duckdb-sandbox` |
 | `apps/worker` | itself | no inbound HTTP; optional metrics on `3002` | reads `./.local/artifacts`, `./.local/duckdb-sandbox` | `GET /healthz` on metrics port (optional) or process liveness | 3 (after PG + storage dirs) | `SIGTERM`; finish in-flight, checkpoint, exit | stop process |
 | `apps/api` | itself | `3001` (HTTP) | reads PG + artifact refs | `GET /healthz` → `200` | 4 (after worker) | `SIGTERM`; drain SSE, exit | stop process |
-| `apps/web` | itself | `3000` (Next.js dev) | none | `GET /` → `200` | 5 (after API) | `SIGTERM`; exit | stop process |
+| `apps/web` | itself | `3000` (Vite 8 dev) | none | `GET /` → `200` | 5 (after API) | `SIGTERM`; exit | stop process |
 
 Ownership rules captured by the table:
 
@@ -60,7 +60,7 @@ Reset is a destructive local-only operation. It must never be wired to a product
 | `ARTIFACT_STORAGE_ROOT` | `packages/source-storage`, `apps/worker` | dev FS artifact root | `./.local/artifacts` |
 | `DUCKDB_SANDBOX_ROOT` | `packages/data-engine`, `apps/worker` | DuckDB allowlist root | `./.local/duckdb-sandbox` |
 | `API_PORT` | `apps/api` | HTTP port | `3001` |
-| `WEB_PORT` | `apps/web` | Next.js dev port | `3000` |
+| `WEB_PORT` | `apps/web` | Vite 8 dev port | `3000` |
 | `WORKER_METRICS_PORT` | `apps/worker` | optional metrics/health port | `3002` |
 | `FRED_*` / provider keys | `apps/worker`, `packages/fred-workflows` | model provider config via Fred registry | (secret) |
 
