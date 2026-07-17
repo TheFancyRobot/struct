@@ -5,17 +5,23 @@ contract_version: 1
 title: Spike Live Events Cancellation and Checkpoint Recovery
 step_id: STEP-00-02
 phase: '[[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Phase|Phase 00 architecture spikes and delivery foundations]]'
-status: planned
-owner: ''
+status: completed
+owner: step-00-02-implementor
 created: '2026-07-17'
 updated: '2026-07-17'
 depends_on:
   - '[[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_01_spike-fred-runtime-and-workflow-integration|STEP-00-01 Spike Fred Runtime and Workflow Integration]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-17-065708-spike-live-events-cancellation-and-checkpoint-recovery-step-00-02-implementor|SESSION-2026-07-17-065708 step-00-02-implementor session for Spike Live Events Cancellation and Checkpoint Recovery]]'
+  - '[[05_Sessions/2026-07-17-071323-spike-live-events-cancellation-and-checkpoint-recovery-step-00-02-terminal-recovery-fix|SESSION-2026-07-17-071323 step-00-02-terminal-recovery-fix session for Spike Live Events Cancellation and Checkpoint Recovery]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-17-071323
+active_session_id: 05_Sessions/2026-07-17-071323-spike-live-events-cancellation-and-checkpoint-recovery-step-00-02-terminal-recovery-fix
+context_status: completed
+context_summary: Closed the terminal-append restart regression for [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_02_spike-live-events-cancellation-and-checkpoint-recovery|STEP-00-02 Spike Live Events Cancellation and Checkpoint Recovery]] with journal-aware terminal reconciliation and two new regression scenarios.
 ---
 
 # Step 02 - Spike Live Events Cancellation and Checkpoint Recovery
@@ -49,10 +55,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner: 
+- Status: completed
+- Current owner: step-00-02-implementor
 - Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_02_spike-live-events-cancellation-and-checkpoint-recovery/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_02_spike-live-events-cancellation-and-checkpoint-recovery/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Next action: STEP-01-05 can consume the published event/cursor/checkpoint contract, the cancel winner rule, the explicit reconnect outcomes, and the terminal-journal reconciliation rule from `docs/spikes/live-events-cancellation-and-checkpoint-recovery.md`.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -77,7 +83,8 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-17 - [[05_Sessions/2026-07-17-065708-spike-live-events-cancellation-and-checkpoint-recovery-step-00-02-implementor|SESSION-2026-07-17-065708 step-00-02-implementor session for Spike Live Events Cancellation and Checkpoint Recovery]] - Completed the disposable durability harness, recorded the ten-scenario proof matrix, and published the restart trace handoff.
+- 2026-07-17 - [[05_Sessions/2026-07-17-071323-spike-live-events-cancellation-and-checkpoint-recovery-step-00-02-terminal-recovery-fix|SESSION-2026-07-17-071323 step-00-02-terminal-recovery-fix session for Spike Live Events Cancellation and Checkpoint Recovery]] - Fixed the terminal-restart idempotency gap by reconciling terminal journal events before recovery starts a new attempt.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

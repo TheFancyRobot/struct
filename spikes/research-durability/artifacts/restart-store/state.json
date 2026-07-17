@@ -1,0 +1,25 @@
+{
+  "runId": "research-run-001",
+  "question": "How should live events, cancellation, and checkpoint recovery behave for one durable research run?",
+  "sourceVersionId": "source-version-001",
+  "attempt": 2,
+  "nextSequence": 5,
+  "status": "completed",
+  "currentStep": "terminal",
+  "completedStepRefs": [
+    "collect-evidence"
+  ],
+  "cancelRequested": false,
+  "cancelReason": null,
+  "cancelRequestedAtMs": null,
+  "clockMs": 2050,
+  "authorizationVersion": 1,
+  "retentionFloor": "cursor:1:1",
+  "sideEffects": {
+    "collectEvidenceCommitted": true,
+    "collectEvidenceExecutions": 1
+  },
+  "pendingRecovery": "none",
+  "terminalEventType": "research-completed",
+  "checkpointCursor": "cursor:2:4"
+}

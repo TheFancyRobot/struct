@@ -1,0 +1,26 @@
+{
+  "runId": "research-run-001",
+  "attempt": 2,
+  "currentStep": "collect-evidence",
+  "completedStepRefs": [],
+  "budgetSnapshot": {
+    "modelCalls": 1,
+    "toolCalls": 1,
+    "elapsedMs": 1300
+  },
+  "cancelRequested": false,
+  "fredCorrelation": {
+    "workflowId": "research-durability-spike",
+    "runCorrelationId": "research-run-001::fred::attempt-2"
+  },
+  "artifactRefs": [
+    {
+      "artifactId": "artifact-2026-07-17",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "bytes": 131072,
+      "mediaType": "application/json"
+    }
+  ],
+  "lastEventSequence": 1,
+  "serializedBytes": 521
+}

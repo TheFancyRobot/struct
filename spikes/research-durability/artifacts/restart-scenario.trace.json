@@ -1,0 +1,180 @@
+{
+  "scenarioId": "restart-after-checkpoint",
+  "storeDir": "/Users/dino/dev/struct/spikes/research-durability/artifacts/restart-store",
+  "runId": "research-run-001",
+  "attemptCount": 2,
+  "finalState": {
+    "status": "completed",
+    "terminalEventType": "research-completed",
+    "sideEffects": {
+      "collectEvidenceExecutions": 1
+    }
+  },
+  "checkpoint": {
+    "runId": "research-run-001",
+    "attempt": 2,
+    "currentStep": "collect-evidence",
+    "completedStepRefs": [],
+    "budgetSnapshot": {
+      "modelCalls": 1,
+      "toolCalls": 1,
+      "elapsedMs": 1300
+    },
+    "cancelRequested": false,
+    "fredCorrelation": {
+      "workflowId": "research-durability-spike",
+      "runCorrelationId": "research-run-001::fred::attempt-2"
+    },
+    "artifactRefs": [
+      {
+        "artifactId": "artifact-2026-07-17",
+        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "bytes": 131072,
+        "mediaType": "application/json"
+      }
+    ],
+    "lastEventSequence": 1,
+    "serializedBytes": 521
+  },
+  "events": [
+    {
+      "type": "research-started",
+      "identity": {
+        "runId": "research-run-001",
+        "attempt": 1,
+        "sequence": 1,
+        "cursor": "cursor:1:1"
+      },
+      "serializedBytes": 321,
+      "payload": {
+        "question": "How should live events, cancellation, and checkpoint recovery behave for one durable research run?",
+        "sourceVersionId": "source-version-001",
+        "heartbeatSeconds": 15
+      }
+    },
+    {
+      "type": "plan-created",
+      "identity": {
+        "runId": "research-run-001",
+        "attempt": 1,
+        "sequence": 2,
+        "cursor": "cursor:1:2"
+      },
+      "serializedBytes": 212,
+      "payload": {
+        "stepIds": [
+          "collect-evidence"
+        ],
+        "budgetPolicy": "bounded-single-step"
+      }
+    },
+    {
+      "type": "step-started",
+      "identity": {
+        "runId": "research-run-001",
+        "attempt": 1,
+        "sequence": 3,
+        "cursor": "cursor:1:3"
+      },
+      "serializedBytes": 172,
+      "payload": {
+        "stepId": "collect-evidence"
+      }
+    },
+    {
+      "type": "step-started",
+      "identity": {
+        "runId": "research-run-001",
+        "attempt": 2,
+        "sequence": 1,
+        "cursor": "cursor:2:1"
+      },
+      "serializedBytes": 195,
+      "payload": {
+        "stepId": "collect-evidence",
+        "resumedFromAttempt": 1
+      }
+    },
+    {
+      "type": "step-completed",
+      "identity": {
+        "runId": "research-run-001",
+        "attempt": 2,
+        "sequence": 2,
+        "cursor": "cursor:2:2"
+      },
+      "serializedBytes": 379,
+      "payload": {
+        "stepId": "collect-evidence",
+        "artifactRef": {
+          "artifactId": "artifact-2026-07-17",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 131072,
+          "mediaType": "application/json"
+        },
+        "checkpointCursor": "cursor:2:1"
+      }
+    },
+    {
+      "type": "answer-streaming",
+      "identity": {
+        "runId": "research-run-001",
+        "attempt": 2,
+        "sequence": 3,
+        "cursor": "cursor:2:3"
+      },
+      "serializedBytes": 243,
+      "payload": {
+        "delta": "Checkpoint-backed replay keeps public progress durable and restart-safe.",
+        "done": true
+      }
+    },
+    {
+      "type": "research-completed",
+      "identity": {
+        "runId": "research-run-001",
+        "attempt": 2,
+        "sequence": 4,
+        "cursor": "cursor:2:4"
+      },
+      "serializedBytes": 191,
+      "payload": {
+        "reportArtifactId": "report-artifact-001"
+      }
+    }
+  ],
+  "auditLog": [
+    {
+      "code": "crash-after-checkpoint",
+      "detail": "Simulated crash after checkpoint persistence but before terminal delivery."
+    }
+  ],
+  "invariants": {
+    "eventSequenceMonotonic": true,
+    "duplicateSideEffectRate": 0,
+    "disconnectDoesNotCancel": true,
+    "authorizedReconnectReachedTerminal": false,
+    "unauthorizedReconnectDenied": false,
+    "cancelObservedWithinMs": null,
+    "noEventPayloadExceededLimit": true,
+    "noCheckpointExceededLimit": true
+  },
+  "projections": {},
+  "recovery": {
+    "resumedFromCheckpoint": true,
+    "freshProcessRequired": true,
+    "reconciliation": "resume-from-checkpoint"
+  },
+  "processPhases": [
+    {
+      "phase": "crash",
+      "pid": 24141,
+      "exitCode": 86
+    },
+    {
+      "phase": "resume",
+      "pid": 24142,
+      "exitCode": 0
+    }
+  ]
+}
