@@ -81,3 +81,4 @@ tags:
 - [[01_Architecture/Integration_Map|Integration Map]]
 - [[01_Architecture/Agent_Workflow|Agent Workflow]]
 <!-- AGENT-END:architecture-related-notes -->
+- [[04_Decisions/DEC-0013_use-tailwind-css-and-daisyui-with-a-custom-theme-for-frontend-styling|DEC-0013 Use Tailwind CSS and DaisyUI with a Custom Theme for Frontend Styling]]

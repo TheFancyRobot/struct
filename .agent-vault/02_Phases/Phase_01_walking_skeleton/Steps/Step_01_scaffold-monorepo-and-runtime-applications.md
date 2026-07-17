@@ -68,3 +68,4 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 - [[07_Templates/Note_Contracts|Note Contracts]]
 - [[07_Templates/Phase_Template|Phase Template]]
+- [[04_Decisions/DEC-0013_use-tailwind-css-and-daisyui-with-a-custom-theme-for-frontend-styling|DEC-0013 Use Tailwind CSS and DaisyUI with a Custom Theme for Frontend Styling]]

@@ -33,8 +33,8 @@ Use this note as the directory for decision records in \`04_Decisions/\`.
 <!-- AGENT-START:decisions-index -->
 _Last rebuilt: 2026-07-17._
 
-- Notes indexed: 12
-- Status summary: accepted (12)
+- Notes indexed: 13
+- Status summary: accepted (13)
 
 | Id | Title | Status | Decided | Updated | Linear |
 | --- | --- | --- | --- | --- | --- |
@@ -50,6 +50,7 @@ _Last rebuilt: 2026-07-17._
 | DEC-0010 | [Use Focused Fred Agents with Deterministic Effect Tools](../04_Decisions/DEC-0010_use-focused-fred-agents-with-deterministic-effect-tools.md) | accepted | 2026-07-17 | 2026-07-17 | - |
 | DEC-0011 | [Gate Releases on a Reproducible 25000-File Evaluation Corpus](../04_Decisions/DEC-0011_gate-releases-on-a-reproducible-25000-file-evaluation-corpus.md) | accepted | 2026-07-17 | 2026-07-17 | - |
 | DEC-0012 | [Keep Fred at the Orchestration Boundary for Typed Research Runs](../04_Decisions/DEC-0012_keep-fred-at-the-orchestration-boundary-for-typed-research-runs.md) | accepted | 2026-07-17 | 2026-07-17 | - |
+| DEC-0013 | [Use Tailwind CSS and DaisyUI with a Custom Theme for Frontend Styling](../04_Decisions/DEC-0013_use-tailwind-css-and-daisyui-with-a-custom-theme-for-frontend-styling.md) | accepted | 2026-07-17 | 2026-07-17 | - |
 <!-- AGENT-END:decisions-index -->
 
 ## Useful Links

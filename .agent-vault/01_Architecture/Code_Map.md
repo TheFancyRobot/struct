@@ -73,3 +73,4 @@ tags:
 - [[01_Architecture/System_Overview|System Overview]]
 - [[01_Architecture/Code_Graph|Code Graph]]
 <!-- AGENT-END:architecture-related-notes -->
+- [[04_Decisions/DEC-0013_use-tailwind-css-and-daisyui-with-a-custom-theme-for-frontend-styling|DEC-0013 Use Tailwind CSS and DaisyUI with a Custom Theme for Frontend Styling]]
