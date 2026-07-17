@@ -5,17 +5,22 @@ contract_version: 1
 title: Establish Evaluation Corpus Specification and Quality Gates
 step_id: STEP-00-06
 phase: '[[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Phase|Phase 00 architecture spikes and delivery foundations]]'
-status: planned
-owner: ''
+status: completed
+owner: step-00-06-implementor
 created: '2026-07-17'
 updated: '2026-07-17'
 depends_on:
   - '[[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_05_specify-security-threat-model-and-trust-boundaries|STEP-00-05 Specify Security Threat Model and Trust Boundaries]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-17-194019-establish-evaluation-corpus-specification-and-quality-gates-step-00-06-implementor|SESSION-2026-07-17-194019 step-00-06-implementor session for Establish Evaluation Corpus Specification and Quality Gates]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-17-194019
+active_session_id: 05_Sessions/2026-07-17-194019-establish-evaluation-corpus-specification-and-quality-gates-step-00-06-implementor
+context_status: completed
+context_summary: 'Completed [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_06_establish-evaluation-corpus-specification-and-quality-gates|STEP-00-06 Establish Evaluation Corpus Specification and Quality Gates]]: authored docs/evaluation-corpus.md (Phase 0 spec-only; 19 sections, 10 required spec objects, finalized DEF-05 gate-tier thresholds in §11, consumed STEP-00-05 §25 handoff for all 15 ABUSE categories in §10, reproducibility/seed/content-addressing in §13, Phase-4 planned-CLI handoff in §14, pass/fail in §18, reconciliation in §19); back-linked from docs/evaluation-strategy.md; no packages/evaluation or CI created. Validation: rg term-coverage PASS (187 hits), all 15 ABUSE mapped, gate tiers + 100%/0% thresholds present; install/typecheck/tests/corpus-gen N/A (docs-only repo, packages deferred to Phase 04).'
 ---
 
 # Step 06 - Establish Evaluation Corpus Specification and Quality Gates
@@ -49,10 +54,11 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner: 
+- Status: completed
+- Current owner: step-00-06-implementor
 - Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_06_establish-evaluation-corpus-specification-and-quality-gates/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_06_establish-evaluation-corpus-specification-and-quality-gates/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Next action: Hand off to Phase 04 (implement `packages/evaluation` generator CLI, question loaders, gate evaluator, and CI `corpus:smoke`/`corpus:eval` per `docs/evaluation-corpus.md` §14); Phase 09 hardens/audits.
+- Deliverable: `docs/evaluation-corpus.md` (created) + back-link in `docs/evaluation-strategy.md` (edited). No `packages/evaluation`, no `.github/workflows/ci.yml` (spec-only, per Refinement Addendum).
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -77,7 +83,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-17 - [[05_Sessions/2026-07-17-194019-establish-evaluation-corpus-specification-and-quality-gates-step-00-06-implementor|SESSION-2026-07-17-194019 step-00-06-implementor session for Establish Evaluation Corpus Specification and Quality Gates]] — completed; authored docs/evaluation-corpus.md, finalized DEF-05 gate-tier thresholds, consumed STEP-00-05 §25 handoff.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

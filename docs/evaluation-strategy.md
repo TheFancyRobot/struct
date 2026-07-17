@@ -4,6 +4,7 @@ This document defines how the research workspace measures correctness, trustwort
 
 Related documents:
 
+- [evaluation-corpus.md](./evaluation-corpus.md) — Phase 0 corpus specification and quality-gate matrix that operationalizes this strategy.
 - [architecture.md](./architecture.md)
 - [domain-model.md](./domain-model.md)
 - [research-execution-model.md](./research-execution-model.md)

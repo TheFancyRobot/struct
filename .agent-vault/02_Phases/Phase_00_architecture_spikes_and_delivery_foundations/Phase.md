@@ -4,7 +4,7 @@ template_version: 2
 contract_version: 1
 title: Architecture Spikes and Delivery Foundations
 phase_id: PHASE-00
-status: planned
+status: completed
 owner: ''
 created: '2026-07-17'
 updated: '2026-07-17'
@@ -78,7 +78,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: none
-- Current phase status: planned
+- Current phase status: completed
 - Next phase: [[02_Phases/Phase_01_walking_skeleton/Phase|PHASE-01 Walking Skeleton]]
 <!-- AGENT-END:phase-linear-context -->
 
@@ -116,7 +116,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - [x] [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_03_spike-duckdb-bun-parquet-and-isolation-topology|STEP-00-03 Spike DuckDB Bun Parquet and Isolation Topology]]
 - [x] [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_04_specify-repository-architecture-contracts-and-local-stack|STEP-00-04 Specify Repository Architecture Contracts and Local Stack]]
 - [x] [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_05_specify-security-threat-model-and-trust-boundaries|STEP-00-05 Specify Security Threat Model and Trust Boundaries]]
-- [ ] [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_06_establish-evaluation-corpus-specification-and-quality-gates|STEP-00-06 Establish Evaluation Corpus Specification and Quality Gates]]
+- [x] [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_06_establish-evaluation-corpus-specification-and-quality-gates|STEP-00-06 Establish Evaluation Corpus Specification and Quality Gates]]
 <!-- AGENT-END:phase-steps -->
 
 ## Notes
