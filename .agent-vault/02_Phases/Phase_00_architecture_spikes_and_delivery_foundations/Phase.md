@@ -14,11 +14,12 @@ related_architecture:
   - '[[01_Architecture/Domain_Model|Domain Model]]'
   - '[[01_Architecture/Integration_Map|Integration Map]]'
   - '[[01_Architecture/Agent_Workflow|Agent Workflow]]'
-related_decisions: 
+related_decisions:
   - '[[04_Decisions/DEC-0001_consume-stable-fred-packages-from-a-standalone-monorepo|DEC-0001 Consume Stable Fred Packages from a Standalone Monorepo]]'
   - '[[04_Decisions/DEC-0002_prefer-product-local-adapters-before-fred-core-changes|DEC-0002 Prefer Product-Local Adapters Before Fred Core Changes]]'
   - '[[04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries|DEC-0003 Use TypeScript Bun and Effect with Explicit Runtime Boundaries]]'
   - '[[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009 Sandbox Filesystem Roots and Allowlist Read-Only SQL]]'
+  - '[[04_Decisions/DEC-0012_keep-fred-at-the-orchestration-boundary-for-typed-research-runs|DEC-0012 Keep Fred at the Orchestration Boundary for Typed Research Runs]]'
 related_bugs: []
 tags:
   - agent-vault
@@ -96,6 +97,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - [[04_Decisions/DEC-0002_prefer-product-local-adapters-before-fred-core-changes|DEC-0002 Prefer Product-Local Adapters Before Fred Core Changes]]
 - [[04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries|DEC-0003 Use TypeScript Bun and Effect with Explicit Runtime Boundaries]]
 - [[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009 Sandbox Filesystem Roots and Allowlist Read-Only SQL]]
+- [[04_Decisions/DEC-0012_keep-fred-at-the-orchestration-boundary-for-typed-research-runs|DEC-0012 Keep Fred at the Orchestration Boundary for Typed Research Runs]]
 <!-- AGENT-END:phase-related-decisions -->
 
 ## Related Bugs
@@ -107,7 +109,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Steps
 
 <!-- AGENT-START:phase-steps -->
-- [ ] [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_01_spike-fred-runtime-and-workflow-integration|STEP-00-01 Spike Fred Runtime and Workflow Integration]]
+- [x] [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_01_spike-fred-runtime-and-workflow-integration|STEP-00-01 Spike Fred Runtime and Workflow Integration]]
 - [ ] [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_02_spike-live-events-cancellation-and-checkpoint-recovery|STEP-00-02 Spike Live Events Cancellation and Checkpoint Recovery]]
 - [ ] [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_03_spike-duckdb-bun-parquet-and-isolation-topology|STEP-00-03 Spike DuckDB Bun Parquet and Isolation Topology]]
 - [ ] [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_04_specify-repository-architecture-contracts-and-local-stack|STEP-00-04 Specify Repository Architecture Contracts and Local Stack]]

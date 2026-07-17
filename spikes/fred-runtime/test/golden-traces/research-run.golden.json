@@ -1,0 +1,166 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "timestamp": 1784270400000,
+    "fredVersion": "2.0.0",
+    "gitCommit": "step-00-01-fixture",
+    "config": {
+      "conversationId": "runtime-boundary"
+    },
+    "environment": {
+      "nodeVersion": "v24.0.0",
+      "platform": "darwin"
+    }
+  },
+  "trace": {
+    "message": "{\"runId\":\"research-run-001\",\"question\":\"What Fred surface should Phase 0 rely on for one deterministic research run?\",\"retrievalQuery\":\"fred workflow integration boundary\",\"sourceVersionId\":\"source-version-001\",\"artifact\":{\"artifactId\":\"artifact-2026-07-17\",\"sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"bytes\":131072},\"expectedEvidence\":[\"compatibility-matrix\",\"boundary-table\",\"step-02-handoff\"]}",
+    "spans": [
+      {
+        "name": "workflow.execute",
+        "startTime": 1784270401000,
+        "endTime": 1784270401200,
+        "duration": 200,
+        "attributes": {
+          "step": 1,
+          "status": "ok",
+          "workflowId": "research-run-spike"
+        },
+        "events": [
+          {
+            "name": "route.selected",
+            "time": 1784270401020,
+            "attributes": {
+              "agentId": "research-run-spike",
+              "method": "default.agent"
+            }
+          }
+        ],
+        "status": {
+          "code": "ok"
+        },
+        "kind": "internal"
+      }
+    ],
+    "response": {
+      "content": "Keep deterministic retrieval, checkpoints, and event contracts in product-owned Effect services.",
+      "output": {
+        "status": "completed",
+        "runCorrelation": {
+          "productRunId": "research-run-001",
+          "fredWorkflowId": "research-run-spike",
+          "fredRunCorrelationId": "research-run-001::fred",
+          "attempt": 1,
+          "eventSequenceBase": 0
+        },
+        "checkpoint": {
+          "runId": "research-run-001",
+          "fredWorkflowId": "research-run-spike",
+          "productCursor": "research-run-001:1:4",
+          "currentNodeId": "emitRecommendation",
+          "inlineBytes": 422,
+          "artifactRef": {
+            "artifactId": "artifact-2026-07-17",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bytes": 131072
+          },
+          "persistedFields": [
+            "runId",
+            "currentNodeId",
+            "completedStepRefs",
+            "budgetSnapshot",
+            "fredRunCorrelationId",
+            "artifactRef"
+          ],
+          "hookPoints": [
+            "beforePipeline",
+            "beforeStep",
+            "afterStep",
+            "afterPipeline",
+            "onStepError"
+          ]
+        },
+        "toolResult": {
+          "strategy": "hybrid-retrieval",
+          "boundedSummary": "Use Fred to schedule a typed workflow, but keep deterministic retrieval, persistence, and checkpoint shaping inside product-owned Effect services.",
+          "evidenceKeys": [
+            "compatibility-matrix",
+            "boundary-table",
+            "step-02-handoff"
+          ],
+          "artifactRef": {
+            "artifactId": "artifact-2026-07-17",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bytes": 131072
+          },
+          "limitations": [
+            "Granular live events stay provisional until STEP-00-02.",
+            "Cross-process resume and durable cancellation remain Step 02 responsibilities.",
+            "Large tool payloads must remain artifact-referenced, not checkpoint-inline."
+          ]
+        },
+        "recommendation": {
+          "fredOwns": [
+            "typed workflow graph execution",
+            "step scheduling",
+            "workflow hooks",
+            "optional HTTP workflow transport"
+          ],
+          "productOwns": [
+            "typed domain schemas",
+            "deterministic retrieval and persistence services",
+            "run IDs and journal cursors",
+            "checkpoint records and artifact references",
+            "SSE projection, authorization, and replay policy"
+          ],
+          "step02Handoff": {
+            "runCorrelationRule": "Product runId is primary. Fred run identity is correlation metadata only.",
+            "checkpointOwner": "product-journal",
+            "eventHooks": [
+              "beforePipeline",
+              "beforeStep",
+              "afterStep",
+              "afterPipeline",
+              "onStepError"
+            ],
+            "unresolvedGaps": [
+              "granular progress events",
+              "durable cancellation",
+              "cross-process checkpoint resume",
+              "large outputs by reference"
+            ]
+          }
+        }
+      },
+      "metadata": {
+        "agentId": "research-run-spike",
+        "confidence": 1
+      }
+    },
+    "toolCalls": [
+      {
+        "toolId": "deterministic-research-tool",
+        "args": {
+          "retrievalQuery": "fred workflow integration boundary"
+        },
+        "result": {
+          "strategy": "hybrid-retrieval",
+          "artifactId": "artifact-2026-07-17"
+        },
+        "timing": {
+          "startTime": 1784270401060,
+          "endTime": 1784270401100,
+          "duration": 40
+        },
+        "status": "success"
+      }
+    ],
+    "handoffs": [],
+    "routing": {
+      "method": "default.agent",
+      "agentId": "research-run-spike",
+      "intentId": "runtime.boundary",
+      "confidence": 1,
+      "matchType": "exact"
+    }
+  }
+}
