@@ -5,17 +5,22 @@ contract_version: 1
 title: Specify Security Threat Model and Trust Boundaries
 step_id: STEP-00-05
 phase: '[[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Phase|Phase 00 architecture spikes and delivery foundations]]'
-status: planned
-owner: ''
+status: completed
+owner: step-00-05-implementor
 created: '2026-07-17'
 updated: '2026-07-17'
 depends_on:
   - '[[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_04_specify-repository-architecture-contracts-and-local-stack|STEP-00-04 Specify Repository Architecture Contracts and Local Stack]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-17-191517-specify-security-threat-model-and-trust-boundaries-step-00-05-implementor|SESSION-2026-07-17-191517 step-00-05-implementor session for Specify Security Threat Model and Trust Boundaries]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-17-191517
+active_session_id: 05_Sessions/2026-07-17-191517-specify-security-threat-model-and-trust-boundaries-step-00-05-implementor
+context_status: completed
+context_summary: 'Completed [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_05_specify-security-threat-model-and-trust-boundaries|STEP-00-05 Specify Security Threat Model and Trust Boundaries]]: extended docs/security-model.md §19–§26 (trust-boundary matrix, 24-threat STRIDE register, 15 abuse cases, provisional limits, test matrix, 9 deferred risks, STEP-00-06 handoff, reconciliation); enforcement ownership finalized for all 6 trust boundaries; validation clean; docs-only, no scaffolding. STEP-00-06 receives the §25 handoff.'
 ---
 
 # Step 05 - Specify Security Threat Model and Trust Boundaries
@@ -49,10 +54,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner: 
+- Status: completed
+- Current owner: step-00-05-implementor
 - Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_05_specify-security-threat-model-and-trust-boundaries/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_05_specify-security-threat-model-and-trust-boundaries/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Next action: STEP-00-06 consumes the [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_05_specify-security-threat-model-and-trust-boundaries/Outcome|STEP-00-05 Outcome]] §25 handoff; enforcement owners are finalized in `docs/security-model.md` §19. Awaiting team-lead review.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -77,7 +82,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-17 - [[05_Sessions/2026-07-17-191517-specify-security-threat-model-and-trust-boundaries-step-00-05-implementor|SESSION-2026-07-17-191517 step-00-05-implementor session for Specify Security Threat Model and Trust Boundaries]] - Extended `docs/security-model.md` §19–§26 (7 required artifacts + reconciliation); finalized enforcement ownership for the 6 trust boundaries; validation PASS; docs-only, no scaffolding. Outcome recorded in [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_05_specify-security-threat-model-and-trust-boundaries/Outcome|Outcome]].
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes
