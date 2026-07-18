@@ -16,6 +16,9 @@ export interface WalkingSkeletonGraphDependencies {
   readonly searchText: (
     input: typeof WalkingSkeletonResearchInput.Type,
   ) => Promise<ReadonlyArray<typeof TextEvidence.Type>>
+  readonly onRetrievalCompleted: (
+    evidence: ReadonlyArray<typeof TextEvidence.Type>,
+  ) => Promise<void>
   readonly validate: (
     answer: typeof ResearchAnswer.Type,
     evidence: ReadonlyArray<typeof TextEvidence.Type>,
@@ -86,8 +89,10 @@ export function makeWalkingSkeletonWorkflow(
         kind: 'function',
         fn: async (context) => {
           const input = Schema.decodeUnknownSync(WalkingSkeletonResearchInput)(context.input)
+          const retrieved = await searchTool.execute(input)
+          await deps.onRetrievalCompleted(retrieved)
           const evidence = await Effect.runPromise(
-            requireEvidence(input.question, await searchTool.execute(input)),
+            requireEvidence(input.question, retrieved),
           )
           return {
             input,

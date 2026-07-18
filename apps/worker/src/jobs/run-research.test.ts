@@ -38,6 +38,12 @@ const run: typeof ResearchRun.Type = {
   createdAt: 0n,
   updatedAt: 0n,
 }
+const evidence = [{
+  sourceVersionId,
+  locator: 'lines:1-1',
+  excerpt: 'Launch is July 18.',
+  rank: 1,
+}] as const
 
 function deps(failWorkflow = false) {
   const events: string[] = []
@@ -79,27 +85,24 @@ function deps(failWorkflow = false) {
     },
     runs: { findById: () => Effect.succeed(run) },
     workflow: {
-      run: () =>
+      run: ({ onRetrievalCompleted }) =>
         failWorkflow
           ? Effect.fail({ _tag: 'EvidenceInsufficientError' })
-          : Effect.succeed({
-              plan: {
-                query: run.question,
-                maxSteps: 5,
-                maxToolCalls: 1,
-                maxModelCalls: 1,
-              },
-              evidence: [{
-                sourceVersionId,
-                locator: 'lines:1-1',
-                excerpt: 'Launch is July 18.',
-                rank: 1,
-              }],
-              answer: {
-                answer: 'Launch is July 18.',
-                citations: [{ sourceVersionId, locator: 'lines:1-1' }],
-              },
-            }),
+          : onRetrievalCompleted(evidence).pipe(
+              Effect.as({
+                plan: {
+                  query: run.question,
+                  maxSteps: 5 as const,
+                  maxToolCalls: 1 as const,
+                  maxModelCalls: 1 as const,
+                },
+                evidence,
+                answer: {
+                  answer: 'Launch is July 18.',
+                  citations: [{ sourceVersionId, locator: 'lines:1-1' }],
+                },
+              }),
+            ),
     },
     calls: { events, eventPayloads, completed, failed },
   }
@@ -129,6 +132,45 @@ describe('processOneResearchJob', () => {
     expect(testDeps.calls.completed).toHaveLength(0)
     expect(testDeps.calls.failed).toHaveLength(1)
     expect(JSON.stringify(testDeps.calls.eventPayloads)).not.toContain('Launch is July 18.')
+  })
+
+  it('durably exposes retrieval completion while synthesis is blocked and retains it on failure', async () => {
+    const base = deps()
+    let releaseSynthesis!: () => void
+    const synthesisGate = new Promise<void>((resolve) => {
+      releaseSynthesis = resolve
+    })
+    let retrievalPersisted!: () => void
+    const retrievalVisible = new Promise<void>((resolve) => {
+      retrievalPersisted = resolve
+    })
+    const testDeps: ResearchWorkerDeps = {
+      ...base,
+      workflow: {
+        run: ({ onRetrievalCompleted }) =>
+          Effect.gen(function* () {
+            yield* onRetrievalCompleted(evidence)
+            retrievalPersisted()
+            yield* Effect.promise(() => synthesisGate)
+            return yield* Effect.fail({ _tag: 'SynthesisError' })
+          }),
+      },
+    }
+
+    const processing = Effect.runPromise(processOneResearchJob(testDeps))
+    await retrievalVisible
+
+    expect(base.calls.events).toEqual(['retrieval-completed'])
+    expect(base.calls.failed).toHaveLength(0)
+
+    releaseSynthesis()
+    await processing
+
+    expect(base.calls.events).toEqual([
+      'retrieval-completed',
+      'research-failed',
+    ])
+    expect(base.calls.failed).toHaveLength(1)
   })
 
   it('terminal-fails stale in-progress research work before claiming new work', async () => {

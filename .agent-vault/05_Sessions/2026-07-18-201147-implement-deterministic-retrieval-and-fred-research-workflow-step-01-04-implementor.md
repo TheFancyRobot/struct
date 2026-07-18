@@ -71,6 +71,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Added deterministic Effect TestClock regressions for both long-running directions plus failure propagation/sibling interruption. No git or GitHub command was run; the root orchestrator retains exclusive publication, thread resolution, re-review, and merge control.
 - 2026-07-18 PR #1 fourth review-remediation pass — Replaced first-match-line-only evidence slicing with one deterministic PostgreSQL-aware evidence representation per ranked source document. PostgreSQL now returns highlighted lexical match positions; nearby matches retain the existing contiguous line passage, while distant matches assemble ordered source ranges and long-line matches use exact 1-based character ranges. Tenant/project/source-version predicates, rank ordering, document limits, and exact citation validation remain unchanged.
 - Added focused unit and real-PostgreSQL regressions proving terms more than six lines apart both remain in the same bounded evidence row and a match beyond character 1200 remains present with an exact source locator. No git or GitHub command was run; root orchestration retains all publication and thread-resolution work.
+- 2026-07-18 PR #1 fifth review-remediation pass — Moved durable `retrieval-completed` persistence to a required typed callback at the Fred `searchText` node boundary. The search node awaits the callback immediately after deterministic retrieval succeeds and before evidence sufficiency, synthesis, or citation validation; retrieval failures cannot invoke it.
+- `processOneResearchJob` now supplies the callback and owns the sanitized event payload, while `apps/worker` bridges the Effect callback into `runFredWalkingSkeleton`. `ResearchExecutionRepo.appendEvent` remains the sole persistence owner, and terminal completion/failure transactions remain unchanged.
+- No git or GitHub command was run; root orchestration retains exclusive publication, review-thread resolution, re-review, and merge control.
 
 ## Findings
 
@@ -82,6 +85,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - The compatible fix is one evidence row per ranked document, preserving the request limit and deterministic `(rank DESC, sourceVersionId ASC)` ordering. A contiguous passage remains `lines:start-end`; noncontiguous passages use ordered semicolon-delimited line/character ranges whose sequence matches the excerpt segments separated by an omission marker.
 - PostgreSQL `ts_headline` supplies stem-aware match offsets. The application verifies marker-stripped text exactly equals the immutable source line, bounds the assembled excerpt to 1200 characters, and fails with `RetrievalQueryError` rather than emitting an inaccurate locator when match positions cannot be represented.
 - Existing citation grounding remains exact: no schema expansion was required, and citations continue to validate against the retrieved source-version/locator pair.
+- PR #1 fifth-pass finding resolved: appending `retrieval-completed` only after the full Fred workflow returned delayed the milestone behind synthesis and erased it when synthesis or validation failed.
+- The compatible boundary is a required `onRetrievalCompleted(evidence)` callback in `WalkingSkeletonGraphDependencies`. It is awaited after `searchText` resolves but before `requireEvidence`, so a successful zero-result retrieval records `evidenceCount: 0`, while a thrown retrieval records no completion milestone.
+- Event ordering and sanitization remain worker-owned (`evidenceCount` and immutable source-version IDs only). The append completes before downstream work advances, the existing append-only journal assigns ordering, and research completion/failure transaction ownership is unchanged.
 
 ## Context Handoff
 
@@ -105,6 +111,13 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `packages/retrieval/test/search-text.test.ts` — focused distant-term and late-long-line regressions plus PostgreSQL headline contract coverage.
 - `apps/api/src/routes/research.integration.test.ts` — real-PostgreSQL fixtures and citation-grounding regressions for distant terms and late long-line matches.
 - `.agent-vault/05_Sessions/2026-07-18-201147-implement-deterministic-retrieval-and-fred-research-workflow-step-01-04-implementor.md` — fourth PR remediation handoff, findings, validation, and changed-path evidence.
+- `packages/fred-workflows/src/graphs/walking-skeleton.ts` — required typed retrieval-completion callback awaited at the successful search boundary.
+- `packages/fred-workflows/test/walking-skeleton.test.ts` — successful empty retrieval and failed retrieval callback-boundary regressions.
+- `apps/worker/src/jobs/run-research.ts` — worker-owned durable milestone callback and removal of the delayed post-workflow append.
+- `apps/worker/src/jobs/run-research.test.ts` — blocked-synthesis visibility and retained-on-failure regression.
+- `apps/worker/src/main.ts` — Effect-to-Promise callback bridge through `runFredWalkingSkeleton`.
+- `apps/api/src/routes/research.integration.test.ts` — real-PostgreSQL in-progress visibility, final ordering, and zero-result milestone coverage.
+- `.agent-vault/05_Sessions/2026-07-18-201147-implement-deterministic-retrieval-and-fred-research-workflow-step-01-04-implementor.md` and generated Vault context/code graph — fifth remediation handoff and refreshed symbol map.
 
 ## Validation Run
 
@@ -131,6 +144,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Regression coverage proves a blocked research poll does not delay the next ingestion interval, a blocked ingestion poll does not delay the next research interval, and either poll's failure remains fatal to the combined worker loop while interrupting its sibling.
 - PR #1 fourth remediation gates PASS: focused retrieval/research Node Vitest 8/8; focused real-PostgreSQL Node and raw Bun 15/15; root TypeScript compilation; zero-warning ESLint; dependency/import boundaries; full Node Vitest with PostgreSQL 124/124; full raw Bun with PostgreSQL 165/165; production build; frozen install with no changes; Compose validation; canonical secrets/docs scripts; migration down/up; post-migration real-PostgreSQL Node and Bun 7/7 each; Fred/Fred OpenAI provider package-load smoke.
 - Regression evidence proves a document match with required terms on lines 2 and 10 returns one bounded row containing both terms with locator `lines:2-2;lines:10-10`; a long-line match after character 1200 is centered in the excerpt, maps exactly through `line:1,chars:start-end`, stays within 1200 characters, and passes exact citation validation without grounding mismatch.
+- PR #1 fifth remediation gates PASS: focused Fred/worker Node Vitest 9/9; focused real-PostgreSQL Node and raw Bun 8/8 each before and after migration round-trip; root TypeScript compilation; zero-warning ESLint; dependency/import boundaries; full Node Vitest with PostgreSQL 127/127; full raw Bun with PostgreSQL 168/168; production build; frozen install with no changes; Compose validation; canonical secrets/docs scripts; migration down/up; Fred/Fred Effect/Fred OpenAI provider imports.
+- Regression coverage proves `retrieval-completed` is durably visible while synthesis is blocked, remains ordered before `research-failed` when synthesis later fails, records a successful zero-result retrieval before evidence insufficiency, and is absent when deterministic retrieval itself throws.
 
 ## Bugs Encountered
 

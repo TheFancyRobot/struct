@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-18T22:19:09.196Z",
+  "generatedAt": "2026-07-18T22:34:35.698Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -643,38 +643,38 @@
         {
           "name": "decodePayload",
           "kind": "function",
-          "line": 58,
+          "line": 61,
           "exported": false,
-          "endLine": 58
+          "endLine": 61
         },
         {
           "name": "event",
           "kind": "function",
-          "line": 93,
+          "line": 96,
           "exported": false,
-          "endLine": 93
+          "endLine": 96
         },
         {
           "name": "citationsFor",
           "kind": "function",
-          "line": 111,
+          "line": 114,
           "exported": false,
-          "endLine": 111
+          "endLine": 114
         },
         {
           "name": "safeFailureTag",
           "kind": "function",
-          "line": 126,
+          "line": 129,
           "exported": false,
-          "endLine": 126,
+          "endLine": 129,
           "signature": "(error: unknown)"
         },
         {
           "name": "processOneResearchJob",
           "kind": "const",
-          "line": 132,
+          "line": 135,
           "exported": true,
-          "endLine": 132
+          "endLine": 135
         }
       ],
       "imports": [
@@ -690,9 +690,9 @@
         }
       ],
       "exports": [],
-      "hash": "4584e4b4ae01f6206b7b7ee97600cd911fd4e333e1e5c4d293cefea46951b87c",
-      "mtimeMs": 1784410217929.5303,
-      "size": 6101,
+      "hash": "13a613bddd1c7bef1356d4962ea7b627113c66e0f4046837d68738ee99afe1b4",
+      "mtimeMs": 1784413857676.525,
+      "size": 6279,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -795,9 +795,9 @@
         }
       ],
       "exports": [],
-      "hash": "f88cad16753aa9e53232959bd760f34b842983f841446179a4ffec8de57a95af",
-      "mtimeMs": 1784411938630.2793,
-      "size": 6717,
+      "hash": "5ce10691ea2ef57a714e40b33f67e6a0a7679dab82750f236e78c1c209e1fb1e",
+      "mtimeMs": 1784413952804.0522,
+      "size": 6876,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1538,38 +1538,38 @@
         {
           "name": "AnswerSynthesizerInput",
           "kind": "const",
-          "line": 26,
+          "line": 29,
           "exported": true,
-          "endLine": 26
+          "endLine": 29
         },
         {
           "name": "answerSynthesizerAgent",
           "kind": "const",
-          "line": 33,
+          "line": 36,
           "exported": true,
-          "endLine": 33
+          "endLine": 36
         },
         {
           "name": "makeSearchTextTool",
           "kind": "const",
-          "line": 48,
+          "line": 51,
           "exported": true,
-          "endLine": 48
+          "endLine": 51
         },
         {
           "name": "decodeAgentAnswer",
           "kind": "function",
-          "line": 67,
+          "line": 70,
           "exported": false,
-          "endLine": 67,
+          "endLine": 70,
           "signature": "(input: unknown)"
         },
         {
           "name": "makeWalkingSkeletonWorkflow",
           "kind": "function",
-          "line": 73,
+          "line": 76,
           "exported": true,
-          "endLine": 73
+          "endLine": 76
         }
       ],
       "imports": [
@@ -1593,9 +1593,9 @@
         }
       ],
       "exports": [],
-      "hash": "a734cdbe58200ba95b9061a215d385c4295f0fc36cb0b743b6b0e82272cf2fce",
-      "mtimeMs": 1784409689126.0964,
-      "size": 4392,
+      "hash": "390b593ebcc1995e5c408e4d1d47e6b9b518cba68b8639e381b60b2ab3aadd6f",
+      "mtimeMs": 1784413857676.1528,
+      "size": 4594,
       "generated": false,
       "vendor": false,
       "parser": "regex"

@@ -43,6 +43,7 @@ describe('Fred walking-skeleton workflow', () => {
   it('defines one deterministic search node, one answer agent, and one citation gate', () => {
     const workflow = makeWalkingSkeletonWorkflow({
       searchText: async () => evidence,
+      onRetrievalCompleted: async () => undefined,
       validate: async (answer) => answer,
     })
     const searchTool = makeSearchTextTool(async () => evidence)
@@ -70,8 +71,12 @@ describe('Fred walking-skeleton workflow', () => {
   })
 
   it('preserves EvidenceInsufficientError when deterministic search is empty', async () => {
+    const completed: Array<ReadonlyArray<(typeof evidence)[number]>> = []
     const workflow = makeWalkingSkeletonWorkflow({
       searchText: async () => [],
+      onRetrievalCompleted: async (retrieved) => {
+        completed.push([...retrieved])
+      },
       validate: async (answer) => answer,
     })
     const searchNode = workflow.nodes.find((node) => node.id === 'searchText')
@@ -93,6 +98,35 @@ describe('Fred walking-skeleton workflow', () => {
     }
     expect(failure).toBeInstanceOf(Error)
     expect((failure as Error).name).toContain('EvidenceInsufficientError')
+    expect(completed).toEqual([[]])
+  })
+
+  it('does not report retrieval completion when deterministic search fails', async () => {
+    let completionCalls = 0
+    const workflow = makeWalkingSkeletonWorkflow({
+      searchText: async () => {
+        throw new Error('retrieval failed')
+      },
+      onRetrievalCompleted: async () => {
+        completionCalls += 1
+      },
+      validate: async (answer) => answer,
+    })
+    const searchNode = workflow.nodes.find((node) => node.id === 'searchText')
+    if (!searchNode || searchNode.kind !== 'function') {
+      throw new Error('searchText function node was not defined')
+    }
+
+    await expect(
+      searchNode.fn({
+        input,
+        outputs: {},
+        history: [],
+        metadata: {},
+        pipelineId: workflow.id,
+      } as never),
+    ).rejects.toThrow('retrieval failed')
+    expect(completionCalls).toBe(0)
   })
 
   it('runs with a fixed mock provider/client and no provider keys', async () => {
@@ -139,6 +173,7 @@ describe('Fred walking-skeleton workflow', () => {
         input,
         {
           searchText: async () => evidence,
+          onRetrievalCompleted: async () => undefined,
           validate: async (answer) => answer,
         },
         { providerPackage: 'mock', model: 'fixed', maxElapsedMs: 1000 },
@@ -182,6 +217,7 @@ describe('Fred walking-skeleton workflow', () => {
         input,
         {
           searchText: async () => evidence,
+          onRetrievalCompleted: async () => undefined,
           validate: async (answer) => answer,
         },
         { providerPackage: 'mock', model: 'fixed', maxElapsedMs: 10 },

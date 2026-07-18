@@ -51,6 +51,9 @@ export interface ResearchWorkerDeps {
       readonly workspaceId: typeof Domain.JobQueue.Type['workspaceId']
       readonly projectId: ProjectId
       readonly sourceVersionIds: ReadonlyArray<SourceVersionId>
+      readonly onRetrievalCompleted: (
+        evidence: ReadonlyArray<typeof Domain.TextEvidence.Type>,
+      ) => Effect.Effect<unknown, unknown, never>
     }) => Effect.Effect<typeof Research.WalkingSkeletonWorkflowResult.Type, unknown, never>
   }
 }
@@ -147,15 +150,14 @@ export const processOneResearchJob = (
         workspaceId: job.workspaceId,
         projectId: payload.projectId,
         sourceVersionIds: payload.sourceVersionIds,
-      })
-      yield* deps.jobs.appendEvent(
-        event(deps, job, 'retrieval-completed', {
-          evidenceCount: result.evidence.length,
-          sourceVersionIds: result.evidence.map(
-            (item) => item.sourceVersionId,
+        onRetrievalCompleted: (evidence) =>
+          deps.jobs.appendEvent(
+            event(deps, job, 'retrieval-completed', {
+              evidenceCount: evidence.length,
+              sourceVersionIds: evidence.map((item) => item.sourceVersionId),
+            }),
           ),
-        }),
-      )
+      })
       yield* deps.jobs.appendEvent(
         event(deps, job, 'citations-validated', {
           citationCount: result.answer.citations.length,

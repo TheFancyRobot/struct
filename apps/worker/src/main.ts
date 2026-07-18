@@ -127,7 +127,7 @@ const program = Effect.gen(function* () {
         ResearchRunRepo.findById(runId).pipe(Effect.provide(researchRunLayer)),
     },
     workflow: {
-      run: ({ run, workspaceId, projectId, sourceVersionIds }) =>
+      run: ({ run, workspaceId, projectId, sourceVersionIds, onRetrievalCompleted }) =>
         Effect.gen(function* () {
           return yield* runFredWalkingSkeleton(
             {
@@ -151,6 +151,8 @@ const program = Effect.gen(function* () {
                     Effect.provide(retrievalLayer),
                   ),
                 ),
+              onRetrievalCompleted: (evidence) =>
+                Effect.runPromise(onRetrievalCompleted(evidence).pipe(Effect.asVoid)),
               validate: (answer, evidence, question) =>
                 Effect.runPromise(validateAnswerCitations(answer, evidence, question)),
             },

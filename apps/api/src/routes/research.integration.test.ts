@@ -153,7 +153,15 @@ describeIf('research walking slice real DB integration', () => {
     await sql.end()
   })
 
-  async function execute(question: string, suffix: '1' | '2') {
+  async function execute(
+    question: string,
+    suffix: '1' | '2' | '4',
+    options: {
+      readonly synthesisGate?: Promise<void>
+      readonly onRetrievalPersisted?: () => void
+      readonly failAfterRetrieval?: boolean
+    } = {},
+  ) {
     const sqlLayer = SqlClientLive(sql)
     const executionLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
     const runLayer = Layer.provide(ResearchRunRepo.Default, sqlLayer)
@@ -203,7 +211,13 @@ describeIf('research walking slice real DB integration', () => {
         findById: (id) => ResearchRunRepo.findById(id).pipe(Effect.provide(runLayer)),
       },
       workflow: {
-        run: ({ run, workspaceId: scopeWorkspaceId, projectId: scopeProjectId, sourceVersionIds }) =>
+        run: ({
+          run,
+          workspaceId: scopeWorkspaceId,
+          projectId: scopeProjectId,
+          sourceVersionIds,
+          onRetrievalCompleted,
+        }) =>
           Effect.gen(function* () {
             const result = yield* TextRetrieval.searchText({
               workspaceId: scopeWorkspaceId,
@@ -212,6 +226,14 @@ describeIf('research walking slice real DB integration', () => {
               query: run.question,
               limit: 5,
             }).pipe(Effect.provide(retrievalLayer))
+            yield* onRetrievalCompleted(result.evidence)
+            options.onRetrievalPersisted?.()
+            if (options.synthesisGate) {
+              yield* Effect.promise(() => options.synthesisGate!)
+            }
+            if (options.failAfterRetrieval) {
+              return yield* Effect.fail({ _tag: 'SynthesisError' })
+            }
             const evidence = yield* requireEvidence(run.question, result.evidence)
             const answer = yield* validateAnswerCitations({
               answer: evidence[0].excerpt,
@@ -259,6 +281,57 @@ describeIf('research walking slice real DB integration', () => {
       'retrieval-completed',
       'citations-validated',
       'research-completed',
+    ])
+  })
+
+  it('persists retrieval completion before blocked synthesis and retains it after synthesis fails', async () => {
+    let releaseSynthesis!: () => void
+    const synthesisGate = new Promise<void>((resolve) => {
+      releaseSynthesis = resolve
+    })
+    let retrievalPersisted!: () => void
+    const retrievalVisible = new Promise<void>((resolve) => {
+      retrievalPersisted = resolve
+    })
+    const processing = execute('What is the launch date?', '4', {
+      synthesisGate,
+      onRetrievalPersisted: retrievalPersisted,
+      failAfterRetrieval: true,
+    })
+
+    await retrievalVisible
+    const blockedEvents = await sql.unsafe(
+      `SELECT event_type FROM event_journal
+       WHERE entity_id = $1
+       ORDER BY cursor`,
+      [ResearchRunId.make('f50e8400-e29b-41d4-a716-446655440014')],
+    )
+    const [blockedRun] = await sql.unsafe(
+      `SELECT status FROM research_runs WHERE id = $1`,
+      [ResearchRunId.make('f50e8400-e29b-41d4-a716-446655440014')],
+    )
+
+    expect(blockedEvents.map((item) => item['event_type'])).toEqual([
+      'research-started',
+      'retrieval-completed',
+    ])
+    expect(blockedRun['status']).toBe('in-progress')
+
+    releaseSynthesis()
+    const { runId, jobId } = await processing
+    const [run] = await sql.unsafe(`SELECT status FROM research_runs WHERE id = $1`, [runId])
+    const [job] = await sql.unsafe(`SELECT status FROM job_queue WHERE id = $1`, [jobId])
+    const finalEvents = await sql.unsafe(
+      `SELECT event_type FROM event_journal WHERE entity_id = $1 ORDER BY cursor`,
+      [runId],
+    )
+
+    expect(run['status']).toBe('failed')
+    expect(job['status']).toBe('failed')
+    expect(finalEvents.map((item) => item['event_type'])).toEqual([
+      'research-started',
+      'retrieval-completed',
+      'research-failed',
     ])
   })
 
@@ -388,6 +461,7 @@ describeIf('research walking slice real DB integration', () => {
     expect(result).toHaveLength(0)
     expect(events.map((item) => item['event_type'])).toEqual([
       'research-started',
+      'retrieval-completed',
       'research-failed',
     ])
     expect(JSON.stringify(events)).not.toContain('The launch date is July 18.')
