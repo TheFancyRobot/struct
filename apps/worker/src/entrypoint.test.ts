@@ -9,12 +9,14 @@ const workerMainPath = resolve(import.meta.dirname, 'main.ts')
 
 function startUntilReady(env: NodeJS.ProcessEnv): Promise<string> {
   return new Promise((resolveReady, reject) => {
+    const shutdownGraceMs = 2_000
     const child = spawn('bun', [workerMainPath], {
       env,
       stdio: ['ignore', 'pipe', 'pipe'],
     })
     let output = ''
     let ready = false
+    let forceKillTimeout: ReturnType<typeof setTimeout> | undefined
     const timeout = setTimeout(() => {
       child.kill('SIGKILL')
       reject(new Error(`Worker did not become ready:\n${output}`))
@@ -25,16 +27,23 @@ function startUntilReady(env: NodeJS.ProcessEnv): Promise<string> {
         ready = true
         clearTimeout(timeout)
         child.kill('SIGTERM')
+        forceKillTimeout = setTimeout(() => {
+          if (child.exitCode === null && child.signalCode === null) {
+            child.kill('SIGKILL')
+          }
+        }, shutdownGraceMs)
       }
     }
     child.stdout.on('data', record)
     child.stderr.on('data', record)
     child.once('error', (error) => {
       clearTimeout(timeout)
+      if (forceKillTimeout) clearTimeout(forceKillTimeout)
       reject(error)
     })
     child.once('exit', (code) => {
       clearTimeout(timeout)
+      if (forceKillTimeout) clearTimeout(forceKillTimeout)
       if (ready) resolveReady(output)
       else reject(new Error(`Worker exited before readiness (${String(code)}):\n${output}`))
     })

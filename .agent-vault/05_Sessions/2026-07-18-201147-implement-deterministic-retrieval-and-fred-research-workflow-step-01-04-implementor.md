@@ -64,6 +64,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - No git command was run; the root orchestrator retains exclusive branch, staging, commit, push, PR, review, and merge control.
 - 2026-07-18: Root orchestrator pushed the completed STEP-01-04 branch and opened ready-for-review PR [#1](https://github.com/TheFancyRobot/struct/pull/1) into `main`. Awaiting configured checks and code-review bots before merge.
 - 2026-07-18 PR #1 review remediation completed without git or GitHub mutations. Root orchestrator retains publication, review-thread replies/resolution, automated re-review, and merge.
+- 2026-07-18 PR #1 second review-remediation pass addressed the five unresolved threads: bounded worker-test shutdown escalation (`PRRT_kwDOTcucmc6SBiu9`); root-enforced Fred elapsed budget across optional factory execution paths (`PRRT_kwDOTcucmc6SBiu_`); document-level PostgreSQL FTS preservation and relevant-line fallback for terms/phrases spanning newlines (`PRRT_kwDOTcucmc6SBivA`, `PRRT_kwDOTcucmc6SBi8B`); and README alignment with startup Fred provider preflight (`PRRT_kwDOTcucmc6SBi8D`).
+- The worker smoke helper now escalates SIGTERM to SIGKILL after a bounded two-second grace period. The Fred runtime wraps every workflow factory path in the configured `maxElapsedMs` budget and still releases the client. Retrieval retains document-level matches with a left-lateral locator lookup, preferring an exact line and otherwise anchoring the first line containing any normalized query lexeme.
+- No git or GitHub command was run; the root orchestrator retains exclusive publication, thread resolution, re-review, and merge control.
 
 ## Findings
 
@@ -88,6 +91,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Domain schemas/errors; persistence migration/repositories; `packages/retrieval`, `packages/research-engine`, and `packages/fred-workflows`; API research route; worker research job/runtime wiring; ingestion indexing; unit/integration tests; workspace manifests/lockfile; README, environment example, and architecture/local-development/repository-contract documentation.
 - Step implementation/outcome notes and architecture summaries were updated in Agent Vault.
 <!-- AGENT-END:session-changed-paths -->
+- PR #1 second remediation: `apps/worker/src/entrypoint.test.ts`; `packages/fred-workflows/src/adapters/fred-runtime.ts`; `packages/fred-workflows/test/walking-skeleton.test.ts`; `packages/retrieval/src/search-text.ts`; `packages/retrieval/test/search-text.test.ts`; `apps/api/src/routes/research.integration.test.ts`; `README.md`.
 
 ## Validation Run
 
@@ -108,6 +112,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - PR review remediation focused gates: root TypeScript compilation passed; 26 focused Node Vitest tests covering retrieval, research-engine, Fred workflow, API registration, ingestion, and research jobs passed after interface corrections. Full repository, real-PostgreSQL, migration, build, and strict Vault gates follow in this handoff.
 - Final PR-remediation gates PASS: frozen Bun install; root typecheck; zero-warning ESLint; dependency/import boundaries; build; Node Vitest 103 passed / 12 database-only skipped; raw Bun 144 passed / 18 database-only skipped; readiness-driven worker smoke under Node and Bun; canonical secrets/docs scripts; Compose validation; migration down/up; Fred provider preflight; real-PostgreSQL Node 12/12 and raw Bun 12/12; refreshed code graph (54 files, 572 symbols); refreshed authoritative context/indexes; and Vault doctor/all checks with 0 errors and 0 warnings.
 - Regression coverage proves tenant ownership is derived from immutable source relationships, excerpts use PostgreSQL match-line metadata including stem-only matches, legacy ingestion payloads remain processable, Fred input and empty-evidence failures remain typed, production Fred timeout uses Effect-native fiber interruption, startup validates provider config before readiness, polling is concurrent, API client/infrastructure failures stay distinct, and stale recovery cannot race terminal completion or leave split state.
+- PR #1 second remediation gates PASS: root typecheck; zero-warning ESLint; dependency/import boundaries; focused Node tests (10/10); real-PostgreSQL cross-line term and phrase regressions under Node and Bun (5/5 each); full Node Vitest with PostgreSQL (117/117); full raw Bun with PostgreSQL (158/158); production build; Compose validation; canonical secrets/docs scripts; migration down/up; and post-migration real-database regression (5/5).
+- Regression coverage proves an injected Fred factory hook that ignores `maxElapsedMs` is still timed out by the product runtime and releases the Fred client; PostgreSQL `websearch_to_tsquery` document matches survive when required terms or a quoted phrase cross newline boundaries; returned excerpts begin at the first relevant lexeme line.
 
 ## Bugs Encountered
 

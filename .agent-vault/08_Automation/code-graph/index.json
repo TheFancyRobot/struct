@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-18T21:32:38.664Z",
+  "generatedAt": "2026-07-18T21:48:13.370Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -1458,9 +1458,9 @@
         }
       ],
       "exports": [],
-      "hash": "14ea4ebaa982fb326037f8e8231824764a936e0fde22b10e7cf8e11318b67719",
-      "mtimeMs": 1784410139158.7485,
-      "size": 5318,
+      "hash": "1a26111e426907f50074e119d6a9281300fb25d4460ec57db14fa7dc9c07cb72",
+      "mtimeMs": 1784411173008.9458,
+      "size": 5618,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3086,9 +3086,9 @@
         }
       ],
       "exports": [],
-      "hash": "0b0b43e02a64cd0ec3b8a6d8e10b35b5948119c490cc314ad0ab7885c53186af",
-      "mtimeMs": 1784409543078.2944,
-      "size": 5897,
+      "hash": "8c4ee13a11135a5a16dc7adccfe33052bb1cb9577bc633eed75929699d4d88fe",
+      "mtimeMs": 1784411173009.514,
+      "size": 6514,
       "generated": false,
       "vendor": false,
       "parser": "regex"

@@ -40,6 +40,8 @@ describe('TextRetrieval', () => {
     expect(calls[0]?.query).toMatch(/JOIN projects/)
     expect(calls[0]?.query).toMatch(/source_version_id = ANY/)
     expect(calls[0]?.query).toMatch(/WITH ORDINALITY/)
+    expect(calls[0]?.query).toMatch(/LEFT JOIN LATERAL/)
+    expect(calls[0]?.query).toMatch(/locator_query/)
     expect(calls[0]?.params?.slice(0, 3)).toEqual([
       workspaceId,
       projectId,

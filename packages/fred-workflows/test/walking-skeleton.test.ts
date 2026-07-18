@@ -187,15 +187,7 @@ describe('Fred walking-skeleton workflow', () => {
         { providerPackage: 'mock', model: 'fixed', maxElapsedMs: 10 },
         {
           create: async () => client,
-          execute: (_fred, _workflow, _workflowInput, maxElapsedMs) =>
-            Effect.runPromise(
-              Effect.never.pipe(
-                Effect.timeoutFail({
-                  duration: maxElapsedMs,
-                  onTimeout: () => new Error('Research workflow exceeded elapsed-time budget'),
-                }),
-              ),
-            ),
+          execute: () => new Promise<WorkflowExecutionResult>(() => undefined),
         },
       ),
     )

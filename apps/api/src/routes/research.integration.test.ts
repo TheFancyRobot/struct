@@ -30,6 +30,8 @@ const workspaceId = WorkspaceId.make('f50e8400-e29b-41d4-a716-446655440000')
 const projectId = ProjectId.make('f50e8400-e29b-41d4-a716-446655440001')
 const sourceId = SourceId.make('f50e8400-e29b-41d4-a716-446655440002')
 const sourceVersionId = SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440003')
+const crossLineSourceId = SourceId.make('f50e8400-e29b-41d4-a716-446655440004')
+const crossLineSourceVersionId = SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440005')
 
 async function cleanup(sql: postgresTypes.Sql): Promise<void> {
   await sql.unsafe(`DELETE FROM event_journal WHERE workspace_id = $1`, [workspaceId])
@@ -38,7 +40,9 @@ async function cleanup(sql: postgresTypes.Sql): Promise<void> {
     `DELETE FROM research_threads WHERE project_id = $1`,
     [projectId],
   )
+  await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [crossLineSourceId])
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [sourceId])
+  await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [crossLineSourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [sourceId])
   await sql.unsafe(`DELETE FROM projects WHERE id = $1`, [projectId])
   await sql.unsafe(`DELETE FROM workspaces WHERE id = $1`, [workspaceId])
@@ -73,6 +77,21 @@ describeIf('research walking slice real DB integration', () => {
       `INSERT INTO source_text_index (source_version_id, content)
        VALUES ($1, 'The launch date is July 18.')`,
       [sourceVersionId],
+    )
+    await sql.unsafe(
+      `INSERT INTO sources (id, project_id, name, kind)
+       VALUES ($1, $2, 'cross-line.txt', 'document')`,
+      [crossLineSourceId, projectId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_versions (id, source_id, version, artifact_ref, content_hash)
+       VALUES ($1, $2, 1, 'artifact://sha256/cross-line', 'sha256:cross-line')`,
+      [crossLineSourceVersionId, crossLineSourceId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_text_index (source_version_id, content)
+       VALUES ($1, 'Prologue\nalpha\nomega\nlaunch\nwindow\nEpilogue')`,
+      [crossLineSourceVersionId],
     )
   })
 
@@ -189,6 +208,46 @@ describeIf('research walking slice real DB integration', () => {
       'citations-validated',
       'research-completed',
     ])
+  })
+
+  it('preserves a document FTS match when required terms span lines', async () => {
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, SqlClientLive(sql))
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [crossLineSourceVersionId],
+        query: 'alpha omega',
+        limit: 1,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+
+    expect(result.evidence).toHaveLength(1)
+    expect(result.evidence[0]).toMatchObject({
+      sourceVersionId: crossLineSourceVersionId,
+      locator: 'lines:2-6',
+    })
+    expect(result.evidence[0]?.excerpt).toContain('alpha\nomega')
+  })
+
+  it('preserves a document FTS phrase match when the phrase spans lines', async () => {
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, SqlClientLive(sql))
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [crossLineSourceVersionId],
+        query: '"launch window"',
+        limit: 1,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+
+    expect(result.evidence).toHaveLength(1)
+    expect(result.evidence[0]).toMatchObject({
+      sourceVersionId: crossLineSourceVersionId,
+      locator: 'lines:4-6',
+    })
+    expect(result.evidence[0]?.excerpt).toContain('launch\nwindow')
   })
 
   it('persists a safe failure when deterministic retrieval finds no evidence', async () => {

@@ -104,24 +104,37 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
         try: () =>
           sql.unsafe(
             `WITH search_query AS (
-               SELECT websearch_to_tsquery('english', $4) AS query
+               SELECT websearch_to_tsquery('english', $4) AS query,
+                      to_tsquery(
+                        'english',
+                        NULLIF(
+                          array_to_string(
+                            tsvector_to_array(to_tsvector('english', $4)),
+                            ' | '
+                          ),
+                          ''
+                        )
+                      ) AS locator_query
              )
              SELECT sti.source_version_id, sti.content,
                     ts_rank_cd(sti.search_vector, search_query.query) AS rank,
-                    matched_line.match_line
+                    COALESCE(matched_line.match_line, 1)::int AS match_line
              FROM source_text_index sti
              JOIN source_versions sv ON sv.id = sti.source_version_id
              JOIN sources s ON s.id = sv.source_id
              JOIN projects p ON p.id = s.project_id
              CROSS JOIN search_query
-             CROSS JOIN LATERAL (
+             LEFT JOIN LATERAL (
                SELECT line_number::int AS match_line
                FROM unnest(string_to_array(sti.content, E'\n'))
                  WITH ORDINALITY AS source_lines(line, line_number)
                WHERE to_tsvector('english', source_lines.line) @@ search_query.query
-               ORDER BY line_number
+                  OR to_tsvector('english', source_lines.line) @@ search_query.locator_query
+               ORDER BY
+                 (to_tsvector('english', source_lines.line) @@ search_query.query) DESC,
+                 line_number
                LIMIT 1
-             ) matched_line
+             ) matched_line ON TRUE
              WHERE p.workspace_id = $1
                AND p.id = $2
                AND sti.source_version_id = ANY($3::uuid[])

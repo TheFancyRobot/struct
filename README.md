@@ -71,8 +71,10 @@ bun run corpus:eval         # full ~25k corpus + quality gates (planned, Phase 0
 
 The walking-slice research command accepts `workspaceId`, `projectId`, a non-empty
 `sourceVersionIds` array, and `question` at `POST /research/runs`. The worker
-requires `FRED_PROVIDER_PACKAGE` and `FRED_MODEL` only when it claims a research
-job; tests use a fixed mock provider and require no provider key.
+requires `FRED_PROVIDER_PACKAGE` and `FRED_MODEL` at startup and loads the
+configured Fred provider before reporting readiness. Provider-specific credentials
+are required before live model execution; tests use a fixed mock provider and
+require no provider key.
 
 Full command inventory and CI gates in [docs/repository-contract.md](./docs/repository-contract.md).
 

@@ -143,6 +143,15 @@ export const runFredWalkingSkeleton = (
             stage: 'workflow-execution',
             message: 'Fred research workflow failed',
           }),
-      }),
+      }).pipe(
+        Effect.timeoutFail({
+          duration: config.maxElapsedMs,
+          onTimeout: () =>
+            new ResearchWorkflowError({
+              stage: 'workflow-execution',
+              message: 'Fred research workflow exceeded elapsed-time budget',
+            }),
+        }),
+      ),
     (fred) => Effect.promise(() => fred.shutdown()).pipe(Effect.ignore),
   )
