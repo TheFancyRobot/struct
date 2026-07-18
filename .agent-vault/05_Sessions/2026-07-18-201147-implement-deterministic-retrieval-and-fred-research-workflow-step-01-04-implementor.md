@@ -30,7 +30,7 @@ tags:
   - agent-vault
   - session
 context_status: completed
-summary: STEP-01-04 completed after retry-2 Node/Bun runtime-boundary and entrypoint test-isolation remediation; all root, PostgreSQL, migration, provider, Compose, and vault gates pass with zero known defects.
+summary: STEP-01-04 completed after retry-3 generated-artifact hygiene remediation; root validation and vault integrity pass with zero known defects.
 ---
 
 # step-01-04-implementor session for Implement Deterministic Retrieval and Fred Research Workflow
@@ -60,6 +60,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - No git command was run; branch, commit, PR, review, and merge remain owned by the root orchestrator.
 - 20:46 - Root orchestrator rejected attempt 1 after independently reproducing a Node Vitest `bun:` ESM loader failure; started fresh attempt 2 under the retry policy.
 - 20:53 - Fresh retry fixed lazy Fred runtime loading and concurrent test port allocation. Root orchestrator independently reran root, real-database, migration, provider-load, and Vault gates successfully.
+- 2026-07-18 retry 3 hygiene audit — Removed generated `tsconfig.tsbuildinfo` files from `packages/retrieval`, `packages/research-engine`, and `packages/fred-workflows`, and added the repository-level `*.tsbuildinfo` ignore rule. A bounded generated/cache-artifact scan found no other STEP-01-04 hygiene defect; the unrelated DuckDB spike build-info file already had spike-local ignore coverage and is now also covered at the root.
+- No git command was run; the root orchestrator retains exclusive branch, staging, commit, push, PR, review, and merge control.
 
 ## Findings
 
@@ -96,6 +98,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Vault generated context/code graph was refreshed and strict validation completed with zero errors and zero warnings.
 - Result: PASS. STEP-01-04 is completed with mirrored `context_status: completed` and zero known confirmed defects.
 - Root-orchestrator verification: frozen install, typecheck, lint, import boundaries, Node Vitest (97 pass / 11 DB-only skipped), raw Bun (138 pass / 17 DB-only skipped), build, canonical secrets/docs scripts, Compose config, real-DB Node suite (108/108), real-DB raw Bun suite (149/149), migration down/up, Fred provider load, and Vault doctor all passed.
+- Retry-3 hygiene gates passed: root `typecheck`, ESLint, dependency/import boundaries, build, Node Vitest (97 passed, 11 database-only skipped), raw Bun (138 passed, 17 database-only skipped), canonical secrets/docs scripts, `docker compose config --quiet`, and Fred/Fred OpenAI package-load smoke from `packages/fred-workflows`.
+- Final post-validation filesystem audit confirmed the three STEP-01-04 `tsconfig.tsbuildinfo` files are absent, `*.tsbuildinfo` is ignored repository-wide, and no related cache artifact remains. STEP-01-04 and its mirrored context remain completed with zero known confirmed defects.
 
 ## Bugs Encountered
 
