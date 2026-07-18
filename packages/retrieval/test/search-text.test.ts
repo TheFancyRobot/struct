@@ -22,6 +22,10 @@ describe('TextRetrieval', () => {
         content: 'Alpha\nThe launch date is July 18.\nOmega',
         rank: 0.75,
         match_line: 2,
+        match_passages: [{
+          line_number: 2,
+          highlighted_line: `The \uE000launch\uE001 \uE000date\uE001 is July 18.`,
+        }],
       }]
     })
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
@@ -42,6 +46,7 @@ describe('TextRetrieval', () => {
     expect(calls[0]?.query).toMatch(/WITH ORDINALITY/)
     expect(calls[0]?.query).toMatch(/LEFT JOIN LATERAL/)
     expect(calls[0]?.query).toMatch(/locator_query/)
+    expect(calls[0]?.query).toMatch(/ts_headline/)
     expect(calls[0]?.params?.slice(0, 3)).toEqual([
       workspaceId,
       projectId,
@@ -91,6 +96,10 @@ describe('TextRetrieval', () => {
       ].join('\n'),
       rank: 0.5,
       match_line: 7,
+      match_passages: [{
+        line_number: 7,
+        highlighted_line: `The service \uE000runs\uE001 nightly.`,
+      }],
     }])
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
 
@@ -108,5 +117,82 @@ describe('TextRetrieval', () => {
       locator: 'lines:7-8',
       excerpt: 'The service runs nightly.\nRelevant continuation.',
     })
+  })
+
+  it('assembles distant required terms into one bounded, accurately located evidence row', async () => {
+    const content = [
+      'Prologue',
+      'alpha',
+      'filler one',
+      'filler two',
+      'filler three',
+      'filler four',
+      'filler five',
+      'filler six',
+      'filler seven',
+      'omega',
+      'Epilogue',
+    ].join('\n')
+    const sqlLayer = SqlClientTest(async () => [{
+      source_version_id: sourceVersionId,
+      content,
+      rank: 0.4,
+      match_line: 2,
+      match_passages: [
+        { line_number: 2, highlighted_line: `\uE000alpha\uE001` },
+        { line_number: 10, highlighted_line: `\uE000omega\uE001` },
+      ],
+    }])
+    const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
+
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [sourceVersionId],
+        query: 'alpha omega',
+        limit: 1,
+      }).pipe(Effect.provide(layer)),
+    )
+
+    expect(result.evidence).toEqual([{
+      sourceVersionId,
+      locator: 'lines:2-2;lines:10-10',
+      excerpt: 'alpha\n…\nomega',
+      rank: 0.4,
+    }])
+  })
+
+  it('centers a long-line excerpt on a late PostgreSQL match and locates its exact characters', async () => {
+    const content = `${'prefix '.repeat(220)}lateanchor trailing context`
+    const highlightedLine = `${'prefix '.repeat(220)}\uE000lateanchor\uE001 trailing context`
+    const sqlLayer = SqlClientTest(async () => [{
+      source_version_id: sourceVersionId,
+      content,
+      rank: 0.3,
+      match_line: 1,
+      match_passages: [{ line_number: 1, highlighted_line: highlightedLine }],
+    }])
+    const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
+
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [sourceVersionId],
+        query: 'lateanchor',
+        limit: 1,
+      }).pipe(Effect.provide(layer)),
+    )
+
+    const evidence = result.evidence[0]!
+    const locator = /^line:1,chars:(\d+)-(\d+)$/.exec(evidence.locator)
+    expect(locator).not.toBeNull()
+    const start = Number(locator?.[1])
+    const end = Number(locator?.[2])
+    expect(start).toBeGreaterThan(1200)
+    expect(evidence.excerpt).toContain('lateanchor')
+    expect(evidence.excerpt).toBe(content.slice(start - 1, end))
+    expect(evidence.excerpt.length).toBeLessThanOrEqual(1200)
   })
 })

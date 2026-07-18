@@ -32,6 +32,24 @@ const sourceId = SourceId.make('f50e8400-e29b-41d4-a716-446655440002')
 const sourceVersionId = SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440003')
 const crossLineSourceId = SourceId.make('f50e8400-e29b-41d4-a716-446655440004')
 const crossLineSourceVersionId = SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440005')
+const distantTermsSourceId = SourceId.make('f50e8400-e29b-41d4-a716-446655440006')
+const distantTermsSourceVersionId = SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440007')
+const longLineSourceId = SourceId.make('f50e8400-e29b-41d4-a716-446655440008')
+const longLineSourceVersionId = SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440009')
+const distantTermsContent = [
+  'Prologue',
+  'alpha',
+  'filler one',
+  'filler two',
+  'filler three',
+  'filler four',
+  'filler five',
+  'filler six',
+  'filler seven',
+  'omega',
+  'Epilogue',
+].join('\n')
+const longLineContent = `${'prefix '.repeat(220)}lateanchor trailing context`
 
 async function cleanup(sql: postgresTypes.Sql): Promise<void> {
   await sql.unsafe(`DELETE FROM event_journal WHERE workspace_id = $1`, [workspaceId])
@@ -40,8 +58,12 @@ async function cleanup(sql: postgresTypes.Sql): Promise<void> {
     `DELETE FROM research_threads WHERE project_id = $1`,
     [projectId],
   )
+  await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [longLineSourceId])
+  await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [distantTermsSourceId])
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [crossLineSourceId])
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [sourceId])
+  await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [longLineSourceId])
+  await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [distantTermsSourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [crossLineSourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [sourceId])
   await sql.unsafe(`DELETE FROM projects WHERE id = $1`, [projectId])
@@ -92,6 +114,36 @@ describeIf('research walking slice real DB integration', () => {
       `INSERT INTO source_text_index (source_version_id, content)
        VALUES ($1, 'Prologue\nalpha\nomega\nlaunch\nwindow\nEpilogue')`,
       [crossLineSourceVersionId],
+    )
+    await sql.unsafe(
+      `INSERT INTO sources (id, project_id, name, kind)
+       VALUES ($1, $2, 'distant-terms.txt', 'document')`,
+      [distantTermsSourceId, projectId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_versions (id, source_id, version, artifact_ref, content_hash)
+       VALUES ($1, $2, 1, 'artifact://sha256/distant-terms', 'sha256:distant-terms')`,
+      [distantTermsSourceVersionId, distantTermsSourceId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_text_index (source_version_id, content)
+       VALUES ($1, $2)`,
+      [distantTermsSourceVersionId, distantTermsContent],
+    )
+    await sql.unsafe(
+      `INSERT INTO sources (id, project_id, name, kind)
+       VALUES ($1, $2, 'long-line.txt', 'document')`,
+      [longLineSourceId, projectId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_versions (id, source_id, version, artifact_ref, content_hash)
+       VALUES ($1, $2, 1, 'artifact://sha256/long-line', 'sha256:long-line')`,
+      [longLineSourceVersionId, longLineSourceId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_text_index (source_version_id, content)
+       VALUES ($1, $2)`,
+      [longLineSourceVersionId, longLineContent],
     )
   })
 
@@ -248,6 +300,73 @@ describeIf('research walking slice real DB integration', () => {
       locator: 'lines:4-6',
     })
     expect(result.evidence[0]?.excerpt).toContain('launch\nwindow')
+  })
+
+  it('keeps every distant required term in one bounded evidence row with exact citation grounding', async () => {
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, SqlClientLive(sql))
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [distantTermsSourceVersionId],
+        query: 'alpha omega',
+        limit: 1,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+
+    expect(result.evidence).toHaveLength(1)
+    const evidence = result.evidence[0]!
+    expect(evidence).toMatchObject({
+      sourceVersionId: distantTermsSourceVersionId,
+      locator: 'lines:2-2;lines:10-10',
+      excerpt: 'alpha\n…\nomega',
+    })
+    await expect(
+      Effect.runPromise(validateAnswerCitations({
+        answer: evidence.excerpt,
+        citations: [{
+          sourceVersionId: evidence.sourceVersionId,
+          locator: evidence.locator,
+        }],
+      }, result.evidence)),
+    ).resolves.toMatchObject({
+      citations: [{ locator: evidence.locator }],
+    })
+  })
+
+  it('keeps a late long-line match in its bounded excerpt with an exact character locator', async () => {
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, SqlClientLive(sql))
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [longLineSourceVersionId],
+        query: 'lateanchor',
+        limit: 1,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+
+    expect(result.evidence).toHaveLength(1)
+    const evidence = result.evidence[0]!
+    const locator = /^line:1,chars:(\d+)-(\d+)$/.exec(evidence.locator)
+    expect(locator).not.toBeNull()
+    const start = Number(locator?.[1])
+    const end = Number(locator?.[2])
+    expect(start).toBeGreaterThan(1200)
+    expect(evidence.excerpt).toContain('lateanchor')
+    expect(evidence.excerpt).toBe(longLineContent.slice(start - 1, end))
+    expect(evidence.excerpt.length).toBeLessThanOrEqual(1200)
+    await expect(
+      Effect.runPromise(validateAnswerCitations({
+        answer: evidence.excerpt,
+        citations: [{
+          sourceVersionId: evidence.sourceVersionId,
+          locator: evidence.locator,
+        }],
+      }, result.evidence)),
+    ).resolves.toMatchObject({
+      citations: [{ locator: evidence.locator }],
+    })
   })
 
   it('persists a safe failure when deterministic retrieval finds no evidence', async () => {

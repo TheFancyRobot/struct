@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-18T22:00:58.511Z",
+  "generatedAt": "2026-07-18T22:19:09.196Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -3084,24 +3084,103 @@
         {
           "name": "MAX_EXCERPT_CHARS",
           "kind": "const",
-          "line": 39,
+          "line": 40,
           "exported": false,
-          "endLine": 39
+          "endLine": 40
         },
         {
-          "name": "boundedExcerpt",
-          "kind": "function",
+          "name": "MAX_CONTEXT_CHARS_PER_SIDE",
+          "kind": "const",
           "line": 41,
           "exported": false,
-          "endLine": 41,
+          "endLine": 41
+        },
+        {
+          "name": "MATCH_START",
+          "kind": "const",
+          "line": 42,
+          "exported": false,
+          "endLine": 42
+        },
+        {
+          "name": "MATCH_END",
+          "kind": "const",
+          "line": 43,
+          "exported": false,
+          "endLine": 43
+        },
+        {
+          "name": "OMITTED_SOURCE",
+          "kind": "const",
+          "line": 44,
+          "exported": false,
+          "endLine": 44
+        },
+        {
+          "name": "MatchPassage",
+          "kind": "interface",
+          "line": 46,
+          "exported": false,
+          "endLine": 46
+        },
+        {
+          "name": "MatchRange",
+          "kind": "interface",
+          "line": 51,
+          "exported": false,
+          "endLine": 51
+        },
+        {
+          "name": "SourceRange",
+          "kind": "interface",
+          "line": 58,
+          "exported": false,
+          "endLine": 58
+        },
+        {
+          "name": "fallbackExcerpt",
+          "kind": "function",
+          "line": 64,
+          "exported": false,
+          "endLine": 64,
           "signature": "(content: string, matchLine: number)"
+        },
+        {
+          "name": "decodeMatchPassages",
+          "kind": "function",
+          "line": 79,
+          "exported": false,
+          "endLine": 79,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "matchRanges",
+          "kind": "function",
+          "line": 92,
+          "exported": false,
+          "endLine": 92
+        },
+        {
+          "name": "mergeRanges",
+          "kind": "function",
+          "line": 149,
+          "exported": false,
+          "endLine": 149,
+          "signature": "(ranges: ReadonlyArray<SourceRange>)"
+        },
+        {
+          "name": "matchedExcerpt",
+          "kind": "function",
+          "line": 166,
+          "exported": false,
+          "endLine": 166
         },
         {
           "name": "TextRetrieval",
           "kind": "class",
-          "line": 53,
+          "line": 227,
           "exported": true,
-          "endLine": 53
+          "endLine": 227
         }
       ],
       "imports": [
@@ -3124,9 +3203,9 @@
         }
       ],
       "exports": [],
-      "hash": "8c4ee13a11135a5a16dc7adccfe33052bb1cb9577bc633eed75929699d4d88fe",
-      "mtimeMs": 1784411173009.514,
-      "size": 6514,
+      "hash": "92f2f083bc5745623a484fa82b9b1ed51c350590b77e1035df7d2f3df4b39742",
+      "mtimeMs": 1784413066524.791,
+      "size": 13506,
       "generated": false,
       "vendor": false,
       "parser": "regex"

@@ -30,7 +30,7 @@ tags:
   - agent-vault
   - session
 context_status: completed
-summary: 'STEP-01-04 implementation and PR #1 review findings are remediated locally, including independent ingestion/research polling schedules; full repository, PostgreSQL, migration, provider, and strict Vault gates pass with zero known confirmed defects.'
+summary: 'STEP-01-04 implementation and PR #1 review findings are remediated locally, including bounded PostgreSQL-aware evidence that preserves distant required terms and late long-line matches with exact locators; full repository, PostgreSQL, migration, provider, and strict Vault gates pass with zero known confirmed defects.'
 ---
 
 # step-01-04-implementor session for Implement Deterministic Retrieval and Fred Research Workflow
@@ -69,6 +69,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - No git or GitHub command was run; the root orchestrator retains exclusive publication, thread resolution, re-review, and merge control.
 - 2026-07-18 PR #1 third review-remediation pass addressed unresolved thread `PRRT_kwDOTcucmc6SBmEV`: ingestion and research polling now apply the configured spaced schedule independently before the loops are combined concurrently. A long-running poll in either queue no longer delays the other queue, while a loop failure still propagates and interrupts its sibling.
 - Added deterministic Effect TestClock regressions for both long-running directions plus failure propagation/sibling interruption. No git or GitHub command was run; the root orchestrator retains exclusive publication, thread resolution, re-review, and merge control.
+- 2026-07-18 PR #1 fourth review-remediation pass — Replaced first-match-line-only evidence slicing with one deterministic PostgreSQL-aware evidence representation per ranked source document. PostgreSQL now returns highlighted lexical match positions; nearby matches retain the existing contiguous line passage, while distant matches assemble ordered source ranges and long-line matches use exact 1-based character ranges. Tenant/project/source-version predicates, rank ordering, document limits, and exact citation validation remain unchanged.
+- Added focused unit and real-PostgreSQL regressions proving terms more than six lines apart both remain in the same bounded evidence row and a match beyond character 1200 remains present with an exact source locator. No git or GitHub command was run; root orchestration retains all publication and thread-resolution work.
 
 ## Findings
 
@@ -76,6 +78,10 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 2026-07-18 PR #1 review remediation verified all 22 unresolved inline findings. Valid findings were corrected across tenant ownership, transactional research finalization, PostgreSQL match anchoring, Fred input typing/interruption, API error categories, startup readiness, legacy ingestion compatibility, test isolation, runtime dependencies, documentation, and Vault handoff state.
 - Fred 2.0.0's Promise `workflows.run` API exposes no AbortSignal. Production execution now uses Fred's exported Effect-native workflow executor under `Effect.timeoutFail`, so expiry interrupts the workflow fiber rather than merely abandoning a Promise; the injected Promise-client path remains test-only compatibility.
 - Qodo reported reviews paused and CodeRabbit's docstring-coverage warning was not one of the 22 inline actionable threads; neither represents a repository defect or implementable STEP-01-04 code finding.
+- PR #1 fourth-pass finding resolved: a six-line slice anchored at only the first matching line could omit another required PostgreSQL FTS term when matches were distant, and truncating the first 1200 characters of a long matched line could omit the actual hit while overstating the line locator.
+- The compatible fix is one evidence row per ranked document, preserving the request limit and deterministic `(rank DESC, sourceVersionId ASC)` ordering. A contiguous passage remains `lines:start-end`; noncontiguous passages use ordered semicolon-delimited line/character ranges whose sequence matches the excerpt segments separated by an omission marker.
+- PostgreSQL `ts_headline` supplies stem-aware match offsets. The application verifies marker-stripped text exactly equals the immutable source line, bounds the assembled excerpt to 1200 characters, and fails with `RetrievalQueryError` rather than emitting an inaccurate locator when match positions cannot be represented.
+- Existing citation grounding remains exact: no schema expansion was required, and citations continue to validate against the retrieved source-version/locator pair.
 
 ## Context Handoff
 
@@ -95,6 +101,10 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-END:session-changed-paths -->
 - PR #1 second remediation: `apps/worker/src/entrypoint.test.ts`; `packages/fred-workflows/src/adapters/fred-runtime.ts`; `packages/fred-workflows/test/walking-skeleton.test.ts`; `packages/retrieval/src/search-text.ts`; `packages/retrieval/test/search-text.test.ts`; `apps/api/src/routes/research.integration.test.ts`; `README.md`.
 - PR #1 third remediation: `apps/worker/src/main.ts`; new focused scheduling boundary `apps/worker/src/polling.ts`; deterministic regression coverage `apps/worker/src/polling.test.ts`; this session note; generated code graph/index context from Vault refresh.
+- `packages/retrieval/src/search-text.ts` — PostgreSQL-highlighted match collection, bounded contiguous/composite evidence assembly, exact line/character locators, and typed fail-closed evidence errors.
+- `packages/retrieval/test/search-text.test.ts` — focused distant-term and late-long-line regressions plus PostgreSQL headline contract coverage.
+- `apps/api/src/routes/research.integration.test.ts` — real-PostgreSQL fixtures and citation-grounding regressions for distant terms and late long-line matches.
+- `.agent-vault/05_Sessions/2026-07-18-201147-implement-deterministic-retrieval-and-fred-research-workflow-step-01-04-implementor.md` — fourth PR remediation handoff, findings, validation, and changed-path evidence.
 
 ## Validation Run
 
@@ -119,6 +129,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Regression coverage proves an injected Fred factory hook that ignores `maxElapsedMs` is still timed out by the product runtime and releases the Fred client; PostgreSQL `websearch_to_tsquery` document matches survive when required terms or a quoted phrase cross newline boundaries; returned excerpts begin at the first relevant lexeme line.
 - PR #1 third remediation gates PASS: focused worker typecheck; focused Node Vitest 3/3 and raw Bun 3/3; root typecheck; zero-warning repository ESLint; dependency/import boundaries; full Node Vitest without PostgreSQL 106 passed / 14 skipped; full raw Bun without PostgreSQL 147 passed / 20 skipped; production build; canonical secrets/docs scripts; Compose validation; migration down/up; full real-PostgreSQL Node 120/120 and raw Bun 161/161; Fred provider package-load smoke.
 - Regression coverage proves a blocked research poll does not delay the next ingestion interval, a blocked ingestion poll does not delay the next research interval, and either poll's failure remains fatal to the combined worker loop while interrupting its sibling.
+- PR #1 fourth remediation gates PASS: focused retrieval/research Node Vitest 8/8; focused real-PostgreSQL Node and raw Bun 15/15; root TypeScript compilation; zero-warning ESLint; dependency/import boundaries; full Node Vitest with PostgreSQL 124/124; full raw Bun with PostgreSQL 165/165; production build; frozen install with no changes; Compose validation; canonical secrets/docs scripts; migration down/up; post-migration real-PostgreSQL Node and Bun 7/7 each; Fred/Fred OpenAI provider package-load smoke.
+- Regression evidence proves a document match with required terms on lines 2 and 10 returns one bounded row containing both terms with locator `lines:2-2;lines:10-10`; a long-line match after character 1200 is centered in the excerpt, maps exactly through `line:1,chars:start-end`, stays within 1200 characters, and passes exact citation validation without grounding mismatch.
 
 ## Bugs Encountered
 
