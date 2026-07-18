@@ -2,7 +2,7 @@
 
 A trustworthy, source-grounded research workspace for documents, datasets, and directories. Documents are retrieved, datasets are queried, directories are navigated, and large corpora are recursively analyzed — with deterministic computation, verifiable citations, and durable, resumable work.
 
-> **Current state: Phase 0 (architecture spikes and delivery foundations).** This repository is documentation-only. No runtime, package manifest, application entry point, or CI configuration exists yet. The manifests and commands below are the **planned contract** created by STEP-01-01.
+> **Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold complete.** The monorepo has Bun workspace manifests, three runtime apps (`apps/web`, `apps/api`, `apps/worker`), and three packages (`domain`, `persistence`, `observability`). All gates pass (typecheck, lint, lint:imports, build, test, Compose config, app smokes). Persistence migrations, API endpoints, and CI are not yet implemented.
 
 ## Canonical documents
 
@@ -19,49 +19,55 @@ A trustworthy, source-grounded research workspace for documents, datasets, and d
 | [docs/security-model.md](./docs/security-model.md) | Security model and trust boundaries. |
 | [docs/evaluation-strategy.md](./docs/evaluation-strategy.md) | Evaluation strategy. |
 | [docs/citation-and-provenance.md](./docs/citation-and-provenance.md) | Citation and provenance. |
-| [docs/adr/](./docs/adr/) | Architecture decision records (DEC-0001 … DEC-0013). |
+| [docs/adr/](./docs/adr/) | Architecture decision records (DEC-0001 … DEC-0014). |
 | [AGENTS.md](./AGENTS.md) | Repository and Agent Vault operating instructions. |
 
-## Planned repository layout
+## Repository layout
 
 ```
 apps/
-├── web        # Next.js + Tailwind + DaisyUI (DEC-0013) — research UI, SSE, evidence inspector
-├── api        # Effect HTTP boundary — auth, typed query/command, SSE, sole migration executor
-└── worker     # Durable ingestion, research, DuckDB worker-child supervisor, recovery
+├── web        # SolidJS 1.9 + Vite 8 + Solid Router + Tailwind 4 + DaisyUI (DEC-0013, DEC-0014)
+├── api        # Bun HTTP + Effect Config — healthz, SSE placeholder (migration executor in later steps)
+└── worker     # Effect Config skeleton — durable execution (jobs in later steps)
 
 packages/
-├── domain · persistence · source-storage · ingestion · document-processing
-├── retrieval · data-engine · research-engine · fred-workflows
-└── evaluation · observability · shared-ui
+├── domain · persistence · observability          # scaffolded (STEP-01-01)
+├── source-storage · ingestion · document-processing  # planned (STEP-01-03+)
+├── retrieval · data-engine · research-engine · fred-workflows  # planned (STEP-01-04+)
+└── evaluation · shared-ui                              # planned (later phases)
 ```
 
-Package dependency flows downward only; no app imports another app; `domain` is the leaf. Full rules in [docs/architecture.md §4.2](./docs/architecture.md).
+Package dependency flows downward only; no app imports another app; `domain` is the leaf. Enforced by ESLint `no-restricted-imports`, dependency-cruiser, and `scripts/boundary-check.ts`. Full rules in [docs/architecture.md §4.2](./docs/architecture.md).
 
-## Bootstrap (planned, created by STEP-01-01)
+## Bootstrap
 
 ```bash
 bun install --frozen-lockfile   # pinned dependencies (Bun 1.3.13, TS 7.0.2)
 cp .env.example .env           # then fill in real values (DATABASE_URL, FRED_* provider keys)
 docker compose up -d postgres  # PostgreSQL 16 + pgvector (or use a local Postgres install)
-bun run migrations:up           # apps/api is the sole migration executor
-bun run dev                     # starts worker (3002 metrics), api (3001), web (3000)
+bun run dev                     # starts web (3000), api (3001), worker (3002) concurrently
 ```
+
+> Migrations (`bun run migrations:up`) are defined in the root script but require
+> `packages/persistence` migration implementation (STEP-01-02). The healthz endpoint
+> works without a database connection.
 
 Docker-unavailable fallback, platform notes, and reset steps are in [docs/local-development.md](./docs/local-development.md).
 
-## Common commands (planned)
+## Common commands
 
 ```bash
-bun run typecheck   # tsc --noEmit across the workspace
-bun run lint        # ESLint + import-boundary check
-bun test            # unit tests
-bun run test:integration   # integration tests (Phase 01+)
-bun run test:e2e           # browser/e2e (Phase 01+)
-bun run migrations:up      # apply migrations
-bun run migrations:down    # roll back one migration
-bun run corpus:smoke        # small evaluation subset (Phase 04)
-bun run corpus:eval         # full ~25k corpus + quality gates (Phase 09)
+bun run typecheck   # tsc --noEmit across all 7 workspace configs
+bun run lint        # ESLint flat config (TS/Solid/Effect conventions)
+bun run lint:imports  # dependency-cruiser + Bun-aware boundary checker
+bun run test        # vitest unit + entrypoint tests
+bun run build       # build all apps (web Vite, api/worker tsc)
+bun run test:integration   # integration tests (planned, Phase 01+)
+bun run test:e2e           # browser/e2e (planned, Phase 01+)
+bun run migrations:up      # apply migrations (planned, STEP-01-02)
+bun run migrations:down    # roll back one migration (planned, STEP-01-02)
+bun run corpus:smoke        # small evaluation subset (planned, Phase 04)
+bun run corpus:eval         # full ~25k corpus + quality gates (planned, Phase 09)
 ```
 
 Full command inventory and CI gates in [docs/repository-contract.md](./docs/repository-contract.md).

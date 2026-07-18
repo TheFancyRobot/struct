@@ -1,0 +1,65 @@
+/**
+ * index.css — Tailwind 4 + DaisyUI 5 with project-owned custom theme.
+ *
+ * Tailwind 4 uses CSS-based configuration via @import and @plugin directives.
+ * DaisyUI 5 is a Tailwind plugin that reads theme tokens from CSS custom properties.
+ *
+ * Custom theme: 'struct' — deliberate palette for research work.
+ * - Primary: deep teal (#0d6b5e)
+ * - Secondary: warm amber (#d4972e)
+ * - Accent: muted violet (#7c6bc4)
+ * - Neutral: slate tones
+ * - Base: paper/ink pairing
+ */
+
+@import "tailwindcss";
+
+/* DaisyUI plugin with custom 'struct' theme */
+@plugin "daisyui" {
+  themes: struct --default;
+}
+
+/* Struct custom theme tokens — DaisyUI reads these */
+@theme {
+  --color-primary: #0d6b5e;
+  --color-primary-content: #f0fdfa;
+  --color-secondary: #d4972e;
+  --color-secondary-content: #1a0f00;
+  --color-accent: #7c6bc4;
+  --color-accent-content: #f5f3ff;
+  --color-neutral: #1e293b;
+  --color-neutral-content: #e2e8f0;
+  --color-base-100: #fafaf9;
+  --color-base-200: #f5f5f4;
+  --color-base-300: #e7e5e4;
+  --color-base-content: #1c1917;
+
+  --color-info: #0ea5e9;
+  --color-info-content: #082f49;
+  --color-success: #22c55e;
+  --color-success-content: #052e16;
+  --color-warning: #f59e0b;
+  --color-warning-content: #451a03;
+  --color-error: #ef4444;
+  --color-error-content: #7f1d1d;
+
+  --font-sans: "IBM Plex Sans", "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  --radius-box: 0.5rem;
+  --radius-btn: 0.375rem;
+  --radius-card: 0.75rem;
+}
+
+/* Base typography reset for research readability */
+body {
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Code blocks use monospace */
+code, pre, kbd {
+  font-family: var(--font-mono);
+}

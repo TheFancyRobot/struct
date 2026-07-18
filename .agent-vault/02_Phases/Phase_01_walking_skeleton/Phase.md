@@ -122,3 +122,4 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - Product requirements: authoritative repository document `docs/product-brief.md`.
 - Human-readable roadmap: `docs/roadmap.md`; concise index: `docs/implementation-plan.md`.
 - Assumption policy: reversible uncertainties use the documented default until spike evidence requires a decision update; no hidden architectural assumption is carried only in chat.
+- Skill requirements by domain: [[06_Shared_Knowledge/Skill_Requirements|Skill Requirements]] — backend agents must read Effect-TS skills; frontend agents must read SolidJS skills before writing code.

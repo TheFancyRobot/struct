@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: struct-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: struct
+      POSTGRES_PASSWORD: struct
+      POSTGRES_DB: struct
+    volumes:
+      - ./.local/pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -p 5432 -U struct"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

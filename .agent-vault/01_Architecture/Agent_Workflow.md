@@ -3,15 +3,15 @@ note_type: architecture
 template_version: 2
 contract_version: 1
 title: Agent Workflow
-architecture_id: "ARCH-0003"
+architecture_id: ARCH-0003
 status: active
-owner: ""
-reviewed_on: "2026-07-17"
-created: "2026-07-17"
-updated: "2026-07-17"
+owner: ''
+reviewed_on: '2026-07-18'
+created: '2026-07-17'
+updated: '2026-07-18'
 related_notes:
-  - "[[01_Architecture/System_Overview|System Overview]]"
-  - "[[01_Architecture/Integration_Map|Integration Map]]"
+  - '[[01_Architecture/System_Overview|System Overview]]'
+  - '[[01_Architecture/Integration_Map|Integration Map]]'
 tags:
   - agent-vault
   - architecture
@@ -48,7 +48,7 @@ tags:
 - `packages/fred-workflows` — planned agent, tool, graph, prompt, and workflow composition layer.
 - `packages/research-engine` — planned plans, evidence sufficiency, decomposition, merging, and synthesis logic.
 - `packages/data-engine` — planned deterministic SQL inspection, validation, and execution.
-- `apps/worker` — planned durable workflow execution boundary.
+- `apps/worker` — scaffolded durable workflow execution boundary (Effect Config skeleton); full execution in later steps.
 <!-- AGENT-END:architecture-important-paths -->
 
 ## Constraints

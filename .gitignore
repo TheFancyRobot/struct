@@ -1,2 +1,7 @@
 node_modules/
 .opentraces/
+.local/
+.env
+.env.local
+dist/
+bun.lockb

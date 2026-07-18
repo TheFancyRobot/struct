@@ -3,17 +3,17 @@ note_type: architecture
 template_version: 2
 contract_version: 1
 title: System Overview
-architecture_id: "ARCH-0001"
+architecture_id: ARCH-0001
 status: active
-owner: ""
-reviewed_on: "2026-07-17"
-created: "2026-07-17"
-updated: "2026-07-17"
+owner: ''
+reviewed_on: '2026-07-18'
+created: '2026-07-17'
+updated: '2026-07-18'
 related_notes:
-  - "[[01_Architecture/Domain_Model|Domain Model]]"
-  - "[[01_Architecture/Code_Map|Code Map]]"
-  - "[[01_Architecture/Integration_Map|Integration Map]]"
-  - "[[01_Architecture/Agent_Workflow|Agent Workflow]]"
+  - '[[01_Architecture/Domain_Model|Domain Model]]'
+  - '[[01_Architecture/Code_Map|Code Map]]'
+  - '[[01_Architecture/Integration_Map|Integration Map]]'
+  - '[[01_Architecture/Agent_Workflow|Agent Workflow]]'
 tags:
   - agent-vault
   - architecture
@@ -28,10 +28,10 @@ tags:
 
 ## Overview
 
-- The repository is in Phase 0 (discovery and architecture); application source code has not been created yet.
+- Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold complete. The monorepo has Bun workspace manifests, three runtime apps, and three packages, all passing gates.
 - The planned product is a source-grounded workspace for projects, source ingestion, multi-step research, exact computation, navigable citations, saved findings, and Markdown reports.
-- The target runtime is Bun with TypeScript, Effect for services and typed failures, and Fred for agent/workflow orchestration.
-- PostgreSQL with pgvector provides application persistence, full-text search, and initial vector search. DuckDB and Parquet provide deterministic structured-data analysis. Original artifacts use a local-development storage adapter and an S3-compatible production abstraction.
+- The runtime is Bun with TypeScript 7.0.2, Effect for services and typed failures, and Fred for agent/workflow orchestration (Fred packages not yet installed — STEP-01-04+).
+- PostgreSQL with pgvector provides application persistence, full-text search, and initial vector search (migration runner not yet implemented — STEP-01-02). DuckDB and Parquet provide deterministic structured-data analysis (not yet implemented — later phases). Original artifacts use a local-development storage adapter and an S3-compatible production abstraction (not yet implemented — STEP-01-03+).
 
 ## Key Components
 
@@ -49,9 +49,13 @@ tags:
 <!-- AGENT-START:architecture-important-paths -->
 - `docs/product-brief.md` — authoritative requirements and preferred technical direction.
 - `AGENTS.md` — repository and Agent Vault operating instructions.
-- `apps/` — planned executable applications; not present yet.
-- `packages/` — planned reusable domain and infrastructure packages; not present yet.
-- `docs/adr/` — planned architecture decision records.
+- `apps/web` — SolidJS 1.9 + Vite 8 + Solid Router + Tailwind 4 + DaisyUI SPA (scaffolded, DEC-0014).
+- `apps/api` — Bun HTTP + Effect Config, healthz/SSE placeholder (scaffolded).
+- `apps/worker` — Effect Config skeleton (scaffolded).
+- `packages/domain` — branded IDs, Effect Schemas, Schema.TaggedError (scaffolded).
+- `packages/persistence` — placeholder (scaffolded; migrations in STEP-01-02).
+- `packages/observability` — placeholder (scaffolded).
+- `docs/adr/` — architecture decision records (DEC-0001 … DEC-0014).
 <!-- AGENT-END:architecture-important-paths -->
 
 ## Constraints

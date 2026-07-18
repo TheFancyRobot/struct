@@ -1,0 +1,9 @@
+# Bun configuration for the struct monorepo
+[install]
+peer = false
+
+[install.scopes]
+# No custom scopes yet
+
+[install.overrides]
+# No overrides; use exact pinned versions from lockfile
