@@ -29,7 +29,8 @@ export interface IndexTextInput {
   readonly content: string
   /**
    * The incremented attempt number returned by a durable reindex claim.
-   * Omit only for the ingestion fast path, which owns the initial pending row.
+   * Omit only for ingestion, which may finalize unclaimed work or observe an
+   * independently owned/completed lease without taking worker ownership.
    */
   readonly reindexAttempt?: number
 }
@@ -244,35 +245,60 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
                FROM source_versions sv
                JOIN sources s ON s.id = sv.source_id
                JOIN projects p ON p.id = s.project_id
-               WHERE sv.id = $3
+              WHERE sv.id = $3
                  AND p.id = $2
                  AND p.workspace_id = $1
                ON CONFLICT (source_version_id)
                DO UPDATE SET content = source_text_index.content
+               WHERE source_text_index.content = EXCLUDED.content
                RETURNING source_version_id`,
               [input.workspaceId, input.projectId, input.sourceVersionId, input.content],
             )
             if (indexed.length !== 1) return indexed
-            const completed = await transaction.unsafe(
-              `UPDATE source_text_reindex_jobs
-               SET status = 'completed',
-                   last_error_code = NULL,
-                   updated_at = NOW()
-              WHERE source_version_id = $1
-                 AND workspace_id = $2
-                 AND project_id = $3
-                 AND (
-                   ($4::integer IS NULL AND status = 'pending')
-                   OR (status = 'in-progress' AND attempts = $4)
-                 )
-               RETURNING source_version_id`,
-              [
-                input.sourceVersionId,
-                input.workspaceId,
-                input.projectId,
-                input.reindexAttempt ?? null,
-              ],
-            )
+            const completed = input.reindexAttempt === undefined
+              ? await transaction.unsafe(
+                  `UPDATE source_text_reindex_jobs
+                   SET status = CASE
+                         WHEN status IN ('pending', 'failed') THEN 'completed'
+                         ELSE status
+                       END,
+                       last_error_code = CASE
+                         WHEN status IN ('pending', 'failed') THEN NULL
+                         ELSE last_error_code
+                       END,
+                       updated_at = CASE
+                         WHEN status IN ('pending', 'failed') THEN NOW()
+                         ELSE updated_at
+                       END
+                   WHERE source_version_id = $1
+                     AND workspace_id = $2
+                     AND project_id = $3
+                     AND status IN ('pending', 'failed', 'in-progress', 'completed')
+                   RETURNING source_version_id`,
+                  [
+                    input.sourceVersionId,
+                    input.workspaceId,
+                    input.projectId,
+                  ],
+                )
+              : await transaction.unsafe(
+                  `UPDATE source_text_reindex_jobs
+                   SET status = 'completed',
+                       last_error_code = NULL,
+                       updated_at = NOW()
+                   WHERE source_version_id = $1
+                     AND workspace_id = $2
+                     AND project_id = $3
+                     AND status = 'in-progress'
+                     AND attempts = $4
+                   RETURNING source_version_id`,
+                  [
+                    input.sourceVersionId,
+                    input.workspaceId,
+                    input.projectId,
+                    input.reindexAttempt,
+                  ],
+                )
             if (completed.length !== 1) {
               throw new Error('source-text-reindex-state-missing')
             }
@@ -289,8 +315,8 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
             ? Effect.void
             : Effect.fail(
                 new RetrievalQueryError({
-                  operation: 'indexText.scope',
-                  message: 'Source version does not belong to the requested workspace and project',
+                  operation: 'indexText.scope-or-content',
+                  message: 'Source version scope or immutable indexed content did not match',
                 }),
               ),
         ),

@@ -82,10 +82,10 @@ describe('TextRetrieval', () => {
 
     expect(calls.join('\n')).toMatch(/JOIN projects/)
     expect(calls.join('\n')).toMatch(/DO UPDATE SET content = source_text_index\.content/)
+    expect(calls.join('\n')).toMatch(/source_text_index\.content = EXCLUDED\.content/)
     expect(calls.join('\n')).toMatch(/UPDATE source_text_reindex_jobs/)
-    expect(calls.join('\n')).toMatch(/status = 'completed'/)
-    expect(calls.join('\n')).toMatch(/status = 'pending'/)
-    expect(calls.join('\n')).toMatch(/attempts = \$4/)
+    expect(calls.join('\n')).toMatch(/THEN 'completed'/)
+    expect(calls.join('\n')).toMatch(/status IN \('pending', 'failed', 'in-progress', 'completed'\)/)
   })
 
   it('completes reindexing only for the worker claim attempt that produced the text', async () => {
@@ -116,6 +116,29 @@ describe('TextRetrieval', () => {
       projectId,
       2,
     ])
+  })
+
+  it('fails closed before changing reindex state when indexed immutable content conflicts', async () => {
+    const calls: Array<{ query: string; params?: readonly unknown[] }> = []
+    const sqlLayer = SqlClientTest(async (query, params) => {
+      calls.push({ query, params })
+      return []
+    })
+    const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
+
+    const exit = await Effect.runPromiseExit(
+      TextRetrieval.indexText({
+        workspaceId,
+        projectId,
+        sourceVersionId,
+        content: 'conflicting text',
+      }).pipe(Effect.provide(layer)),
+    )
+
+    expect(exit._tag).toBe('Failure')
+    expect(calls).toHaveLength(1)
+    expect(calls[0]?.query).toMatch(/source_text_index\.content = EXCLUDED\.content/)
+    expect(calls[0]?.query).not.toMatch(/UPDATE source_text_reindex_jobs/)
   })
 
   it('fails explicitly while a requested source version is not durably indexed', async () => {

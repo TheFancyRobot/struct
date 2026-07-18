@@ -30,7 +30,7 @@ tags:
   - agent-vault
   - session
 context_status: completed
-summary: 'STEP-01-04 implementation and PR #1 review findings are remediated locally, including bounded PostgreSQL-aware evidence that preserves distant required terms and late long-line matches with exact locators; full repository, PostgreSQL, migration, provider, and strict Vault gates pass with zero known confirmed defects.'
+summary: 'STEP-01-04 completed after eighth PR hardening: ingestion and independent reindex races are exact-content idempotent while active and stale worker attempts remain fenced; all Node/Bun/PostgreSQL and vault gates pass.'
 ---
 
 # step-01-04-implementor session for Implement Deterministic Retrieval and Fred Research Workflow
@@ -79,6 +79,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Controlled delayed create, provider setup, non-abortable retrieval, and abortable model regressions prove timeout prevents downstream registration, retrieval callbacks, model/workflow continuation, validation, and use of Fred's Promise `workflows.run` path after terminal interruption.
 - Reindex state-machine audit found a stale-lease race introduced by the sixth pass: a recovered worker could complete or fail a newer claim. Worker completion and failure transitions now compare the incremented claim-attempt token; a real PostgreSQL race test proves stale attempt 1 cannot mutate attempt 2 while the current owner can complete.
 - No git or GitHub command was run; root orchestration retains exclusive publication, review-thread resolution, re-review, and merge control.
+- 2026-07-18 PR #1 eighth review-remediation pass — Hardened `TextRetrieval.indexText` for the trigger-created ingestion/reindex race. Exact immutable-content conflict checks now precede distinct ingestion and attempt-owned state transitions; active worker leases remain owned and stale attempts remain fenced.
+- Added deterministic mock-SQL coverage and a real-PostgreSQL transaction barrier that forces the worker claim between ingestion's index upsert and state transition. No git or GitHub command was run; root orchestration retains exclusive publication, review-thread resolution, re-review, and merge control.
 
 ## Findings
 
@@ -100,6 +102,10 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `retrieval-completed` uses a job-row `FOR UPDATE` ownership guard. If a late callback races terminal failure, either the event commits before failure or it is rejected after failure; it cannot appear after the terminal event.
 - `ResearchAnswer.answer` now requires at least one non-whitespace character at schema decode, before citation validation or completion persistence.
 - Final audit hardening: deterministic retrieval now requires every requested source version to have both a `source_text_index` row and durable `source_text_reindex_jobs.status = 'completed'` in the requested tenant scope. Pending/failed upgrade work produces a typed retrieval failure instead of being misreported as ordinary zero evidence.
+- PR #1 eighth remediation resolved `PRRT_kwDOTcucmc6SB6p0`: the ingestion fast path and independent source-text reindex worker can race after the SourceVersion insert trigger creates pending work.
+- `TextRetrieval.indexText` now accepts an existing index row only when its immutable text exactly equals the proposed normalized content. Wrong tenant/project scope and conflicting content return no row and fail closed before reindex state changes.
+- Reindex workers still complete only `status = 'in-progress'` with their exact incremented attempt token. The ingestion fast path can finalize pending or failed work, can observe an active in-progress lease without stealing it, and can accept an already-completed matching row idempotently.
+- A controlled PostgreSQL barrier regression pauses ingestion after the immutable index upsert, claims the reindex job in that exact window, then proves ingestion succeeds while ownership stays in-progress, the current worker can complete, a completed-state ingestion retry succeeds, and conflicting content leaves both durable rows unchanged. The existing stale-attempt race continues to prove old claims cannot complete or fail newer work.
 
 ## Context Handoff
 
@@ -165,6 +171,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Final post-audit rerun PASS: full PostgreSQL Node Vitest 139/139; full PostgreSQL raw Bun 180/180; root typecheck; zero-warning ESLint; dependency/import boundaries; production build; and focused real-DB research 8/8. The new readiness regression proves pending durable reindex state fails before FTS execution.
 - PR #1 seventh hardening gates PASS: focused cancellation/reindex Node Vitest 22/22; root TypeScript compilation; zero-warning ESLint; dependency/import boundaries; production build; frozen install with no changes; full Node Vitest without PostgreSQL 126 passed / 19 skipped; full raw Bun without PostgreSQL 167 passed / 27 skipped; Compose validation; canonical secrets/docs scripts; migration down/up; full PostgreSQL Node Vitest 145/145; full PostgreSQL raw Bun 186/186; and Fred/Fred Effect/Fred OpenAI provider-load smoke.
 - Regression evidence proves a client created after timeout is released without provider setup; delayed provider resolution cannot continue tool/agent/workflow registration; delayed retrieval resolution cannot emit `retrieval-completed` or reach model work; delayed model execution is interrupted without validation or workflow completion; and no `workflows.run` fallback remains. The PostgreSQL lease-race regression proves stale reindex completion and failure both fail while the current attempt remains in-progress and can complete.
+- PR #1 eighth remediation gates PASS: root TypeScript compilation; zero-warning ESLint; dependency/import boundaries; production build; Compose validation; canonical secrets/docs scripts; focused retrieval Node and Bun 8/8 each; controlled real-PostgreSQL research/reindex Node and Bun 10/10 each; full PostgreSQL Node Vitest 147/147; and full PostgreSQL raw Bun 188/188.
+- Regression evidence proves exact-content idempotency for both active and completed reindex state, preservation of the current attempt lease during an ingestion race, rejection of conflicting immutable text without durable mutation, and continued stale-attempt fencing. Generated package `tsconfig.tsbuildinfo` artifacts were removed after validation.
 
 ## Bugs Encountered
 

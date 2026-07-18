@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-18T23:05:27.947Z",
+  "generatedAt": "2026-07-18T23:21:58.524Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -3301,110 +3301,110 @@
         {
           "name": "SearchRow",
           "kind": "interface",
-          "line": 37,
+          "line": 38,
           "exported": false,
-          "endLine": 37
+          "endLine": 38
         },
         {
           "name": "MAX_EXCERPT_CHARS",
-          "kind": "const",
-          "line": 45,
-          "exported": false,
-          "endLine": 45
-        },
-        {
-          "name": "MAX_CONTEXT_CHARS_PER_SIDE",
           "kind": "const",
           "line": 46,
           "exported": false,
           "endLine": 46
         },
         {
-          "name": "MATCH_START",
+          "name": "MAX_CONTEXT_CHARS_PER_SIDE",
           "kind": "const",
           "line": 47,
           "exported": false,
           "endLine": 47
         },
         {
-          "name": "MATCH_END",
+          "name": "MATCH_START",
           "kind": "const",
           "line": 48,
           "exported": false,
           "endLine": 48
         },
         {
-          "name": "OMITTED_SOURCE",
+          "name": "MATCH_END",
           "kind": "const",
           "line": 49,
           "exported": false,
           "endLine": 49
         },
         {
+          "name": "OMITTED_SOURCE",
+          "kind": "const",
+          "line": 50,
+          "exported": false,
+          "endLine": 50
+        },
+        {
           "name": "MatchPassage",
           "kind": "interface",
-          "line": 51,
+          "line": 52,
           "exported": false,
-          "endLine": 51
+          "endLine": 52
         },
         {
           "name": "MatchRange",
           "kind": "interface",
-          "line": 56,
+          "line": 57,
           "exported": false,
-          "endLine": 56
+          "endLine": 57
         },
         {
           "name": "SourceRange",
           "kind": "interface",
-          "line": 63,
+          "line": 64,
           "exported": false,
-          "endLine": 63
+          "endLine": 64
         },
         {
           "name": "fallbackExcerpt",
           "kind": "function",
-          "line": 69,
+          "line": 70,
           "exported": false,
-          "endLine": 69,
+          "endLine": 70,
           "signature": "(content: string, matchLine: number)"
         },
         {
           "name": "decodeMatchPassages",
           "kind": "function",
-          "line": 84,
+          "line": 85,
           "exported": false,
-          "endLine": 84,
+          "endLine": 85,
           "signature": "(value: unknown)"
         },
         {
           "name": "matchRanges",
           "kind": "function",
-          "line": 97,
+          "line": 98,
           "exported": false,
-          "endLine": 97
+          "endLine": 98
         },
         {
           "name": "mergeRanges",
           "kind": "function",
-          "line": 154,
+          "line": 155,
           "exported": false,
-          "endLine": 154,
+          "endLine": 155,
           "signature": "(ranges: ReadonlyArray<SourceRange>)"
         },
         {
           "name": "matchedExcerpt",
           "kind": "function",
-          "line": 171,
+          "line": 172,
           "exported": false,
-          "endLine": 171
+          "endLine": 172
         },
         {
           "name": "TextRetrieval",
           "kind": "class",
-          "line": 232,
+          "line": 233,
           "exported": true,
-          "endLine": 232
+          "endLine": 233
         }
       ],
       "imports": [
@@ -3427,9 +3427,9 @@
         }
       ],
       "exports": [],
-      "hash": "6a9b1a73f438b39b1a98636cfe496a1742c200d41dfe4221bc5f11d38418f28a",
-      "mtimeMs": 1784415615107.5696,
-      "size": 15770,
+      "hash": "9e2d1db1921b122085ce618c5cc4c7b92346343e204981afd7b992439cb40758",
+      "mtimeMs": 1784416916026.2102,
+      "size": 17024,
       "generated": false,
       "vendor": false,
       "parser": "regex"

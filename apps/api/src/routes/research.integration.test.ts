@@ -17,6 +17,7 @@ import {
   ResearchExecutionRepo,
   ResearchRunRepo,
   SourceTextReindexRepo,
+  SqlClient,
   SqlClientLive,
 } from '@struct/persistence'
 import { TextRetrieval } from '@struct/retrieval'
@@ -76,7 +77,7 @@ describeIf('research walking slice real DB integration', () => {
 
   beforeAll(async () => {
     if (!DATABASE_URL) return
-    sql = postgres(DATABASE_URL, { max: 1, idle_timeout: 5 })
+    sql = postgres(DATABASE_URL, { max: 4, idle_timeout: 5 })
     await cleanup(sql)
     await sql.unsafe(
       `INSERT INTO workspaces (id, name) VALUES ($1, 'Research Workspace')`,
@@ -670,6 +671,134 @@ describeIf('research walking slice real DB integration', () => {
     expect(completed).toMatchObject({
       status: 'completed',
       attempts: second.value.attempts,
+    })
+  })
+
+  it('serializes ingestion indexing with a claimed reindex lease without stealing ownership', async () => {
+    const sqlLayer = SqlClientLive(sql)
+    const reindexLayer = Layer.provide(SourceTextReindexRepo.Default, sqlLayer)
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, sqlLayer)
+    await sql.unsafe(
+      `DELETE FROM source_text_index WHERE source_version_id = $1`,
+      [sourceVersionId],
+    )
+    await sql.unsafe(
+      `UPDATE source_text_reindex_jobs
+       SET status = 'pending',
+           attempts = 0,
+           last_error_code = NULL,
+           updated_at = NOW()
+       WHERE source_version_id = $1`,
+      [sourceVersionId],
+    )
+
+    let transitionReachedResolve!: () => void
+    const transitionReached = new Promise<void>((resolve) => {
+      transitionReachedResolve = resolve
+    })
+    let releaseTransitionResolve!: () => void
+    const releaseTransition = new Promise<void>((resolve) => {
+      releaseTransitionResolve = resolve
+    })
+    const racingSqlLayer = Layer.succeed(SqlClient, {
+      unsafe: (query, params) =>
+        sql.unsafe(query, params as any[])
+          .then((rows) => rows as readonly Record<string, unknown>[]),
+      transaction: <A>(run: (executor: {
+        readonly unsafe: (
+          query: string,
+          params?: readonly unknown[],
+        ) => Promise<readonly Record<string, unknown>[]>
+      }) => Promise<A>): Promise<A> =>
+        sql.begin(async (transactionSql) =>
+          run({
+            unsafe: async (query, params) => {
+              if (
+                query.includes('UPDATE source_text_reindex_jobs')
+                && query.includes("status IN ('pending', 'failed', 'in-progress', 'completed')")
+              ) {
+                transitionReachedResolve()
+                await releaseTransition
+              }
+              return transactionSql.unsafe(query, params as any[])
+                .then((rows) => rows as readonly Record<string, unknown>[])
+            },
+          }),
+        ) as Promise<A>,
+    })
+    const racingRetrievalLayer = Layer.provide(TextRetrieval.Default, racingSqlLayer)
+
+    const ingestionIndex = Effect.runPromise(
+      TextRetrieval.indexText({
+        workspaceId,
+        projectId,
+        sourceVersionId,
+        content: 'The launch date is July 18.',
+      }).pipe(Effect.provide(racingRetrievalLayer)),
+    )
+    await transitionReached
+    const claimed = await (async () => {
+      try {
+        return await Effect.runPromise(
+          SourceTextReindexRepo.claimNext().pipe(Effect.provide(reindexLayer)),
+        )
+      } finally {
+        releaseTransitionResolve()
+      }
+    })()
+    if (Option.isNone(claimed)) throw new Error('reindex lease was not claimed')
+    await ingestionIndex
+
+    const [owned] = await sql.unsafe(
+      `SELECT status, attempts
+       FROM source_text_reindex_jobs
+       WHERE source_version_id = $1`,
+      [sourceVersionId],
+    )
+    expect(owned).toMatchObject({
+      status: 'in-progress',
+      attempts: claimed.value.attempts,
+    })
+
+    await Effect.runPromise(
+      TextRetrieval.indexText({
+        workspaceId,
+        projectId,
+        sourceVersionId,
+        content: 'The launch date is July 18.',
+        reindexAttempt: claimed.value.attempts,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+    await Effect.runPromise(
+      TextRetrieval.indexText({
+        workspaceId,
+        projectId,
+        sourceVersionId,
+        content: 'The launch date is July 18.',
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+
+    const conflict = await Effect.runPromiseExit(
+      TextRetrieval.indexText({
+        workspaceId,
+        projectId,
+        sourceVersionId,
+        content: 'conflicting immutable content',
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+    const [finalState] = await sql.unsafe(
+      `SELECT reindex.status, reindex.attempts, text_index.content
+       FROM source_text_reindex_jobs reindex
+       JOIN source_text_index text_index
+         ON text_index.source_version_id = reindex.source_version_id
+       WHERE reindex.source_version_id = $1`,
+      [sourceVersionId],
+    )
+    expect(Exit.isFailure(conflict)).toBe(true)
+    expect(finalState).toMatchObject({
+      status: 'completed',
+      attempts: claimed.value.attempts,
+      content: 'The launch date is July 18.',
     })
   })
 })
