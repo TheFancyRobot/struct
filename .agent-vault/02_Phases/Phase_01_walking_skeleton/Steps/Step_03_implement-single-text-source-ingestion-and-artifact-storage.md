@@ -5,17 +5,23 @@ contract_version: 1
 title: Implement Single Text Source Ingestion and Artifact Storage
 step_id: STEP-01-03
 phase: '[[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]'
-status: planned
-owner: ''
+status: completed
+owner: step-01-03-recovery2-implementor
 created: '2026-07-17'
 updated: '2026-07-18'
 depends_on:
   - '[[02_Phases/Phase_01_walking_skeleton/Steps/Step_02_define-core-domain-schemas-and-persistence-migrations|STEP-01-02 Define Core Domain Schemas and Persistence Migrations]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-18-165219-implement-single-text-source-ingestion-and-artifact-storage-step-01-03-implementor|SESSION-2026-07-18-165219 step-01-03-implementor session for Implement Single Text Source Ingestion and Artifact Storage]]'
+  - '[[05_Sessions/2026-07-18-193554-implement-single-text-source-ingestion-and-artifact-storage-step-01-03-review-remediation|SESSION-2026-07-18-193554 step-01-03-review-remediation session for Implement Single Text Source Ingestion and Artifact Storage]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-18-193554
+active_session_id: 05_Sessions/2026-07-18-193554-implement-single-text-source-ingestion-and-artifact-storage-step-01-03-review-remediation
+context_status: completed
+context_summary: Completed all four STEP-01-03 lead-review remediations with focused, root, PostgreSQL, migration, and spike validation; awaiting read-only re-review before STEP-01-04.
 ---
 
 # Step 03 - Implement Single Text Source Ingestion and Artifact Storage
@@ -52,10 +58,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
+- Status: completed
+- Current owner: step-01-03-recovery2-implementor
 - Last touched: 2026-07-18
-- Next action: Begin implementation only after confirming STEP-01-02 remains green, then follow the refined Execution Brief and Validation Plan. The first bounded change is to add typed storage/ingestion/job contracts against the existing STEP-01-02 schema; do not create new migrations or bypass the job_queue handoff unless a confirmed blocker is recorded.
+- Next action: Proceed to STEP-01-04 only after review/approval. STEP-01-03 leaves stable retrieval boundaries: immutable SourceVersion id/contentHash/manifest ref, normalized text artifact ref, event cursors, and completed/failed job state.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -65,7 +71,8 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-18 - [[05_Sessions/2026-07-18-165219-implement-single-text-source-ingestion-and-artifact-storage-step-01-03-implementor|SESSION-2026-07-18-165219 step-01-03-implementor session for Implement Single Text Source Ingestion and Artifact Storage]] - Completed STEP-01-03 implementation and validation.
+- 2026-07-18 - [[05_Sessions/2026-07-18-193554-implement-single-text-source-ingestion-and-artifact-storage-step-01-03-review-remediation|SESSION-2026-07-18-193554 step-01-03-review-remediation session for Implement Single Text Source Ingestion and Artifact Storage]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

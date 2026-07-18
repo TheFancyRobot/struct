@@ -7,7 +7,7 @@ phase_id: PHASE-01
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-18'
 depends_on:
   - '[[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Phase|PHASE-00 Architecture Spikes and Delivery Foundations]]'
 related_architecture:
@@ -19,6 +19,7 @@ related_decisions:
   - '[[04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries|DEC-0003 Use TypeScript Bun and Effect with Explicit Runtime Boundaries]]'
   - '[[04_Decisions/DEC-0006_make-source-versions-immutable-and-provenance-typed|DEC-0006 Make Source Versions Immutable and Provenance Typed]]'
   - '[[04_Decisions/DEC-0008_own-the-typed-api-and-live-research-event-stream|DEC-0008 Own the Typed API and Live Research Event Stream]]'
+  - '[[04_Decisions/DEC-0015_use-per-step-branch-pr-review-and-merge-gates|DEC-0015 Use Per-Step Branch PR Review and Merge Gates]]'
 related_bugs: []
 tags:
   - agent-vault
@@ -97,6 +98,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - [[04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries|DEC-0003 Use TypeScript Bun and Effect with Explicit Runtime Boundaries]]
 - [[04_Decisions/DEC-0006_make-source-versions-immutable-and-provenance-typed|DEC-0006 Make Source Versions Immutable and Provenance Typed]]
 - [[04_Decisions/DEC-0008_own-the-typed-api-and-live-research-event-stream|DEC-0008 Own the Typed API and Live Research Event Stream]]
+- [[04_Decisions/DEC-0015_use-per-step-branch-pr-review-and-merge-gates|DEC-0015 Use Per-Step Branch PR Review and Merge Gates]]
 <!-- AGENT-END:phase-related-decisions -->
 - [[04_Decisions/DEC-0013_use-tailwind-css-and-daisyui-with-a-custom-theme-for-frontend-styling|DEC-0013 Use Tailwind CSS and DaisyUI with a Custom Theme for Frontend Styling]]
 

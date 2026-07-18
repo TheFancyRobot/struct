@@ -29,18 +29,19 @@ tags:
 - Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold complete and STEP-01-02 domain schemas/persistence migrations complete.
 - `README.md` has the bootstrap quick-start, `AGENTS.md` contains vault instructions, and `docs/product-brief.md` is the product specification.
 - Runtime apps (`apps/web`, `apps/api`, `apps/worker`), core packages (`domain`, `persistence`, `observability`), Bun workspace manifests, ESLint 10 flat config, dependency-cruiser, Vitest tests, and Docker Compose for PostgreSQL+pgvector are all implemented and passing all gates.
-- Later-phase packages (`source-storage`, `ingestion`, `document-processing`, `retrieval`, `data-engine`, `research-engine`, `fred-workflows`, `evaluation`, `shared-ui`) remain planned and are scaffolded when their owning step needs them.
-- Persistence migrations and core postgres-backed repository services are implemented; API endpoints beyond healthz and CI configuration are not yet implemented.
+- STEP-01-03 has scaffolded and implemented walking-slice `packages/source-storage` and `packages/ingestion`; later-phase packages (`document-processing`, `retrieval`, `data-engine`, `research-engine`, `fred-workflows`, `evaluation`, `shared-ui`) remain planned and are scaffolded when their owning step needs them.
+- Persistence migrations and core postgres-backed repository services are implemented; STEP-01-03 adds typed `job_queue` and `event_journal` repositories for ingestion dispatch/events. API currently exposes healthz, SSE placeholder, and `POST /sources/text` for one text-source registration path.
 
 ## Key Components
 
 <!-- AGENT-START:architecture-key-components -->
-- Scaffolded applications (STEP-01-01): `apps/web` (SolidJS 1.9 + Vite 8 + Solid Router + Tailwind 4 + DaisyUI), `apps/api` (Bun HTTP + Effect Config), `apps/worker` (Effect Config skeleton).
-- Core packages: `domain` (branded IDs, Effect Schemas, Schema.TaggedError), `persistence` (pgvector migrations, typed row decoders, postgres-backed repository services), `observability` (placeholder).
-- Planned core packages (scaffolded by their owning step): `source-storage`, `ingestion`, `document-processing`, `retrieval`, `data-engine`, `research-engine`, `fred-workflows`.
+- Scaffolded applications (STEP-01-01): `apps/web` (SolidJS 1.9 + Vite 8 + Solid Router + Tailwind 4 + DaisyUI), `apps/api` (Bun HTTP + Effect Config), `apps/worker` (Effect Config skeleton plus STEP-01-03 ingestion polling/claim/retry job loop).
+- Core packages: `domain` (branded IDs, Effect Schemas, Schema.TaggedError), `persistence` (pgvector migrations, typed row decoders, postgres-backed repository services plus JobQueue/EventJournal repositories), `source-storage` (local content-addressed artifact and staged-upload adapter), `ingestion` (text classification/normalization/manifest creation), `observability` (placeholder).
+- Planned core packages (scaffolded by their owning step): `document-processing`, `retrieval`, `data-engine`, `research-engine`, `fred-workflows`.
 - Planned support packages: `evaluation`, `shared-ui`.
 - Architecture deliverables: architecture, domain model, research execution, provenance, security, evaluation, roadmap, implementation plan, and ADR documents.
 <!-- AGENT-END:architecture-key-components -->
+- STEP-01-03 review hardening adds `SourceRegistrationRepo` as the transaction-scoped API command for Source + ingestion job + `ingestion-requested`, component-wise local artifact path validation, and worker database readiness/failure propagation.
 
 ## Important Paths
 
@@ -49,10 +50,12 @@ tags:
 - `AGENTS.md` — vault usage contract.
 - `docs/product-brief.md` — complete product requirements and delivery phases.
 - `apps/web` — SolidJS 1.9 + Vite 8 + Solid Router + Tailwind 4 + DaisyUI SPA (DEC-0014, scaffolded).
-- `apps/api` — Bun HTTP + Effect Config, healthz/SSE placeholder (scaffolded).
-- `apps/worker` — Effect Config skeleton (scaffolded).
-- `packages/domain` — branded IDs, Effect Schemas, Schema.TaggedError (scaffolded).
-- `packages/persistence` — pgvector migrations, typed row decoders, typed persistence errors, and postgres-backed repository services from STEP-01-02.
+- `apps/api` — Bun HTTP + Effect Config, healthz/SSE placeholder, and `POST /sources/text` registration/enqueue path.
+- `apps/worker` — Effect Config plus ingestion job polling, atomic claim, stale recovery, retry/failure, SourceVersion finalization, and sanitized event emission.
+- `packages/domain` — branded IDs, Effect Schemas, Schema.TaggedError (including storage/ingestion/job errors).
+- `packages/persistence` — pgvector migrations, typed row decoders, typed persistence errors, postgres-backed repository services from STEP-01-02, plus STEP-01-03 `job_queue`/`event_journal` accessors.
+- `packages/source-storage` — local content-addressed artifact store with startup/root/symlink/traversal/NUL/atomic-write controls.
+- `packages/ingestion` — narrow `.txt`/`.md` classifier, UTF-8 normalization, deterministic normalized content hash, and source-version manifest creation.
 - `packages/observability` — placeholder (scaffolded).
 - `packages/fred-workflows` — planned product-specific Fred agents, tools, graphs, and prompts (STEP-01-04+).
 - `eslint.config.mjs` — ESLint 10 flat config with TS/Solid/Effect convention enforcement.

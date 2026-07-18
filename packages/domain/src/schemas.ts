@@ -20,6 +20,9 @@ export const IngestionStatus = Schema.Union(
 )
 export type IngestionStatus = Schema.Schema.Type<typeof IngestionStatus>
 
+export const JobStatus = IngestionStatus
+export type JobStatus = Schema.Schema.Type<typeof JobStatus>
+
 export const ResearchStatus = Schema.Union(
   Schema.Literal('pending'),
   Schema.Literal('in-progress'),
@@ -114,4 +117,28 @@ export const Report = Schema.Struct({
   content: Schema.String,
   createdAt: Schema.BigIntFromNumber,
   updatedAt: Schema.BigIntFromNumber,
+})
+
+export const JobQueue = Schema.Struct({
+  id: Ids.JobQueueId,
+  workspaceId: Ids.WorkspaceId,
+  entityType: Schema.String,
+  entityId: Ids.BrandedUUID,
+  status: JobStatus,
+  payload: Schema.Record({ key: Schema.String, value: Schema.Unknown }),
+  attempts: Schema.Number,
+  maxAttempts: Schema.Number,
+  createdAt: Schema.BigIntFromNumber,
+  updatedAt: Schema.BigIntFromNumber,
+})
+
+export const EventJournal = Schema.Struct({
+  id: Ids.EventJournalId,
+  workspaceId: Ids.WorkspaceId,
+  entityType: Schema.String,
+  entityId: Ids.BrandedUUID,
+  eventType: Schema.String,
+  payload: Schema.Record({ key: Schema.String, value: Schema.Unknown }),
+  cursor: Schema.BigIntFromNumber,
+  createdAt: Schema.BigIntFromNumber,
 })

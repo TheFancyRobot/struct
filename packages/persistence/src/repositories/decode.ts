@@ -120,6 +120,40 @@ const CitationRowSchema = Schema.Struct({
   created_at: DateToNumber,
 })
 
+const JsonPayloadSchema = Schema.Record({ key: Schema.String, value: Schema.Unknown })
+
+const CursorSchema = Schema.Union(Schema.String, Schema.Number, Schema.BigIntFromSelf)
+
+const JobQueueRowSchema = Schema.Struct({
+  id: Schema.UUID,
+  workspace_id: Schema.UUID,
+  entity_type: Schema.String,
+  entity_id: Schema.UUID,
+  status: Schema.Union(
+    Schema.Literal('pending'),
+    Schema.Literal('in-progress'),
+    Schema.Literal('completed'),
+    Schema.Literal('failed'),
+    Schema.Literal('cancelled'),
+  ),
+  payload: JsonPayloadSchema,
+  attempts: Schema.Number,
+  max_attempts: Schema.Number,
+  created_at: DateToNumber,
+  updated_at: DateToNumber,
+})
+
+const EventJournalRowSchema = Schema.Struct({
+  id: Schema.UUID,
+  workspace_id: Schema.UUID,
+  entity_type: Schema.String,
+  entity_id: Schema.UUID,
+  event_type: Schema.String,
+  payload: JsonPayloadSchema,
+  cursor: CursorSchema,
+  created_at: DateToNumber,
+})
+
 // --- Decode helpers ---
 
 function makeDecodeError(entity: string, cause: unknown): DecodeError {
@@ -338,6 +372,81 @@ export function decodeCitationRow(row: CitationRow): Effect.Effect<typeof Domain
       sourceVersionId: decoded.source_version_id as typeof Domain.Citation.Type['sourceVersionId'],
       locator: decoded.locator,
       status: decoded.status,
+      createdAt: BigInt(decoded.created_at),
+    }),
+  )
+}
+
+export interface JobQueueRow {
+  id: string
+  workspace_id: string
+  entity_type: string
+  entity_id: string
+  status: string
+  payload: unknown
+  attempts: number
+  max_attempts: number
+  created_at: Date
+  updated_at: Date
+}
+
+function normalizePayload(payload: unknown): unknown {
+  if (typeof payload !== 'string') return payload
+  try {
+    return JSON.parse(payload)
+  } catch {
+    return payload
+  }
+}
+
+export function decodeJobQueueRow(row: JobQueueRow): Effect.Effect<typeof Domain.JobQueue.Type, DecodeError, never> {
+  return decodeRow(
+    { ...row, payload: normalizePayload(row.payload) },
+    JobQueueRowSchema,
+    'JobQueue',
+    (decoded) => ({
+      id: decoded.id as typeof Domain.JobQueue.Type['id'],
+      workspaceId: decoded.workspace_id as typeof Domain.JobQueue.Type['workspaceId'],
+      entityType: decoded.entity_type,
+      entityId: decoded.entity_id as typeof Domain.JobQueue.Type['entityId'],
+      status: decoded.status,
+      payload: decoded.payload,
+      attempts: decoded.attempts,
+      maxAttempts: decoded.max_attempts,
+      createdAt: BigInt(decoded.created_at),
+      updatedAt: BigInt(decoded.updated_at),
+    }),
+  )
+}
+
+export interface EventJournalRow {
+  id: string
+  workspace_id: string
+  entity_type: string
+  entity_id: string
+  event_type: string
+  payload: unknown
+  cursor: string | number | bigint
+  created_at: Date
+}
+
+function cursorToBigInt(cursor: string | number | bigint): bigint {
+  return typeof cursor === 'bigint' ? cursor : BigInt(cursor)
+}
+
+export function decodeEventJournalRow(row: EventJournalRow): Effect.Effect<typeof Domain.EventJournal.Type, DecodeError, never> {
+  return decodeRow(
+    { ...row, payload: normalizePayload(row.payload) },
+    EventJournalRowSchema,
+    'EventJournal',
+    (decoded) => ({
+      id: decoded.id as typeof Domain.EventJournal.Type['id'],
+      workspaceId: decoded.workspace_id as typeof Domain.EventJournal.Type['workspaceId'],
+      entityType: decoded.entity_type,
+      entityId: decoded.entity_id as typeof Domain.EventJournal.Type['entityId'],
+      eventType: decoded.event_type,
+      payload: decoded.payload,
+      cursor: cursorToBigInt(decoded.cursor),
       createdAt: BigInt(decoded.created_at),
     }),
   )

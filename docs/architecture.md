@@ -127,8 +127,8 @@ Package dependency flows downward only. No package may depend on an app, and no 
 
 Allowed directions (downward only, acyclic):
 
-- `apps/worker` is the only app that imports `fred-workflows`, `research-engine`, `ingestion`, `data-engine`, and `source-storage` execution paths.
-- `apps/api` imports `domain`, `persistence`, `retrieval` (query side only), and `observability`; it must not import `fred-workflows`, `research-engine`, `ingestion`, `data-engine`, or `apps/worker`.
+- `apps/worker` is the only app that imports `fred-workflows`, `research-engine`, `ingestion`, and `data-engine` execution paths; it also imports `source-storage` for finalized artifact writes.
+- `apps/api` imports `domain`, `persistence`, `retrieval` (query side only), `source-storage` staging helpers for upload handoff, and `observability`; it must not import `fred-workflows`, `research-engine`, `ingestion`, `data-engine`, or `apps/worker`.
 - `apps/web` imports `domain`, `shared-ui`, and `observability` only; it must not import `persistence`, `retrieval`, `data-engine`, `research-engine`, `fred-workflows`, or any other app.
 - `fred-workflows` imports `research-engine`, `domain`, and `observability`; it must not import `persistence` internals (DEC-0012).
 - `research-engine` imports `retrieval`, `data-engine`, `persistence`, `domain`, and `observability`; it must not import `fred-workflows` (one-directional: `fred-workflows → research-engine`).
@@ -392,14 +392,14 @@ Ingestion is a resumable workflow, not a single request.
 
 1. Accept a source registration command.
 2. Validate workspace ownership and registered root permissions.
-3. Create logical `Source` and pending `SourceVersion` records.
-4. Discover files or accept uploaded artifact(s).
-5. Build a deterministic manifest.
-6. Hash and classify files with bounded concurrency.
-7. Route by type: document extraction, structured-data staging, or direct file indexing.
-8. Create document chunks, dataset snapshots, embeddings, and retrieval metadata.
-9. Persist progress to checkpoints and the event journal.
-10. Mark the source version complete, partial, failed, or cancelled.
+3. Create the logical `Source` record, stage accepted upload bytes under `ARTIFACT_STORAGE_ROOT`, enqueue an `ingestion` `job_queue` row, and append `ingestion-requested` without storing raw source text or host paths in payloads.
+4. Let workers atomically claim pending ingestion jobs with `FOR UPDATE SKIP LOCKED`; retry stale `in-progress` jobs through the existing status/attempt columns.
+5. Hash and classify files with bounded concurrency.
+6. Route by type: document extraction, structured-data staging, or direct file indexing.
+7. Build a deterministic source-version manifest after raw and normalized artifacts are written.
+8. Create immutable `SourceVersion` records only after the manifest artifact ref and normalized `sha256:<hex>` content hash exist; source-version failure state lives in `job_queue` plus `event_journal`, not in placeholder pending rows.
+9. Create document chunks, dataset snapshots, embeddings, and retrieval metadata.
+10. Persist progress to checkpoints and the event journal, including sanitized `ingestion-failed` events for exhausted jobs.
 
 ### 8.2 Ingestion design rules
 

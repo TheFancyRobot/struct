@@ -6,7 +6,7 @@
  * Real implementations are provided via Layer from apps/api.
  */
 
-import { Effect } from 'effect'
+import { Effect, Option } from 'effect'
 import type * as Domain from '@struct/domain'
 import type { PersistenceError } from '../errors.js'
 import { SqlClient } from '../sql-client.js'
@@ -19,6 +19,8 @@ import {
   decodeResearchThreadRow,
   decodeResearchRunRow,
   decodeCitationRow,
+  decodeJobQueueRow,
+  decodeEventJournalRow,
   type WorkspaceRow,
   type ProjectRow,
   type SourceRow,
@@ -26,6 +28,8 @@ import {
   type ResearchThreadRow,
   type ResearchRunRow,
   type CitationRow,
+  type JobQueueRow,
+  type EventJournalRow,
   DecodeError,
 } from './decode.js'
 
@@ -662,5 +666,188 @@ function makeCitationRepositoryImpl(sql: import('../sql-client.js').SqlClientSha
           ) as Effect.Effect<CitationType, RepoError, never>
         }),
       ),
+  }
+}
+
+// =============================================================================
+// Job Queue Repository
+// =============================================================================
+
+export interface JobQueueRepository {
+  readonly enqueue: (job: typeof Domain.JobQueue.Type) => Effect.Effect<typeof Domain.JobQueue.Type, PersistenceError, never>
+  readonly claimNextIngestionJob: () => Effect.Effect<Option.Option<typeof Domain.JobQueue.Type>, PersistenceError, never>
+  readonly recoverStaleIngestionJobs: (staleBeforeMs: number) => Effect.Effect<{ readonly requeued: ReadonlyArray<typeof Domain.JobQueue.Type>; readonly failed: ReadonlyArray<typeof Domain.JobQueue.Type> }, PersistenceError, never>
+  readonly markCompleted: (id: typeof Domain.JobQueue.Type['id']) => Effect.Effect<void, PersistenceError, never>
+  readonly markPending: (id: typeof Domain.JobQueue.Type['id']) => Effect.Effect<void, PersistenceError, never>
+  readonly markFailed: (id: typeof Domain.JobQueue.Type['id']) => Effect.Effect<void, PersistenceError, never>
+  readonly findById: (id: typeof Domain.JobQueue.Type['id']) => Effect.Effect<typeof Domain.JobQueue.Type, PersistenceError, never>
+}
+
+export class JobQueueRepo extends Effect.Service<JobQueueRepo>()('JobQueueRepo', {
+  accessors: true,
+  effect: Effect.gen(function* () {
+    const sql = yield* SqlClient
+    return makeJobQueueRepositoryImpl(sql)
+  }),
+}) {}
+
+function decodeJobRows(rows: readonly Record<string, unknown>[], operation: string): Effect.Effect<ReadonlyArray<typeof Domain.JobQueue.Type>, PersistenceError, never> {
+  return Effect.forEach(rows, (row) =>
+    decodeJobQueueRow(row as unknown as JobQueueRow).pipe(
+      Effect.mapError((err) =>
+        err instanceof DecodeError
+          ? new QueryError({ operation, entity: 'JobQueue', message: err.message })
+          : err,
+      ),
+    ) as Effect.Effect<typeof Domain.JobQueue.Type, PersistenceError, never>,
+  )
+}
+
+function makeJobQueueRepositoryImpl(sql: import('../sql-client.js').SqlClientShape): JobQueueRepository {
+  const executeRows = (operation: string, query: string, params?: readonly unknown[]) =>
+    Effect.tryPromise({
+      try: () => sql.unsafe(query, params),
+      catch: (err) => new QueryError({ operation, entity: 'JobQueue', message: String(err) }),
+    })
+
+  return {
+    enqueue: (job) =>
+      executeRows(
+        'enqueue',
+        `INSERT INTO job_queue (id, workspace_id, entity_type, entity_id, status, payload, attempts, max_attempts, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, to_timestamp($9 / 1000.0), to_timestamp($10 / 1000.0))
+         RETURNING *`,
+        [job.id, job.workspaceId, job.entityType, job.entityId, job.status, JSON.stringify(job.payload), job.attempts, job.maxAttempts, Number(job.createdAt), Number(job.updatedAt)],
+      ).pipe(
+        Effect.flatMap((rows) => decodeJobRows(rows, 'enqueue')),
+        Effect.map((rows) => rows[0]),
+      ),
+
+    claimNextIngestionJob: () =>
+      executeRows(
+        'claimNextIngestionJob',
+        `WITH next_job AS (
+           SELECT id FROM job_queue
+           WHERE entity_type = 'ingestion' AND status = 'pending'
+           ORDER BY created_at ASC
+           FOR UPDATE SKIP LOCKED
+           LIMIT 1
+         )
+         UPDATE job_queue
+         SET status = 'in-progress', attempts = attempts + 1, updated_at = NOW()
+         WHERE id IN (SELECT id FROM next_job)
+         RETURNING *`,
+      ).pipe(
+        Effect.flatMap((rows) => decodeJobRows(rows, 'claimNextIngestionJob')),
+        Effect.map((rows) => rows.length === 0 ? Option.none() : Option.some(rows[0])),
+      ),
+
+    recoverStaleIngestionJobs: (staleBeforeMs) =>
+      Effect.gen(function* () {
+        const requeuedRows = yield* executeRows(
+          'recoverStaleIngestionJobs.requeue',
+          `UPDATE job_queue
+           SET status = 'pending', updated_at = NOW()
+           WHERE entity_type = 'ingestion'
+             AND status = 'in-progress'
+             AND updated_at < to_timestamp($1 / 1000.0)
+             AND attempts < max_attempts
+           RETURNING *`,
+          [staleBeforeMs],
+        )
+        const failedRows = yield* executeRows(
+          'recoverStaleIngestionJobs.fail',
+          `UPDATE job_queue
+           SET status = 'failed', updated_at = NOW()
+           WHERE entity_type = 'ingestion'
+             AND status = 'in-progress'
+             AND updated_at < to_timestamp($1 / 1000.0)
+             AND attempts >= max_attempts
+           RETURNING *`,
+          [staleBeforeMs],
+        )
+        const requeued = yield* decodeJobRows(requeuedRows, 'recoverStaleIngestionJobs.requeue')
+        const failed = yield* decodeJobRows(failedRows, 'recoverStaleIngestionJobs.fail')
+        return { requeued, failed }
+      }),
+
+    markCompleted: (id) =>
+      executeRows('markCompleted', `UPDATE job_queue SET status = 'completed', updated_at = NOW() WHERE id = $1`, [id]).pipe(Effect.asVoid),
+
+    markPending: (id) =>
+      executeRows('markPending', `UPDATE job_queue SET status = 'pending', updated_at = NOW() WHERE id = $1`, [id]).pipe(Effect.asVoid),
+
+    markFailed: (id) =>
+      executeRows('markFailed', `UPDATE job_queue SET status = 'failed', updated_at = NOW() WHERE id = $1`, [id]).pipe(Effect.asVoid),
+
+    findById: (id) =>
+      executeRows('findById', `SELECT * FROM job_queue WHERE id = $1`, [id]).pipe(
+        Effect.flatMap((rows) => {
+          if (rows.length === 0) {
+            return Effect.fail(new EntityNotFoundError({ entity: 'JobQueue', id, message: `JobQueue ${id} not found` }))
+          }
+          return decodeJobQueueRow(rows[0] as unknown as JobQueueRow).pipe(
+            Effect.mapError((err) => err instanceof DecodeError ? new QueryError({ operation: 'findById', entity: 'JobQueue', message: err.message }) : err),
+          ) as Effect.Effect<typeof Domain.JobQueue.Type, PersistenceError, never>
+        }),
+      ),
+  }
+}
+
+// =============================================================================
+// Event Journal Repository
+// =============================================================================
+
+export interface EventJournalRepository {
+  readonly append: (event: typeof Domain.EventJournal.Type) => Effect.Effect<typeof Domain.EventJournal.Type, PersistenceError, never>
+  readonly findByEntity: (entityType: string, entityId: typeof Domain.EventJournal.Type['entityId']) => Effect.Effect<ReadonlyArray<typeof Domain.EventJournal.Type>, PersistenceError, never>
+}
+
+export class EventJournalRepo extends Effect.Service<EventJournalRepo>()('EventJournalRepo', {
+  accessors: true,
+  effect: Effect.gen(function* () {
+    const sql = yield* SqlClient
+    return makeEventJournalRepositoryImpl(sql)
+  }),
+}) {}
+
+function decodeEventRows(rows: readonly Record<string, unknown>[], operation: string): Effect.Effect<ReadonlyArray<typeof Domain.EventJournal.Type>, PersistenceError, never> {
+  return Effect.forEach(rows, (row) =>
+    decodeEventJournalRow(row as unknown as EventJournalRow).pipe(
+      Effect.mapError((err) =>
+        err instanceof DecodeError
+          ? new QueryError({ operation, entity: 'EventJournal', message: err.message })
+          : err,
+      ),
+    ) as Effect.Effect<typeof Domain.EventJournal.Type, PersistenceError, never>,
+  )
+}
+
+function makeEventJournalRepositoryImpl(sql: import('../sql-client.js').SqlClientShape): EventJournalRepository {
+  const executeRows = (operation: string, query: string, params?: readonly unknown[]) =>
+    Effect.tryPromise({
+      try: () => sql.unsafe(query, params),
+      catch: (err) => new QueryError({ operation, entity: 'EventJournal', message: String(err) }),
+    })
+
+  return {
+    append: (event) =>
+      executeRows(
+        'append',
+        `INSERT INTO event_journal (id, workspace_id, entity_type, entity_id, event_type, payload, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb, to_timestamp($7 / 1000.0))
+         RETURNING *`,
+        [event.id, event.workspaceId, event.entityType, event.entityId, event.eventType, JSON.stringify(event.payload), Number(event.createdAt)],
+      ).pipe(
+        Effect.flatMap((rows) => decodeEventRows(rows, 'append')),
+        Effect.map((rows) => rows[0]),
+      ),
+
+    findByEntity: (entityType, entityId) =>
+      executeRows(
+        'findByEntity',
+        `SELECT * FROM event_journal WHERE entity_type = $1 AND entity_id = $2 ORDER BY cursor ASC`,
+        [entityType, entityId],
+      ).pipe(Effect.flatMap((rows) => decodeEventRows(rows, 'findByEntity'))),
   }
 }

@@ -57,11 +57,14 @@ Reset is a destructive local-only operation. It must never be wired to a product
 | Variable | Owner | Purpose | Example |
 | --- | --- | --- | --- |
 | `DATABASE_URL` | `apps/api`, `apps/worker` | PostgreSQL connection | `postgres://struct:struct@localhost:5432/struct` |
-| `ARTIFACT_STORAGE_ROOT` | `packages/source-storage`, `apps/worker` | dev FS artifact root | `./.local/artifacts` |
+| `ARTIFACT_STORAGE_ROOT` | `packages/source-storage`, `apps/api`, `apps/worker` | dev FS artifact root and upload staging root | `./.local/artifacts` |
+| `MAX_TEXT_SOURCE_BYTES` | `apps/api`, `packages/ingestion` | walking-slice upload byte cap | `1048576` |
 | `DUCKDB_SANDBOX_ROOT` | `packages/data-engine`, `apps/worker` | DuckDB allowlist root | `./.local/duckdb-sandbox` |
 | `API_PORT` | `apps/api` | HTTP port | `3001` |
 | `WEB_PORT` | `apps/web` | Vite 8 dev port | `3000` |
 | `WORKER_METRICS_PORT` | `apps/worker` | optional metrics/health port | `3002` |
+| `WORKER_POLL_INTERVAL_MS` | `apps/worker` | ingestion job polling interval | `1000` |
+| `WORKER_JOB_STALE_MS` | `apps/worker` | in-progress job stale recovery threshold | `300000` |
 | `FRED_*` / provider keys | `apps/worker`, `packages/fred-workflows` | model provider config via Fred registry | (secret) |
 
 Additional variables (budgets, limits, log level) are added as their owning phases require them; each must appear in `.env.example` with a placeholder before it is consumed.
@@ -69,6 +72,7 @@ Additional variables (budgets, limits, log level) are added as their owning phas
 ### 3.3 Safe volumes and temp roots
 
 - All local state lives under `./.local/`, which is gitignored. This preserves STEP-00-03/STEP-00-05 isolation: local convenience never widens production permissions.
+- The local artifact adapter creates and startup-validates `ARTIFACT_STORAGE_ROOT`, rejects symlink roots and out-of-root refs, and returns stable logical refs such as `artifact://sha256/<hash>` and `staged://<uuid>/<name>` rather than host paths.
 - DuckDB temp files, staged Parquet, and query snapshots stay under `DUCKDB_SANDBOX_ROOT`. Parquet writes use atomic promote (`<dest>.tmp-<pid>-<ts>` then `rename` on the same filesystem) with a byte cap; no partial is ever promoted as a dataset snapshot (STEP-00-03).
 - No service writes outside its declared root. A path-traversal guard rejects `../` and out-of-root writes (STEP-00-03 `security.ts`).
 

@@ -9,12 +9,16 @@
     "dev": "tsx watch src/main.ts",
     "build": "rm -rf dist && tsc --project tsconfig.json",
     "typecheck": "tsc --noEmit --project tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run --root ../.. apps/worker"
   },
   "dependencies": {
     "effect": "3.22.0",
     "@struct/domain": "workspace:*",
-    "@struct/observability": "workspace:*"
+    "@struct/ingestion": "workspace:*",
+    "@struct/observability": "workspace:*",
+    "@struct/persistence": "workspace:*",
+    "@struct/source-storage": "workspace:*",
+    "postgres": "^3.4.9"
   },
   "devDependencies": {
     "typescript": "7.0.2",

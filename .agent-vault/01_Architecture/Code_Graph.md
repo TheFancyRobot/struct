@@ -6,9 +6,9 @@ title: Code Graph
 architecture_id: "ARCH-0006"
 status: active
 owner: ""
-reviewed_on: "2026-07-17"
-created: "2026-07-17"
-updated: "2026-07-17"
+reviewed_on: "2026-07-18"
+created: "2026-07-18"
+updated: "2026-07-18"
 related_notes:
   - "[[01_Architecture/Code_Map|Code Map]]"
   - "[[01_Architecture/System_Overview|System Overview]]"
@@ -28,8 +28,8 @@ tags:
 ## Overview
 
 - Repository: struct
-- Files indexed: 0
-- Symbols found: 0
+- Files indexed: 46
+- Symbols found: 506
 - Detailed index path: `.agent-vault/08_Automation/code-graph/index.json`
 
 ## Key Components
@@ -64,7 +64,14 @@ tags:
 
 ## Directory Hotspots
 
-- No indexed source files were found.
+- `spikes/research-durability/src`: 4 files, 31 exported symbols, 91 internal symbols
+- `packages/persistence/src/repositories`: 3 files, 41 exported symbols, 27 internal symbols
+- `packages/domain/src`: 3 files, 63 exported symbols, 0 internal symbols
+- `spikes/fred-runtime/src`: 2 files, 32 exported symbols, 26 internal symbols
+- `spikes/duckdb-topology/src/common`: 5 files, 33 exported symbols, 5 internal symbols
+- `packages/source-storage/src`: 1 files, 14 exported symbols, 17 internal symbols
+- `packages/ingestion/src`: 2 files, 12 exported symbols, 6 internal symbols
+- `packages/persistence/src/migrations`: 2 files, 7 exported symbols, 6 internal symbols
 
 ## Related Notes
 

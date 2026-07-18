@@ -25,6 +25,8 @@ export {
   decodeResearchThreadRow,
   decodeResearchRunRow,
   decodeCitationRow,
+  decodeJobQueueRow,
+  decodeEventJournalRow,
   // Repository Effect.Services
   WorkspaceRepo,
   ProjectRepo,
@@ -33,6 +35,9 @@ export {
   ResearchThreadRepo,
   ResearchRunRepo,
   CitationRepo,
+  JobQueueRepo,
+  EventJournalRepo,
+  SourceRegistrationRepo,
   // Persistence errors
   QueryError,
   EntityNotFoundError,
@@ -40,6 +45,7 @@ export {
   // SQL Client
   SqlClient,
   SqlClientLive,
+  SqlClientTest,
 } from './repositories/index.js'
 
 // Repository row types (for implementation consumers).
@@ -51,6 +57,8 @@ export type {
   ResearchThreadRow,
   ResearchRunRow,
   CitationRow,
+  JobQueueRow,
+  EventJournalRow,
 } from './repositories/decode.js'
 
 // Repository interface types (for consumers).
@@ -62,4 +70,12 @@ export type {
   ResearchThreadRepository,
   ResearchRunRepository,
   CitationRepository,
+  JobQueueRepository,
+  EventJournalRepository,
 } from './repositories/interfaces.js'
+
+export type {
+  SourceRegistrationInput,
+  SourceRegistrationResult,
+  SourceRegistrationRepository,
+} from './repositories/source-registration.js'

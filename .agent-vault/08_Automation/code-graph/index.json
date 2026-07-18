@@ -1,6 +1,5623 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-17T05:28:35.261Z",
+  "generatedAt": "2026-07-18T20:07:41.199Z",
   "root": "/Users/dino/dev/struct",
-  "files": []
+  "files": [
+    {
+      "path": "apps/api/src/config.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "positive",
+          "kind": "const",
+          "line": 10,
+          "exported": false,
+          "endLine": 10
+        },
+        {
+          "name": "apiPortConfig",
+          "kind": "const",
+          "line": 16,
+          "exported": true,
+          "endLine": 16
+        },
+        {
+          "name": "databaseUrlConfig",
+          "kind": "const",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "artifactStorageRootConfig",
+          "kind": "const",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "maxTextSourceBytesConfig",
+          "kind": "const",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        }
+      ],
+      "imports": [
+        {
+          "source": "Config",
+          "specifier": "effect",
+          "imported": [
+            "Config"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "19a8c4d1ea186b3a0f7aff8b154aad3cc30d65e722b53488cf9000469432ece5",
+      "mtimeMs": 1784394275372.731,
+      "size": 1057,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/api/src/main.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "RegisterRequestBody",
+          "kind": "interface",
+          "line": 24,
+          "exported": false,
+          "endLine": 24
+        },
+        {
+          "name": "jsonResponse",
+          "kind": "function",
+          "line": 32,
+          "exported": false,
+          "endLine": 32,
+          "signature": "(body: unknown, status = 200)"
+        },
+        {
+          "name": "parseBody",
+          "kind": "function",
+          "line": 39,
+          "exported": false,
+          "endLine": 39,
+          "signature": "(body: RegisterRequestBody): Effect.Effect<{"
+        },
+        {
+          "name": "server",
+          "kind": "const",
+          "line": 63,
+          "exported": false,
+          "endLine": 63
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Layer",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Layer"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "postgres",
+          "specifier": "postgres",
+          "imported": [
+            "postgres"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "EventJournalId, JobQueueId, SourceId, WorkspaceId, ProjectId",
+          "specifier": "@struct/domain",
+          "imported": [
+            "EventJournalId",
+            "JobQueueId",
+            "SourceId",
+            "WorkspaceId",
+            "ProjectId"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "LocalArtifactStore",
+          "specifier": "@struct/source-storage",
+          "imported": [
+            "LocalArtifactStore"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "registerTextSource",
+          "specifier": "./routes/sources",
+          "imported": [
+            "registerTextSource"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "1fcb39aaf6d395d3a6838fe79d1d5641779f76c9838038426ed6912ad4bf2a77",
+      "mtimeMs": 1784404844182.5144,
+      "size": 4916,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/api/src/migrations/run.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "parseDirection",
+          "kind": "function",
+          "line": 23,
+          "exported": false,
+          "endLine": 23,
+          "signature": "()",
+          "doc": "Parse the --direction CLI argument."
+        },
+        {
+          "name": "direction",
+          "kind": "const",
+          "line": 38,
+          "exported": false,
+          "endLine": 38
+        },
+        {
+          "name": "program",
+          "kind": "const",
+          "line": 40,
+          "exported": false,
+          "endLine": 40
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "postgres",
+          "specifier": "postgres",
+          "imported": [
+            "postgres"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "runMigrationsUp, runMigrationsDown, type SqlExecutorWithTransactions",
+          "specifier": "@struct/persistence",
+          "imported": [
+            "runMigrationsUp",
+            "runMigrationsDown",
+            "typeSqlExecutorWithTransactions"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "databaseUrlConfig",
+          "specifier": "../config.js",
+          "imported": [
+            "databaseUrlConfig"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "e1bfe1397fca5e49cf89710ecdbdf007490bb940bdb2e1e22367498840dc8012",
+      "mtimeMs": 1784358150064.6353,
+      "size": 2266,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/api/src/routes/sources.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ValidationError",
+          "kind": "const",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "AuthorizationError",
+          "kind": "const",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "RegisterTextSourceInput",
+          "kind": "interface",
+          "line": 19,
+          "exported": true,
+          "endLine": 19
+        },
+        {
+          "name": "RegisterTextSourceResult",
+          "kind": "interface",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "RegisterTextSourceDeps",
+          "kind": "interface",
+          "line": 33,
+          "exported": true,
+          "endLine": 33
+        },
+        {
+          "name": "isSafeUploadName",
+          "kind": "function",
+          "line": 56,
+          "exported": false,
+          "endLine": 56,
+          "signature": "(name: string)"
+        },
+        {
+          "name": "isSupportedTextUpload",
+          "kind": "function",
+          "line": 65,
+          "exported": false,
+          "endLine": 65,
+          "signature": "(name: string, mediaType: string)"
+        },
+        {
+          "name": "mapUnknown",
+          "kind": "const",
+          "line": 70,
+          "exported": false,
+          "endLine": 70
+        },
+        {
+          "name": "registerTextSource",
+          "kind": "const",
+          "line": 75,
+          "exported": true,
+          "endLine": 75
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ArtifactStoreShape, StagedArtifactRef",
+          "specifier": "@struct/source-storage",
+          "imported": [
+            "ArtifactStoreShape",
+            "StagedArtifactRef"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "01cdcfc9b00a5e38773cd1e0948ef323feb6277c9d93c463d61bcdbea64746ed",
+      "mtimeMs": 1784404844181.1401,
+      "size": 5011,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/web/src/App.tsx",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "Theme",
+          "kind": "type",
+          "line": 11,
+          "exported": false,
+          "endLine": 11
+        },
+        {
+          "name": "App",
+          "kind": "const",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        }
+      ],
+      "imports": [
+        {
+          "source": "type Component, createSignal",
+          "specifier": "solid-js",
+          "imported": [
+            "typeComponent",
+            "createSignal"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "default"
+        }
+      ],
+      "hash": "7fe87617484bff88eb67739fe17d940ed20a94d43ea2ceb5c6bb9226518ff75f",
+      "mtimeMs": 1784338128671.7776,
+      "size": 3673,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/worker/src/config.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "positive",
+          "kind": "const",
+          "line": 9,
+          "exported": false,
+          "endLine": 9
+        },
+        {
+          "name": "workerMetricsPortConfig",
+          "kind": "const",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "databaseUrlConfig",
+          "kind": "const",
+          "line": 20,
+          "exported": true,
+          "endLine": 20
+        },
+        {
+          "name": "artifactStorageRootConfig",
+          "kind": "const",
+          "line": 23,
+          "exported": true,
+          "endLine": 23
+        },
+        {
+          "name": "workerPollIntervalMsConfig",
+          "kind": "const",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "workerJobStaleMsConfig",
+          "kind": "const",
+          "line": 34,
+          "exported": true,
+          "endLine": 34
+        }
+      ],
+      "imports": [
+        {
+          "source": "Config",
+          "specifier": "effect",
+          "imported": [
+            "Config"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "78e1342d6225f25663039dbd6949f0e3ef111afdbe3360d6176ee022fa2485ee",
+      "mtimeMs": 1784394284187.4922,
+      "size": 1253,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/worker/src/jobs/ingest-source.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "WorkerIngestionResult",
+          "kind": "interface",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "IngestionWorkerDeps",
+          "kind": "interface",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "ProcessOneResult",
+          "kind": "interface",
+          "line": 51,
+          "exported": true,
+          "endLine": 51
+        },
+        {
+          "name": "IngestionPayload",
+          "kind": "interface",
+          "line": 56,
+          "exported": false,
+          "endLine": 56
+        },
+        {
+          "name": "decodePayload",
+          "kind": "function",
+          "line": 62,
+          "exported": false,
+          "endLine": 62,
+          "signature": "(payload: Record<string, unknown>)"
+        },
+        {
+          "name": "sanitizedFailurePayload",
+          "kind": "function",
+          "line": 75,
+          "exported": false,
+          "endLine": 75,
+          "signature": "(reason: unknown)"
+        },
+        {
+          "name": "appendEvent",
+          "kind": "function",
+          "line": 80,
+          "exported": false,
+          "endLine": 80
+        },
+        {
+          "name": "completeJob",
+          "kind": "function",
+          "line": 99,
+          "exported": false,
+          "endLine": 99
+        },
+        {
+          "name": "failJob",
+          "kind": "function",
+          "line": 138,
+          "exported": false,
+          "endLine": 138,
+          "signature": "(deps: IngestionWorkerDeps, job: typeof JobQueue.Type, reason: unknown)"
+        },
+        {
+          "name": "processOneIngestionJob",
+          "kind": "const",
+          "line": 149,
+          "exported": true,
+          "endLine": 149
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Option",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ArtifactRef, StagedArtifactRef",
+          "specifier": "@struct/source-storage",
+          "imported": [
+            "ArtifactRef",
+            "StagedArtifactRef"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "04ccb6f9815a073667278c363f0a596b737c0456443dae3aea166e5be68345bf",
+      "mtimeMs": 1784404731480.5703,
+      "size": 6990,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/worker/src/main.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "program",
+          "kind": "const",
+          "line": 28,
+          "exported": false,
+          "endLine": 28
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Layer, Schedule",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Layer",
+            "Schedule"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "postgres",
+          "specifier": "postgres",
+          "imported": [
+            "postgres"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SourceVersionId",
+          "specifier": "@struct/domain",
+          "imported": [
+            "SourceVersionId"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "LocalArtifactStore",
+          "specifier": "@struct/source-storage",
+          "imported": [
+            "LocalArtifactStore"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ingestTextSource",
+          "specifier": "@struct/ingestion",
+          "imported": [
+            "ingestTextSource"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "processOneIngestionJob",
+          "specifier": "./jobs/ingest-source",
+          "imported": [
+            "processOneIngestionJob"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "d7f8daeb8258e990bbc653f5ba13a37bd7e944ad8ccdbd011ea9a4606c196056",
+      "mtimeMs": 1784404731481.0508,
+      "size": 3361,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/branded-ids.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "BrandedUUID",
+          "kind": "const",
+          "line": 7,
+          "exported": true,
+          "endLine": 7
+        },
+        {
+          "name": "WorkspaceId",
+          "kind": "const",
+          "line": 12,
+          "exported": true,
+          "endLine": 12
+        },
+        {
+          "name": "WorkspaceId",
+          "kind": "type",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "ProjectId",
+          "kind": "const",
+          "line": 16,
+          "exported": true,
+          "endLine": 16
+        },
+        {
+          "name": "ProjectId",
+          "kind": "type",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "SourceId",
+          "kind": "const",
+          "line": 20,
+          "exported": true,
+          "endLine": 20
+        },
+        {
+          "name": "SourceId",
+          "kind": "type",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "SourceVersionId",
+          "kind": "const",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "SourceVersionId",
+          "kind": "type",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "ResearchThreadId",
+          "kind": "const",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "ResearchThreadId",
+          "kind": "type",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "ResearchRunId",
+          "kind": "const",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
+          "name": "ResearchRunId",
+          "kind": "type",
+          "line": 33,
+          "exported": true,
+          "endLine": 33
+        },
+        {
+          "name": "CitationId",
+          "kind": "const",
+          "line": 36,
+          "exported": true,
+          "endLine": 36
+        },
+        {
+          "name": "CitationId",
+          "kind": "type",
+          "line": 37,
+          "exported": true,
+          "endLine": 37
+        },
+        {
+          "name": "FindingId",
+          "kind": "const",
+          "line": 40,
+          "exported": true,
+          "endLine": 40
+        },
+        {
+          "name": "FindingId",
+          "kind": "type",
+          "line": 41,
+          "exported": true,
+          "endLine": 41
+        },
+        {
+          "name": "ReportId",
+          "kind": "const",
+          "line": 44,
+          "exported": true,
+          "endLine": 44
+        },
+        {
+          "name": "ReportId",
+          "kind": "type",
+          "line": 45,
+          "exported": true,
+          "endLine": 45
+        },
+        {
+          "name": "DatasetId",
+          "kind": "const",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "DatasetId",
+          "kind": "type",
+          "line": 49,
+          "exported": true,
+          "endLine": 49
+        },
+        {
+          "name": "DatasetSnapshotId",
+          "kind": "const",
+          "line": 52,
+          "exported": true,
+          "endLine": 52
+        },
+        {
+          "name": "DatasetSnapshotId",
+          "kind": "type",
+          "line": 53,
+          "exported": true,
+          "endLine": 53
+        },
+        {
+          "name": "QueryResultSnapshotId",
+          "kind": "const",
+          "line": 56,
+          "exported": true,
+          "endLine": 56
+        },
+        {
+          "name": "QueryResultSnapshotId",
+          "kind": "type",
+          "line": 57,
+          "exported": true,
+          "endLine": 57
+        },
+        {
+          "name": "EventJournalId",
+          "kind": "const",
+          "line": 60,
+          "exported": true,
+          "endLine": 60
+        },
+        {
+          "name": "EventJournalId",
+          "kind": "type",
+          "line": 61,
+          "exported": true,
+          "endLine": 61
+        },
+        {
+          "name": "JobQueueId",
+          "kind": "const",
+          "line": 64,
+          "exported": true,
+          "endLine": 64
+        },
+        {
+          "name": "JobQueueId",
+          "kind": "type",
+          "line": 65,
+          "exported": true,
+          "endLine": 65
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "0011f5536e313d2e5d807ab8fc0c4e4576505a29e33cb76f79d57c580add6149",
+      "mtimeMs": 1784394067214.0103,
+      "size": 3051,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/schemas.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "SourceKind",
+          "kind": "const",
+          "line": 6,
+          "exported": true,
+          "endLine": 6
+        },
+        {
+          "name": "SourceKind",
+          "kind": "type",
+          "line": 12,
+          "exported": true,
+          "endLine": 12
+        },
+        {
+          "name": "IngestionStatus",
+          "kind": "const",
+          "line": 14,
+          "exported": true,
+          "endLine": 14
+        },
+        {
+          "name": "IngestionStatus",
+          "kind": "type",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "JobStatus",
+          "kind": "const",
+          "line": 23,
+          "exported": true,
+          "endLine": 23
+        },
+        {
+          "name": "JobStatus",
+          "kind": "type",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "ResearchStatus",
+          "kind": "const",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
+          "name": "ResearchStatus",
+          "kind": "type",
+          "line": 34,
+          "exported": true,
+          "endLine": 34
+        },
+        {
+          "name": "CitationStatus",
+          "kind": "const",
+          "line": 36,
+          "exported": true,
+          "endLine": 36
+        },
+        {
+          "name": "CitationStatus",
+          "kind": "type",
+          "line": 41,
+          "exported": true,
+          "endLine": 41
+        },
+        {
+          "name": "Workspace",
+          "kind": "const",
+          "line": 45,
+          "exported": true,
+          "endLine": 45
+        },
+        {
+          "name": "Project",
+          "kind": "const",
+          "line": 52,
+          "exported": true,
+          "endLine": 52
+        },
+        {
+          "name": "Source",
+          "kind": "const",
+          "line": 60,
+          "exported": true,
+          "endLine": 60
+        },
+        {
+          "name": "SourceVersion",
+          "kind": "const",
+          "line": 69,
+          "exported": true,
+          "endLine": 69
+        },
+        {
+          "name": "ResearchThread",
+          "kind": "const",
+          "line": 78,
+          "exported": true,
+          "endLine": 78
+        },
+        {
+          "name": "ResearchRun",
+          "kind": "const",
+          "line": 86,
+          "exported": true,
+          "endLine": 86
+        },
+        {
+          "name": "Citation",
+          "kind": "const",
+          "line": 95,
+          "exported": true,
+          "endLine": 95
+        },
+        {
+          "name": "Finding",
+          "kind": "const",
+          "line": 104,
+          "exported": true,
+          "endLine": 104
+        },
+        {
+          "name": "Report",
+          "kind": "const",
+          "line": 113,
+          "exported": true,
+          "endLine": 113
+        },
+        {
+          "name": "JobQueue",
+          "kind": "const",
+          "line": 122,
+          "exported": true,
+          "endLine": 122
+        },
+        {
+          "name": "EventJournal",
+          "kind": "const",
+          "line": 135,
+          "exported": true,
+          "endLine": 135
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Ids",
+          "specifier": "./branded-ids.js",
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "f8a7a45c5cb9ed48fcee09f12cfb8e735823d09b528118663f41af355c1ba682",
+      "mtimeMs": 1784394077324.6106,
+      "size": 3847,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/typed-errors.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NotFoundError",
+          "kind": "class",
+          "line": 5,
+          "exported": true,
+          "endLine": 5
+        },
+        {
+          "name": "ValidationError",
+          "kind": "class",
+          "line": 11,
+          "exported": true,
+          "endLine": 11
+        },
+        {
+          "name": "AuthorizationError",
+          "kind": "class",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "CitationValidationError",
+          "kind": "class",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "SourceVersionError",
+          "kind": "class",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "StorageConfigurationError",
+          "kind": "class",
+          "line": 34,
+          "exported": true,
+          "endLine": 34
+        },
+        {
+          "name": "StoragePathError",
+          "kind": "class",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "StorageReadError",
+          "kind": "class",
+          "line": 45,
+          "exported": true,
+          "endLine": 45
+        },
+        {
+          "name": "StorageWriteError",
+          "kind": "class",
+          "line": 51,
+          "exported": true,
+          "endLine": 51
+        },
+        {
+          "name": "UnsupportedSourceTypeError",
+          "kind": "class",
+          "line": 57,
+          "exported": true,
+          "endLine": 57
+        },
+        {
+          "name": "SourceTooLargeError",
+          "kind": "class",
+          "line": 63,
+          "exported": true,
+          "endLine": 63
+        },
+        {
+          "name": "IngestionFailureError",
+          "kind": "class",
+          "line": 70,
+          "exported": true,
+          "endLine": 70
+        },
+        {
+          "name": "JobClaimError",
+          "kind": "class",
+          "line": 75,
+          "exported": true,
+          "endLine": 75
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "f2ac61b728ddd72221634b32d888e58eb3bd84278104a372f528c4f1e9cd18bd",
+      "mtimeMs": 1784393916200.1948,
+      "size": 2510,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/ingestion/src/file-classifier.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "SourceTooLargeError",
+          "kind": "const",
+          "line": 8,
+          "exported": true,
+          "endLine": 8
+        },
+        {
+          "name": "UnsupportedSourceTypeError",
+          "kind": "const",
+          "line": 8,
+          "exported": true,
+          "endLine": 8
+        },
+        {
+          "name": "TextSourceClassificationInput",
+          "kind": "interface",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        },
+        {
+          "name": "TextSourceClassification",
+          "kind": "interface",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "DEFAULT_MAX_TEXT_SOURCE_BYTES",
+          "kind": "const",
+          "line": 23,
+          "exported": false,
+          "endLine": 23
+        },
+        {
+          "name": "extensionFor",
+          "kind": "function",
+          "line": 25,
+          "exported": false,
+          "endLine": 25,
+          "signature": "(name: string)"
+        },
+        {
+          "name": "classifyTextSource",
+          "kind": "const",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "354eec92d2d4251b36f9f513316c9561d292cbf63212616bf19e5cd8cc829534",
+      "mtimeMs": 1784394536525.637,
+      "size": 2121,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/ingestion/src/ingest-text-source.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "IngestionFailureError",
+          "kind": "const",
+          "line": 7,
+          "exported": true,
+          "endLine": 7
+        },
+        {
+          "name": "NormalizedText",
+          "kind": "interface",
+          "line": 9,
+          "exported": true,
+          "endLine": 9
+        },
+        {
+          "name": "IngestTextSourceInput",
+          "kind": "interface",
+          "line": 14,
+          "exported": true,
+          "endLine": 14
+        },
+        {
+          "name": "TextSourceManifest",
+          "kind": "interface",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "IngestTextSourceResult",
+          "kind": "interface",
+          "line": 34,
+          "exported": true,
+          "endLine": 34
+        },
+        {
+          "name": "textDecoder",
+          "kind": "const",
+          "line": 42,
+          "exported": false,
+          "endLine": 42
+        },
+        {
+          "name": "textEncoder",
+          "kind": "const",
+          "line": 43,
+          "exported": false,
+          "endLine": 43
+        },
+        {
+          "name": "hashBytes",
+          "kind": "const",
+          "line": 45,
+          "exported": false,
+          "endLine": 45
+        },
+        {
+          "name": "normalizeTextBytes",
+          "kind": "const",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "manifestBytes",
+          "kind": "const",
+          "line": 60,
+          "exported": false,
+          "endLine": 60
+        },
+        {
+          "name": "ingestTextSource",
+          "kind": "const",
+          "line": 63,
+          "exported": true,
+          "endLine": 63
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "createHash",
+          "specifier": "node:crypto",
+          "imported": [
+            "createHash"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ArtifactRef, ArtifactStoreShape, StagedArtifactRef",
+          "specifier": "@struct/source-storage",
+          "imported": [
+            "ArtifactRef",
+            "ArtifactStoreShape",
+            "StagedArtifactRef"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "IngestionFailureError",
+          "specifier": "@struct/domain",
+          "imported": [
+            "IngestionFailureError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "classifyTextSource",
+          "specifier": "./file-classifier.js",
+          "imported": [
+            "classifyTextSource"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "ad225ebecf35206f3d7d7eb556789bdb901f354378f46d035004a34079461ad7",
+      "mtimeMs": 1784394869960.812,
+      "size": 4055,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/errors.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "QueryError",
+          "kind": "class",
+          "line": 13,
+          "exported": true,
+          "endLine": 13,
+          "doc": "Error when a database query fails."
+        },
+        {
+          "name": "EntityNotFoundError",
+          "kind": "class",
+          "line": 23,
+          "exported": true,
+          "endLine": 23,
+          "doc": "Error when a requested entity is not found."
+        },
+        {
+          "name": "UniqueConstraintError",
+          "kind": "class",
+          "line": 32,
+          "exported": true,
+          "endLine": 32,
+          "doc": "Error when a unique constraint is violated (e.g., duplicate insert)."
+        },
+        {
+          "name": "PersistenceError",
+          "kind": "type",
+          "line": 41,
+          "exported": true,
+          "endLine": 41,
+          "doc": "Union of all persistence errors."
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "fbc51adc6dc41fe1c4e3e5c56f5ab304d5fefdc1916dab989364530c9ae2f27a",
+      "mtimeMs": 1784353507016.2988,
+      "size": 1127,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/index.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "runMigrationsUp",
+          "kind": "const",
+          "line": 11,
+          "exported": true,
+          "endLine": 11
+        },
+        {
+          "name": "runMigrationsDown",
+          "kind": "const",
+          "line": 11,
+          "exported": true,
+          "endLine": 11
+        },
+        {
+          "name": "migrations",
+          "kind": "const",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        }
+      ],
+      "imports": [],
+      "exports": [
+        {
+          "name": "runMigrationsUp, runMigrationsDown",
+          "source": "./migrations/runner.js",
+          "kind": "reexport"
+        },
+        {
+          "name": "migrations",
+          "source": "./migrations/manifest.js",
+          "kind": "reexport"
+        }
+      ],
+      "hash": "9cff3e154d7b7c8dd66c515e0af547cf4399ebed5378d6d22fa3f5c4a7b8a535",
+      "mtimeMs": 1784404818148.0168,
+      "size": 2078,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/migrations/manifest.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "Migration",
+          "kind": "interface",
+          "line": 7,
+          "exported": true,
+          "endLine": 7
+        },
+        {
+          "name": "migrations",
+          "kind": "const",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        }
+      ],
+      "imports": [],
+      "exports": [],
+      "hash": "7254d6be4e9275095e4ab94df6a40bae00b2774a182b0bf3708f0b247d0bb367",
+      "mtimeMs": 1784351399164.596,
+      "size": 798,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/migrations/runner.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "SqlExecutor",
+          "kind": "interface",
+          "line": 30,
+          "exported": true,
+          "endLine": 30,
+          "doc": "Minimal SQL executor interface.\nThe `postgres.Sql` type satisfies this via its `.unsafe()` method."
+        },
+        {
+          "name": "SqlExecutorWithTransactions",
+          "kind": "interface",
+          "line": 38,
+          "exported": true,
+          "endLine": 38,
+          "doc": "SQL executor with transaction support.\nThe `postgres.Sql` type satisfies this."
+        },
+        {
+          "name": "MigrationError",
+          "kind": "class",
+          "line": 51,
+          "exported": true,
+          "endLine": 51,
+          "doc": "Typed error for migration failures.\nUses Schema.TaggedError for serializable, structured error handling."
+        },
+        {
+          "name": "CREATE_TRACKING_TABLE",
+          "kind": "const",
+          "line": 57,
+          "exported": false,
+          "endLine": 57
+        },
+        {
+          "name": "SELECT_APPLIED",
+          "kind": "const",
+          "line": 64,
+          "exported": false,
+          "endLine": 64
+        },
+        {
+          "name": "INSERT_MIGRATION",
+          "kind": "const",
+          "line": 66,
+          "exported": false,
+          "endLine": 66
+        },
+        {
+          "name": "DELETE_MIGRATION",
+          "kind": "const",
+          "line": 69,
+          "exported": false,
+          "endLine": 69
+        },
+        {
+          "name": "readSqlFile",
+          "kind": "function",
+          "line": 75,
+          "exported": false,
+          "endLine": 75,
+          "signature": "(filePath: string)",
+          "doc": "Read a SQL file from disk and return its contents."
+        },
+        {
+          "name": "getAppliedMigrations",
+          "kind": "function",
+          "line": 86,
+          "exported": false,
+          "endLine": 86,
+          "signature": "(sql: SqlExecutor)",
+          "doc": "Get the list of already-applied migration names."
+        },
+        {
+          "name": "runMigrationsUp",
+          "kind": "const",
+          "line": 95,
+          "exported": true,
+          "endLine": 95
+        },
+        {
+          "name": "runMigrationsDown",
+          "kind": "const",
+          "line": 121,
+          "exported": true,
+          "endLine": 121
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "readFile",
+          "specifier": "node:fs/promises",
+          "imported": [
+            "readFile"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "migrations",
+          "specifier": "./manifest.js",
+          "imported": [
+            "migrations"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "3e817feba192cca29331aa8ee4fe405f9efced2b3928e8c15464897fce0fee3d",
+      "mtimeMs": 1784358047796.4946,
+      "size": 5147,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/repositories/decode.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DecodeError",
+          "kind": "class",
+          "line": 28,
+          "exported": true,
+          "endLine": 28,
+          "doc": "Typed error for row decode failures.\nEmitted when a database row does not match the expected domain schema."
+        },
+        {
+          "name": "DateToNumber",
+          "kind": "const",
+          "line": 43,
+          "exported": false,
+          "endLine": 43
+        },
+        {
+          "name": "WorkspaceRowSchema",
+          "kind": "const",
+          "line": 48,
+          "exported": false,
+          "endLine": 48
+        },
+        {
+          "name": "ProjectRowSchema",
+          "kind": "const",
+          "line": 55,
+          "exported": false,
+          "endLine": 55
+        },
+        {
+          "name": "SourceRowSchema",
+          "kind": "const",
+          "line": 63,
+          "exported": false,
+          "endLine": 63
+        },
+        {
+          "name": "SourceVersionRowSchema",
+          "kind": "const",
+          "line": 77,
+          "exported": false,
+          "endLine": 77
+        },
+        {
+          "name": "ResearchThreadRowSchema",
+          "kind": "const",
+          "line": 86,
+          "exported": false,
+          "endLine": 86
+        },
+        {
+          "name": "ResearchRunRowSchema",
+          "kind": "const",
+          "line": 94,
+          "exported": false,
+          "endLine": 94
+        },
+        {
+          "name": "CitationRowSchema",
+          "kind": "const",
+          "line": 110,
+          "exported": false,
+          "endLine": 110
+        },
+        {
+          "name": "JsonPayloadSchema",
+          "kind": "const",
+          "line": 123,
+          "exported": false,
+          "endLine": 123
+        },
+        {
+          "name": "CursorSchema",
+          "kind": "const",
+          "line": 125,
+          "exported": false,
+          "endLine": 125
+        },
+        {
+          "name": "JobQueueRowSchema",
+          "kind": "const",
+          "line": 127,
+          "exported": false,
+          "endLine": 127
+        },
+        {
+          "name": "EventJournalRowSchema",
+          "kind": "const",
+          "line": 146,
+          "exported": false,
+          "endLine": 146
+        },
+        {
+          "name": "makeDecodeError",
+          "kind": "function",
+          "line": 159,
+          "exported": false,
+          "endLine": 159,
+          "signature": "(entity: string, cause: unknown)"
+        },
+        {
+          "name": "decodeRow",
+          "kind": "function",
+          "line": 170,
+          "exported": false,
+          "endLine": 170,
+          "doc": "Decode a row through a wire schema, then map to the domain type."
+        },
+        {
+          "name": "WorkspaceRow",
+          "kind": "interface",
+          "line": 187,
+          "exported": true,
+          "endLine": 187,
+          "doc": "PostgreSQL row shape for workspaces (for type reference)."
+        },
+        {
+          "name": "decodeWorkspaceRow",
+          "kind": "function",
+          "line": 200,
+          "exported": true,
+          "endLine": 200,
+          "signature": "(row: WorkspaceRow)"
+        },
+        {
+          "name": "ProjectRow",
+          "kind": "interface",
+          "line": 217,
+          "exported": true,
+          "endLine": 217,
+          "doc": "PostgreSQL row shape for projects."
+        },
+        {
+          "name": "decodeProjectRow",
+          "kind": "function",
+          "line": 225,
+          "exported": true,
+          "endLine": 225,
+          "signature": "(row: ProjectRow)"
+        },
+        {
+          "name": "SourceRow",
+          "kind": "interface",
+          "line": 243,
+          "exported": true,
+          "endLine": 243,
+          "doc": "PostgreSQL row shape for sources."
+        },
+        {
+          "name": "decodeSourceRow",
+          "kind": "function",
+          "line": 252,
+          "exported": true,
+          "endLine": 252,
+          "signature": "(row: SourceRow)"
+        },
+        {
+          "name": "SourceVersionRow",
+          "kind": "interface",
+          "line": 272,
+          "exported": true,
+          "endLine": 272,
+          "doc": "PostgreSQL row shape for source versions.\nSource versions are immutable per DEC-0006 — no updated_at."
+        },
+        {
+          "name": "decodeSourceVersionRow",
+          "kind": "function",
+          "line": 281,
+          "exported": true,
+          "endLine": 281,
+          "signature": "(row: SourceVersionRow)"
+        },
+        {
+          "name": "ResearchThreadRow",
+          "kind": "interface",
+          "line": 300,
+          "exported": true,
+          "endLine": 300,
+          "doc": "PostgreSQL row shape for research threads."
+        },
+        {
+          "name": "decodeResearchThreadRow",
+          "kind": "function",
+          "line": 308,
+          "exported": true,
+          "endLine": 308,
+          "signature": "(row: ResearchThreadRow)"
+        },
+        {
+          "name": "ResearchRunRow",
+          "kind": "interface",
+          "line": 326,
+          "exported": true,
+          "endLine": 326,
+          "doc": "PostgreSQL row shape for research runs."
+        },
+        {
+          "name": "decodeResearchRunRow",
+          "kind": "function",
+          "line": 335,
+          "exported": true,
+          "endLine": 335,
+          "signature": "(row: ResearchRunRow)"
+        },
+        {
+          "name": "CitationRow",
+          "kind": "interface",
+          "line": 355,
+          "exported": true,
+          "endLine": 355,
+          "doc": "PostgreSQL row shape for citations.\nCitations reference immutable source versions (DEC-0006)."
+        },
+        {
+          "name": "decodeCitationRow",
+          "kind": "function",
+          "line": 364,
+          "exported": true,
+          "endLine": 364,
+          "signature": "(row: CitationRow)"
+        },
+        {
+          "name": "JobQueueRow",
+          "kind": "interface",
+          "line": 380,
+          "exported": true,
+          "endLine": 380
+        },
+        {
+          "name": "normalizePayload",
+          "kind": "function",
+          "line": 393,
+          "exported": false,
+          "endLine": 393,
+          "signature": "(payload: unknown)"
+        },
+        {
+          "name": "decodeJobQueueRow",
+          "kind": "function",
+          "line": 402,
+          "exported": true,
+          "endLine": 402,
+          "signature": "(row: JobQueueRow)"
+        },
+        {
+          "name": "EventJournalRow",
+          "kind": "interface",
+          "line": 422,
+          "exported": true,
+          "endLine": 422
+        },
+        {
+          "name": "cursorToBigInt",
+          "kind": "function",
+          "line": 433,
+          "exported": false,
+          "endLine": 433,
+          "signature": "(cursor: string | number | bigint)"
+        },
+        {
+          "name": "decodeEventJournalRow",
+          "kind": "function",
+          "line": 437,
+          "exported": true,
+          "endLine": 437,
+          "signature": "(row: EventJournalRow)"
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema, ParseResult",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema",
+            "ParseResult"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Domain",
+          "specifier": "@struct/domain",
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "86ecd07e3004d5f77f4bd06b348bc17e74317ba25302a310fe426f6123d8a565",
+      "mtimeMs": 1784394800243.224,
+      "size": 12876,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/repositories/interfaces.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "WorkspaceRepository",
+          "kind": "interface",
+          "line": 40,
+          "exported": true,
+          "endLine": 40
+        },
+        {
+          "name": "WorkspaceRepo",
+          "kind": "class",
+          "line": 46,
+          "exported": true,
+          "endLine": 46
+        },
+        {
+          "name": "makeWorkspaceRepositoryImpl",
+          "kind": "function",
+          "line": 54,
+          "exported": false,
+          "endLine": 54,
+          "signature": "(sql: import('../sql-client.js')"
+        },
+        {
+          "name": "ProjectRepository",
+          "kind": "interface",
+          "line": 124,
+          "exported": true,
+          "endLine": 124
+        },
+        {
+          "name": "ProjectRepo",
+          "kind": "class",
+          "line": 130,
+          "exported": true,
+          "endLine": 130
+        },
+        {
+          "name": "makeProjectRepositoryImpl",
+          "kind": "function",
+          "line": 138,
+          "exported": false,
+          "endLine": 138,
+          "signature": "(sql: import('../sql-client.js')"
+        },
+        {
+          "name": "SourceRepository",
+          "kind": "interface",
+          "line": 208,
+          "exported": true,
+          "endLine": 208
+        },
+        {
+          "name": "SourceRepo",
+          "kind": "class",
+          "line": 214,
+          "exported": true,
+          "endLine": 214
+        },
+        {
+          "name": "makeSourceRepositoryImpl",
+          "kind": "function",
+          "line": 222,
+          "exported": false,
+          "endLine": 222,
+          "signature": "(sql: import('../sql-client.js')"
+        },
+        {
+          "name": "SourceVersionRepository",
+          "kind": "interface",
+          "line": 292,
+          "exported": true,
+          "endLine": 292
+        },
+        {
+          "name": "SourceVersionRepo",
+          "kind": "class",
+          "line": 298,
+          "exported": true,
+          "endLine": 298
+        },
+        {
+          "name": "makeSourceVersionRepositoryImpl",
+          "kind": "function",
+          "line": 306,
+          "exported": false,
+          "endLine": 306,
+          "signature": "(sql: import('../sql-client.js')"
+        },
+        {
+          "name": "ResearchThreadRepository",
+          "kind": "interface",
+          "line": 376,
+          "exported": true,
+          "endLine": 376
+        },
+        {
+          "name": "ResearchThreadRepo",
+          "kind": "class",
+          "line": 382,
+          "exported": true,
+          "endLine": 382
+        },
+        {
+          "name": "makeResearchThreadRepositoryImpl",
+          "kind": "function",
+          "line": 390,
+          "exported": false,
+          "endLine": 390,
+          "signature": "(sql: import('../sql-client.js')"
+        },
+        {
+          "name": "ResearchRunRepository",
+          "kind": "interface",
+          "line": 460,
+          "exported": true,
+          "endLine": 460
+        },
+        {
+          "name": "ResearchRunRepo",
+          "kind": "class",
+          "line": 467,
+          "exported": true,
+          "endLine": 467
+        },
+        {
+          "name": "makeResearchRunRepositoryImpl",
+          "kind": "function",
+          "line": 475,
+          "exported": false,
+          "endLine": 475,
+          "signature": "(sql: import('../sql-client.js')"
+        },
+        {
+          "name": "CitationRepository",
+          "kind": "interface",
+          "line": 568,
+          "exported": true,
+          "endLine": 568
+        },
+        {
+          "name": "CitationRepo",
+          "kind": "class",
+          "line": 575,
+          "exported": true,
+          "endLine": 575
+        },
+        {
+          "name": "makeCitationRepositoryImpl",
+          "kind": "function",
+          "line": 583,
+          "exported": false,
+          "endLine": 583,
+          "signature": "(sql: import('../sql-client.js')"
+        },
+        {
+          "name": "JobQueueRepository",
+          "kind": "interface",
+          "line": 676,
+          "exported": true,
+          "endLine": 676
+        },
+        {
+          "name": "JobQueueRepo",
+          "kind": "class",
+          "line": 686,
+          "exported": true,
+          "endLine": 686
+        },
+        {
+          "name": "decodeJobRows",
+          "kind": "function",
+          "line": 694,
+          "exported": false,
+          "endLine": 694,
+          "signature": "(rows: readonly Record<string, unknown>[], operation: string)"
+        },
+        {
+          "name": "makeJobQueueRepositoryImpl",
+          "kind": "function",
+          "line": 706,
+          "exported": false,
+          "endLine": 706,
+          "signature": "(sql: import('../sql-client.js')"
+        },
+        {
+          "name": "EventJournalRepository",
+          "kind": "interface",
+          "line": 801,
+          "exported": true,
+          "endLine": 801
+        },
+        {
+          "name": "EventJournalRepo",
+          "kind": "class",
+          "line": 806,
+          "exported": true,
+          "endLine": 806
+        },
+        {
+          "name": "decodeEventRows",
+          "kind": "function",
+          "line": 814,
+          "exported": false,
+          "endLine": 814,
+          "signature": "(rows: readonly Record<string, unknown>[], operation: string)"
+        },
+        {
+          "name": "makeEventJournalRepositoryImpl",
+          "kind": "function",
+          "line": 826,
+          "exported": false,
+          "endLine": 826,
+          "signature": "(sql: import('../sql-client.js')"
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Option",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "PersistenceError",
+          "specifier": "../errors.js",
+          "imported": [
+            "PersistenceError"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "SqlClient",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "QueryError, EntityNotFoundError",
+          "specifier": "../errors.js",
+          "imported": [
+            "QueryError",
+            "EntityNotFoundError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "../sql-client.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "../sql-client.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "../sql-client.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "../sql-client.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "../sql-client.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "../sql-client.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "../sql-client.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "../sql-client.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "../sql-client.js",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "c901caa3e041a7897b641b48ac3d8769d7e835b36709a60419d5ef28a191e8de",
+      "mtimeMs": 1784394237605.0413,
+      "size": 38108,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/repositories/source-registration.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "SourceRegistrationInput",
+          "kind": "interface",
+          "line": 14,
+          "exported": true,
+          "endLine": 14
+        },
+        {
+          "name": "SourceRegistrationResult",
+          "kind": "interface",
+          "line": 20,
+          "exported": true,
+          "endLine": 20
+        },
+        {
+          "name": "SourceRegistrationRepository",
+          "kind": "interface",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
+          "name": "SourceRegistrationRepo",
+          "kind": "class",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "EventJournal, JobQueue, Source",
+          "specifier": "@struct/domain",
+          "imported": [
+            "EventJournal",
+            "JobQueue",
+            "Source"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "QueryError, type PersistenceError",
+          "specifier": "../errors.js",
+          "imported": [
+            "QueryError",
+            "typePersistenceError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlClient",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "4c66a0e53c69caf4a547eda55f7a0641dc08d43e834dd94d2bfadaf2878a84c3",
+      "mtimeMs": 1784404965580.3406,
+      "size": 3991,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/sql-client.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "SqlExecutorShape",
+          "kind": "interface",
+          "line": 17,
+          "exported": true,
+          "endLine": 17,
+          "doc": "The SQL client interface exposed to repositories.\nWraps postgres.Sql's unsafe query method."
+        },
+        {
+          "name": "SqlClientShape",
+          "kind": "interface",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "SqlClient",
+          "kind": "class",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "SqlClientLive",
+          "kind": "const",
+          "line": 36,
+          "exported": true,
+          "endLine": 36
+        },
+        {
+          "name": "SqlClientTest",
+          "kind": "const",
+          "line": 51,
+          "exported": true,
+          "endLine": 51
+        }
+      ],
+      "imports": [
+        {
+          "source": "Context, Layer",
+          "specifier": "effect",
+          "imported": [
+            "Context",
+            "Layer"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "postgres",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "c606e07cabcfd6fa88296d5ecaa1e06c9c0f8d1d558a9c3f88ca38442ecc47e6",
+      "mtimeMs": 1784404818147.3438,
+      "size": 2186,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/source-storage/src/object-store.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "StorageConfigurationError",
+          "kind": "const",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "StoragePathError",
+          "kind": "const",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "StorageReadError",
+          "kind": "const",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "StorageWriteError",
+          "kind": "const",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "ArtifactRef",
+          "kind": "type",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "StagedArtifactRef",
+          "kind": "type",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "ArtifactWriteOptions",
+          "kind": "interface",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "ArtifactObject",
+          "kind": "interface",
+          "line": 31,
+          "exported": true,
+          "endLine": 31
+        },
+        {
+          "name": "StagedArtifact",
+          "kind": "interface",
+          "line": 38,
+          "exported": true,
+          "endLine": 38
+        },
+        {
+          "name": "StoredBytes",
+          "kind": "interface",
+          "line": 43,
+          "exported": true,
+          "endLine": 43
+        },
+        {
+          "name": "ArtifactStoreShape",
+          "kind": "interface",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "ArtifactStore",
+          "kind": "class",
+          "line": 56,
+          "exported": true,
+          "endLine": 56
+        },
+        {
+          "name": "LocalArtifactStoreConfig",
+          "kind": "interface",
+          "line": 61,
+          "exported": true,
+          "endLine": 61
+        },
+        {
+          "name": "hashBytes",
+          "kind": "const",
+          "line": 65,
+          "exported": false,
+          "endLine": 65
+        },
+        {
+          "name": "sanitizeReason",
+          "kind": "const",
+          "line": 68,
+          "exported": false,
+          "endLine": 68
+        },
+        {
+          "name": "validateRefText",
+          "kind": "const",
+          "line": 73,
+          "exported": false,
+          "endLine": 73
+        },
+        {
+          "name": "ensureContained",
+          "kind": "function",
+          "line": 83,
+          "exported": false,
+          "endLine": 83,
+          "signature": "(root: string, candidate: string, ref: string)"
+        },
+        {
+          "name": "artifactPath",
+          "kind": "function",
+          "line": 92,
+          "exported": false,
+          "endLine": 92,
+          "signature": "(root: string, ref: ArtifactRef)"
+        },
+        {
+          "name": "stagedPath",
+          "kind": "function",
+          "line": 104,
+          "exported": false,
+          "endLine": 104,
+          "signature": "(root: string, ref: StagedArtifactRef)"
+        },
+        {
+          "name": "UnsafeStoragePath",
+          "kind": "class",
+          "line": 115,
+          "exported": false,
+          "endLine": 115
+        },
+        {
+          "name": "containedSegments",
+          "kind": "function",
+          "line": 127,
+          "exported": false,
+          "endLine": 127,
+          "signature": "(root: string, target: string)"
+        },
+        {
+          "name": "inspectContainedComponent",
+          "kind": "function",
+          "line": 137,
+          "exported": false,
+          "endLine": 137
+        },
+        {
+          "name": "ensureSafeDirectoryPath",
+          "kind": "function",
+          "line": 156,
+          "exported": false,
+          "endLine": 156,
+          "signature": "(root: string, target: string)"
+        },
+        {
+          "name": "assertSafeExistingPath",
+          "kind": "function",
+          "line": 176,
+          "exported": false,
+          "endLine": 176,
+          "signature": "(root: string, target: string)"
+        },
+        {
+          "name": "mapUnsafeStoragePath",
+          "kind": "const",
+          "line": 193,
+          "exported": false,
+          "endLine": 193
+        },
+        {
+          "name": "ensureSafeDirectory",
+          "kind": "const",
+          "line": 198,
+          "exported": false,
+          "endLine": 198
+        },
+        {
+          "name": "assertSafePath",
+          "kind": "const",
+          "line": 204,
+          "exported": false,
+          "endLine": 204
+        },
+        {
+          "name": "ensureStorageDirectory",
+          "kind": "function",
+          "line": 210,
+          "exported": false,
+          "endLine": 210,
+          "signature": "(root: string, relativePath: string)"
+        },
+        {
+          "name": "validateRoot",
+          "kind": "function",
+          "line": 224,
+          "exported": false,
+          "endLine": 224,
+          "signature": "(root: string)"
+        },
+        {
+          "name": "makeStore",
+          "kind": "function",
+          "line": 247,
+          "exported": false,
+          "endLine": 247,
+          "signature": "(canonicalRoot: string)"
+        },
+        {
+          "name": "LocalArtifactStore",
+          "kind": "const",
+          "line": 359,
+          "exported": true,
+          "endLine": 359
+        }
+      ],
+      "imports": [
+        {
+          "source": "Context, Effect, Layer",
+          "specifier": "effect",
+          "imported": [
+            "Context",
+            "Effect",
+            "Layer"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "createHash, randomUUID",
+          "specifier": "node:crypto",
+          "imported": [
+            "createHash",
+            "randomUUID"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "basename, isAbsolute, join, relative, resolve, sep",
+          "specifier": "node:path",
+          "imported": [
+            "basename",
+            "isAbsolute",
+            "join",
+            "relative",
+            "resolve",
+            "sep"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "d7487da91091b660c1d3328d5fc21e482c5871bc31f6613af52400799136c141",
+      "mtimeMs": 1784404976376.5203,
+      "size": 15696,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "scripts/boundary-check.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "rootDir",
+          "kind": "const",
+          "line": 21,
+          "exported": false,
+          "endLine": 21
+        },
+        {
+          "name": "targets",
+          "kind": "const",
+          "line": 22,
+          "exported": false,
+          "endLine": 22
+        },
+        {
+          "name": "Violation",
+          "kind": "interface",
+          "line": 24,
+          "exported": false,
+          "endLine": 24
+        },
+        {
+          "name": "violations",
+          "kind": "const",
+          "line": 32,
+          "exported": false,
+          "endLine": 32
+        },
+        {
+          "name": "workspaceMap",
+          "kind": "const",
+          "line": 35,
+          "exported": false,
+          "endLine": 35
+        },
+        {
+          "name": "getViolations",
+          "kind": "function",
+          "line": 54,
+          "exported": false,
+          "endLine": 54
+        },
+        {
+          "name": "importRegex",
+          "kind": "const",
+          "line": 144,
+          "exported": false,
+          "endLine": 144
+        }
+      ],
+      "imports": [
+        {
+          "source": "readdirSync, readFileSync, statSync",
+          "specifier": "node:fs",
+          "imported": [
+            "readdirSync",
+            "readFileSync",
+            "statSync"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "join, relative, dirname, resolve",
+          "specifier": "node:path",
+          "imported": [
+            "join",
+            "relative",
+            "dirname",
+            "resolve"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "f094966746791b75b441a12116294ac0c9f7810c3c29441d7795abfe7fc67b1a",
+      "mtimeMs": 1784339181909.1494,
+      "size": 5500,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/benchmarks/run.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "rssBytes",
+          "kind": "function",
+          "line": 28,
+          "exported": false,
+          "endLine": 28,
+          "signature": "()"
+        },
+        {
+          "name": "measure",
+          "kind": "function",
+          "line": 33,
+          "exported": false,
+          "endLine": 33
+        },
+        {
+          "name": "runTopology",
+          "kind": "function",
+          "line": 59,
+          "exported": false,
+          "endLine": 59
+        },
+        {
+          "name": "runBenchmarks",
+          "kind": "function",
+          "line": 130,
+          "exported": true,
+          "endLine": 130,
+          "signature": "(outPath: string)"
+        },
+        {
+          "name": "documentedLimitations",
+          "kind": "function",
+          "line": 196,
+          "exported": false,
+          "endLine": 196,
+          "signature": "()"
+        },
+        {
+          "name": "crashContainedFor",
+          "kind": "function",
+          "line": 215,
+          "exported": false,
+          "endLine": 215,
+          "doc": "Honest per-topology crash containment derived from the dedicated child-crash\nprobe reports. The in-process direct topology (isolation \"none\") cannot\ncontain a native crash, so it returns null and can never qualify. A\nprocess/service topology qualifies only when BOTH its survive AND its\nrecover+retry probes are denied (honest evidence). Missing evidence is\ntreated as `false` (not contained), never silently `true`."
+        },
+        {
+          "name": "selectWinner",
+          "kind": "function",
+          "line": 227,
+          "exported": true,
+          "endLine": 227
+        },
+        {
+          "name": "totalMs",
+          "kind": "function",
+          "line": 284,
+          "exported": false,
+          "endLine": 284,
+          "signature": "(t: TopologyReport)"
+        }
+      ],
+      "imports": [
+        {
+          "source": "writeFileSync, mkdirSync, mkdtempSync, rmSync",
+          "specifier": "node:fs",
+          "imported": [
+            "writeFileSync",
+            "mkdirSync",
+            "mkdtempSync",
+            "rmSync"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "tmpdir",
+          "specifier": "node:os",
+          "imported": [
+            "tmpdir"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "join",
+          "specifier": "node:path",
+          "imported": [
+            "join"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DirectTopology",
+          "specifier": "../direct/direct",
+          "imported": [
+            "DirectTopology"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "WorkerTopology",
+          "specifier": "../worker/parent",
+          "imported": [
+            "WorkerTopology"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ServiceTopology",
+          "specifier": "../service/client",
+          "imported": [
+            "ServiceTopology"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "smokeRows, scaleRows, stableHash",
+          "specifier": "../common/fixtures",
+          "imported": [
+            "smokeRows",
+            "scaleRows",
+            "stableHash"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "runAllowlistProbe",
+          "specifier": "../probes/allowlist",
+          "imported": [
+            "runAllowlistProbe"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "runCancellationProbe",
+          "specifier": "../probes/cancellation",
+          "imported": [
+            "runCancellationProbe"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "runChildCrashProbe",
+          "specifier": "../probes/child-crash",
+          "imported": [
+            "runChildCrashProbe"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "runTempCleanupProbe",
+          "specifier": "../probes/temp-cleanup",
+          "imported": [
+            "runTempCleanupProbe"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "runResourceLimitsProbe",
+          "specifier": "../probes/resource-limits",
+          "imported": [
+            "runResourceLimitsProbe"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "RuntimeConfig, Topology",
+          "specifier": "../common/types",
+          "imported": [
+            "RuntimeConfig",
+            "Topology"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "d9499e2ff0aaed56028bf692fea3cd79ca95c6ae032b52581632e58daee36124",
+      "mtimeMs": 1784307430924.8713,
+      "size": 12672,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/common/duckdb.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "createHardenedConnection",
+          "kind": "function",
+          "line": 18,
+          "exported": true,
+          "endLine": 18,
+          "doc": ""
+        },
+        {
+          "name": "importJSONFile",
+          "kind": "function",
+          "line": 50,
+          "exported": true,
+          "endLine": 50,
+          "doc": ""
+        },
+        {
+          "name": "importCSVFile",
+          "kind": "function",
+          "line": 63,
+          "exported": true,
+          "endLine": 63,
+          "doc": ""
+        },
+        {
+          "name": "exportParquetAtomic",
+          "kind": "function",
+          "line": 79,
+          "exported": true,
+          "endLine": 79,
+          "doc": "Write Parquet through a temporary path then atomically promote, so no\npartial file is ever accepted as a complete dataset snapshot."
+        },
+        {
+          "name": "normalizeValue",
+          "kind": "function",
+          "line": 101,
+          "exported": false,
+          "endLine": 101,
+          "signature": "(v: unknown)",
+          "doc": ""
+        },
+        {
+          "name": "readParquet",
+          "kind": "function",
+          "line": 113,
+          "exported": true,
+          "endLine": 113,
+          "doc": ""
+        },
+        {
+          "name": "boundedQuery",
+          "kind": "function",
+          "line": 130,
+          "exported": true,
+          "endLine": 130,
+          "doc": "Run a bounded read-only query. The SQL is validated first, and the result is\nhard-capped at maxRows; truncation is reported honestly."
+        },
+        {
+          "name": "interruptConnection",
+          "kind": "function",
+          "line": 158,
+          "exported": true,
+          "endLine": 158,
+          "signature": "(conn: DuckDBConnection)",
+          "doc": ""
+        },
+        {
+          "name": "readerToResult",
+          "kind": "function",
+          "line": 163,
+          "exported": false,
+          "endLine": 163,
+          "doc": ""
+        },
+        {
+          "name": "fileExists",
+          "kind": "function",
+          "line": 177,
+          "exported": true,
+          "endLine": 177,
+          "signature": "(p: string)",
+          "doc": ""
+        }
+      ],
+      "imports": [
+        {
+          "source": "DuckDBInstance, type DuckDBConnection",
+          "specifier": "@duckdb/node-api",
+          "imported": [
+            "DuckDBInstance",
+            "typeDuckDBConnection"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "mkdirSync, existsSync, renameSync, rmSync, statSync",
+          "specifier": "node:fs",
+          "imported": [
+            "mkdirSync",
+            "existsSync",
+            "renameSync",
+            "rmSync",
+            "statSync"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "join, resolve",
+          "specifier": "node:path",
+          "imported": [
+            "join",
+            "resolve"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "createHash",
+          "specifier": "node:crypto",
+          "imported": [
+            "createHash"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "QueryResult, RuntimeConfig",
+          "specifier": "./types",
+          "imported": [
+            "QueryResult",
+            "RuntimeConfig"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "assertInsideRoot, validateReadQuery",
+          "specifier": "./security",
+          "imported": [
+            "assertInsideRoot",
+            "validateReadQuery"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "canonicalRowsJson",
+          "specifier": "./fixtures",
+          "imported": [
+            "canonicalRowsJson"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "@duckdb/node-api",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "532ceb3ce86d57c05f5e23e9e667d85ab3526cd1dbb08660c10a35099ff41095",
+      "mtimeMs": 1784305333161.9026,
+      "size": 6243,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/common/fixtures.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "SmokeRow",
+          "kind": "interface",
+          "line": 8,
+          "exported": true,
+          "endLine": 8,
+          "doc": ""
+        },
+        {
+          "name": "ScaleRow",
+          "kind": "interface",
+          "line": 17,
+          "exported": true,
+          "endLine": 17,
+          "doc": ""
+        },
+        {
+          "name": "mulberry32",
+          "kind": "function",
+          "line": 28,
+          "exported": true,
+          "endLine": 28,
+          "signature": "(seed: number)",
+          "doc": ""
+        },
+        {
+          "name": "DEPTS",
+          "kind": "const",
+          "line": 39,
+          "exported": false,
+          "endLine": 39
+        },
+        {
+          "name": "smokeRows",
+          "kind": "function",
+          "line": 42,
+          "exported": true,
+          "endLine": 42,
+          "signature": "()",
+          "doc": ""
+        },
+        {
+          "name": "scaleRows",
+          "kind": "function",
+          "line": 56,
+          "exported": true,
+          "endLine": 56,
+          "signature": "(count: number = 25000, seed: number = 0x5eed)",
+          "doc": "Scale fixture (~25,000 rows) generated deterministically from `seed`.\nThe same seed always yields the same rows in the same order."
+        },
+        {
+          "name": "stableHash",
+          "kind": "function",
+          "line": 77,
+          "exported": true,
+          "endLine": 77,
+          "signature": "(value: unknown)",
+          "doc": ""
+        },
+        {
+          "name": "bigIntReplacer",
+          "kind": "function",
+          "line": 82,
+          "exported": false,
+          "endLine": 82,
+          "signature": "(_k: string, v: unknown)",
+          "doc": ""
+        },
+        {
+          "name": "canonicalRowsJson",
+          "kind": "function",
+          "line": 87,
+          "exported": true,
+          "endLine": 87,
+          "signature": "(rows: readonly Readonly<Record<string, unknown>>[])",
+          "doc": ""
+        }
+      ],
+      "imports": [
+        {
+          "source": "createHash",
+          "specifier": "node:crypto",
+          "imported": [
+            "createHash"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "154895b0eaa6699688a9fc370010f4ac6550c55b8bb27deffbb7be0de6ab99c4",
+      "mtimeMs": 1784305279108.8455,
+      "size": 3349,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/common/results.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "BenchmarkBundle",
+          "kind": "interface",
+          "line": 8,
+          "exported": true,
+          "endLine": 8
+        },
+        {
+          "name": "MachineMeta",
+          "kind": "interface",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "TopologyReport",
+          "kind": "interface",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "MeasurementReport",
+          "kind": "interface",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        },
+        {
+          "name": "ProbeReport",
+          "kind": "interface",
+          "line": 43,
+          "exported": true,
+          "endLine": 43
+        },
+        {
+          "name": "SelectionReport",
+          "kind": "interface",
+          "line": 49,
+          "exported": true,
+          "endLine": 49
+        },
+        {
+          "name": "machineMeta",
+          "kind": "function",
+          "line": 55,
+          "exported": true,
+          "endLine": 55,
+          "signature": "()"
+        },
+        {
+          "name": "writeBenchmarkBundle",
+          "kind": "function",
+          "line": 68,
+          "exported": true,
+          "endLine": 68,
+          "signature": "(bundle: BenchmarkBundle, outPath: string)",
+          "doc": ""
+        }
+      ],
+      "imports": [
+        {
+          "source": "writeFileSync, mkdirSync",
+          "specifier": "node:fs",
+          "imported": [
+            "writeFileSync",
+            "mkdirSync"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "dirname",
+          "specifier": "node:path",
+          "imported": [
+            "dirname"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "hostname, type, freemem, totalmem",
+          "specifier": "node:os",
+          "imported": [
+            "hostname",
+            "type",
+            "freemem",
+            "totalmem"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "version as duckdbVersion",
+          "specifier": "@duckdb/node-api",
+          "imported": [
+            "duckdbVersion"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "b54ccf0b86a408a90b209a7f606d628840d676fcbd9b095ad81292f53683c917",
+      "mtimeMs": 1784305206337.602,
+      "size": 2150,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/common/security.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "FORBIDDEN",
+          "kind": "const",
+          "line": 11,
+          "exported": false,
+          "endLine": 11
+        },
+        {
+          "name": "validateReadQuery",
+          "kind": "function",
+          "line": 19,
+          "exported": true,
+          "endLine": 19,
+          "signature": "(sql: string, maxRows: number)",
+          "doc": "Validate that a SQL string is a read-only SELECT (or WITH ... SELECT) with no\nforbidden statements and an explicit LIMIT. Returns the rejection reason or\nnull when accepted."
+        },
+        {
+          "name": "assertInsideRoot",
+          "kind": "function",
+          "line": 39,
+          "exported": true,
+          "endLine": 39,
+          "signature": "(absPath: string, rootDir: string)",
+          "doc": "Validate that `absPath` resolves strictly inside `rootDir` (no traversal).\nReturns the resolved path when safe, or throws with a clear denial."
+        },
+        {
+          "name": "probeDenial",
+          "kind": "function",
+          "line": 53,
+          "exported": true,
+          "endLine": 53,
+          "doc": ""
+        }
+      ],
+      "imports": [
+        {
+          "source": "resolve, relative",
+          "specifier": "node:path",
+          "imported": [
+            "resolve",
+            "relative"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SecurityProbeResult",
+          "specifier": "./types",
+          "imported": [
+            "SecurityProbeResult"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "4d4cf12fd3b48cbdb0afbf89bc45bfd509ae361631044f19a91fd002c0bcb02e",
+      "mtimeMs": 1784305071068.4583,
+      "size": 2498,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/common/types.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "IsolationLevel",
+          "kind": "type",
+          "line": 10,
+          "exported": true,
+          "endLine": 10,
+          "doc": "Isolation level of a topology candidate.\n- \"none\"    : DuckDB runs in the controller process (direct).\n- \"process\" : DuckDB runs in a forked child process (isolated worker).\n- \"service\" : DuckDB runs behind a narrow localhost HTTP service."
+        },
+        {
+          "name": "RuntimeConfig",
+          "kind": "interface",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "QueryResult",
+          "kind": "interface",
+          "line": 41,
+          "exported": true,
+          "endLine": 41,
+          "doc": ""
+        },
+        {
+          "name": "Measurement",
+          "kind": "interface",
+          "line": 51,
+          "exported": true,
+          "endLine": 51,
+          "doc": ""
+        },
+        {
+          "name": "CancelOutcome",
+          "kind": "type",
+          "line": 61,
+          "exported": true,
+          "endLine": 61,
+          "doc": ""
+        },
+        {
+          "name": "SecurityProbeResult",
+          "kind": "interface",
+          "line": 67,
+          "exported": true,
+          "endLine": 67,
+          "doc": ""
+        },
+        {
+          "name": "Topology",
+          "kind": "interface",
+          "line": 74,
+          "exported": true,
+          "endLine": 74,
+          "doc": ""
+        }
+      ],
+      "imports": [],
+      "exports": [],
+      "hash": "1f263a7e057d293f4a81fda687a4e150189f1787855bd041f063638b17d53bd1",
+      "mtimeMs": 1784305061087.691,
+      "size": 3311,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/direct/direct.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DirectTopology",
+          "kind": "class",
+          "line": 20,
+          "exported": true,
+          "endLine": 20
+        }
+      ],
+      "imports": [
+        {
+          "source": "DuckDBConnection",
+          "specifier": "@duckdb/node-api",
+          "imported": [
+            "DuckDBConnection"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "1b6916c526711a0e3997310594ef52f76266edf1edd4d97934dd17d625197c62",
+      "mtimeMs": 1784306428091.1382,
+      "size": 3159,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/probes/allowlist.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "runAllowlistProbe",
+          "kind": "function",
+          "line": 13,
+          "exported": true,
+          "endLine": 13,
+          "signature": "(config: RuntimeConfig)"
+        },
+        {
+          "name": "smokeHardening",
+          "kind": "function",
+          "line": 71,
+          "exported": true,
+          "endLine": 71,
+          "signature": "()"
+        }
+      ],
+      "imports": [
+        {
+          "source": "writeFileSync, mkdtempSync, rmSync",
+          "specifier": "node:fs",
+          "imported": [
+            "writeFileSync",
+            "mkdtempSync",
+            "rmSync"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "tmpdir",
+          "specifier": "node:os",
+          "imported": [
+            "tmpdir"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "join",
+          "specifier": "node:path",
+          "imported": [
+            "join"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "createHardenedConnection, importJSONFile, exportParquetAtomic",
+          "specifier": "../common/duckdb",
+          "imported": [
+            "createHardenedConnection",
+            "importJSONFile",
+            "exportParquetAtomic"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "probeDenial",
+          "specifier": "../common/security",
+          "imported": [
+            "probeDenial"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ProbeReport",
+          "specifier": "../common/results",
+          "imported": [
+            "ProbeReport"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "RuntimeConfig",
+          "specifier": "../common/types",
+          "imported": [
+            "RuntimeConfig"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "065a2951a7159d96aee9b9fbead477922df133024b1ffc93b2dd4f6920dc7a30",
+      "mtimeMs": 1784305133519.4888,
+      "size": 3537,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/probes/cancellation.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "runCancellationProbe",
+          "kind": "function",
+          "line": 10,
+          "exported": true,
+          "endLine": 10,
+          "signature": "(config: RuntimeConfig)"
+        }
+      ],
+      "imports": [
+        {
+          "source": "createHardenedConnection",
+          "specifier": "../common/duckdb",
+          "imported": [
+            "createHardenedConnection"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DuckDBResultReader",
+          "specifier": "@duckdb/node-api",
+          "imported": [
+            "DuckDBResultReader"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "CancelOutcome, RuntimeConfig",
+          "specifier": "../common/types",
+          "imported": [
+            "CancelOutcome",
+            "RuntimeConfig"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "ProbeReport",
+          "specifier": "../common/results",
+          "imported": [
+            "ProbeReport"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "668f007ee64b8f3dc79e8bd95500876e66d4e426aa1d71e3af3d4893ebe658f2",
+      "mtimeMs": 1784306413361.031,
+      "size": 2592,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/probes/child-crash.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "runChildCrashProbe",
+          "kind": "function",
+          "line": 16,
+          "exported": true,
+          "endLine": 16,
+          "signature": "(config: RuntimeConfig)"
+        },
+        {
+          "name": "probeWorkerCrash",
+          "kind": "function",
+          "line": 23,
+          "exported": false,
+          "endLine": 23,
+          "signature": "(config: RuntimeConfig)"
+        },
+        {
+          "name": "probeServiceCrash",
+          "kind": "function",
+          "line": 58,
+          "exported": false,
+          "endLine": 58,
+          "signature": "(config: RuntimeConfig)"
+        }
+      ],
+      "imports": [
+        {
+          "source": "WorkerTopology",
+          "specifier": "../worker/parent",
+          "imported": [
+            "WorkerTopology"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ServiceTopology",
+          "specifier": "../service/client",
+          "imported": [
+            "ServiceTopology"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ProbeReport",
+          "specifier": "../common/results",
+          "imported": [
+            "ProbeReport"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "RuntimeConfig",
+          "specifier": "../common/types",
+          "imported": [
+            "RuntimeConfig"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "3abf448dea099a146ea08697f1b96814b487e8964780672fc333072a62e9d49e",
+      "mtimeMs": 1784307413638.5403,
+      "size": 3181,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/probes/resource-limits.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "runResourceLimitsProbe",
+          "kind": "function",
+          "line": 11,
+          "exported": true,
+          "endLine": 11,
+          "signature": "(config: RuntimeConfig)"
+        }
+      ],
+      "imports": [
+        {
+          "source": "createHardenedConnection",
+          "specifier": "../common/duckdb",
+          "imported": [
+            "createHardenedConnection"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "configurationOptionDescriptions",
+          "specifier": "@duckdb/node-api",
+          "imported": [
+            "configurationOptionDescriptions"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ProbeReport",
+          "specifier": "../common/results",
+          "imported": [
+            "ProbeReport"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "RuntimeConfig",
+          "specifier": "../common/types",
+          "imported": [
+            "RuntimeConfig"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "",
+          "specifier": "@duckdb/node-api",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "1541a1cd2ea0b6e21114405a8f108010e4ad62b9e4f333cd91c532fc2df941de",
+      "mtimeMs": 1784306421220.5334,
+      "size": 3399,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/probes/temp-cleanup.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "runTempCleanupProbe",
+          "kind": "function",
+          "line": 13,
+          "exported": true,
+          "endLine": 13,
+          "signature": "(config: RuntimeConfig)"
+        },
+        {
+          "name": "freshRoot",
+          "kind": "function",
+          "line": 52,
+          "exported": true,
+          "endLine": 52,
+          "signature": "()"
+        }
+      ],
+      "imports": [
+        {
+          "source": "writeFileSync, existsSync, rmSync, mkdtempSync",
+          "specifier": "node:fs",
+          "imported": [
+            "writeFileSync",
+            "existsSync",
+            "rmSync",
+            "mkdtempSync"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "join",
+          "specifier": "node:path",
+          "imported": [
+            "join"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "tmpdir",
+          "specifier": "node:os",
+          "imported": [
+            "tmpdir"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "createHardenedConnection, exportParquetAtomic, fileExists",
+          "specifier": "../common/duckdb",
+          "imported": [
+            "createHardenedConnection",
+            "exportParquetAtomic",
+            "fileExists"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "probeDenial",
+          "specifier": "../common/security",
+          "imported": [
+            "probeDenial"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ProbeReport",
+          "specifier": "../common/results",
+          "imported": [
+            "ProbeReport"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "RuntimeConfig",
+          "specifier": "../common/types",
+          "imported": [
+            "RuntimeConfig"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "ea1ba97ce6bed35f14bdd864c894bda6bdf1071a26f3f5adf1aba9734f5b46be",
+      "mtimeMs": 1784305156355.7988,
+      "size": 2384,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/service/client.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "here",
+          "kind": "const",
+          "line": 16,
+          "exported": false,
+          "endLine": 16
+        },
+        {
+          "name": "isBun",
+          "kind": "const",
+          "line": 17,
+          "exported": false,
+          "endLine": 17
+        },
+        {
+          "name": "ApiResponse",
+          "kind": "interface",
+          "line": 19,
+          "exported": false,
+          "endLine": 19
+        },
+        {
+          "name": "ServiceTopology",
+          "kind": "class",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        }
+      ],
+      "imports": [
+        {
+          "source": "spawn, type ChildProcess",
+          "specifier": "node:child_process",
+          "imported": [
+            "spawn",
+            "typeChildProcess"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "join, dirname",
+          "specifier": "node:path",
+          "imported": [
+            "join",
+            "dirname"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "fileURLToPath",
+          "specifier": "node:url",
+          "imported": [
+            "fileURLToPath"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "http",
+          "specifier": "node:http",
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "45312aec1007106aac0aed15f661ffbc41905ad48694187359141a04524c7648",
+      "mtimeMs": 1784313595314.095,
+      "size": 5053,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/service/server.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "send",
+          "kind": "function",
+          "line": 23,
+          "exported": false,
+          "endLine": 23,
+          "signature": "(res: ServerResponse, status: number, body: unknown)"
+        },
+        {
+          "name": "readBody",
+          "kind": "function",
+          "line": 29,
+          "exported": false,
+          "endLine": 29,
+          "signature": "(req: IncomingMessage)"
+        },
+        {
+          "name": "server",
+          "kind": "const",
+          "line": 35,
+          "exported": false,
+          "endLine": 35
+        }
+      ],
+      "imports": [
+        {
+          "source": "createServer, type IncomingMessage, type ServerResponse",
+          "specifier": "node:http",
+          "imported": [
+            "createServer",
+            "typeIncomingMessage",
+            "typeServerResponse"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DuckDBConnection",
+          "specifier": "@duckdb/node-api",
+          "imported": [
+            "DuckDBConnection"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "RuntimeConfig",
+          "specifier": "../common/types",
+          "imported": [
+            "RuntimeConfig"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "9c2dc625a37c17b1598b619f5449e9d7e97a2d8ba115b22f7d401f32701ce796",
+      "mtimeMs": 1784305118113.9634,
+      "size": 3514,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/worker/parent.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "here",
+          "kind": "const",
+          "line": 16,
+          "exported": false,
+          "endLine": 16
+        },
+        {
+          "name": "isBun",
+          "kind": "const",
+          "line": 17,
+          "exported": false,
+          "endLine": 17
+        },
+        {
+          "name": "WorkerTopology",
+          "kind": "class",
+          "line": 19,
+          "exported": true,
+          "endLine": 19
+        }
+      ],
+      "imports": [
+        {
+          "source": "spawn, type ChildProcess",
+          "specifier": "node:child_process",
+          "imported": [
+            "spawn",
+            "typeChildProcess"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "join, dirname",
+          "specifier": "node:path",
+          "imported": [
+            "join",
+            "dirname"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "fileURLToPath",
+          "specifier": "node:url",
+          "imported": [
+            "fileURLToPath"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "WorkerRequest, WorkerResponse",
+          "specifier": "./protocol",
+          "imported": [
+            "WorkerRequest",
+            "WorkerResponse"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "f5bad3f690d99e265cbf142b473c6f57602886e4236035ad6416cdb9ceb0c108",
+      "mtimeMs": 1784305218917.5618,
+      "size": 5502,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/worker/protocol.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "WorkerOp",
+          "kind": "type",
+          "line": 3,
+          "exported": true,
+          "endLine": 3
+        },
+        {
+          "name": "WorkerRequest",
+          "kind": "interface",
+          "line": 14,
+          "exported": true,
+          "endLine": 14,
+          "doc": ""
+        },
+        {
+          "name": "WorkerResponse",
+          "kind": "interface",
+          "line": 21,
+          "exported": true,
+          "endLine": 21,
+          "doc": ""
+        },
+        {
+          "name": "encode",
+          "kind": "function",
+          "line": 29,
+          "exported": true,
+          "endLine": 29,
+          "signature": "(value: unknown)",
+          "doc": ""
+        },
+        {
+          "name": "decode",
+          "kind": "function",
+          "line": 34,
+          "exported": true,
+          "endLine": 34,
+          "signature": "(line: string)",
+          "doc": ""
+        }
+      ],
+      "imports": [],
+      "exports": [],
+      "hash": "106dd0693711859a49487e7d5e7f04b3c33f0f035c52c2c52ebac6f94753f587",
+      "mtimeMs": 1784305201508.252,
+      "size": 937,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/duckdb-topology/src/worker/worker.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "respond",
+          "kind": "function",
+          "line": 25,
+          "exported": false,
+          "endLine": 25,
+          "signature": "(res: WorkerResponse)"
+        },
+        {
+          "name": "handle",
+          "kind": "function",
+          "line": 29,
+          "exported": false,
+          "endLine": 29,
+          "signature": "(req: WorkerRequest)"
+        },
+        {
+          "name": "main",
+          "kind": "function",
+          "line": 95,
+          "exported": false,
+          "endLine": 95,
+          "signature": "()"
+        }
+      ],
+      "imports": [
+        {
+          "source": "createInterface",
+          "specifier": "node:readline/promises",
+          "imported": [
+            "createInterface"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DuckDBConnection",
+          "specifier": "@duckdb/node-api",
+          "imported": [
+            "DuckDBConnection"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "RuntimeConfig",
+          "specifier": "../common/types",
+          "imported": [
+            "RuntimeConfig"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "WorkerRequest, WorkerResponse",
+          "specifier": "./protocol",
+          "imported": [
+            "WorkerRequest",
+            "WorkerResponse"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "f91a5493c5d8a5655af9c29e85dbc06c64293e911a6d5dcd6c9c344ee12e8e11",
+      "mtimeMs": 1784305102032.8552,
+      "size": 3522,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/fred-runtime/src/contracts.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonEmptyString",
+          "kind": "const",
+          "line": 3,
+          "exported": false,
+          "endLine": 3
+        },
+        {
+          "name": "Sha256Hex",
+          "kind": "const",
+          "line": 4,
+          "exported": false,
+          "endLine": 4
+        },
+        {
+          "name": "NonNegativeNumber",
+          "kind": "const",
+          "line": 5,
+          "exported": false,
+          "endLine": 5
+        },
+        {
+          "name": "HookNameSchema",
+          "kind": "const",
+          "line": 6,
+          "exported": false,
+          "endLine": 6
+        },
+        {
+          "name": "ArtifactReferenceSchema",
+          "kind": "const",
+          "line": 14,
+          "exported": true,
+          "endLine": 14
+        },
+        {
+          "name": "ArtifactReference",
+          "kind": "type",
+          "line": 19,
+          "exported": true,
+          "endLine": 19
+        },
+        {
+          "name": "ResearchRunInputSchema",
+          "kind": "const",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "ResearchRunInput",
+          "kind": "type",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "DeterministicToolInputSchema",
+          "kind": "const",
+          "line": 31,
+          "exported": true,
+          "endLine": 31
+        },
+        {
+          "name": "DeterministicToolInput",
+          "kind": "type",
+          "line": 38,
+          "exported": true,
+          "endLine": 38
+        },
+        {
+          "name": "DeterministicToolOutputSchema",
+          "kind": "const",
+          "line": 40,
+          "exported": true,
+          "endLine": 40
+        },
+        {
+          "name": "DeterministicToolOutput",
+          "kind": "type",
+          "line": 47,
+          "exported": true,
+          "endLine": 47
+        },
+        {
+          "name": "HookRecordSchema",
+          "kind": "const",
+          "line": 49,
+          "exported": true,
+          "endLine": 49
+        },
+        {
+          "name": "HookRecord",
+          "kind": "type",
+          "line": 54,
+          "exported": true,
+          "endLine": 54
+        },
+        {
+          "name": "RunCorrelationSchema",
+          "kind": "const",
+          "line": 56,
+          "exported": true,
+          "endLine": 56
+        },
+        {
+          "name": "RunCorrelation",
+          "kind": "type",
+          "line": 63,
+          "exported": true,
+          "endLine": 63
+        },
+        {
+          "name": "CheckpointMetadataSchema",
+          "kind": "const",
+          "line": 65,
+          "exported": true,
+          "endLine": 65
+        },
+        {
+          "name": "CheckpointMetadata",
+          "kind": "type",
+          "line": 75,
+          "exported": true,
+          "endLine": 75
+        },
+        {
+          "name": "Step02HandoffSchema",
+          "kind": "const",
+          "line": 77,
+          "exported": true,
+          "endLine": 77
+        },
+        {
+          "name": "Step02Handoff",
+          "kind": "type",
+          "line": 83,
+          "exported": true,
+          "endLine": 83
+        },
+        {
+          "name": "BoundaryRecommendationSchema",
+          "kind": "const",
+          "line": 85,
+          "exported": true,
+          "endLine": 85
+        },
+        {
+          "name": "BoundaryRecommendation",
+          "kind": "type",
+          "line": 90,
+          "exported": true,
+          "endLine": 90
+        },
+        {
+          "name": "ResearchRunTerminalSchema",
+          "kind": "const",
+          "line": 92,
+          "exported": true,
+          "endLine": 92
+        },
+        {
+          "name": "ResearchRunTerminal",
+          "kind": "type",
+          "line": 99,
+          "exported": true,
+          "endLine": 99
+        },
+        {
+          "name": "ProgressInputSchema",
+          "kind": "const",
+          "line": 101,
+          "exported": true,
+          "endLine": 101
+        },
+        {
+          "name": "ProgressInput",
+          "kind": "type",
+          "line": 104,
+          "exported": true,
+          "endLine": 104
+        },
+        {
+          "name": "ProgressOutputSchema",
+          "kind": "const",
+          "line": 106,
+          "exported": true,
+          "endLine": 106
+        },
+        {
+          "name": "ProgressOutput",
+          "kind": "type",
+          "line": 110,
+          "exported": true,
+          "endLine": 110
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "e386e3c6b1a72161cd9e360e42f59081e042a3aaa76c3f078b75d63488bbc8b2",
+      "mtimeMs": 1784270003296.0916,
+      "size": 3913,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/fred-runtime/src/runtime-harness.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "WORKFLOW_ID",
+          "kind": "const",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
+          "name": "STREAM_WORKFLOW_ID",
+          "kind": "const",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "CHECKPOINT_INLINE_BUDGET_BYTES",
+          "kind": "const",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "SUPPORTED_HOOKS",
+          "kind": "const",
+          "line": 29,
+          "exported": false,
+          "endLine": 29
+        },
+        {
+          "name": "PERSISTED_FIELDS",
+          "kind": "const",
+          "line": 36,
+          "exported": false,
+          "endLine": 36
+        },
+        {
+          "name": "DEFAULT_EVIDENCE",
+          "kind": "const",
+          "line": 44,
+          "exported": false,
+          "endLine": 44
+        },
+        {
+          "name": "DEFAULT_LIMITATIONS",
+          "kind": "const",
+          "line": 49,
+          "exported": false,
+          "endLine": 49
+        },
+        {
+          "name": "decodeResearchRunInput",
+          "kind": "const",
+          "line": 55,
+          "exported": false,
+          "endLine": 55
+        },
+        {
+          "name": "decodeDeterministicToolInput",
+          "kind": "const",
+          "line": 56,
+          "exported": false,
+          "endLine": 56
+        },
+        {
+          "name": "decodeDeterministicToolOutput",
+          "kind": "const",
+          "line": 57,
+          "exported": false,
+          "endLine": 57
+        },
+        {
+          "name": "decodeResearchRunTerminal",
+          "kind": "const",
+          "line": 58,
+          "exported": false,
+          "endLine": 58
+        },
+        {
+          "name": "decodeProgressInput",
+          "kind": "const",
+          "line": 59,
+          "exported": false,
+          "endLine": 59
+        },
+        {
+          "name": "decodeCheckpointMetadata",
+          "kind": "const",
+          "line": 60,
+          "exported": false,
+          "endLine": 60
+        },
+        {
+          "name": "decodeHookRecord",
+          "kind": "const",
+          "line": 61,
+          "exported": false,
+          "endLine": 61
+        },
+        {
+          "name": "DeterministicToolFailure",
+          "kind": "class",
+          "line": 63,
+          "exported": true,
+          "endLine": 63
+        },
+        {
+          "name": "DeterministicToolValidationFailure",
+          "kind": "class",
+          "line": 72,
+          "exported": true,
+          "endLine": 72
+        },
+        {
+          "name": "DeterministicResearchTool",
+          "kind": "class",
+          "line": 80,
+          "exported": false,
+          "endLine": 80
+        },
+        {
+          "name": "ExecutionResultLike",
+          "kind": "type",
+          "line": 132,
+          "exported": false,
+          "endLine": 132
+        },
+        {
+          "name": "recordHook",
+          "kind": "function",
+          "line": 141,
+          "exported": false,
+          "endLine": 141,
+          "signature": "(trace: HookRecord[], hook: HookRecord['hook'], nodeId?: string)"
+        },
+        {
+          "name": "createBoundaryRecommendation",
+          "kind": "function",
+          "line": 151,
+          "exported": false,
+          "endLine": 151,
+          "signature": "()"
+        },
+        {
+          "name": "makeRunCorrelation",
+          "kind": "function",
+          "line": 181,
+          "exported": false,
+          "endLine": 181,
+          "signature": "(input: ResearchRunInput)"
+        },
+        {
+          "name": "stabilizeInlineBytes",
+          "kind": "function",
+          "line": 191,
+          "exported": false,
+          "endLine": 191
+        },
+        {
+          "name": "makeCheckpoint",
+          "kind": "function",
+          "line": 208,
+          "exported": false,
+          "endLine": 208
+        },
+        {
+          "name": "annotateError",
+          "kind": "function",
+          "line": 231,
+          "exported": false,
+          "endLine": 231,
+          "signature": "(error: unknown)"
+        },
+        {
+          "name": "createResearchRunWorkflow",
+          "kind": "function",
+          "line": 254,
+          "exported": false,
+          "endLine": 254,
+          "signature": "(hookTrace: HookRecord[])"
+        },
+        {
+          "name": "createProgressWorkflow",
+          "kind": "function",
+          "line": 376,
+          "exported": false,
+          "endLine": 376,
+          "signature": "()"
+        },
+        {
+          "name": "registerSpikeWorkflows",
+          "kind": "function",
+          "line": 396,
+          "exported": false,
+          "endLine": 396
+        },
+        {
+          "name": "makeResearchRunInput",
+          "kind": "function",
+          "line": 404,
+          "exported": true,
+          "endLine": 404
+        },
+        {
+          "name": "runRuntimeSpike",
+          "kind": "function",
+          "line": 431,
+          "exported": true,
+          "endLine": 431,
+          "signature": "(input: ResearchRunInput)"
+        },
+        {
+          "name": "createHttpSpikeRuntime",
+          "kind": "function",
+          "line": 466,
+          "exported": true,
+          "endLine": 466
+        }
+      ],
+      "imports": [
+        {
+          "source": "createFred, defineWorkflow",
+          "specifier": "@fancyrobot/fred",
+          "imported": [
+            "createFred",
+            "defineWorkflow"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "2cb4200b1358c6005761b12360a462fbd39a06fc7f3f631b954fd0732b1660dc",
+      "mtimeMs": 1784270919053.51,
+      "size": 15214,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/research-durability/src/contracts.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonEmptyString",
+          "kind": "const",
+          "line": 3,
+          "exported": false,
+          "endLine": 3
+        },
+        {
+          "name": "NonNegativeNumber",
+          "kind": "const",
+          "line": 4,
+          "exported": false,
+          "endLine": 4
+        },
+        {
+          "name": "PositiveNumber",
+          "kind": "const",
+          "line": 5,
+          "exported": false,
+          "endLine": 5
+        },
+        {
+          "name": "Sha256Hex",
+          "kind": "const",
+          "line": 6,
+          "exported": false,
+          "endLine": 6
+        },
+        {
+          "name": "EVENT_PAYLOAD_TARGET_BYTES",
+          "kind": "const",
+          "line": 8,
+          "exported": true,
+          "endLine": 8
+        },
+        {
+          "name": "CHECKPOINT_TARGET_BYTES",
+          "kind": "const",
+          "line": 9,
+          "exported": true,
+          "endLine": 9
+        },
+        {
+          "name": "HEARTBEAT_TARGET_SECONDS",
+          "kind": "const",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        },
+        {
+          "name": "ResearchEventTypeSchema",
+          "kind": "const",
+          "line": 12,
+          "exported": true,
+          "endLine": 12
+        },
+        {
+          "name": "ResearchEventType",
+          "kind": "type",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "TerminalResearchEventTypeSchema",
+          "kind": "const",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "TerminalResearchEventType",
+          "kind": "type",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "ArtifactReferenceSchema",
+          "kind": "const",
+          "line": 31,
+          "exported": true,
+          "endLine": 31
+        },
+        {
+          "name": "ArtifactReference",
+          "kind": "type",
+          "line": 37,
+          "exported": true,
+          "endLine": 37
+        },
+        {
+          "name": "EventIdentitySchema",
+          "kind": "const",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "EventIdentity",
+          "kind": "type",
+          "line": 45,
+          "exported": true,
+          "endLine": 45
+        },
+        {
+          "name": "ResearchStartedEventSchema",
+          "kind": "const",
+          "line": 47,
+          "exported": false,
+          "endLine": 47
+        },
+        {
+          "name": "PlanCreatedEventSchema",
+          "kind": "const",
+          "line": 58,
+          "exported": false,
+          "endLine": 58
+        },
+        {
+          "name": "StepStartedEventSchema",
+          "kind": "const",
+          "line": 68,
+          "exported": false,
+          "endLine": 68
+        },
+        {
+          "name": "StepCompletedEventSchema",
+          "kind": "const",
+          "line": 78,
+          "exported": false,
+          "endLine": 78
+        },
+        {
+          "name": "AnswerStreamingEventSchema",
+          "kind": "const",
+          "line": 89,
+          "exported": false,
+          "endLine": 89
+        },
+        {
+          "name": "ResearchCompletedEventSchema",
+          "kind": "const",
+          "line": 99,
+          "exported": false,
+          "endLine": 99
+        },
+        {
+          "name": "ResearchFailedEventSchema",
+          "kind": "const",
+          "line": 108,
+          "exported": false,
+          "endLine": 108
+        },
+        {
+          "name": "ResearchCancelledEventSchema",
+          "kind": "const",
+          "line": 118,
+          "exported": false,
+          "endLine": 118
+        },
+        {
+          "name": "ResearchEventSchema",
+          "kind": "const",
+          "line": 128,
+          "exported": true,
+          "endLine": 128
+        },
+        {
+          "name": "ResearchEvent",
+          "kind": "type",
+          "line": 138,
+          "exported": true,
+          "endLine": 138
+        },
+        {
+          "name": "BudgetSnapshotSchema",
+          "kind": "const",
+          "line": 140,
+          "exported": true,
+          "endLine": 140
+        },
+        {
+          "name": "BudgetSnapshot",
+          "kind": "type",
+          "line": 145,
+          "exported": true,
+          "endLine": 145
+        },
+        {
+          "name": "FredCorrelationSchema",
+          "kind": "const",
+          "line": 147,
+          "exported": true,
+          "endLine": 147
+        },
+        {
+          "name": "FredCorrelation",
+          "kind": "type",
+          "line": 151,
+          "exported": true,
+          "endLine": 151
+        },
+        {
+          "name": "CheckpointRecordSchema",
+          "kind": "const",
+          "line": 153,
+          "exported": true,
+          "endLine": 153
+        },
+        {
+          "name": "CheckpointRecord",
+          "kind": "type",
+          "line": 165,
+          "exported": true,
+          "endLine": 165
+        },
+        {
+          "name": "ProjectionEventsSchema",
+          "kind": "const",
+          "line": 167,
+          "exported": false,
+          "endLine": 167
+        },
+        {
+          "name": "ProjectionResyncRequiredSchema",
+          "kind": "const",
+          "line": 173,
+          "exported": false,
+          "endLine": 173
+        },
+        {
+          "name": "ProjectionForbiddenSchema",
+          "kind": "const",
+          "line": 179,
+          "exported": false,
+          "endLine": 179
+        },
+        {
+          "name": "ProjectionResultSchema",
+          "kind": "const",
+          "line": 184,
+          "exported": true,
+          "endLine": 184
+        },
+        {
+          "name": "ProjectionResult",
+          "kind": "type",
+          "line": 189,
+          "exported": true,
+          "endLine": 189
+        },
+        {
+          "name": "AuditEntrySchema",
+          "kind": "const",
+          "line": 191,
+          "exported": true,
+          "endLine": 191
+        },
+        {
+          "name": "AuditEntry",
+          "kind": "type",
+          "line": 195,
+          "exported": true,
+          "endLine": 195
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "57e3dea3277e5a2f43b2183fe5f23b2852107131e79d9ff1446d278e7fbf51d5",
+      "mtimeMs": 1784271649227.1697,
+      "size": 5878,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/research-durability/src/research-durability.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ScenarioId",
+          "kind": "type",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        },
+        {
+          "name": "RestartPhase",
+          "kind": "type",
+          "line": 49,
+          "exported": true,
+          "endLine": 49
+        },
+        {
+          "name": "RunStatus",
+          "kind": "type",
+          "line": 51,
+          "exported": false,
+          "endLine": 51
+        },
+        {
+          "name": "RecoveryMode",
+          "kind": "type",
+          "line": 52,
+          "exported": false,
+          "endLine": 52
+        },
+        {
+          "name": "PendingRecovery",
+          "kind": "type",
+          "line": 53,
+          "exported": false,
+          "endLine": 53
+        },
+        {
+          "name": "CrashPoint",
+          "kind": "type",
+          "line": 54,
+          "exported": false,
+          "endLine": 54
+        },
+        {
+          "name": "DurableState",
+          "kind": "type",
+          "line": 56,
+          "exported": false,
+          "endLine": 56
+        },
+        {
+          "name": "ScenarioTrace",
+          "kind": "type",
+          "line": 80,
+          "exported": true,
+          "endLine": 80
+        },
+        {
+          "name": "RunOptions",
+          "kind": "type",
+          "line": 114,
+          "exported": false,
+          "endLine": 114
+        },
+        {
+          "name": "AttemptOptions",
+          "kind": "type",
+          "line": 118,
+          "exported": false,
+          "endLine": 118
+        },
+        {
+          "name": "RestartCliResult",
+          "kind": "type",
+          "line": 127,
+          "exported": false,
+          "endLine": 127
+        },
+        {
+          "name": "TerminalResearchEvent",
+          "kind": "type",
+          "line": 134,
+          "exported": false,
+          "endLine": 134
+        },
+        {
+          "name": "isTerminalStatus",
+          "kind": "function",
+          "line": 136,
+          "exported": false,
+          "endLine": 136,
+          "signature": "(status: RunStatus)"
+        },
+        {
+          "name": "RUN_ID",
+          "kind": "const",
+          "line": 140,
+          "exported": false,
+          "endLine": 140
+        },
+        {
+          "name": "STEP_ID",
+          "kind": "const",
+          "line": 141,
+          "exported": false,
+          "endLine": 141
+        },
+        {
+          "name": "WORKFLOW_ID",
+          "kind": "const",
+          "line": 142,
+          "exported": false,
+          "endLine": 142
+        },
+        {
+          "name": "QUESTION",
+          "kind": "const",
+          "line": 143,
+          "exported": false,
+          "endLine": 143
+        },
+        {
+          "name": "SOURCE_VERSION_ID",
+          "kind": "const",
+          "line": 145,
+          "exported": false,
+          "endLine": 145
+        },
+        {
+          "name": "TERMINAL_SUMMARY",
+          "kind": "const",
+          "line": 146,
+          "exported": false,
+          "endLine": 146
+        },
+        {
+          "name": "CANCELLATION_REASON",
+          "kind": "const",
+          "line": 147,
+          "exported": false,
+          "endLine": 147
+        },
+        {
+          "name": "ARTIFACT_REFERENCE",
+          "kind": "const",
+          "line": 148,
+          "exported": false,
+          "endLine": 148
+        },
+        {
+          "name": "SCENARIOS",
+          "kind": "const",
+          "line": 154,
+          "exported": false,
+          "endLine": 154
+        },
+        {
+          "name": "INTENTIONAL_CRASH_EXIT_CODE",
+          "kind": "const",
+          "line": 168,
+          "exported": false,
+          "endLine": 168
+        },
+        {
+          "name": "decodeResearchEvent",
+          "kind": "const",
+          "line": 170,
+          "exported": false,
+          "endLine": 170
+        },
+        {
+          "name": "decodeCheckpointRecord",
+          "kind": "const",
+          "line": 171,
+          "exported": false,
+          "endLine": 171
+        },
+        {
+          "name": "decodeProjectionResult",
+          "kind": "const",
+          "line": 172,
+          "exported": false,
+          "endLine": 172
+        },
+        {
+          "name": "decodeAuditEntry",
+          "kind": "const",
+          "line": 173,
+          "exported": false,
+          "endLine": 173
+        },
+        {
+          "name": "IntentionalCrashError",
+          "kind": "class",
+          "line": 175,
+          "exported": false,
+          "endLine": 175
+        },
+        {
+          "name": "ensureScenario",
+          "kind": "function",
+          "line": 183,
+          "exported": false,
+          "endLine": 183,
+          "signature": "(scenarioId: ScenarioId)"
+        },
+        {
+          "name": "stabilizeSerializedBytes",
+          "kind": "function",
+          "line": 189,
+          "exported": false,
+          "endLine": 189
+        },
+        {
+          "name": "cursorFor",
+          "kind": "function",
+          "line": 204,
+          "exported": false,
+          "endLine": 204,
+          "signature": "(attempt: number, sequence: number)"
+        },
+        {
+          "name": "parseCursor",
+          "kind": "function",
+          "line": 208,
+          "exported": false,
+          "endLine": 208,
+          "signature": "(cursor: string)"
+        },
+        {
+          "name": "compareCursor",
+          "kind": "function",
+          "line": 219,
+          "exported": false,
+          "endLine": 219,
+          "signature": "(left: string, right: string)"
+        },
+        {
+          "name": "statePath",
+          "kind": "function",
+          "line": 228,
+          "exported": false,
+          "endLine": 228,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "checkpointPath",
+          "kind": "function",
+          "line": 232,
+          "exported": false,
+          "endLine": 232,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "eventsPath",
+          "kind": "function",
+          "line": 236,
+          "exported": false,
+          "endLine": 236,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "auditPath",
+          "kind": "function",
+          "line": 240,
+          "exported": false,
+          "endLine": 240,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "internalRestartTracePath",
+          "kind": "function",
+          "line": 244,
+          "exported": false,
+          "endLine": 244,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "packageRootFromModule",
+          "kind": "function",
+          "line": 248,
+          "exported": false,
+          "endLine": 248,
+          "signature": "()"
+        },
+        {
+          "name": "ensureStoreDir",
+          "kind": "function",
+          "line": 252,
+          "exported": false,
+          "endLine": 252,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "createInitialState",
+          "kind": "function",
+          "line": 256,
+          "exported": false,
+          "endLine": 256,
+          "signature": "()"
+        },
+        {
+          "name": "writeState",
+          "kind": "function",
+          "line": 282,
+          "exported": false,
+          "endLine": 282,
+          "signature": "(storeDir: string, state: DurableState)"
+        },
+        {
+          "name": "readState",
+          "kind": "function",
+          "line": 286,
+          "exported": false,
+          "endLine": 286,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "resetStore",
+          "kind": "function",
+          "line": 295,
+          "exported": false,
+          "endLine": 295,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "appendJsonLine",
+          "kind": "function",
+          "line": 304,
+          "exported": false,
+          "endLine": 304,
+          "signature": "(path: string, value: unknown)"
+        },
+        {
+          "name": "readJsonLines",
+          "kind": "function",
+          "line": 308,
+          "exported": false,
+          "endLine": 308
+        },
+        {
+          "name": "readEvents",
+          "kind": "function",
+          "line": 318,
+          "exported": false,
+          "endLine": 318,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "readAuditLog",
+          "kind": "function",
+          "line": 322,
+          "exported": false,
+          "endLine": 322,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "readCheckpoint",
+          "kind": "function",
+          "line": 326,
+          "exported": false,
+          "endLine": 326,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "currentBudget",
+          "kind": "function",
+          "line": 333,
+          "exported": false,
+          "endLine": 333,
+          "signature": "(state: DurableState)"
+        },
+        {
+          "name": "appendEvent",
+          "kind": "function",
+          "line": 341,
+          "exported": false,
+          "endLine": 341
+        },
+        {
+          "name": "appendAudit",
+          "kind": "function",
+          "line": 372,
+          "exported": false,
+          "endLine": 372,
+          "signature": "(storeDir: string, code: string, detail: string)"
+        },
+        {
+          "name": "writeCheckpoint",
+          "kind": "function",
+          "line": 378,
+          "exported": false,
+          "endLine": 378
+        },
+        {
+          "name": "advanceClock",
+          "kind": "function",
+          "line": 405,
+          "exported": false,
+          "endLine": 405,
+          "signature": "(state: DurableState, byMs = 250)"
+        },
+        {
+          "name": "emitAttemptStartEvents",
+          "kind": "function",
+          "line": 409,
+          "exported": false,
+          "endLine": 409
+        },
+        {
+          "name": "requestCancellation",
+          "kind": "function",
+          "line": 436,
+          "exported": false,
+          "endLine": 436,
+          "signature": "(storeDir: string, reason: string)"
+        },
+        {
+          "name": "commitDomainSideEffect",
+          "kind": "function",
+          "line": 457,
+          "exported": false,
+          "endLine": 457,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "latestTerminalEvent",
+          "kind": "function",
+          "line": 467,
+          "exported": false,
+          "endLine": 467,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "reconcileTerminalStateFromJournal",
+          "kind": "function",
+          "line": 482,
+          "exported": false,
+          "endLine": 482,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "finalizeCancelledRun",
+          "kind": "function",
+          "line": 519,
+          "exported": false,
+          "endLine": 519,
+          "signature": "(storeDir: string, crashPoint?: CrashPoint)"
+        },
+        {
+          "name": "finalizeCompletedRun",
+          "kind": "function",
+          "line": 540,
+          "exported": false,
+          "endLine": 540
+        },
+        {
+          "name": "performAttempt",
+          "kind": "function",
+          "line": 577,
+          "exported": false,
+          "endLine": 577,
+          "signature": "(storeDir: string, options: AttemptOptions)"
+        },
+        {
+          "name": "beginNextAttempt",
+          "kind": "function",
+          "line": 639,
+          "exported": false,
+          "endLine": 639,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "resumeAfterCrash",
+          "kind": "function",
+          "line": 654,
+          "exported": false,
+          "endLine": 654,
+          "signature": "(storeDir: string): {"
+        },
+        {
+          "name": "projectResearchEvents",
+          "kind": "function",
+          "line": 681,
+          "exported": false,
+          "endLine": 681
+        },
+        {
+          "name": "computeInvariants",
+          "kind": "function",
+          "line": 709,
+          "exported": false,
+          "endLine": 709
+        },
+        {
+          "name": "collectScenarioTrace",
+          "kind": "function",
+          "line": 750,
+          "exported": false,
+          "endLine": 750
+        },
+        {
+          "name": "runDurabilityScenario",
+          "kind": "function",
+          "line": 785,
+          "exported": true,
+          "endLine": 785
+        },
+        {
+          "name": "runRestartPhase",
+          "kind": "function",
+          "line": 965,
+          "exported": true,
+          "endLine": 965
+        },
+        {
+          "name": "runRestartScenarioCli",
+          "kind": "function",
+          "line": 1007,
+          "exported": true,
+          "endLine": 1007
+        },
+        {
+          "name": "readInternalRestartTrace",
+          "kind": "function",
+          "line": 1036,
+          "exported": true,
+          "endLine": 1036,
+          "signature": "(storeDir: string)"
+        },
+        {
+          "name": "defaultPackageRoot",
+          "kind": "function",
+          "line": 1040,
+          "exported": true,
+          "endLine": 1040,
+          "signature": "()"
+        }
+      ],
+      "imports": [
+        {
+          "source": "join",
+          "specifier": "node:path",
+          "imported": [
+            "join"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "fileURLToPath",
+          "specifier": "node:url",
+          "imported": [
+            "fileURLToPath"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "944bc7dee410ce31562fa5135f007e46da78d5cc30800754e28551cbab169e32",
+      "mtimeMs": 1784273042769.4177,
+      "size": 31527,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/research-durability/src/restart-child.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "readArg",
+          "kind": "function",
+          "line": 3,
+          "exported": false,
+          "endLine": 3,
+          "signature": "(name: string)"
+        },
+        {
+          "name": "phase",
+          "kind": "const",
+          "line": 12,
+          "exported": false,
+          "endLine": 12
+        },
+        {
+          "name": "storeDir",
+          "kind": "const",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        },
+        {
+          "name": "result",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        }
+      ],
+      "imports": [
+        {
+          "source": "runRestartPhase",
+          "specifier": "./research-durability",
+          "imported": [
+            "runRestartPhase"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "125444f8f7c650b94d1a9fabb8382893bff6fd2d443ce76d675d8a4edab148b9",
+      "mtimeMs": 1784271744058.6594,
+      "size": 501,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "spikes/research-durability/src/restart-driver.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "readArg",
+          "kind": "function",
+          "line": 7,
+          "exported": false,
+          "endLine": 7,
+          "signature": "(name: string, fallback?: string)"
+        },
+        {
+          "name": "runPhase",
+          "kind": "function",
+          "line": 16,
+          "exported": false,
+          "endLine": 16
+        },
+        {
+          "name": "cwd",
+          "kind": "const",
+          "line": 40,
+          "exported": false,
+          "endLine": 40
+        },
+        {
+          "name": "storeDir",
+          "kind": "const",
+          "line": 41,
+          "exported": false,
+          "endLine": 41
+        },
+        {
+          "name": "tracePath",
+          "kind": "const",
+          "line": 42,
+          "exported": false,
+          "endLine": 42
+        },
+        {
+          "name": "crashPhase",
+          "kind": "const",
+          "line": 47,
+          "exported": false,
+          "endLine": 47
+        },
+        {
+          "name": "resumePhase",
+          "kind": "const",
+          "line": 48,
+          "exported": false,
+          "endLine": 48
+        },
+        {
+          "name": "trace",
+          "kind": "const",
+          "line": 49,
+          "exported": false,
+          "endLine": 49
+        }
+      ],
+      "imports": [
+        {
+          "source": "spawn",
+          "specifier": "node:child_process",
+          "imported": [
+            "spawn"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "mkdirSync, readFileSync, rmSync, writeFileSync",
+          "specifier": "node:fs",
+          "imported": [
+            "mkdirSync",
+            "readFileSync",
+            "rmSync",
+            "writeFileSync"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "fileURLToPath",
+          "specifier": "node:url",
+          "imported": [
+            "fileURLToPath"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "join",
+          "specifier": "node:path",
+          "imported": [
+            "join"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "readInternalRestartTrace",
+          "specifier": "./research-durability",
+          "imported": [
+            "readInternalRestartTrace"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "50ac08d73f3422de255daebf4ae9613c9c1da649b7389d40398981e3889f622d",
+      "mtimeMs": 1784271852255.6155,
+      "size": 2182,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    }
+  ]
 }

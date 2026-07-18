@@ -26,30 +26,32 @@ tags:
 ## Overview
 
 - The web application calls a typed API and receives long-running ingestion/research progress over Server-Sent Events.
-- The API enforces authentication and authorization, persists commands, and dispatches durable work.
-- Workers compose product-local Fred workflows with deterministic Effect services for ingestion, retrieval, data querying, evidence, and persistence.
-- PostgreSQL is the initial state/full-text/vector store; DuckDB is a constrained analytical engine; artifact storage is accessed through local or S3-compatible adapters.
+- The API enforces authentication and authorization, persists commands, and dispatches durable work; STEP-01-03 implements the first `POST /sources/text` command path with explicit workspace/project scope and `job_queue` handoff.
+- Workers compose product-local Fred workflows with deterministic Effect services for ingestion, retrieval, data querying, evidence, and persistence; STEP-01-03 implements the first non-Fred deterministic ingestion worker poll/claim/retry/failure/finalize path.
+- PostgreSQL is the initial state/full-text/vector store; DuckDB is a constrained analytical engine; artifact storage is accessed through local or S3-compatible adapters. STEP-01-03 uses local content-addressed storage under `ARTIFACT_STORAGE_ROOT` for raw, normalized, and manifest artifacts.
 
 ## Key Components
 
 <!-- AGENT-START:architecture-key-components -->
 - Web ↔ API: typed HTTP contracts for projects, sources, runs, findings, reports, citations, and queries; SSE for progress events.
-- API ↔ worker: durable, idempotent ingestion and research job dispatch with cancellation and checkpoint identity.
-- Worker ↔ PostgreSQL/pgvector: application records, source metadata, checkpoints, full-text index, and embeddings.
-- Worker ↔ DuckDB/Parquet: schema inspection, read-only SQL, bounded result snapshots, and deterministic provenance.
-- Worker ↔ artifact storage: originals, extracted content, directory manifests, and generated artifacts by reference.
+- API ↔ worker: durable, idempotent ingestion and research job dispatch with cancellation and checkpoint identity; current implemented handoff is `job_queue` `entity_type='ingestion'` for one staged `.txt`/`.md` upload.
+- Worker ↔ PostgreSQL/pgvector: application records, source metadata, `job_queue`, `event_journal`, immutable `source_versions`, checkpoints, full-text index, and embeddings.
+- Worker ↔ DuckDB/Parquet: schema inspection, read-only SQL, bounded result snapshots, and deterministic provenance (planned).
+- Worker ↔ artifact storage: originals, normalized text, source-version manifests, extracted content, directory manifests, and generated artifacts by reference.
 - All runtimes ↔ OpenTelemetry: correlated traces, metrics, and structured logs across API, job, Fred, model, tool, query, and citation activity.
 <!-- AGENT-END:architecture-key-components -->
+- API → PostgreSQL command atomicity: `SourceRegistrationRepo` executes Source creation, `job_queue` enqueue, and `ingestion-requested` append in one transaction; any query or decode failure rolls back all three writes.
+- Worker readiness executes a live database query before reporting ready, and polling repository failures propagate to the process boundary rather than masquerading as an idle queue.
 
 ## Important Paths
 
 <!-- AGENT-START:architecture-important-paths -->
 - `apps/web` — scaffolded browser client (SolidJS 1.9 + Vite 8); evidence inspector and SSE planned in later steps.
-- `apps/api` — scaffolded typed HTTP boundary (Bun HTTP + Effect Config); auth, SSE, and command handling planned in later steps.
-- `apps/worker` — scaffolded execution process (Effect Config skeleton); ingestion and research execution planned in later steps.
-- `packages/persistence` — STEP-01-02 implemented pgvector/schema migrations, typed row decoders, typed persistence errors, and postgres-backed repository services.
+- `apps/api` — typed HTTP boundary (Bun HTTP + Effect Config), healthz/SSE placeholder, and STEP-01-03 `POST /sources/text`; auth hardening and broader command handling planned in later steps.
+- `apps/worker` — execution process with Effect Config and STEP-01-03 ingestion job loop; research execution planned in later steps.
+- `packages/persistence` — STEP-01-02 implemented pgvector/schema migrations, typed row decoders, typed persistence errors, and postgres-backed repository services; STEP-01-03 adds JobQueue/EventJournal accessors.
 - `packages/data-engine` — planned DuckDB/Parquet adapter and SQL safety layer.
-- `packages/source-storage` — planned filesystem and S3-compatible adapters.
+- `packages/source-storage` — implemented local content-addressed/staged filesystem adapter; S3-compatible adapter planned later.
 - `packages/observability` — scaffolded placeholder; OpenTelemetry wiring planned in later steps.
 <!-- AGENT-END:architecture-important-paths -->
 

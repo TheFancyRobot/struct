@@ -23,7 +23,7 @@ describe('API entrypoint config validation', () => {
   it('starts successfully with valid API_PORT', () => {
     // Start the server, wait for the log, then kill it
     const result = execSync(
-      `API_PORT=3199 bun ${apiMainPath} & sleep 2 && kill %1 2>/dev/null; wait 2>/dev/null`,
+      `root=$(mktemp -d); API_PORT=3199 DATABASE_URL=postgres://struct:struct@localhost:5432/struct ARTIFACT_STORAGE_ROOT=$root bun ${apiMainPath} & sleep 2; kill %1 2>/dev/null; wait 2>/dev/null; rm -rf "$root"`,
       { encoding: 'utf-8', timeout: 8000, shell: '/bin/bash' },
     )
     expect(result).toContain('API server starting on port 3199')

@@ -30,3 +30,50 @@ export class SourceVersionError extends Schema.TaggedError<SourceVersionError>()
   reason: Schema.String,
   message: Schema.String,
 }) {}
+
+export class StorageConfigurationError extends Schema.TaggedError<StorageConfigurationError>()('StorageConfigurationError', {
+  reason: Schema.String,
+  message: Schema.String,
+}) {}
+
+export class StoragePathError extends Schema.TaggedError<StoragePathError>()('StoragePathError', {
+  ref: Schema.String,
+  reason: Schema.String,
+  message: Schema.String,
+}) {}
+
+export class StorageReadError extends Schema.TaggedError<StorageReadError>()('StorageReadError', {
+  ref: Schema.String,
+  reason: Schema.String,
+  message: Schema.String,
+}) {}
+
+export class StorageWriteError extends Schema.TaggedError<StorageWriteError>()('StorageWriteError', {
+  operation: Schema.String,
+  reason: Schema.String,
+  message: Schema.String,
+}) {}
+
+export class UnsupportedSourceTypeError extends Schema.TaggedError<UnsupportedSourceTypeError>()('UnsupportedSourceTypeError', {
+  name: Schema.String,
+  mediaType: Schema.String,
+  message: Schema.String,
+}) {}
+
+export class SourceTooLargeError extends Schema.TaggedError<SourceTooLargeError>()('SourceTooLargeError', {
+  name: Schema.String,
+  byteLength: Schema.Number,
+  maxBytes: Schema.Number,
+  message: Schema.String,
+}) {}
+
+export class IngestionFailureError extends Schema.TaggedError<IngestionFailureError>()('IngestionFailureError', {
+  reason: Schema.String,
+  message: Schema.String,
+}) {}
+
+export class JobClaimError extends Schema.TaggedError<JobClaimError>()('JobClaimError', {
+  operation: Schema.String,
+  reason: Schema.String,
+  message: Schema.String,
+}) {}

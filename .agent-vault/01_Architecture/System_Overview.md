@@ -28,18 +28,20 @@ tags:
 
 ## Overview
 
-- Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold complete and STEP-01-02 domain schemas/persistence migrations complete. The monorepo has Bun workspace manifests, three runtime apps, and core domain/persistence/observability packages, all passing gates.
+- Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold complete, STEP-01-02 domain schemas/persistence migrations complete, and STEP-01-03 single text-source ingestion/artifact storage implemented. The monorepo has Bun workspace manifests, three runtime apps, domain/persistence/source-storage/ingestion/observability packages, and passing gates.
 - The planned product is a source-grounded workspace for projects, source ingestion, multi-step research, exact computation, navigable citations, saved findings, and Markdown reports.
 - The runtime is Bun with TypeScript 7.0.2, Effect for services and typed failures, and Fred for agent/workflow orchestration (Fred packages not yet installed — STEP-01-04+).
-- PostgreSQL with pgvector provides application persistence, full-text search, and initial vector search; STEP-01-02 implemented the migration runner, initial pgvector/schema migrations, typed row decoders, and postgres-backed repository services. DuckDB and Parquet provide deterministic structured-data analysis (not yet implemented — later phases). Original artifacts use a local-development storage adapter and an S3-compatible production abstraction (not yet implemented — STEP-01-03+).
+- PostgreSQL with pgvector provides application persistence, full-text search, and initial vector search; STEP-01-02 implemented the migration runner, initial pgvector/schema migrations, typed row decoders, and postgres-backed repository services. STEP-01-03 consumes existing `job_queue`/`event_journal` tables for API→worker ingestion dispatch and creates immutable `SourceVersion` rows only after content-addressed raw/normalized/manifest artifacts exist. DuckDB and Parquet provide deterministic structured-data analysis (not yet implemented — later phases).
+- STEP-01-03 review remediation hardened artifact parent-component containment, made the API registration command transactional, and made worker database readiness/poll failures fail visibly; all zero-defect gates pass pending re-review.
 
 ## Key Components
 
 <!-- AGENT-START:architecture-key-components -->
 - `apps/web`: SolidJS + Vite 8 + Solid Router research interface, source browser, progress streaming (SSE), evidence inspector, and report editor (DEC-0014).
-- `apps/api`: typed Effect HTTP boundary for projects, sources, research runs, citations, and SSE events.
-- `apps/worker`: durable ingestion, refresh, embedding, recursive analysis, retry, cancellation, and resume execution.
-- Domain packages: schemas, identifiers, invariants, source versions, evidence, citations, and research records.
+- `apps/api`: typed Effect HTTP boundary for projects, sources, research runs, citations, and SSE events; STEP-01-03 adds `POST /sources/text` for one `.txt`/`.md` upload registration/enqueue path.
+- `apps/worker`: durable ingestion, refresh, embedding, recursive analysis, retry, cancellation, and resume execution; STEP-01-03 adds one durable text-ingestion polling/claim/retry/failure/finalization path.
+- Domain packages: schemas, identifiers, invariants, source versions, evidence, citations, research records, and specific typed errors for storage/ingestion/job failures.
+- Artifact/ingestion packages: `packages/source-storage` local content-addressed object store plus staged-upload refs; `packages/ingestion` narrow text classifier, normalizer, and source-version manifest creator.
 - Retrieval and data services: PostgreSQL hybrid retrieval plus safe, read-only DuckDB queries.
 - Research services: typed Fred plans, bounded tool execution, evidence sufficiency, citation validation, and synthesis.
 <!-- AGENT-END:architecture-key-components -->
@@ -50,10 +52,12 @@ tags:
 - `docs/product-brief.md` — authoritative requirements and preferred technical direction.
 - `AGENTS.md` — repository and Agent Vault operating instructions.
 - `apps/web` — SolidJS 1.9 + Vite 8 + Solid Router + Tailwind 4 + DaisyUI SPA (scaffolded, DEC-0014).
-- `apps/api` — Bun HTTP + Effect Config, healthz/SSE placeholder (scaffolded).
-- `apps/worker` — Effect Config skeleton (scaffolded).
-- `packages/domain` — branded IDs, Effect Schemas, Schema.TaggedError (scaffolded).
-- `packages/persistence` — pgvector/schema migrations, typed row decoders, typed persistence errors, and postgres-backed repository services (STEP-01-02).
+- `apps/api` — Bun HTTP + Effect Config, healthz/SSE placeholder, `POST /sources/text` registration/enqueue path.
+- `apps/worker` — Effect Config plus STEP-01-03 ingestion job polling/claim/retry/failure/finalization.
+- `packages/domain` — branded IDs, Effect Schemas, Schema.TaggedError (including storage/ingestion/job errors).
+- `packages/persistence` — pgvector/schema migrations, typed row decoders, typed persistence errors, postgres-backed repository services (STEP-01-02), and JobQueue/EventJournal repositories (STEP-01-03).
+- `packages/source-storage` — local content-addressed artifact store with staged refs and filesystem safety controls.
+- `packages/ingestion` — `.txt`/`.md` classification, UTF-8 normalization, normalized hash, and source-version manifest creation.
 - `packages/observability` — placeholder (scaffolded).
 - `docs/adr/` — architecture decision records (DEC-0001 … DEC-0014).
 <!-- AGENT-END:architecture-important-paths -->

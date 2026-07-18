@@ -9,7 +9,7 @@
     "dev": "bun --watch src/main.ts",
     "build": "rm -rf dist && tsc --project tsconfig.json",
     "typecheck": "tsc --noEmit --project tsconfig.json",
-    "test": "vitest run",
+    "test": "vitest run --root ../.. apps/api",
     "migrations:up": "tsx src/migrations/run.ts --direction up",
     "migrations:down": "tsx src/migrations/run.ts --direction down"
   },
@@ -17,10 +17,12 @@
     "@struct/domain": "workspace:*",
     "@struct/observability": "workspace:*",
     "@struct/persistence": "workspace:*",
+    "@struct/source-storage": "workspace:*",
     "effect": "3.22.0",
     "postgres": "^3.4.9"
   },
   "devDependencies": {
+    "@struct/ingestion": "workspace:*",
     "typescript": "7.0.2",
     "tsx": "4.23.1"
   }

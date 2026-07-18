@@ -2,7 +2,7 @@
 
 A trustworthy, source-grounded research workspace for documents, datasets, and directories. Documents are retrieved, datasets are queried, directories are navigated, and large corpora are recursively analyzed — with deterministic computation, verifiable citations, and durable, resumable work.
 
-> **Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold complete and STEP-01-02 domain schemas/persistence migrations complete.** The monorepo has Bun workspace manifests, three runtime apps (`apps/web`, `apps/api`, `apps/worker`), core domain/persistence/observability packages, PostgreSQL/pgvector migrations, typed row decoders, and postgres-backed repository services. All gates pass (typecheck, lint, lint:imports, build, Vitest, literal Bun tests, DB integration tests, migration up/down/up, Compose config, app smokes). Product API endpoints beyond healthz and CI are not yet implemented.
+> **Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold, STEP-01-02 domain/persistence, and STEP-01-03 single text-source ingestion/artifact storage are implemented.** The monorepo has Bun workspace manifests, three runtime apps (`apps/web`, `apps/api`, `apps/worker`), domain/persistence/source-storage/ingestion/observability packages, PostgreSQL/pgvector migrations, typed row decoders, postgres-backed repositories, `POST /sources/text`, durable `job_queue` ingestion polling, content-addressed artifacts, and immutable `SourceVersion` finalization. All gates pass when validated locally (typecheck, lint, lint:imports, build, Vitest, literal Bun tests, DB integration tests, migration up/down/up, Compose config, app smokes).
 
 ## Canonical documents
 
@@ -27,12 +27,12 @@ A trustworthy, source-grounded research workspace for documents, datasets, and d
 ```
 apps/
 ├── web        # SolidJS 1.9 + Vite 8 + Solid Router + Tailwind 4 + DaisyUI (DEC-0013, DEC-0014)
-├── api        # Bun HTTP + Effect Config — healthz and sole migration executor implemented; product endpoints/SSE later
-└── worker     # Effect Config skeleton — durable execution and jobs in later steps
+├── api        # Bun HTTP + Effect Config — healthz, sole migration executor, and POST /sources/text implemented; broader API/SSE later
+└── worker     # Effect Config plus durable text-ingestion job polling/claim/retry/finalize path
 
 packages/
-├── domain · persistence · observability          # domain/persistence implemented through STEP-01-02; observability scaffolded
-├── source-storage · ingestion · document-processing  # planned (STEP-01-03+)
+├── domain · persistence · source-storage · ingestion · observability  # walking-slice core; observability scaffolded
+├── document-processing  # planned (Phase 02+)
 ├── retrieval · data-engine · research-engine · fred-workflows  # planned (STEP-01-04+)
 └── evaluation · shared-ui                              # planned (later phases)
 ```
@@ -55,7 +55,7 @@ Docker-unavailable fallback, platform notes, and reset steps are in [docs/local-
 ## Common commands
 
 ```bash
-bun run typecheck   # tsc --noEmit across all 7 workspace configs
+bun run typecheck   # tsc --noEmit across all workspace configs
 bun run lint        # ESLint flat config (TS/Solid/Effect conventions)
 bun run lint:imports  # dependency-cruiser + Bun-aware boundary checker
 bun run test        # vitest unit + entrypoint tests

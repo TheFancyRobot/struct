@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { Effect, ConfigProvider, Layer, Exit } from 'effect'
-import { workerMetricsPortConfig, databaseUrlConfig } from './config'
+import {
+  artifactStorageRootConfig,
+  databaseUrlConfig,
+  workerJobStaleMsConfig,
+  workerMetricsPortConfig,
+  workerPollIntervalMsConfig,
+} from './config'
 
 describe('Worker Config', () => {
   it('uses default metrics port 3002 when WORKER_METRICS_PORT not set', async () => {
@@ -44,6 +50,38 @@ describe('Worker Database URL Config', () => {
     const result = await Effect.runPromiseExit(
       databaseUrlConfig.pipe(Effect.provide(Layer.setConfigProvider(provider))),
     )
+    expect(Exit.isFailure(result)).toBe(true)
+  })
+})
+
+describe('Worker ingestion config', () => {
+  it('uses safe defaults for artifact storage and polling', async () => {
+    const provider = ConfigProvider.fromMap(new Map())
+    const [root, poll, stale] = await Effect.runPromise(
+      Effect.all([
+        artifactStorageRootConfig,
+        workerPollIntervalMsConfig,
+        workerJobStaleMsConfig,
+      ]).pipe(Effect.provide(Layer.setConfigProvider(provider))),
+    )
+
+    expect(root).toBe('./.local/artifacts')
+    expect(poll).toBe(1000)
+    expect(stale).toBe(300000)
+  })
+
+  it('rejects non-positive worker polling values', async () => {
+    const provider = ConfigProvider.fromMap(new Map([
+      ['WORKER_POLL_INTERVAL_MS', '0'],
+      ['WORKER_JOB_STALE_MS', '-1'],
+    ]))
+    const result = await Effect.runPromiseExit(
+      Effect.all([
+        workerPollIntervalMsConfig,
+        workerJobStaleMsConfig,
+      ], { mode: 'validate' }).pipe(Effect.provide(Layer.setConfigProvider(provider))),
+    )
+
     expect(Exit.isFailure(result)).toBe(true)
   })
 })

@@ -1,0 +1,19 @@
+{
+  "name": "@struct/ingestion",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "test": "vitest run --root ../.. packages/ingestion"
+  },
+  "dependencies": {
+    "@struct/domain": "workspace:*",
+    "@struct/source-storage": "workspace:*",
+    "effect": "3.22.0"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2"
+  }
+}

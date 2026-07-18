@@ -9,6 +9,13 @@
 - Refined storage/security requirements: canonical root validation, symlink/traversal rejection, atomic content-addressed writes, no raw source text or absolute host paths in payloads/logs/events, and an explicit byte cap for the walking slice.
 - Refined worker ownership: atomic claim with `FOR UPDATE SKIP LOCKED`, stale in-progress recovery via `updated_at`/attempts, sanitized failure events, and terminal job status in the existing schema.
 
+### 2026-07-18 lead-review remediation
+
+- A store-startup symlink audit is insufficient: operation-time containment now walks and canonicalizes each existing component, including mutable digest-prefix and temp directories.
+- Content-addressed publication verifies a same-filesystem temp file and atomically hard-links it into a non-overwriting destination; existing and raced destinations are hash-verified.
+- PostgreSQL pools connect lazily, so the worker now executes `SELECT 1` before readiness and lets recovery/claim failures terminate the polling effect visibly.
+- `SourceRegistrationRepo` owns one transaction for Source creation, ingestion-job enqueue, and `ingestion-requested`; row decoding stays inside that transaction so decode failure also rolls back.
+
 ## Related Notes
 
 - Step: [[02_Phases/Phase_01_walking_skeleton/Steps/Step_03_implement-single-text-source-ingestion-and-artifact-storage|STEP-01-03 Implement Single Text Source Ingestion and Artifact Storage]]

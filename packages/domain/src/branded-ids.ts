@@ -59,3 +59,7 @@ export type QueryResultSnapshotId = Schema.Schema.Type<typeof QueryResultSnapsho
 /** EventJournalId — identity of a journal entry. */
 export const EventJournalId = BrandedUUID.pipe(Schema.brand('EventJournalId'))
 export type EventJournalId = Schema.Schema.Type<typeof EventJournalId>
+
+/** JobQueueId — identity of a durable worker job. */
+export const JobQueueId = BrandedUUID.pipe(Schema.brand('JobQueueId'))
+export type JobQueueId = Schema.Schema.Type<typeof JobQueueId>

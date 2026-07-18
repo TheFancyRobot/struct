@@ -105,10 +105,12 @@ Packages (only the minimal set the walking skeleton needs):
 - `packages/domain/package.json` — canonical identifiers, Effect Schemas, typed errors, value/event contracts.
 - `packages/persistence/package.json` — repository interfaces, migrations, checkpoint records.
 - `packages/observability/package.json` — trace/log/metric wiring.
+- `packages/source-storage/package.json` — local content-addressed artifact store and staged-upload refs for STEP-01-03.
+- `packages/ingestion/package.json` — walking-slice text classification, normalization, manifest creation, and typed ingestion failures.
 
 ### 3.2 Intentional deferrals (created by their owning phase, not Phase 1)
 
-- `packages/source-storage`, `ingestion`, `document-processing`, `retrieval`, `data-engine`, `research-engine`, `fred-workflows`, `evaluation`, `shared-ui` — scaffolded when their phase needs them; not empty Phase 1 stubs.
+- `packages/document-processing`, `retrieval`, `data-engine`, `research-engine`, `fred-workflows`, `evaluation`, `shared-ui` — scaffolded when their phase needs them; not empty Phase 1 stubs.
 - `packages/data-engine` DuckDB worker child — Phase 04 owns production data-plane code; STEP-00-03 owns the spike contract.
 - `packages/evaluation` corpus generator + CI gate implementation — Phase 04 / Phase 09; STEP-00-06 owns the spec.
 - Production S3 artifact adapter — Phase 09; the dev FS adapter is sufficient until then.

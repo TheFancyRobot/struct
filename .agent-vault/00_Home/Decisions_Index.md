@@ -33,11 +33,12 @@ Use this note as the directory for decision records in \`04_Decisions/\`.
 <!-- AGENT-START:decisions-index -->
 _Last rebuilt: 2026-07-18._
 
-- Notes indexed: 14
-- Status summary: accepted (14)
+- Notes indexed: 15
+- Status summary: accepted (15)
 
 | Id | Title | Status | Decided | Updated | Linear |
 | --- | --- | --- | --- | --- | --- |
+| DEC-0015 | [Use Per-Step Branch PR Review and Merge Gates](../04_Decisions/DEC-0015_use-per-step-branch-pr-review-and-merge-gates.md) | accepted | 2026-07-18 | 2026-07-18 | - |
 | DEC-0001 | [Consume Stable Fred Packages from a Standalone Monorepo](../04_Decisions/DEC-0001_consume-stable-fred-packages-from-a-standalone-monorepo.md) | accepted | 2026-07-17 | 2026-07-17 | - |
 | DEC-0002 | [Prefer Product-Local Adapters Before Fred Core Changes](../04_Decisions/DEC-0002_prefer-product-local-adapters-before-fred-core-changes.md) | accepted | 2026-07-17 | 2026-07-17 | - |
 | DEC-0003 | [Use TypeScript Bun and Effect with Explicit Runtime Boundaries](../04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries.md) | accepted | 2026-07-17 | 2026-07-17 | - |

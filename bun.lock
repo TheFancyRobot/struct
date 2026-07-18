@@ -28,10 +28,12 @@
         "@struct/domain": "workspace:*",
         "@struct/observability": "workspace:*",
         "@struct/persistence": "workspace:*",
+        "@struct/source-storage": "workspace:*",
         "effect": "3.22.0",
         "postgres": "^3.4.9",
       },
       "devDependencies": {
+        "@struct/ingestion": "workspace:*",
         "tsx": "4.23.1",
         "typescript": "7.0.2",
       },
@@ -59,8 +61,12 @@
       "version": "0.0.1",
       "dependencies": {
         "@struct/domain": "workspace:*",
+        "@struct/ingestion": "workspace:*",
         "@struct/observability": "workspace:*",
+        "@struct/persistence": "workspace:*",
+        "@struct/source-storage": "workspace:*",
         "effect": "3.22.0",
+        "postgres": "^3.4.9",
       },
       "devDependencies": {
         "tsx": "4.23.1",
@@ -71,6 +77,18 @@
       "name": "@struct/domain",
       "version": "0.0.1",
       "dependencies": {
+        "effect": "3.22.0",
+      },
+      "devDependencies": {
+        "typescript": "7.0.2",
+      },
+    },
+    "packages/ingestion": {
+      "name": "@struct/ingestion",
+      "version": "0.0.1",
+      "dependencies": {
+        "@struct/domain": "workspace:*",
+        "@struct/source-storage": "workspace:*",
         "effect": "3.22.0",
       },
       "devDependencies": {
@@ -99,6 +117,17 @@
       },
       "devDependencies": {
         "tsx": "4.23.1",
+        "typescript": "7.0.2",
+      },
+    },
+    "packages/source-storage": {
+      "name": "@struct/source-storage",
+      "version": "0.0.1",
+      "dependencies": {
+        "@struct/domain": "workspace:*",
+        "effect": "3.22.0",
+      },
+      "devDependencies": {
         "typescript": "7.0.2",
       },
     },
@@ -300,9 +329,13 @@
 
     "@struct/domain": ["@struct/domain@workspace:packages/domain"],
 
+    "@struct/ingestion": ["@struct/ingestion@workspace:packages/ingestion"],
+
     "@struct/observability": ["@struct/observability@workspace:packages/observability"],
 
     "@struct/persistence": ["@struct/persistence@workspace:packages/persistence"],
+
+    "@struct/source-storage": ["@struct/source-storage@workspace:packages/source-storage"],
 
     "@struct/web": ["@struct/web@workspace:apps/web"],
 
