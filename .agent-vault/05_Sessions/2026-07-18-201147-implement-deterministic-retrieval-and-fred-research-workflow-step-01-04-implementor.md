@@ -62,6 +62,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 20:53 - Fresh retry fixed lazy Fred runtime loading and concurrent test port allocation. Root orchestrator independently reran root, real-database, migration, provider-load, and Vault gates successfully.
 - 2026-07-18 retry 3 hygiene audit — Removed generated `tsconfig.tsbuildinfo` files from `packages/retrieval`, `packages/research-engine`, and `packages/fred-workflows`, and added the repository-level `*.tsbuildinfo` ignore rule. A bounded generated/cache-artifact scan found no other STEP-01-04 hygiene defect; the unrelated DuckDB spike build-info file already had spike-local ignore coverage and is now also covered at the root.
 - No git command was run; the root orchestrator retains exclusive branch, staging, commit, push, PR, review, and merge control.
+- 2026-07-18: Root orchestrator pushed the completed STEP-01-04 branch and opened ready-for-review PR [#1](https://github.com/TheFancyRobot/struct/pull/1) into `main`. Awaiting configured checks and code-review bots before merge.
 
 ## Findings
 
