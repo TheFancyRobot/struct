@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-18T21:48:13.370Z",
+  "generatedAt": "2026-07-18T22:00:58.511Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -704,19 +704,18 @@
         {
           "name": "program",
           "kind": "const",
-          "line": 39,
+          "line": 40,
           "exported": false,
-          "endLine": 39
+          "endLine": 40
         }
       ],
       "imports": [
         {
-          "source": "Effect, Layer, Schedule",
+          "source": "Effect, Layer",
           "specifier": "effect",
           "imported": [
             "Effect",
-            "Layer",
-            "Schedule"
+            "Layer"
           ],
           "kind": "static"
         },
@@ -785,12 +784,51 @@
             "processOneResearchJob"
           ],
           "kind": "static"
+        },
+        {
+          "source": "runWorkerPollLoops",
+          "specifier": "./polling",
+          "imported": [
+            "runWorkerPollLoops"
+          ],
+          "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "c2bfc9345ab45dee5cea4c3c9cea496b56fad141ace6b7df9458153d4181d85f",
-      "mtimeMs": 1784410217930.1965,
-      "size": 6805,
+      "hash": "f88cad16753aa9e53232959bd760f34b842983f841446179a4ffec8de57a95af",
+      "mtimeMs": 1784411938630.2793,
+      "size": 6717,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/worker/src/polling.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "runWorkerPollLoops",
+          "kind": "const",
+          "line": 3,
+          "exported": true,
+          "endLine": 3
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schedule",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schedule"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "5e9fd2271d7509f5c30753212be1a6013a918951ac0518cf4c29d8ab6cde49a9",
+      "mtimeMs": 1784411938630.0144,
+      "size": 650,
       "generated": false,
       "vendor": false,
       "parser": "regex"

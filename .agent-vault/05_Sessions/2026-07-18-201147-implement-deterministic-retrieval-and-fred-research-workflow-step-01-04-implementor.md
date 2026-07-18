@@ -30,7 +30,7 @@ tags:
   - agent-vault
   - session
 context_status: completed
-summary: 'STEP-01-04 implementation and all 22 PR #1 inline review findings are remediated locally; full repository, PostgreSQL, migration, provider, and strict Vault gates pass with zero known confirmed defects.'
+summary: 'STEP-01-04 implementation and PR #1 review findings are remediated locally, including independent ingestion/research polling schedules; full repository, PostgreSQL, migration, provider, and strict Vault gates pass with zero known confirmed defects.'
 ---
 
 # step-01-04-implementor session for Implement Deterministic Retrieval and Fred Research Workflow
@@ -67,6 +67,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 2026-07-18 PR #1 second review-remediation pass addressed the five unresolved threads: bounded worker-test shutdown escalation (`PRRT_kwDOTcucmc6SBiu9`); root-enforced Fred elapsed budget across optional factory execution paths (`PRRT_kwDOTcucmc6SBiu_`); document-level PostgreSQL FTS preservation and relevant-line fallback for terms/phrases spanning newlines (`PRRT_kwDOTcucmc6SBivA`, `PRRT_kwDOTcucmc6SBi8B`); and README alignment with startup Fred provider preflight (`PRRT_kwDOTcucmc6SBi8D`).
 - The worker smoke helper now escalates SIGTERM to SIGKILL after a bounded two-second grace period. The Fred runtime wraps every workflow factory path in the configured `maxElapsedMs` budget and still releases the client. Retrieval retains document-level matches with a left-lateral locator lookup, preferring an exact line and otherwise anchoring the first line containing any normalized query lexeme.
 - No git or GitHub command was run; the root orchestrator retains exclusive publication, thread resolution, re-review, and merge control.
+- 2026-07-18 PR #1 third review-remediation pass addressed unresolved thread `PRRT_kwDOTcucmc6SBmEV`: ingestion and research polling now apply the configured spaced schedule independently before the loops are combined concurrently. A long-running poll in either queue no longer delays the other queue, while a loop failure still propagates and interrupts its sibling.
+- Added deterministic Effect TestClock regressions for both long-running directions plus failure propagation/sibling interruption. No git or GitHub command was run; the root orchestrator retains exclusive publication, thread resolution, re-review, and merge control.
 
 ## Findings
 
@@ -92,6 +94,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Step implementation/outcome notes and architecture summaries were updated in Agent Vault.
 <!-- AGENT-END:session-changed-paths -->
 - PR #1 second remediation: `apps/worker/src/entrypoint.test.ts`; `packages/fred-workflows/src/adapters/fred-runtime.ts`; `packages/fred-workflows/test/walking-skeleton.test.ts`; `packages/retrieval/src/search-text.ts`; `packages/retrieval/test/search-text.test.ts`; `apps/api/src/routes/research.integration.test.ts`; `README.md`.
+- PR #1 third remediation: `apps/worker/src/main.ts`; new focused scheduling boundary `apps/worker/src/polling.ts`; deterministic regression coverage `apps/worker/src/polling.test.ts`; this session note; generated code graph/index context from Vault refresh.
 
 ## Validation Run
 
@@ -114,6 +117,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Regression coverage proves tenant ownership is derived from immutable source relationships, excerpts use PostgreSQL match-line metadata including stem-only matches, legacy ingestion payloads remain processable, Fred input and empty-evidence failures remain typed, production Fred timeout uses Effect-native fiber interruption, startup validates provider config before readiness, polling is concurrent, API client/infrastructure failures stay distinct, and stale recovery cannot race terminal completion or leave split state.
 - PR #1 second remediation gates PASS: root typecheck; zero-warning ESLint; dependency/import boundaries; focused Node tests (10/10); real-PostgreSQL cross-line term and phrase regressions under Node and Bun (5/5 each); full Node Vitest with PostgreSQL (117/117); full raw Bun with PostgreSQL (158/158); production build; Compose validation; canonical secrets/docs scripts; migration down/up; and post-migration real-database regression (5/5).
 - Regression coverage proves an injected Fred factory hook that ignores `maxElapsedMs` is still timed out by the product runtime and releases the Fred client; PostgreSQL `websearch_to_tsquery` document matches survive when required terms or a quoted phrase cross newline boundaries; returned excerpts begin at the first relevant lexeme line.
+- PR #1 third remediation gates PASS: focused worker typecheck; focused Node Vitest 3/3 and raw Bun 3/3; root typecheck; zero-warning repository ESLint; dependency/import boundaries; full Node Vitest without PostgreSQL 106 passed / 14 skipped; full raw Bun without PostgreSQL 147 passed / 20 skipped; production build; canonical secrets/docs scripts; Compose validation; migration down/up; full real-PostgreSQL Node 120/120 and raw Bun 161/161; Fred provider package-load smoke.
+- Regression coverage proves a blocked research poll does not delay the next ingestion interval, a blocked ingestion poll does not delay the next research interval, and either poll's failure remains fatal to the combined worker loop while interrupting its sibling.
 
 ## Bugs Encountered
 

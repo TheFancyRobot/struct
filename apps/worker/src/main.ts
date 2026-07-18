@@ -4,7 +4,7 @@
  * Runtime entry point — Effect.runPromise at the application boundary.
  */
 
-import { Effect, Layer, Schedule } from 'effect'
+import { Effect, Layer } from 'effect'
 import postgres from 'postgres'
 import {
   EventJournalRepo,
@@ -35,6 +35,7 @@ import {
 } from './config'
 import { processOneIngestionJob } from './jobs/ingest-source'
 import { processOneResearchJob } from './jobs/run-research'
+import { runWorkerPollLoops } from './polling'
 
 const program = Effect.gen(function* () {
   const metricsPort = yield* workerMetricsPortConfig
@@ -159,11 +160,7 @@ const program = Effect.gen(function* () {
     },
   }))
 
-  const pollAll = Effect.all([poll, researchPoll], {
-    concurrency: 'unbounded',
-    discard: true,
-  })
-  yield* pollAll.pipe(Effect.repeat(Schedule.spaced(`${pollMs} millis`)))
+  yield* runWorkerPollLoops(poll, researchPoll, pollMs)
 })
 
 Effect.runPromise(Effect.scoped(program)).catch((error) => {
