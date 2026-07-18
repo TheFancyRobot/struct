@@ -2,9 +2,12 @@
 
 ## Acceptance Checks
 
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Branded IDs and Effect Schemas for the first walking-slice entities: `Workspace`, `Source`, `ResearchRun`, and `Citation`.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: `packages/persistence/src/migrations/0001_init.sql` with workspace-scoped tables, immutable version references, and foreign keys that match the domain model.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Repository interfaces that decode database rows back into typed domain records without leaking SQL details into app code.
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: Branded IDs and Effect Schemas for the first walking-slice entities already exist from STEP-01-01; verify `SourceVersion` schema includes `content_hash` field (add if missing).
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: `databaseUrlConfig` added to both `apps/api/src/config.ts` and `apps/worker/src/config.ts` (currently missing; config files explicitly state it will be added in this step).
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: Two migrations — `0001_enable_pgvector.sql` (pgvector extension) and `0002_init_tables.sql` (workspace-scoped tables including `job_queue`, immutable version references, foreign keys matching the domain model).
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: Migration runner wired to existing `apps/api/src/migrations/run.ts` entrypoint.
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: Repository interfaces that decode database rows back into typed domain records with explicit TIMESTAMPTZ → Date.getTime() → BigInt conversion and JSDoc documenting the pattern.
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: BigInt timestamp design debt documented (either as a comment in the repository code or as a note in Implementation_Notes.md) if the pattern is accepted as-is.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
 
 ## Planned Verification

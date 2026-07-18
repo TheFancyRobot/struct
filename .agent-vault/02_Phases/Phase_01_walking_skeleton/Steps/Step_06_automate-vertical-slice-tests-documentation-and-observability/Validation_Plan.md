@@ -2,7 +2,9 @@
 
 ## Acceptance Checks
 
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: `packages/evaluation/` scaffolded with package.json (including `corpus:smoke`, `corpus:eval`, `bench` scripts), tsconfig.json, src/index.ts, placeholder source files, and test/ directory.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The first vertical-slice integration/e2e tests, basic tracing/logging hooks, and setup documentation that explain how to run the skeleton.
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: `docs/setup.md` is a concise quickstart (<100 lines) that links to canonical docs (local-development.md, repository-contract.md, roadmap.md) rather than duplicating content.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The walking slice observable enough to diagnose ingest, retrieval, and citation failures without debugger-only access.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The exact demo path, prerequisites, and known gaps so Phase 02 builds on evidence rather than tribal knowledge.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.

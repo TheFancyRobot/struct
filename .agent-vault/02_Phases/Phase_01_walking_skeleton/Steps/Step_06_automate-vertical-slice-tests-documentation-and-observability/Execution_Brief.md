@@ -28,6 +28,9 @@
 - [[01_Architecture/Domain_Model|Domain Model]]
 - [[01_Architecture/Agent_Workflow|Agent Workflow]]
 - [[02_Phases/Phase_01_walking_skeleton/Steps/Step_05_stream-persisted-progress-and-render-navigable-citation|STEP-01-05 Stream Persisted Progress and Render Navigable Citation]]
+- `docs/architecture.md` §11 (observability architecture), §12 (walking-skeleton slice)
+- `docs/local-development.md` (local stack, ports, env vars)
+- `docs/repository-contract.md` §2 (CI gate matrix)
 - `docs/product-brief.md` sections 6-8, 10, 13, 17-19, 23, 26-27, and 29-31.
 
 ## Concrete Deliverables
@@ -36,12 +39,117 @@
 - Make the walking slice observable enough to diagnose ingest, retrieval, and citation failures without debugger-only access.
 - Capture the exact demo path, prerequisites, and known gaps so Phase 02 builds on evidence rather than tribal knowledge.
 
-## Smallest Bounded Checklist
+## Concrete Context from Architecture and Decisions
 
-- First, add the first vertical-slice integration/e2e tests, basic tracing/logging hooks, and setup documentation that explain how to run the skeleton.
-- Then, make the walking slice observable enough to diagnose ingest, retrieval, and citation failures without debugger-only access.
-- Next, capture the exact demo path, prerequisites, and known gaps so Phase 02 builds on evidence rather than tribal knowledge.
-- Finish by capturing the deterministic fixture, benchmark, or gate evidence that will let the validation plan judge the slice without guesswork.
+### Integration test scope (architecture.md §12, repository-contract.md §2.2)
+
+The integration test must prove the full walking-slice path:
+1. Create a project (API → PostgreSQL)
+2. Upload/register one text source (API → worker → source-storage → PostgreSQL)
+3. Ingest the source (worker → normalization → artifact storage → event journal)
+4. Start a research run (API → worker → Fred workflow → retrieval → synthesis)
+5. Stream progress over SSE (API → web client)
+6. Validate one citation (worker → citation validation → PostgreSQL)
+7. Verify the answer survives restart (PostgreSQL persistence check)
+
+Test framework: Vitest (already installed). Run via `bun run test:integration`.
+
+### E2E test scope (frontend-architecture.md §7.3)
+
+- Use **Vitest browser mode** (preferred over Playwright for this stack: same test runner as unit/integration tests, no additional binary dependency, SolidJS works natively)
+- Cover: create project → add source → ingest → run research → view answer → open citation
+- Include keyboard navigation assertions (accessibility)
+- Mock model calls in deterministic e2e (no real provider keys required)
+- The `bun run test:e2e` script (currently a placeholder) must invoke `vitest --browser` with the appropriate config
+
+### Observability (architecture.md §11)
+
+- Correlated trace identity across: API request, command, worker job, Fred run/step, model call, retrieval, citation validation
+- `packages/observability/src/tracing.ts` — basic OpenTelemetry wiring:
+  - Span creation for each step of the walking slice
+  - Structured logs with run ID, source ID, workspace ID
+  - No secrets, API keys, or raw source text in logs (docs/local-development.md §3.4)
+  - Metric counters for: runs started, runs completed, runs failed, citations validated
+- Install `@opentelemetry/api`, `@opentelemetry/sdk-node`, `@opentelemetry/exporter-trace-otlp-http` in `packages/observability`
+- For the walking slice, traces log to stdout (OTLP exporter is configured but not required to have a collector running)
+
+### packages/evaluation scaffolding
+
+**`packages/evaluation/` must be created with**:
+- `package.json`:
+  ```json
+  {
+    "name": "@struct/evaluation",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+      "corpus:smoke": "tsx src/corpus-smoke.ts",
+      "corpus:eval": "tsx src/corpus-eval.ts",
+      "bench": "tsx src/benchmarks/run.ts"
+    },
+    "dependencies": {
+      "effect": "3.22.0",
+      "@struct/domain": "workspace:*"
+    }
+  }
+  ```
+- `tsconfig.json` extending root `tsconfig.base.json`
+- `src/index.ts` — public surface (initially exports corpus spec types)
+- `src/corpus-smoke.ts` — placeholder for small synthetic corpus subset
+- `src/corpus-eval.ts` — placeholder for full ~25,000-file corpus evaluation
+- `src/benchmarks/run.ts` — placeholder for performance benchmarks
+- `test/` directory for unit tests
+
+**Note**: The evaluation package is layer 3 (orchestration & eval). It may import `domain`, layers 1–2, but not apps or `fred-workflows`.
+
+### Setup documentation (docs/setup.md)
+
+**Scope**: `docs/setup.md` is a **concise quickstart** (target: <100 lines) that links to canonical docs for details. It must NOT duplicate content from `docs/local-development.md` or `docs/repository-contract.md`.
+
+**Structure**:
+```markdown
+# Quickstart
+
+## Prerequisites
+- Bun 1.3.13, Node v24.15.0, Docker (for PostgreSQL)
+- See [local-development.md §4](./local-development.md) for platform-specific notes
+
+## Setup
+1. `bun install --frozen-lockfile`
+2. `docker compose up -d postgres`
+3. `bun run migrations:up`
+4. `bun run dev` (starts web, api, worker concurrently)
+
+## Environment
+- Copy `.env.example` to `.env` and adjust as needed
+- See [local-development.md §3](./local-development.md) for variable descriptions
+
+## Testing
+- `bun run test` — unit tests
+- `bun run test:integration` — integration tests (requires PostgreSQL)
+- `bun run test:e2e` — browser/e2e tests
+- See [repository-contract.md §2](./repository-contract.md) for CI gate matrix
+
+## Known Gaps
+- No PDF/Office parsing (Phase 02)
+- No datasets or vector search (Phase 02+)
+- No directory recursion (Phase 03)
+- See [roadmap.md](./roadmap.md) for full phase plan
+```
+
+**Rationale**: Consolidating into a single quickstart avoids confusion about which doc to read first. Detailed information (ports, volumes, reset behavior, platform fallbacks) remains in `docs/local-development.md` as the canonical reference.
+
+### CI gate alignment (repository-contract.md §2.1)
+
+This step ensures the walking slice passes the PR gate:
+- `bun install --frozen-lockfile` → lockfile resolves
+- `bun run typecheck` → TS 7.0.2 strict
+- `bun run lint` + `lint:imports` → ESLint + boundary checks
+- `bun run test` → unit tests
+- `bun run build` → all apps build
+- `bun run secrets:scan` → no committed secrets
+- `bun run docs:lint` → docs link-check
+- migration round-trip: `migrations:up && migrations:down && migrations:up`
 
 ## Constraints and Non-Goals
 

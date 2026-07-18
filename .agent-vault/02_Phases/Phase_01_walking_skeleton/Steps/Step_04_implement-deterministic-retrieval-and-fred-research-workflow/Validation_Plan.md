@@ -2,6 +2,8 @@
 
 ## Acceptance Checks
 
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: Three new packages scaffolded in order: `packages/retrieval/`, `packages/research-engine/`, `packages/fred-workflows/` (each with package.json, tsconfig.json, src/index.ts, test/).
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: `packages/fred-workflows/package.json` includes exact `@fancyrobot/fred: 2.0.0` dependency (not `^2.0.0` or `~2.0.0`).
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The smallest retrieval service that can search the stored text source deterministically and hand evidence into one Fred workflow.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: A typed research graph for the walking slice with explicit plan/result schemas and no hidden tool contracts.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: One API route and one worker job so a research request becomes a persisted run with bounded retrieval and synthesis.
