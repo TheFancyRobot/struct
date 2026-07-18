@@ -5,7 +5,7 @@
     "": {
       "name": "@struct/spike-research-durability",
       "dependencies": {
-        "effect": "3.21.5",
+        "effect": "3.22.0",
       },
       "devDependencies": {
         "@effect/language-service": "^0.87.0",
@@ -63,7 +63,7 @@
 
     "bun-types": ["bun-types@1.3.14", "", { "dependencies": { "@types/node": "*" } }, "sha512-4N0ig0fEomHt5R0KCFWjovxow98rIoRwKolrYdCcknNwMekCXRnWEUvgu5soYV8QXtVsrUD8B95MBOZGPvr6KQ=="],
 
-    "effect": ["effect@3.21.5", "", { "dependencies": { "@standard-schema/spec": "^1.0.0", "fast-check": "^3.23.1" } }, "sha512-t2QChwBMRDhz4nKW8KbHtMiGG+ExhIIB6iIf42Be6sNKUF8ryDJ6MFnupyosAMkqPNMWEdvMnkPeSUaHzdzPGg=="],
+    "effect": ["effect@3.22.0", "", { "dependencies": { "@standard-schema/spec": "^1.0.0", "fast-check": "^3.23.1" } }, "sha512-jhYFe0zTlIRqYFrKTS+6luhmS/Tm0f+JLo0K9KUxvtFab1SUGEszQi2ehOP6QzAZvy831lDmTwwzvVDZSPNz3g=="],
 
     "fast-check": ["fast-check@3.23.2", "", { "dependencies": { "pure-rand": "^6.1.0" } }, "sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A=="],
 

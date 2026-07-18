@@ -59,6 +59,7 @@ tags:
 - Enforce maximum steps, model/tool calls, tokens, elapsed time, estimated cost, duplicate-action detection, and no-progress detection.
 - Support cancellation, retry, checkpoint/resume, idempotency, and structured tracing.
 - Higher-level recursive synthesis must preserve source evidence and be able to reopen original material.
+- Enforce a repository-wide zero-defect advancement gate: no new roadmap step or phase starts while any confirmed defect is known. Fix defects regardless of current scope, validate the fix, and treat externally blocked defects as advancement blockers rather than deferrable follow-up.
 
 ## Failure Modes
 

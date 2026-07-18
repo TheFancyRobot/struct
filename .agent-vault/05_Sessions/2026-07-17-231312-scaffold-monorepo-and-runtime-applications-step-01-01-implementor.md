@@ -55,7 +55,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 23:30 - Created apps/api (Bun HTTP server + Effect runtime, healthz + SSE placeholder).
 - 23:32 - Created apps/worker (Effect runtime skeleton).
 - 23:35 - Created packages/domain (branded UUIDs, Effect Schemas, Schema.TaggedError types).
-- 23:37 - Created packages/persistence and packages/observability placeholders.
+- 23:37 - Created STEP-01-01 placeholder scaffolds for packages/persistence and packages/observability; the persistence scaffold was superseded by STEP-01-02 implementation.
 - 23:40 - All validations pass: typecheck, build, test (3), Compose config, API/web smoke.
 - 23:42 - Sent completion message to team-lead. Marked step completed.
 - 00:00 - Reviewer REJECTED with 7 findings. Step status corrected to in_progress.
@@ -175,6 +175,6 @@ STEP-01-01 is complete. The monorepo scaffold includes:
 - apps/api (Bun HTTP + Effect Config.* + healthz/SSE placeholder)
 - apps/worker (Effect Config.* skeleton)
 - packages/domain (branded IDs, Effect Schemas, Schema.TaggedError)
-- packages/persistence, packages/observability (placeholders)
+- packages/persistence, packages/observability (STEP-01-01 placeholders; persistence superseded by STEP-01-02 implementation)
 
 All 13 tests pass. All validations green. Two review rounds addressed all findings. Session closed honestly with complete changed paths, validation results, and findings. Docker Compose path fixed to ./.local/pgdata. Phase 01 Steps 2-6 execution briefs refined (separate review unit).

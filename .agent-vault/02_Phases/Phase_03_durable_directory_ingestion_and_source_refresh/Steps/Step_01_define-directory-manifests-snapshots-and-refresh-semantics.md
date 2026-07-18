@@ -48,7 +48,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
 - Status: planned
-- Current owner: 
+- Current owner:
 - Last touched: 2026-07-17
 - Next action: Read [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_01_define-directory-manifests-snapshots-and-refresh-semantics/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_01_define-directory-manifests-snapshots-and-refresh-semantics/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
 <!-- AGENT-END:step-agent-managed-snapshot -->

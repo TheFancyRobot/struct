@@ -9,6 +9,8 @@ A task is done when the change is both implemented and made legible for the next
 - User-facing or operator-facing behavior changes are documented when needed.
 - New bugs, decisions, or follow-up work are recorded instead of left implicit.
 - The active context reflects the latest truth when the work materially changes current focus.
+- The repository has zero known confirmed defects before another roadmap step or phase begins; defects discovered anywhere are fixed and revalidated regardless of current scope.
+- A genuinely external blocker is recorded as an open bug and blocks advancement until resolved.
 
 ## Done For Vault Work
 

@@ -8,14 +8,14 @@ status: planned
 owner: ''
 created: '2026-07-17'
 updated: '2026-07-17'
-depends_on: 
+depends_on:
   - '[[02_Phases/Phase_07_hybrid_cross_source_research/Phase|PHASE-07 Hybrid Cross-Source Research]]'
 related_architecture:
   - '[[01_Architecture/System_Overview|System Overview]]'
   - '[[01_Architecture/Domain_Model|Domain Model]]'
   - '[[01_Architecture/Integration_Map|Integration Map]]'
   - '[[01_Architecture/Agent_Workflow|Agent Workflow]]'
-related_decisions: 
+related_decisions:
   - '[[04_Decisions/DEC-0006_make-source-versions-immutable-and-provenance-typed|DEC-0006 Make Source Versions Immutable and Provenance Typed]]'
   - '[[04_Decisions/DEC-0008_own-the-typed-api-and-live-research-event-stream|DEC-0008 Own the Typed API and Live Research Event Stream]]'
 related_bugs: []

@@ -1,5 +1,5 @@
 /**
- * @struct/persistence — Repository interfaces, migrations, checkpoint records.
+ * @struct/persistence — Repository services, migrations, and persistence errors.
  *
  * Layer 1 package. May import @struct/domain only.
  *
@@ -7,5 +7,59 @@
  * This package defines the migration runner contract; apps/api owns the pool.
  */
 
-// Placeholder exports for the walking-skeleton scaffold.
-// Full repository interfaces and migration runner contract land in STEP-01-02.
+// Migration runner — applies/reverts SQL migrations.
+export { runMigrationsUp, runMigrationsDown } from './migrations/runner.js'
+export type { SqlExecutor, SqlExecutorWithTransactions, MigrationError } from './migrations/runner.js'
+export { migrations } from './migrations/manifest.js'
+export type { Migration } from './migrations/manifest.js'
+
+// Repository services and decode functions.
+export {
+  // DecodeError
+  DecodeError,
+  // Decode functions
+  decodeWorkspaceRow,
+  decodeProjectRow,
+  decodeSourceRow,
+  decodeSourceVersionRow,
+  decodeResearchThreadRow,
+  decodeResearchRunRow,
+  decodeCitationRow,
+  // Repository Effect.Services
+  WorkspaceRepo,
+  ProjectRepo,
+  SourceRepo,
+  SourceVersionRepo,
+  ResearchThreadRepo,
+  ResearchRunRepo,
+  CitationRepo,
+  // Persistence errors
+  QueryError,
+  EntityNotFoundError,
+  UniqueConstraintError,
+  // SQL Client
+  SqlClient,
+  SqlClientLive,
+} from './repositories/index.js'
+
+// Repository row types (for implementation consumers).
+export type {
+  WorkspaceRow,
+  ProjectRow,
+  SourceRow,
+  SourceVersionRow,
+  ResearchThreadRow,
+  ResearchRunRow,
+  CitationRow,
+} from './repositories/decode.js'
+
+// Repository interface types (for consumers).
+export type {
+  WorkspaceRepository,
+  ProjectRepository,
+  SourceRepository,
+  SourceVersionRepository,
+  ResearchThreadRepository,
+  ResearchRunRepository,
+  CitationRepository,
+} from './repositories/interfaces.js'

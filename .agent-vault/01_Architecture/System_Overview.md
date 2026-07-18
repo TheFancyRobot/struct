@@ -28,10 +28,10 @@ tags:
 
 ## Overview
 
-- Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold complete. The monorepo has Bun workspace manifests, three runtime apps, and three packages, all passing gates.
+- Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold complete and STEP-01-02 domain schemas/persistence migrations complete. The monorepo has Bun workspace manifests, three runtime apps, and core domain/persistence/observability packages, all passing gates.
 - The planned product is a source-grounded workspace for projects, source ingestion, multi-step research, exact computation, navigable citations, saved findings, and Markdown reports.
 - The runtime is Bun with TypeScript 7.0.2, Effect for services and typed failures, and Fred for agent/workflow orchestration (Fred packages not yet installed — STEP-01-04+).
-- PostgreSQL with pgvector provides application persistence, full-text search, and initial vector search (migration runner not yet implemented — STEP-01-02). DuckDB and Parquet provide deterministic structured-data analysis (not yet implemented — later phases). Original artifacts use a local-development storage adapter and an S3-compatible production abstraction (not yet implemented — STEP-01-03+).
+- PostgreSQL with pgvector provides application persistence, full-text search, and initial vector search; STEP-01-02 implemented the migration runner, initial pgvector/schema migrations, typed row decoders, and postgres-backed repository services. DuckDB and Parquet provide deterministic structured-data analysis (not yet implemented — later phases). Original artifacts use a local-development storage adapter and an S3-compatible production abstraction (not yet implemented — STEP-01-03+).
 
 ## Key Components
 
@@ -53,7 +53,7 @@ tags:
 - `apps/api` — Bun HTTP + Effect Config, healthz/SSE placeholder (scaffolded).
 - `apps/worker` — Effect Config skeleton (scaffolded).
 - `packages/domain` — branded IDs, Effect Schemas, Schema.TaggedError (scaffolded).
-- `packages/persistence` — placeholder (scaffolded; migrations in STEP-01-02).
+- `packages/persistence` — pgvector/schema migrations, typed row decoders, typed persistence errors, and postgres-backed repository services (STEP-01-02).
 - `packages/observability` — placeholder (scaffolded).
 - `docs/adr/` — architecture decision records (DEC-0001 … DEC-0014).
 <!-- AGENT-END:architecture-important-paths -->

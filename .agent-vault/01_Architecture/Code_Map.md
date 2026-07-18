@@ -26,17 +26,17 @@ tags:
 
 ## Overview
 
-- Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold complete.
+- Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold complete and STEP-01-02 domain schemas/persistence migrations complete.
 - `README.md` has the bootstrap quick-start, `AGENTS.md` contains vault instructions, and `docs/product-brief.md` is the product specification.
 - Runtime apps (`apps/web`, `apps/api`, `apps/worker`), core packages (`domain`, `persistence`, `observability`), Bun workspace manifests, ESLint 10 flat config, dependency-cruiser, Vitest tests, and Docker Compose for PostgreSQL+pgvector are all implemented and passing all gates.
 - Later-phase packages (`source-storage`, `ingestion`, `document-processing`, `retrieval`, `data-engine`, `research-engine`, `fred-workflows`, `evaluation`, `shared-ui`) remain planned and are scaffolded when their owning step needs them.
-- Persistence migrations, API endpoints beyond healthz, and CI configuration are not yet implemented.
+- Persistence migrations and core postgres-backed repository services are implemented; API endpoints beyond healthz and CI configuration are not yet implemented.
 
 ## Key Components
 
 <!-- AGENT-START:architecture-key-components -->
 - Scaffolded applications (STEP-01-01): `apps/web` (SolidJS 1.9 + Vite 8 + Solid Router + Tailwind 4 + DaisyUI), `apps/api` (Bun HTTP + Effect Config), `apps/worker` (Effect Config skeleton).
-- Scaffolded core packages: `domain` (branded IDs, Effect Schemas, Schema.TaggedError), `persistence` (placeholder), `observability` (placeholder).
+- Core packages: `domain` (branded IDs, Effect Schemas, Schema.TaggedError), `persistence` (pgvector migrations, typed row decoders, postgres-backed repository services), `observability` (placeholder).
 - Planned core packages (scaffolded by their owning step): `source-storage`, `ingestion`, `document-processing`, `retrieval`, `data-engine`, `research-engine`, `fred-workflows`.
 - Planned support packages: `evaluation`, `shared-ui`.
 - Architecture deliverables: architecture, domain model, research execution, provenance, security, evaluation, roadmap, implementation plan, and ADR documents.
@@ -52,7 +52,7 @@ tags:
 - `apps/api` — Bun HTTP + Effect Config, healthz/SSE placeholder (scaffolded).
 - `apps/worker` — Effect Config skeleton (scaffolded).
 - `packages/domain` — branded IDs, Effect Schemas, Schema.TaggedError (scaffolded).
-- `packages/persistence` — placeholder (scaffolded; migrations in STEP-01-02).
+- `packages/persistence` — pgvector migrations, typed row decoders, typed persistence errors, and postgres-backed repository services from STEP-01-02.
 - `packages/observability` — placeholder (scaffolded).
 - `packages/fred-workflows` — planned product-specific Fred agents, tools, graphs, and prompts (STEP-01-04+).
 - `eslint.config.mjs` — ESLint 10 flat config with TS/Solid/Effect convention enforcement.

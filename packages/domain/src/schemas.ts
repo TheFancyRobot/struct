@@ -68,6 +68,7 @@ export const SourceVersion = Schema.Struct({
   sourceId: Ids.SourceId,
   version: Schema.Number,
   artifactRef: Schema.String,
+  contentHash: Schema.String,
   createdAt: Schema.BigIntFromNumber,
 })
 

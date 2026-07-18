@@ -1,0 +1,126 @@
+import { describe, it, expect, beforeEach } from 'vitest'
+import { Effect } from 'effect'
+import { runMigrationsUp, runMigrationsDown, type SqlExecutorWithTransactions } from './runner'
+import { migrations } from './manifest'
+
+/**
+ * Fake SQL executor that records executed queries.
+ * Simulates the _migrations tracking table in-memory.
+ * Supports transactions via begin() which just executes the callback.
+ */
+function createFakeSqlExecutor(): SqlExecutorWithTransactions & { queries: string[] } {
+  const queries: string[] = []
+  const appliedMigrations = new Set<string>()
+
+  const executor: SqlExecutorWithTransactions & { queries: string[] } = {
+    queries,
+    async unsafe(query: string): Promise<unknown> {
+      queries.push(query)
+
+      // Simulate _migrations table queries
+      if (query.includes('CREATE TABLE IF NOT EXISTS _migrations')) {
+        return []
+      }
+      if (query.includes('SELECT name FROM _migrations')) {
+        return Array.from(appliedMigrations).map((name) => ({ name }))
+      }
+      if (query.startsWith('INSERT INTO _migrations')) {
+        const match = query.match(/'([^']+)'/)
+        if (match) appliedMigrations.add(match[1])
+        return []
+      }
+      if (query.startsWith('DELETE FROM _migrations WHERE name')) {
+        const match = query.match(/'([^']+)'/)
+        if (match) appliedMigrations.delete(match[1])
+        return []
+      }
+
+      // For any other SQL (actual migration content), just record it
+      return []
+    },
+    async begin<T>(fn: (tx: SqlExecutorWithTransactions) => Promise<T>): Promise<T> {
+      // In the fake, just execute the callback with the same executor
+      // (no real transaction semantics, but records queries correctly)
+      return fn(executor)
+    },
+  }
+
+  return executor
+}
+
+describe('Migration Runner', () => {
+  let fakeSql: SqlExecutorWithTransactions & { queries: string[] }
+
+  beforeEach(() => {
+    fakeSql = createFakeSqlExecutor()
+  })
+
+  describe('runMigrationsUp', () => {
+    it('creates _migrations tracking table first', async () => {
+      await Effect.runPromise(runMigrationsUp(fakeSql))
+
+      // The first query should create the tracking table
+      expect(fakeSql.queries[0]).toContain('CREATE TABLE IF NOT EXISTS _migrations')
+    })
+
+    it('applies all pending migrations in order', async () => {
+      await Effect.runPromise(runMigrationsUp(fakeSql))
+
+      // Should have applied each migration
+      const migrationNames = migrations.map((m) => m.name)
+      for (const name of migrationNames) {
+        const insertQuery = fakeSql.queries.find(
+          (q) => q.startsWith('INSERT INTO _migrations') && q.includes(name),
+        )
+        expect(insertQuery).toBeDefined()
+      }
+    })
+
+    it('skips already-applied migrations', async () => {
+      // Pre-apply first migration
+      await Effect.runPromise(runMigrationsUp(fakeSql))
+
+      // Reset queries but keep applied state
+      fakeSql.queries.length = 0
+
+      // Run again
+      await Effect.runPromise(runMigrationsUp(fakeSql))
+
+      // Should not re-apply any migrations (only check queries)
+      const migrationSqlQueries = fakeSql.queries.filter(
+        (q) =>
+          !q.includes('CREATE TABLE IF NOT EXISTS _migrations') &&
+          !q.includes('SELECT name FROM _migrations') &&
+          !q.startsWith('INSERT INTO _migrations'),
+      )
+      expect(migrationSqlQueries).toHaveLength(0)
+    })
+  })
+
+  describe('runMigrationsDown', () => {
+    it('reverts the last applied migration', async () => {
+      // Apply all first
+      await Effect.runPromise(runMigrationsUp(fakeSql))
+      fakeSql.queries.length = 0
+
+      // Revert last
+      await Effect.runPromise(runMigrationsDown(fakeSql))
+
+      // Should have deleted the last migration record
+      const deleteQuery = fakeSql.queries.find(
+        (q) => q.startsWith('DELETE FROM _migrations WHERE name') && q.includes('0002_init_tables'),
+      )
+      expect(deleteQuery).toBeDefined()
+    })
+
+    it('does nothing when no migrations are applied', async () => {
+      await Effect.runPromise(runMigrationsDown(fakeSql))
+
+      // Should only have the tracking table creation and select query
+      const migrationQueries = fakeSql.queries.filter(
+        (q) => !q.includes('CREATE TABLE IF NOT EXISTS _migrations') && !q.includes('SELECT name FROM _migrations'),
+      )
+      expect(migrationQueries).toHaveLength(0)
+    })
+  })
+})

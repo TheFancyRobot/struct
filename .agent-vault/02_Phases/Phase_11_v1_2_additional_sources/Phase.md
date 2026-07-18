@@ -8,7 +8,7 @@ status: planned
 owner: ''
 created: '2026-07-17'
 updated: '2026-07-17'
-depends_on: 
+depends_on:
   - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]]'
   - '[[02_Phases/Phase_10_v1_1_research_usability/Phase|PHASE-10 v1.1 Research Usability]]'
 related_architecture:
@@ -16,7 +16,7 @@ related_architecture:
   - '[[01_Architecture/Domain_Model|Domain Model]]'
   - '[[01_Architecture/Integration_Map|Integration Map]]'
   - '[[01_Architecture/Agent_Workflow|Agent Workflow]]'
-related_decisions: 
+related_decisions:
   - '[[04_Decisions/DEC-0002_prefer-product-local-adapters-before-fred-core-changes|DEC-0002 Prefer Product-Local Adapters Before Fred Core Changes]]'
   - '[[04_Decisions/DEC-0006_make-source-versions-immutable-and-provenance-typed|DEC-0006 Make Source Versions Immutable and Provenance Typed]]'
 related_bugs: []

@@ -47,7 +47,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
 - Status: planned
-- Current owner: 
+- Current owner:
 - Last touched: 2026-07-17
 - Next action: Read [[02_Phases/Phase_12_v1_3_continuous_research/Steps/Step_01_schedule-source-change-detection-and-refresh/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_12_v1_3_continuous_research/Steps/Step_01_schedule-source-change-detection-and-refresh/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
 <!-- AGENT-END:step-agent-managed-snapshot -->

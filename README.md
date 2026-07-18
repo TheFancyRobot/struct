@@ -2,7 +2,7 @@
 
 A trustworthy, source-grounded research workspace for documents, datasets, and directories. Documents are retrieved, datasets are queried, directories are navigated, and large corpora are recursively analyzed — with deterministic computation, verifiable citations, and durable, resumable work.
 
-> **Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold complete.** The monorepo has Bun workspace manifests, three runtime apps (`apps/web`, `apps/api`, `apps/worker`), and three packages (`domain`, `persistence`, `observability`). All gates pass (typecheck, lint, lint:imports, build, test, Compose config, app smokes). Persistence migrations, API endpoints, and CI are not yet implemented.
+> **Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold complete and STEP-01-02 domain schemas/persistence migrations complete.** The monorepo has Bun workspace manifests, three runtime apps (`apps/web`, `apps/api`, `apps/worker`), core domain/persistence/observability packages, PostgreSQL/pgvector migrations, typed row decoders, and postgres-backed repository services. All gates pass (typecheck, lint, lint:imports, build, Vitest, literal Bun tests, DB integration tests, migration up/down/up, Compose config, app smokes). Product API endpoints beyond healthz and CI are not yet implemented.
 
 ## Canonical documents
 
@@ -27,11 +27,11 @@ A trustworthy, source-grounded research workspace for documents, datasets, and d
 ```
 apps/
 ├── web        # SolidJS 1.9 + Vite 8 + Solid Router + Tailwind 4 + DaisyUI (DEC-0013, DEC-0014)
-├── api        # Bun HTTP + Effect Config — healthz, SSE placeholder (migration executor in later steps)
-└── worker     # Effect Config skeleton — durable execution (jobs in later steps)
+├── api        # Bun HTTP + Effect Config — healthz and sole migration executor implemented; product endpoints/SSE later
+└── worker     # Effect Config skeleton — durable execution and jobs in later steps
 
 packages/
-├── domain · persistence · observability          # scaffolded (STEP-01-01)
+├── domain · persistence · observability          # domain/persistence implemented through STEP-01-02; observability scaffolded
 ├── source-storage · ingestion · document-processing  # planned (STEP-01-03+)
 ├── retrieval · data-engine · research-engine · fred-workflows  # planned (STEP-01-04+)
 └── evaluation · shared-ui                              # planned (later phases)
@@ -48,9 +48,7 @@ docker compose up -d postgres  # PostgreSQL 16 + pgvector (or use a local Postgr
 bun run dev                     # starts web (3000), api (3001), worker (3002) concurrently
 ```
 
-> Migrations (`bun run migrations:up`) are defined in the root script but require
-> `packages/persistence` migration implementation (STEP-01-02). The healthz endpoint
-> works without a database connection.
+> Migrations (`bun run migrations:up` / `bun run migrations:down`) are implemented and executed only through `apps/api` as the sole migration executor. The healthz endpoint works without a database connection.
 
 Docker-unavailable fallback, platform notes, and reset steps are in [docs/local-development.md](./docs/local-development.md).
 
@@ -64,8 +62,8 @@ bun run test        # vitest unit + entrypoint tests
 bun run build       # build all apps (web Vite, api/worker tsc)
 bun run test:integration   # integration tests (planned, Phase 01+)
 bun run test:e2e           # browser/e2e (planned, Phase 01+)
-bun run migrations:up      # apply migrations (planned, STEP-01-02)
-bun run migrations:down    # roll back one migration (planned, STEP-01-02)
+bun run migrations:up      # apply implemented PostgreSQL/pgvector migrations through apps/api
+bun run migrations:down    # roll back one implemented migration through apps/api
 bun run corpus:smoke        # small evaluation subset (planned, Phase 04)
 bun run corpus:eval         # full ~25k corpus + quality gates (planned, Phase 09)
 ```

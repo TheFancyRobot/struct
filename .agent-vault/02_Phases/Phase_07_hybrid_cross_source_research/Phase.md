@@ -8,7 +8,7 @@ status: planned
 owner: ''
 created: '2026-07-17'
 updated: '2026-07-17'
-depends_on: 
+depends_on:
   - '[[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|PHASE-05 Typed Research Planning and Bounded Execution]]'
   - '[[02_Phases/Phase_06_recursive_corpus_analysis/Phase|PHASE-06 Recursive Corpus Analysis]]'
 related_architecture:
@@ -16,7 +16,7 @@ related_architecture:
   - '[[01_Architecture/Domain_Model|Domain Model]]'
   - '[[01_Architecture/Integration_Map|Integration Map]]'
   - '[[01_Architecture/Agent_Workflow|Agent Workflow]]'
-related_decisions: 
+related_decisions:
   - '[[04_Decisions/DEC-0006_make-source-versions-immutable-and-provenance-typed|DEC-0006 Make Source Versions Immutable and Provenance Typed]]'
   - '[[04_Decisions/DEC-0007_compose-a-product-job-journal-with-fred-checkpoints|DEC-0007 Compose a Product Job Journal with Fred Checkpoints]]'
   - '[[04_Decisions/DEC-0010_use-focused-fred-agents-with-deterministic-effect-tools|DEC-0010 Use Focused Fred Agents with Deterministic Effect Tools]]'

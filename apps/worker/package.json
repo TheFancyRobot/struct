@@ -7,7 +7,7 @@
   "types": "./src/main.ts",
   "scripts": {
     "dev": "tsx watch src/main.ts",
-    "build": "tsc --project tsconfig.json",
+    "build": "rm -rf dist && tsc --project tsconfig.json",
     "typecheck": "tsc --noEmit --project tsconfig.json",
     "test": "vitest run"
   },

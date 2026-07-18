@@ -7,7 +7,7 @@
       "dependencies": {
         "@fancyrobot/fred": "2.0.0",
         "@fancyrobot/fred-http": "1.0.0",
-        "effect": "3.21.5",
+        "effect": "3.22.0",
       },
       "devDependencies": {
         "@effect/language-service": "^0.87.0",
@@ -165,7 +165,7 @@
 
     "detect-libc": ["detect-libc@2.1.2", "", {}, "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ=="],
 
-    "effect": ["effect@3.21.5", "", { "dependencies": { "@standard-schema/spec": "^1.0.0", "fast-check": "^3.23.1" } }, "sha512-t2QChwBMRDhz4nKW8KbHtMiGG+ExhIIB6iIf42Be6sNKUF8ryDJ6MFnupyosAMkqPNMWEdvMnkPeSUaHzdzPGg=="],
+    "effect": ["effect@3.22.0", "", { "dependencies": { "@standard-schema/spec": "^1.0.0", "fast-check": "^3.23.1" } }, "sha512-jhYFe0zTlIRqYFrKTS+6luhmS/Tm0f+JLo0K9KUxvtFab1SUGEszQi2ehOP6QzAZvy831lDmTwwzvVDZSPNz3g=="],
 
     "eta": ["eta@4.6.0", "", {}, "sha512-lW6is4T1NFOYnmqGZIfvixqj7A7sSvScF+DN8EK6K58xI5MZ5UvYe0GjopxOXQtZvUn4eDdVuZ8XSoYWTMEKwA=="],
 

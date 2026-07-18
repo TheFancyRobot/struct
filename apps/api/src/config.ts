@@ -3,9 +3,6 @@
  *
  * Reads environment variables through Effect's Config system, not process.env.
  * This is the boot boundary: Config.* resolves at app startup.
- *
- * DATABASE_URL is not part of the walking-skeleton boot path; it will be
- * added in STEP-01-02 when migrations and database connections are implemented.
  */
 
 import { Config } from 'effect'
@@ -14,3 +11,6 @@ import { Config } from 'effect'
 export const apiPortConfig = Config.number('API_PORT').pipe(
   Config.withDefault(3001),
 )
+
+/** Database connection URL (required, no default). */
+export const databaseUrlConfig = Config.string('DATABASE_URL')

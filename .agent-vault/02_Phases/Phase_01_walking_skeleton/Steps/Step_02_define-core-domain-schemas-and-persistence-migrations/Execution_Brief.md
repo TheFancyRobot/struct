@@ -17,7 +17,7 @@
   - `packages/domain/src/branded-ids.ts` — branded UUIDs for all walking-slice entities
   - `packages/domain/src/schemas.ts` — Effect Schemas for Workspace, Project, Source, SourceVersion, ResearchThread, ResearchRun, Citation, Finding, Report
   - `packages/domain/src/typed-errors.ts` — Schema.TaggedError classes
-  - `packages/persistence/src/index.ts` — placeholder (add repository exports here)
+  - `packages/persistence/src/index.ts` — STEP-01-01 empty scaffold file; STEP-01-02 extends it with migration and repository exports
 - New files to create:
   - `packages/persistence/src/migrations/0001_enable_pgvector.sql`
   - `packages/persistence/src/migrations/0002_init_tables.sql`
@@ -61,12 +61,12 @@ The monorepo scaffold already provides:
 - `packages/domain/src/branded-ids.ts` — branded UUIDs for WorkspaceId, ProjectId, SourceId, SourceVersionId, ResearchThreadId, ResearchRunId, CitationId, FindingId, ReportId, DatasetId, DatasetSnapshotId, QueryResultSnapshotId, EventJournalId
 - `packages/domain/src/schemas.ts` — Effect Schemas for Workspace, Project, Source, SourceVersion, ResearchThread, ResearchRun, Citation, Finding, Report; enums for SourceKind, IngestionStatus, ResearchStatus, CitationStatus
 - `packages/domain/src/typed-errors.ts` — Schema.TaggedError classes: NotFoundError, ValidationError, AuthorizationError, CitationValidationError, SourceVersionError
-- `packages/persistence/src/index.ts` — placeholder (empty)
-- `packages/observability/src/index.ts` — placeholder (empty)
-- `apps/api/src/config.ts` — Effect Config.* for API (apiPortConfig only; **databaseUrlConfig does NOT exist yet** — must be added by this step)
-- `apps/worker/src/config.ts` — Effect Config.* for worker (workerMetricsPortConfig only; **databaseUrlConfig does NOT exist yet** — must be added by this step)
+- `packages/persistence/src/index.ts` — STEP-01-01 empty scaffold file; STEP-01-02 extends it with migration and repository exports
+- `packages/observability/src/index.ts` — STEP-01-01 empty scaffold file retained for later observability wiring
+- `apps/api/src/config.ts` — Effect Config.* for API; STEP-01-02 adds `databaseUrlConfig`
+- `apps/worker/src/config.ts` — Effect Config.* for worker; STEP-01-02 adds `databaseUrlConfig`
 
-**Note**: The config files explicitly state "DATABASE_URL is not part of the walking-skeleton boot path; it will be added in STEP-01-02". This step must add it.
+**Note**: The STEP-01-01 config files stated "DATABASE_URL is not part of the walking-skeleton boot path; it will be added in STEP-01-02". STEP-01-02 implements that handoff.
 
 ### What this step must ADD (not recreate)
 

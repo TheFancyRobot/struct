@@ -8,7 +8,7 @@ status: planned
 owner: ''
 created: '2026-07-17'
 updated: '2026-07-17'
-depends_on: 
+depends_on:
   - '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]]'
   - '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]]'
 related_architecture:
@@ -16,7 +16,7 @@ related_architecture:
   - '[[01_Architecture/Domain_Model|Domain Model]]'
   - '[[01_Architecture/Integration_Map|Integration Map]]'
   - '[[01_Architecture/Agent_Workflow|Agent Workflow]]'
-related_decisions: 
+related_decisions:
   - '[[04_Decisions/DEC-0002_prefer-product-local-adapters-before-fred-core-changes|DEC-0002 Prefer Product-Local Adapters Before Fred Core Changes]]'
   - '[[04_Decisions/DEC-0007_compose-a-product-job-journal-with-fred-checkpoints|DEC-0007 Compose a Product Job Journal with Fred Checkpoints]]'
   - '[[04_Decisions/DEC-0010_use-focused-fred-agents-with-deterministic-effect-tools|DEC-0010 Use Focused Fred Agents with Deterministic Effect Tools]]'

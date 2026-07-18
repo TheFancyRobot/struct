@@ -33,3 +33,10 @@ Use `.agent-vault/` as durable project memory. Prefer MCP tools over direct edit
 - See `.agent-vault/AGENTS.md` for the full contract.
 
 <!-- agent-vault:end -->
+
+## Zero-Defect Advancement Gate
+
+- Do not start a new roadmap step or phase while any confirmed defect is known anywhere in the repository.
+- Fix every discovered defect, even when it is unrelated to the current step or phase, then validate the fix before advancing.
+- A genuinely external blocker must be recorded as an open bug and blocks roadmap advancement until resolved; it is not an exception to the gate.
+- Review approval and step completion require zero known confirmed defects across code, tests, builds, security, documentation, and vault state.

@@ -23,7 +23,7 @@ tags:
 - ✅ `apps/api` — Bun native HTTP server with Effect runtime, health check, SSE placeholder
 - ✅ `apps/worker` — Effect runtime skeleton, ready for job execution
 - ✅ `packages/domain` — Branded UUIDs, Effect Schemas, Schema.TaggedError definitions
-- ✅ `packages/persistence` — Placeholder scaffold
+- ✅ `packages/persistence` — STEP-01-01 placeholder scaffold (superseded by STEP-01-02 pgvector migrations, typed decoders, and postgres-backed repository services)
 - ✅ `packages/observability` — Placeholder scaffold
 - ✅ Root scripts: `dev`, `build`, `typecheck`, `lint`, `lint:imports`, `test`, `migrations:up/down/create`, etc.
 - ✅ Tooling configs: vitest, ESLint 10 flat config, dependency-cruiser, babel.config.json

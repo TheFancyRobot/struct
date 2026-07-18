@@ -48,7 +48,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
 - Status: planned
-- Current owner: 
+- Current owner:
 - Last touched: 2026-07-17
 - Next action: Read [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_04_build-hybrid-synthesis-with-quantitative-guardrails/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_04_build-hybrid-synthesis-with-quantitative-guardrails/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
 <!-- AGENT-END:step-agent-managed-snapshot -->

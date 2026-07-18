@@ -47,7 +47,7 @@ tags:
 - `apps/web` — scaffolded browser client (SolidJS 1.9 + Vite 8); evidence inspector and SSE planned in later steps.
 - `apps/api` — scaffolded typed HTTP boundary (Bun HTTP + Effect Config); auth, SSE, and command handling planned in later steps.
 - `apps/worker` — scaffolded execution process (Effect Config skeleton); ingestion and research execution planned in later steps.
-- `packages/persistence` — scaffolded placeholder; PostgreSQL repositories and migrations planned in STEP-01-02.
+- `packages/persistence` — STEP-01-02 implemented pgvector/schema migrations, typed row decoders, typed persistence errors, and postgres-backed repository services.
 - `packages/data-engine` — planned DuckDB/Parquet adapter and SQL safety layer.
 - `packages/source-storage` — planned filesystem and S3-compatible adapters.
 - `packages/observability` — scaffolded placeholder; OpenTelemetry wiring planned in later steps.

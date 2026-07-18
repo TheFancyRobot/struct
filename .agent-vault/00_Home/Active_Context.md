@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-18._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_01_walking_skeleton/Steps/Step_02_define-core-domain-schemas-and-persistence-migrations|STEP-01-02 Define Core Domain Schemas and Persistence Migrations]] - status: planned - phase: [[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]
+- Current step: [[02_Phases/Phase_01_walking_skeleton/Steps/Step_03_implement-single-text-source-ingestion-and-artifact-storage|STEP-01-03 Implement Single Text Source Ingestion and Artifact Storage]] - status: planned - phase: [[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]
 - Active phase: [[02_Phases/Phase_01_walking_skeleton/Phase|PHASE-01 Walking Skeleton]] - status: planned - updated: 2026-07-17
-- Also active: 70 more additional steps.
+- Also active: 69 more additional steps.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -35,9 +35,12 @@ _Last refreshed: 2026-07-18._
 
 ## In Scope Right Now
 
-- Phase 01 walking skeleton: STEP-01-01 scaffold complete, STEP-01-02+ in planning.
+- Phase 01 walking skeleton: STEP-01-01 scaffold complete, STEP-01-02 domain schemas & migrations complete, STEP-01-03+ in planning.
 - Keep architecture notes aligned with the code as implementation progresses.
 - Record non-trivial decisions as dedicated notes.
+- STEP-01-02 lead verification fixes completed: typed decoders, real postgres-backed repositories, typed migration errors/resource-safe CLI, and atomic migration tracking.
+- Validation completed: typecheck, lint, import boundaries, Vitest, DB integration tests, migration smoke, and build all passed.
+- Zero-defect gate follow-up completed for STEP-01-02: fixed raw Bun test build-artifact discovery, idempotent DB integration fixtures, and spike-local Effect version skew. Final root/spike gates pass.
 
 ## Out Of Scope Right Now
 
@@ -70,6 +73,6 @@ _Last refreshed: 2026-07-18._
 
 ## Next Actions
 
-- Complete STEP-01-01 final review.
-- Begin STEP-01-02 (Define Core Domain Schemas and Persistence Migrations).
+- Await read-only re-review/approval for STEP-01-02 Task 3.
+- After approval, begin [[02_Phases/Phase_01_walking_skeleton/Steps/Step_03_implement-single-text-source-ingestion-and-artifact-storage|STEP-01-03 Implement Single Text Source Ingestion and Artifact Storage]].
 - Keep architecture notes aligned with the code as implementation progresses.

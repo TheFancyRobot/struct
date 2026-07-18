@@ -10,8 +10,9 @@
     "migrations:create": "tsx scripts/create-migration.ts"
   },
   "dependencies": {
+    "@struct/domain": "workspace:*",
     "effect": "3.22.0",
-    "@struct/domain": "workspace:*"
+    "postgres": "^3.4.9"
   },
   "devDependencies": {
     "typescript": "7.0.2",

@@ -45,8 +45,8 @@ tags:
 
 <!-- AGENT-START:architecture-important-paths -->
 - `docs/product-brief.md` sections 8–9 — required entities and citation/provenance variants.
-- `packages/domain` — planned Effect Schemas, branded identifiers, invariants, and typed failures.
-- `packages/persistence` — planned repositories, migrations, transactions, and immutable version storage.
+- `packages/domain` — implemented Effect Schemas, branded identifiers, and typed failures for the core walking-skeleton entities.
+- `packages/persistence` — implemented pgvector/schema migrations, transaction-safe migration tracking, typed row decoders, typed persistence errors, and postgres-backed repository services for the core walking-skeleton entities.
 - `packages/source-storage` — planned original artifacts, manifests, extracted artifacts, and content-addressed objects.
 <!-- AGENT-END:architecture-important-paths -->
 

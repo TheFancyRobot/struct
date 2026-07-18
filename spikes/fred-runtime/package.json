@@ -9,7 +9,7 @@
   "dependencies": {
     "@fancyrobot/fred": "2.0.0",
     "@fancyrobot/fred-http": "1.0.0",
-    "effect": "3.21.5"
+    "effect": "3.22.0"
   },
   "devDependencies": {
     "@effect/language-service": "^0.87.0",
