@@ -8,14 +8,19 @@ phase: '[[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]'
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-18'
 depends_on:
   - '[[02_Phases/Phase_01_walking_skeleton/Steps/Step_03_implement-single-text-source-ingestion-and-artifact-storage|STEP-01-03 Implement Single Text Source Ingestion and Artifact Storage]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-18-201147-implement-deterministic-retrieval-and-fred-research-workflow-step-01-04-implementor|SESSION-2026-07-18-201147 step-01-04-implementor session for Implement Deterministic Retrieval and Fred Research Workflow]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-18-201147
+active_session_id: 05_Sessions/2026-07-18-201147-implement-deterministic-retrieval-and-fred-research-workflow-step-01-04-implementor
+context_status: active
+context_summary: Advance [[02_Phases/Phase_01_walking_skeleton/Steps/Step_04_implement-deterministic-retrieval-and-fred-research-workflow|STEP-01-04 Implement Deterministic Retrieval and Fred Research Workflow]].
 ---
 
 # Step 04 - Implement Deterministic Retrieval and Fred Research Workflow
@@ -61,7 +66,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-18 - [[05_Sessions/2026-07-18-201147-implement-deterministic-retrieval-and-fred-research-workflow-step-01-04-implementor|SESSION-2026-07-18-201147 step-01-04-implementor session for Implement Deterministic Retrieval and Fred Research Workflow]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

@@ -40,3 +40,19 @@ Use `.agent-vault/` as durable project memory. Prefer MCP tools over direct edit
 - Fix every discovered defect, even when it is unrelated to the current step or phase, then validate the fix before advancing.
 - A genuinely external blocker must be recorded as an open bug and blocks roadmap advancement until resolved; it is not an exception to the gate.
 - Review approval and step completion require zero known confirmed defects across code, tests, builds, security, documentation, and vault state.
+
+## Phase Refinement Gate
+
+- After the final step of a phase is reviewed and merged, refine the next planned phase before creating or implementing its first step branch.
+- Phase refinement must reconcile the phase objective, scope, step sequence, dependencies, execution briefs, validation plans, architecture links, decisions, and known risks with the repository state produced by the completed phase.
+- Record the refinement in an Agent Vault session, update the affected phase and step notes, refresh generated vault context, and require a clean vault validation before declaring the next phase ready.
+- This gate applies at phase boundaries; steps within an already-active refined phase continue through their normal per-step branch, review, and merge gates.
+
+## Roadmap Orchestration Gate
+
+- Execute each roadmap step or bug in one fresh subagent. Do not reuse a failed worker for a retry.
+- Worker subagents must not run any git command. The root orchestrator exclusively owns branches, staging, commits, pushes, pull requests, review remediation, and merges.
+- The root orchestrator must independently verify step status, mirrored `context_status`, repository validation, and vault integrity before publishing a step.
+- Each subsequent step uses its own branch and pull request into `main`. Wait for required checks and automated code-review feedback, address every unresolved actionable comment, and merge successfully before advancing.
+- Default retry policy is three total fresh-worker attempts per unit. Stop on an unrecovered failure or any unresolved confirmed defect.
+- Continue through the refined roadmap without interactive approval pauses. Stop immediately before performing the v1.0 release action.
