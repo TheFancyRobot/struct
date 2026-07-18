@@ -66,6 +66,9 @@ Reset is a destructive local-only operation. It must never be wired to a product
 | `WORKER_POLL_INTERVAL_MS` | `apps/worker` | ingestion job polling interval | `1000` |
 | `WORKER_JOB_STALE_MS` | `apps/worker` | in-progress job stale recovery threshold | `300000` |
 | `FRED_*` / provider keys | `apps/worker`, `packages/fred-workflows` | model provider config via Fred registry | (secret) |
+| `FRED_PROVIDER_PACKAGE` | `packages/fred-workflows` | installed Fred provider package loaded for research jobs | required for research execution |
+| `FRED_MODEL` | `packages/fred-workflows` | provider model identifier for the answer synthesizer | required for research execution |
+| `RESEARCH_MAX_ELAPSED_MS` | `packages/fred-workflows` | elapsed-time budget for one walking-slice run | `60000` |
 
 Additional variables (budgets, limits, log level) are added as their owning phases require them; each must appear in `.env.example` with a placeholder before it is consumed.
 

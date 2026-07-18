@@ -1,0 +1,31 @@
+{
+  "name": "@struct/fred-workflows",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "test": "vitest run --root ../.. packages/fred-workflows"
+  },
+  "dependencies": {
+    "@fancyrobot/fred": "2.0.0",
+    "@fancyrobot/fred-openai": "4.0.0",
+    "@effect/ai": "0.35.0",
+    "@effect/ai-openai": "0.39.0",
+    "@effect/platform": "0.96.0",
+    "@effect/experimental": "0.60.0",
+    "@effect/rpc": "0.75.0",
+    "@effect/cluster": "0.58.0",
+    "@effect/sql": "0.51.0",
+    "@opentelemetry/sdk-trace-node": "2.9.0",
+    "@struct/domain": "workspace:*",
+    "@struct/observability": "workspace:*",
+    "@struct/research-engine": "workspace:*",
+    "effect": "3.22.0"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2"
+  }
+}

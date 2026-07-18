@@ -101,6 +101,26 @@ export const Citation = Schema.Struct({
   createdAt: Schema.BigIntFromNumber,
 })
 
+export const TextEvidence = Schema.Struct({
+  sourceVersionId: Ids.SourceVersionId,
+  locator: Schema.String,
+  excerpt: Schema.String,
+  rank: Schema.Number,
+})
+export type TextEvidence = Schema.Schema.Type<typeof TextEvidence>
+
+export const ResearchCitation = Schema.Struct({
+  sourceVersionId: Ids.SourceVersionId,
+  locator: Schema.String,
+})
+export type ResearchCitation = Schema.Schema.Type<typeof ResearchCitation>
+
+export const ResearchAnswer = Schema.Struct({
+  answer: Schema.String,
+  citations: Schema.Array(ResearchCitation),
+})
+export type ResearchAnswer = Schema.Schema.Type<typeof ResearchAnswer>
+
 export const Finding = Schema.Struct({
   id: Ids.FindingId,
   projectId: Ids.ProjectId,

@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { Effect, Exit, Option } from 'effect'
-import { IngestionFailureError, JobQueueId, SourceId, SourceVersionId, WorkspaceId } from '@struct/domain'
+import { IngestionFailureError, JobQueueId, ProjectId, SourceId, SourceVersionId, WorkspaceId } from '@struct/domain'
 import { processOneIngestionJob, type IngestionWorkerDeps } from './ingest-source'
 
 const workspaceId = WorkspaceId.make('850e8400-e29b-41d4-a716-446655440000')
 const sourceId = SourceId.make('850e8400-e29b-41d4-a716-446655440002')
 const sourceVersionId = SourceVersionId.make('850e8400-e29b-41d4-a716-446655440003')
+const projectId = ProjectId.make('850e8400-e29b-41d4-a716-446655440001')
 
 interface IngestionWorkerTestDeps extends IngestionWorkerDeps {
   readonly calls: {
@@ -40,7 +41,7 @@ function deps(overrides: Partial<Omit<IngestionWorkerDeps, 'calls'>> = {}): Inge
         entityType: 'ingestion',
         entityId: sourceId,
         status: 'in-progress' as const,
-        payload: { stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/notes.md', name: 'notes.md', mediaType: 'text/markdown', byteLength: 10 },
+        payload: { stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/notes.md', name: 'notes.md', mediaType: 'text/markdown', byteLength: 10, projectId },
         attempts: 1,
         maxAttempts: 3,
         createdAt: 0n,
@@ -66,6 +67,9 @@ function deps(overrides: Partial<Omit<IngestionWorkerDeps, 'calls'>> = {}): Inge
         return Effect.succeed(version)
       },
     },
+    textIndex: {
+      indexText: () => Effect.void,
+    },
     events: {
       append: (event) => {
         calls.events.push(event.eventType)
@@ -80,6 +84,7 @@ function deps(overrides: Partial<Omit<IngestionWorkerDeps, 'calls'>> = {}): Inge
         manifestRef: 'artifact://sha256/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
         contentHash: 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
         byteLength: 10,
+        normalizedText: 'hello source text',
       }),
     },
     staleBeforeMs: 1699999999999,
@@ -161,7 +166,7 @@ describe('processOneIngestionJob', () => {
           entityType: 'ingestion',
           entityId: sourceId,
           status: 'in-progress' as const,
-          payload: { stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/missing.md', name: 'missing.md', mediaType: 'text/markdown', byteLength: 10 },
+          payload: { stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/missing.md', name: 'missing.md', mediaType: 'text/markdown', byteLength: 10, projectId },
           attempts: 3,
           maxAttempts: 3,
           createdAt: 0n,
@@ -251,7 +256,7 @@ describe('processOneIngestionJob', () => {
           entityType: 'ingestion',
           entityId: sourceId,
           status: 'in-progress' as const,
-          payload: { stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/notes.md', name: 'notes.md', mediaType: 'text/markdown', byteLength: 10 },
+          payload: { stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/notes.md', name: 'notes.md', mediaType: 'text/markdown', byteLength: 10, projectId },
           attempts: 2,
           maxAttempts: 3,
           createdAt: 0n,

@@ -31,6 +31,7 @@ tags:
 - Runtime apps (`apps/web`, `apps/api`, `apps/worker`), core packages (`domain`, `persistence`, `observability`), Bun workspace manifests, ESLint 10 flat config, dependency-cruiser, Vitest tests, and Docker Compose for PostgreSQL+pgvector are all implemented and passing all gates.
 - STEP-01-03 has scaffolded and implemented walking-slice `packages/source-storage` and `packages/ingestion`; later-phase packages (`document-processing`, `retrieval`, `data-engine`, `research-engine`, `fred-workflows`, `evaluation`, `shared-ui`) remain planned and are scaffolded when their owning step needs them.
 - Persistence migrations and core postgres-backed repository services are implemented; STEP-01-03 adds typed `job_queue` and `event_journal` repositories for ingestion dispatch/events. API currently exposes healthz, SSE placeholder, and `POST /sources/text` for one text-source registration path.
+- STEP-01-04 supersedes the earlier planned-package snapshot: `packages/retrieval`, `packages/research-engine`, and `packages/fred-workflows` now exist with typed public roots and tests. API adds `POST /research/runs`; worker adds durable bounded research execution and stale recovery; persistence adds migration 0003 and atomic research repositories.
 
 ## Key Components
 

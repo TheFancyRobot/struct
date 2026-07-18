@@ -15,8 +15,11 @@
     "effect": "3.22.0",
     "@struct/domain": "workspace:*",
     "@struct/ingestion": "workspace:*",
+    "@struct/fred-workflows": "workspace:*",
     "@struct/observability": "workspace:*",
     "@struct/persistence": "workspace:*",
+    "@struct/research-engine": "workspace:*",
+    "@struct/retrieval": "workspace:*",
     "@struct/source-storage": "workspace:*",
     "postgres": "^3.4.9"
   },

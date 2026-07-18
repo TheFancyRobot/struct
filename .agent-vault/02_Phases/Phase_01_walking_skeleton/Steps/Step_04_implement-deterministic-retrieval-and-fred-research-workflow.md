@@ -5,8 +5,8 @@ contract_version: 1
 title: Implement Deterministic Retrieval and Fred Research Workflow
 step_id: STEP-01-04
 phase: '[[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]'
-status: planned
-owner: ''
+status: completed
+owner: step-01-04-implementor
 created: '2026-07-17'
 updated: '2026-07-18'
 depends_on:
@@ -19,8 +19,8 @@ tags:
   - step
 context_id: SESSION-2026-07-18-201147
 active_session_id: 05_Sessions/2026-07-18-201147-implement-deterministic-retrieval-and-fred-research-workflow-step-01-04-implementor
-context_status: active
-context_summary: Advance [[02_Phases/Phase_01_walking_skeleton/Steps/Step_04_implement-deterministic-retrieval-and-fred-research-workflow|STEP-01-04 Implement Deterministic Retrieval and Fred Research Workflow]].
+context_status: completed
+context_summary: 'STEP-01-04 completed after retry-2 remediation: Fred runtime loading is isolated to Bun, Node Vitest and raw Bun suites pass concurrently, real PostgreSQL and migration round-trip gates pass, and zero known confirmed defects remain.'
 ---
 
 # Step 04 - Implement Deterministic Retrieval and Fred Research Workflow
@@ -53,10 +53,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_01_walking_skeleton/Steps/Step_04_implement-deterministic-retrieval-and-fred-research-workflow/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_01_walking_skeleton/Steps/Step_04_implement-deterministic-retrieval-and-fred-research-workflow/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: completed
+- Current owner: step-01-04-implementor
+- Last touched: 2026-07-18
+- Next action: Root orchestrator independently verifies the completed implementation and publishes the step through its branch, review, and merge gates.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

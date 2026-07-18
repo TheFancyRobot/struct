@@ -1,0 +1,143 @@
+import { describe, expect, it } from 'vitest'
+import { Effect, Option } from 'effect'
+import {
+  CitationId,
+  EventJournalId,
+  JobQueueId,
+  ProjectId,
+  ResearchRunId,
+  ResearchThreadId,
+  SourceVersionId,
+  WorkspaceId,
+  type JobQueue,
+  type ResearchRun,
+} from '@struct/domain'
+import { processOneResearchJob, type ResearchWorkerDeps } from './run-research'
+
+const workspaceId = WorkspaceId.make('e50e8400-e29b-41d4-a716-446655440000')
+const projectId = ProjectId.make('e50e8400-e29b-41d4-a716-446655440001')
+const sourceVersionId = SourceVersionId.make('e50e8400-e29b-41d4-a716-446655440002')
+const runId = ResearchRunId.make('e50e8400-e29b-41d4-a716-446655440003')
+const job: typeof JobQueue.Type = {
+  id: JobQueueId.make('e50e8400-e29b-41d4-a716-446655440004'),
+  workspaceId,
+  entityType: 'research',
+  entityId: runId,
+  status: 'in-progress',
+  payload: { projectId, sourceVersionIds: [sourceVersionId] },
+  attempts: 1,
+  maxAttempts: 1,
+  createdAt: 0n,
+  updatedAt: 0n,
+}
+const run: typeof ResearchRun.Type = {
+  id: runId,
+  threadId: ResearchThreadId.make('e50e8400-e29b-41d4-a716-446655440005'),
+  question: 'When is launch?',
+  status: 'pending',
+  createdAt: 0n,
+  updatedAt: 0n,
+}
+
+function deps(failWorkflow = false) {
+  const events: string[] = []
+  const completed: unknown[] = []
+  const failed: unknown[] = []
+  const value: ResearchWorkerDeps & {
+    readonly calls: { readonly events: string[]; readonly completed: unknown[]; readonly failed: unknown[] }
+  } = {
+    now: () => 1700000000000n,
+    staleBeforeMs: 1699999999999,
+    randomEventId: () => EventJournalId.make(crypto.randomUUID()),
+    randomCitationId: () => CitationId.make(crypto.randomUUID()),
+    jobs: {
+      recoverStale: () => Effect.succeed([]),
+      claimNext: () => Effect.succeed(Option.some(job)),
+      markInProgress: () => Effect.void,
+      appendEvent: (journalEvent) => {
+        events.push(journalEvent.eventType)
+        return Effect.void
+      },
+      complete: (input) => {
+        completed.push(input)
+        events.push(input.event.eventType)
+        return Effect.void
+      },
+      fail: (input) => {
+        failed.push(input)
+        events.push(input.event.eventType)
+        return Effect.void
+      },
+    },
+    runs: { findById: () => Effect.succeed(run) },
+    workflow: {
+      run: () =>
+        failWorkflow
+          ? Effect.fail({ _tag: 'EvidenceInsufficientError' })
+          : Effect.succeed({
+              plan: {
+                query: run.question,
+                maxSteps: 5,
+                maxToolCalls: 1,
+                maxModelCalls: 1,
+              },
+              evidence: [{
+                sourceVersionId,
+                locator: 'lines:1-1',
+                excerpt: 'Launch is July 18.',
+                rank: 1,
+              }],
+              answer: {
+                answer: 'Launch is July 18.',
+                citations: [{ sourceVersionId, locator: 'lines:1-1' }],
+              },
+            }),
+    },
+    calls: { events, completed, failed },
+  }
+  return value
+}
+
+describe('processOneResearchJob', () => {
+  it('persists a grounded result and emits the narrowed event sequence', async () => {
+    const testDeps = deps()
+    const result = await Effect.runPromise(processOneResearchJob(testDeps))
+
+    expect(result).toEqual({ processed: true, jobId: job.id })
+    expect(testDeps.calls.events).toEqual([
+      'retrieval-completed',
+      'citations-validated',
+      'research-completed',
+    ])
+    expect(testDeps.calls.completed).toHaveLength(1)
+    expect(testDeps.calls.failed).toHaveLength(0)
+  })
+
+  it('fails safely instead of synthesizing when evidence is insufficient', async () => {
+    const testDeps = deps(true)
+    await Effect.runPromise(processOneResearchJob(testDeps))
+
+    expect(testDeps.calls.events).toEqual(['research-failed'])
+    expect(testDeps.calls.completed).toHaveLength(0)
+    expect(testDeps.calls.failed).toHaveLength(1)
+    expect(testDeps.calls.events).not.toContain('Launch is July 18.')
+  })
+
+  it('terminal-fails stale in-progress research work before claiming new work', async () => {
+    const base = deps()
+    const testDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        recoverStale: () => Effect.succeed([job]),
+        claimNext: () => Effect.succeed(Option.none()),
+      },
+    }
+
+    const result = await Effect.runPromise(processOneResearchJob(testDeps))
+
+    expect(result).toEqual({ processed: false })
+    expect(testDeps.calls.events).toEqual(['research-failed'])
+    expect(testDeps.calls.failed).toHaveLength(1)
+  })
+})

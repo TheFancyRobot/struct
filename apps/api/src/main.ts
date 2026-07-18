@@ -4,14 +4,24 @@
  * Runtime entry point — Effect.runPromise at the application boundary.
  */
 
-import { Effect, Layer } from 'effect'
+import { Effect, Layer, Schema } from 'effect'
 import postgres from 'postgres'
 import {
   ProjectRepo,
+  ResearchExecutionRepo,
   SourceRegistrationRepo,
   SqlClientLive,
 } from '@struct/persistence'
-import { EventJournalId, JobQueueId, SourceId, WorkspaceId, ProjectId } from '@struct/domain'
+import {
+  EventJournalId,
+  JobQueueId,
+  SourceId,
+  WorkspaceId,
+  ProjectId,
+  ResearchRunId,
+  ResearchThreadId,
+  SourceVersionId,
+} from '@struct/domain'
 import { LocalArtifactStore } from '@struct/source-storage'
 import {
   apiPortConfig,
@@ -20,6 +30,7 @@ import {
   maxTextSourceBytesConfig,
 } from './config'
 import { registerTextSource } from './routes/sources'
+import { startResearch } from './routes/research'
 
 interface RegisterRequestBody {
   readonly workspaceId?: unknown
@@ -27,6 +38,13 @@ interface RegisterRequestBody {
   readonly name?: unknown
   readonly mediaType?: unknown
   readonly contentBase64?: unknown
+}
+
+interface ResearchRequestBody {
+  readonly workspaceId?: unknown
+  readonly projectId?: unknown
+  readonly sourceVersionIds?: unknown
+  readonly question?: unknown
 }
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -49,14 +67,44 @@ function parseBody(body: RegisterRequestBody): Effect.Effect<{
       if (typeof body.name !== 'string' || typeof body.mediaType !== 'string') throw new Error('name and mediaType are required')
       if (typeof body.contentBase64 !== 'string') throw new Error('contentBase64 is required')
       return {
-        workspaceId: WorkspaceId.make(body.workspaceId),
-        projectId: ProjectId.make(body.projectId),
+        workspaceId: Schema.decodeUnknownSync(WorkspaceId)(body.workspaceId),
+        projectId: Schema.decodeUnknownSync(ProjectId)(body.projectId),
         name: body.name,
         mediaType: body.mediaType,
         bytes: Uint8Array.from(Buffer.from(body.contentBase64, 'base64')),
       }
     },
     catch: () => new Error('Invalid source registration payload'),
+  })
+}
+
+function parseResearchBody(body: ResearchRequestBody): Effect.Effect<{
+  readonly workspaceId: typeof WorkspaceId.Type
+  readonly projectId: typeof ProjectId.Type
+  readonly sourceVersionIds: ReadonlyArray<typeof SourceVersionId.Type>
+  readonly question: string
+}, Error, never> {
+  return Effect.try({
+    try: () => {
+      if (
+        typeof body.workspaceId !== 'string' ||
+        typeof body.projectId !== 'string' ||
+        typeof body.question !== 'string' ||
+        !Array.isArray(body.sourceVersionIds) ||
+        !body.sourceVersionIds.every((value) => typeof value === 'string')
+      ) {
+        throw new Error('Invalid research request')
+      }
+      return {
+        workspaceId: Schema.decodeUnknownSync(WorkspaceId)(body.workspaceId),
+        projectId: Schema.decodeUnknownSync(ProjectId)(body.projectId),
+        sourceVersionIds: body.sourceVersionIds.map((value) =>
+          Schema.decodeUnknownSync(SourceVersionId)(value),
+        ),
+        question: body.question,
+      }
+    },
+    catch: () => new Error('Invalid research payload'),
   })
 }
 
@@ -70,6 +118,7 @@ const server = Effect.gen(function* () {
   const sqlLayer = SqlClientLive(sql)
   const projectLayer = Layer.provide(ProjectRepo.Default, sqlLayer)
   const registrationLayer = Layer.provide(SourceRegistrationRepo.Default, sqlLayer)
+  const researchLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
 
   Bun.serve({
     port,
@@ -112,6 +161,39 @@ const server = Effect.gen(function* () {
           jobId: exit.value.job.id,
           eventType: exit.value.event.eventType,
         }, 202)
+      }
+
+      if (url.pathname === '/research/runs' && req.method === 'POST') {
+        const program = Effect.gen(function* () {
+          const body = yield* Effect.tryPromise({
+            try: () => req.json() as Promise<ResearchRequestBody>,
+            catch: () => new Error('Invalid JSON body'),
+          })
+          const parsed = yield* parseResearchBody(body)
+          return yield* startResearch(parsed, {
+            now: () => BigInt(Date.now()),
+            randomThreadId: () => ResearchThreadId.make(crypto.randomUUID()),
+            randomRunId: () => ResearchRunId.make(crypto.randomUUID()),
+            randomJobId: () => JobQueueId.make(crypto.randomUUID()),
+            randomEventId: () => EventJournalId.make(crypto.randomUUID()),
+            register: (input) =>
+              ResearchExecutionRepo.register(input).pipe(Effect.provide(researchLayer)),
+          })
+        })
+
+        const exit = await Effect.runPromiseExit(program)
+        if (exit._tag === 'Failure') {
+          return jsonResponse({ error: 'ResearchRegistrationFailed' }, 400)
+        }
+        return jsonResponse(
+          {
+            threadId: exit.value.thread.id,
+            runId: exit.value.run.id,
+            jobId: exit.value.job.id,
+            status: exit.value.run.status,
+          },
+          202,
+        )
       }
 
       if (url.pathname === '/events' && req.method === 'GET') {

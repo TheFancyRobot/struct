@@ -38,6 +38,7 @@ export {
   JobQueueRepo,
   EventJournalRepo,
   SourceRegistrationRepo,
+  ResearchExecutionRepo,
   // Persistence errors
   QueryError,
   EntityNotFoundError,
@@ -79,3 +80,10 @@ export type {
   SourceRegistrationResult,
   SourceRegistrationRepository,
 } from './repositories/source-registration.js'
+
+export type {
+  ResearchRegistrationInput,
+  ResearchRegistrationResult,
+  CompleteResearchInput,
+  FailResearchInput,
+} from './repositories/research-execution.js'

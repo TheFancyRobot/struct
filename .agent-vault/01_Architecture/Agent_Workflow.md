@@ -29,6 +29,7 @@ tags:
 - A research run loads a source-version catalog, classifies intent, builds a concise typed plan, executes deterministic tools, evaluates evidence sufficiency, revises within limits, verifies evidence, synthesizes an answer, validates citations, persists the run, and streams progress.
 - Agents make judgments about planning, qualitative analysis, evidence sufficiency, and synthesis. Effect services perform authorization, source inspection, retrieval, SQL validation/execution, persistence, and citation checks.
 - Persist plans, tool requests/results, decisions, findings, and evidence assessments, but never private model chain-of-thought.
+- STEP-01-04 implements the first bounded workflow slice: deterministic PostgreSQL text retrieval feeds one Fred answer-synthesizer agent, exact citation validation gates persistence, and configured limits enforce at most five workflow steps, one tool call, one model call, and 60 seconds by default. Insufficient evidence terminates with a typed durable failure rather than an unsupported answer.
 
 ## Key Components
 

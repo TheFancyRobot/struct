@@ -33,6 +33,7 @@ tags:
 - The runtime is Bun with TypeScript 7.0.2, Effect for services and typed failures, and Fred for agent/workflow orchestration (Fred packages not yet installed — STEP-01-04+).
 - PostgreSQL with pgvector provides application persistence, full-text search, and initial vector search; STEP-01-02 implemented the migration runner, initial pgvector/schema migrations, typed row decoders, and postgres-backed repository services. STEP-01-03 consumes existing `job_queue`/`event_journal` tables for API→worker ingestion dispatch and creates immutable `SourceVersion` rows only after content-addressed raw/normalized/manifest artifacts exist. DuckDB and Parquet provide deterministic structured-data analysis (not yet implemented — later phases).
 - STEP-01-03 review remediation hardened artifact parent-component containment, made the API registration command transactional, and made worker database readiness/poll failures fail visibly; all zero-defect gates pass pending re-review.
+- STEP-01-04 supersedes the earlier implementation snapshot: `retrieval`, `research-engine`, and `fred-workflows` are implemented; Fred core is pinned at `2.0.0`; PostgreSQL FTS indexes normalized text by immutable source version; and the API/worker research path persists grounded answers, citations, terminal state, and journal events.
 
 ## Key Components
 

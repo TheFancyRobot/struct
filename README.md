@@ -2,7 +2,7 @@
 
 A trustworthy, source-grounded research workspace for documents, datasets, and directories. Documents are retrieved, datasets are queried, directories are navigated, and large corpora are recursively analyzed — with deterministic computation, verifiable citations, and durable, resumable work.
 
-> **Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold, STEP-01-02 domain/persistence, and STEP-01-03 single text-source ingestion/artifact storage are implemented.** The monorepo has Bun workspace manifests, three runtime apps (`apps/web`, `apps/api`, `apps/worker`), domain/persistence/source-storage/ingestion/observability packages, PostgreSQL/pgvector migrations, typed row decoders, postgres-backed repositories, `POST /sources/text`, durable `job_queue` ingestion polling, content-addressed artifacts, and immutable `SourceVersion` finalization. All gates pass when validated locally (typecheck, lint, lint:imports, build, Vitest, literal Bun tests, DB integration tests, migration up/down/up, Compose config, app smokes).
+> **Current state: Phase 01 (walking skeleton) — STEP-01-01 through STEP-01-04 are implemented.** The monorepo now includes deterministic PostgreSQL text retrieval, typed research contracts, pinned Fred 2.0.0 workflow orchestration, `POST /research/runs`, durable research jobs/events, citation validation, and persisted grounded answers in addition to the single-text ingestion path. All gates pass when validated locally (typecheck, lint, lint:imports, build, Vitest, database integration tests, migration up/down/up, Compose config, app smokes).
 
 ## Canonical documents
 
@@ -27,13 +27,14 @@ A trustworthy, source-grounded research workspace for documents, datasets, and d
 ```
 apps/
 ├── web        # SolidJS 1.9 + Vite 8 + Solid Router + Tailwind 4 + DaisyUI (DEC-0013, DEC-0014)
-├── api        # Bun HTTP + Effect Config — healthz, sole migration executor, and POST /sources/text implemented; broader API/SSE later
-└── worker     # Effect Config plus durable text-ingestion job polling/claim/retry/finalize path
+├── api        # Bun HTTP + Effect Config — healthz, sole migration executor, POST /sources/text, POST /research/runs
+└── worker     # Durable text-ingestion and bounded research job execution
 
 packages/
-├── domain · persistence · source-storage · ingestion · observability  # walking-slice core; observability scaffolded
+├── domain · persistence · source-storage · ingestion · retrieval · research-engine
+├── fred-workflows · observability  # walking-slice core; Fred pinned at 2.0.0
 ├── document-processing  # planned (Phase 02+)
-├── retrieval · data-engine · research-engine · fred-workflows  # planned (STEP-01-04+)
+├── data-engine  # planned (Phase 04)
 └── evaluation · shared-ui                              # planned (later phases)
 ```
 
@@ -67,6 +68,11 @@ bun run migrations:down    # roll back one implemented migration through apps/ap
 bun run corpus:smoke        # small evaluation subset (planned, Phase 04)
 bun run corpus:eval         # full ~25k corpus + quality gates (planned, Phase 09)
 ```
+
+The walking-slice research command accepts `workspaceId`, `projectId`, a non-empty
+`sourceVersionIds` array, and `question` at `POST /research/runs`. The worker
+requires `FRED_PROVIDER_PACKAGE` and `FRED_MODEL` only when it claims a research
+job; tests use a fixed mock provider and require no provider key.
 
 Full command inventory and CI gates in [docs/repository-contract.md](./docs/repository-contract.md).
 

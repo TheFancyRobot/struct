@@ -15,6 +15,7 @@ import {
 } from '@struct/persistence'
 import { LocalArtifactStore } from '@struct/source-storage'
 import { ingestTextSource } from '@struct/ingestion'
+import { TextRetrieval } from '@struct/retrieval'
 import { EventJournalId, JobQueueId, ProjectId, SourceId, SourceVersionId, WorkspaceId } from '@struct/domain'
 import { processOneIngestionJob } from '../../../worker/src/jobs/ingest-source'
 import { registerTextSource } from './sources'
@@ -68,6 +69,7 @@ describeIf('single text source ingestion real DB integration', () => {
     const jobLayer = Layer.provide(JobQueueRepo.Default, sqlLayer)
     const sourceVersionLayer = Layer.provide(SourceVersionRepo.Default, sqlLayer)
     const eventLayer = Layer.provide(EventJournalRepo.Default, sqlLayer)
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, sqlLayer)
 
     await Effect.runPromise(registerTextSource({
       workspaceId,
@@ -102,6 +104,9 @@ describeIf('single text source ingestion real DB integration', () => {
       sourceVersions: {
         findBySourceId: (id) => SourceVersionRepo.findBySourceId(id).pipe(Effect.provide(sourceVersionLayer)),
         create: (version) => SourceVersionRepo.create(version).pipe(Effect.provide(sourceVersionLayer)),
+      },
+      textIndex: {
+        indexText: (input) => TextRetrieval.indexText(input).pipe(Effect.provide(retrievalLayer)),
       },
       events: {
         append: (event) => EventJournalRepo.append(event).pipe(Effect.provide(eventLayer)),

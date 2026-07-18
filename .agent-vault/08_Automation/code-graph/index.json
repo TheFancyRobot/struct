@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-18T20:07:41.199Z",
+  "generatedAt": "2026-07-18T20:44:24.935Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -68,41 +68,57 @@
         {
           "name": "RegisterRequestBody",
           "kind": "interface",
-          "line": 24,
+          "line": 35,
           "exported": false,
-          "endLine": 24
+          "endLine": 35
+        },
+        {
+          "name": "ResearchRequestBody",
+          "kind": "interface",
+          "line": 43,
+          "exported": false,
+          "endLine": 43
         },
         {
           "name": "jsonResponse",
           "kind": "function",
-          "line": 32,
+          "line": 50,
           "exported": false,
-          "endLine": 32,
+          "endLine": 50,
           "signature": "(body: unknown, status = 200)"
         },
         {
           "name": "parseBody",
           "kind": "function",
-          "line": 39,
+          "line": 57,
           "exported": false,
-          "endLine": 39,
+          "endLine": 57,
           "signature": "(body: RegisterRequestBody): Effect.Effect<{"
+        },
+        {
+          "name": "parseResearchBody",
+          "kind": "function",
+          "line": 81,
+          "exported": false,
+          "endLine": 81,
+          "signature": "(body: ResearchRequestBody): Effect.Effect<{"
         },
         {
           "name": "server",
           "kind": "const",
-          "line": 63,
+          "line": 111,
           "exported": false,
-          "endLine": 63
+          "endLine": 111
         }
       ],
       "imports": [
         {
-          "source": "Effect, Layer",
+          "source": "Effect, Layer, Schema",
           "specifier": "effect",
           "imported": [
             "Effect",
-            "Layer"
+            "Layer",
+            "Schema"
           ],
           "kind": "static"
         },
@@ -111,18 +127,6 @@
           "specifier": "postgres",
           "imported": [
             "postgres"
-          ],
-          "kind": "static"
-        },
-        {
-          "source": "EventJournalId, JobQueueId, SourceId, WorkspaceId, ProjectId",
-          "specifier": "@struct/domain",
-          "imported": [
-            "EventJournalId",
-            "JobQueueId",
-            "SourceId",
-            "WorkspaceId",
-            "ProjectId"
           ],
           "kind": "static"
         },
@@ -141,12 +145,20 @@
             "registerTextSource"
           ],
           "kind": "static"
+        },
+        {
+          "source": "startResearch",
+          "specifier": "./routes/research",
+          "imported": [
+            "startResearch"
+          ],
+          "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "1fcb39aaf6d395d3a6838fe79d1d5641779f76c9838038426ed6912ad4bf2a77",
-      "mtimeMs": 1784404844182.5144,
-      "size": 4916,
+      "hash": "fc620d9dd94d74e1203b022dd0db74ec9c08a063a3d7a147f2e418b0d87e9126",
+      "mtimeMs": 1784407179562.909,
+      "size": 7761,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -219,6 +231,58 @@
       "hash": "e1bfe1397fca5e49cf89710ecdbdf007490bb940bdb2e1e22367498840dc8012",
       "mtimeMs": 1784358150064.6353,
       "size": 2266,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/api/src/routes/research.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "StartResearchInput",
+          "kind": "interface",
+          "line": 12,
+          "exported": true,
+          "endLine": 12
+        },
+        {
+          "name": "StartResearchDeps",
+          "kind": "interface",
+          "line": 19,
+          "exported": true,
+          "endLine": 19
+        },
+        {
+          "name": "titleFor",
+          "kind": "function",
+          "line": 30,
+          "exported": false,
+          "endLine": 30,
+          "signature": "(question: string)"
+        },
+        {
+          "name": "startResearch",
+          "kind": "const",
+          "line": 34,
+          "exported": true,
+          "endLine": 34
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "d7140b925561eee879903482a1c5d5204d8172ab3ad6b12483ed3848a4c279df",
+      "mtimeMs": 1784406949146.8447,
+      "size": 3552,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -313,9 +377,9 @@
         }
       ],
       "exports": [],
-      "hash": "01cdcfc9b00a5e38773cd1e0948ef323feb6277c9d93c463d61bcdbea64746ed",
-      "mtimeMs": 1784404844181.1401,
-      "size": 5011,
+      "hash": "9f5b45ff89d399c20edece4a0945da0b2373712c1c0721d5332b504c2e81a643",
+      "mtimeMs": 1784406441265.9531,
+      "size": 5045,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -434,84 +498,85 @@
         {
           "name": "WorkerIngestionResult",
           "kind": "interface",
-          "line": 13,
+          "line": 14,
           "exported": true,
-          "endLine": 13
+          "endLine": 14
         },
         {
           "name": "IngestionWorkerDeps",
           "kind": "interface",
-          "line": 21,
+          "line": 23,
           "exported": true,
-          "endLine": 21
+          "endLine": 23
         },
         {
           "name": "ProcessOneResult",
           "kind": "interface",
-          "line": 51,
+          "line": 61,
           "exported": true,
-          "endLine": 51
+          "endLine": 61
         },
         {
           "name": "IngestionPayload",
           "kind": "interface",
-          "line": 56,
+          "line": 66,
           "exported": false,
-          "endLine": 56
+          "endLine": 66
         },
         {
           "name": "decodePayload",
           "kind": "function",
-          "line": 62,
+          "line": 73,
           "exported": false,
-          "endLine": 62,
+          "endLine": 73,
           "signature": "(payload: Record<string, unknown>)"
         },
         {
           "name": "sanitizedFailurePayload",
           "kind": "function",
-          "line": 75,
+          "line": 100,
           "exported": false,
-          "endLine": 75,
+          "endLine": 100,
           "signature": "(reason: unknown)"
         },
         {
           "name": "appendEvent",
           "kind": "function",
-          "line": 80,
+          "line": 105,
           "exported": false,
-          "endLine": 80
+          "endLine": 105
         },
         {
           "name": "completeJob",
           "kind": "function",
-          "line": 99,
+          "line": 124,
           "exported": false,
-          "endLine": 99
+          "endLine": 124
         },
         {
           "name": "failJob",
           "kind": "function",
-          "line": 138,
+          "line": 169,
           "exported": false,
-          "endLine": 138,
+          "endLine": 169,
           "signature": "(deps: IngestionWorkerDeps, job: typeof JobQueue.Type, reason: unknown)"
         },
         {
           "name": "processOneIngestionJob",
           "kind": "const",
-          "line": 149,
+          "line": 180,
           "exported": true,
-          "endLine": 149
+          "endLine": 180
         }
       ],
       "imports": [
         {
-          "source": "Effect, Option",
+          "source": "Effect, Option, Schema",
           "specifier": "effect",
           "imported": [
             "Effect",
-            "Option"
+            "Option",
+            "Schema"
           ],
           "kind": "static"
         },
@@ -523,12 +588,97 @@
             "StagedArtifactRef"
           ],
           "kind": "type"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
         }
       ],
       "exports": [],
-      "hash": "04ccb6f9815a073667278c363f0a596b737c0456443dae3aea166e5be68345bf",
-      "mtimeMs": 1784404731480.5703,
-      "size": 6990,
+      "hash": "088aedbee64c54c6f13aeda71de72edf56bfeaa5e240ed35a124d63d5c6d873e",
+      "mtimeMs": 1784407198674.6128,
+      "size": 7996,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/worker/src/jobs/run-research.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ResearchPayload",
+          "kind": "interface",
+          "line": 12,
+          "exported": false,
+          "endLine": 12
+        },
+        {
+          "name": "ResearchWorkerDeps",
+          "kind": "interface",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "decodePayload",
+          "kind": "function",
+          "line": 61,
+          "exported": false,
+          "endLine": 61
+        },
+        {
+          "name": "event",
+          "kind": "function",
+          "line": 96,
+          "exported": false,
+          "endLine": 96
+        },
+        {
+          "name": "citationsFor",
+          "kind": "function",
+          "line": 114,
+          "exported": false,
+          "endLine": 114
+        },
+        {
+          "name": "safeFailureTag",
+          "kind": "function",
+          "line": 129,
+          "exported": false,
+          "endLine": 129,
+          "signature": "(error: unknown)"
+        },
+        {
+          "name": "processOneResearchJob",
+          "kind": "const",
+          "line": 135,
+          "exported": true,
+          "endLine": 135
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "0b6fc758568c0239f2f59c0dcd542ead650f496cb62ea5115568a5285057d8b8",
+      "mtimeMs": 1784407186758.1924,
+      "size": 6637,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -540,9 +690,9 @@
         {
           "name": "program",
           "kind": "const",
-          "line": 28,
+          "line": 34,
           "exported": false,
-          "endLine": 28
+          "endLine": 34
         }
       ],
       "imports": [
@@ -565,9 +715,11 @@
           "kind": "static"
         },
         {
-          "source": "SourceVersionId",
+          "source": "CitationId, EventJournalId, SourceVersionId",
           "specifier": "@struct/domain",
           "imported": [
+            "CitationId",
+            "EventJournalId",
             "SourceVersionId"
           ],
           "kind": "static"
@@ -589,18 +741,51 @@
           "kind": "static"
         },
         {
+          "source": "TextRetrieval",
+          "specifier": "@struct/retrieval",
+          "imported": [
+            "TextRetrieval"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "validateAnswerCitations",
+          "specifier": "@struct/research-engine",
+          "imported": [
+            "validateAnswerCitations"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "fredRuntimeConfig, runFredWalkingSkeleton",
+          "specifier": "@struct/fred-workflows",
+          "imported": [
+            "fredRuntimeConfig",
+            "runFredWalkingSkeleton"
+          ],
+          "kind": "static"
+        },
+        {
           "source": "processOneIngestionJob",
           "specifier": "./jobs/ingest-source",
           "imported": [
             "processOneIngestionJob"
           ],
           "kind": "static"
+        },
+        {
+          "source": "processOneResearchJob",
+          "specifier": "./jobs/run-research",
+          "imported": [
+            "processOneResearchJob"
+          ],
+          "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "d7f8daeb8258e990bbc653f5ba13a37bd7e944ad8ccdbd011ea9a4606c196056",
-      "mtimeMs": 1784404731481.0508,
-      "size": 3361,
+      "hash": "634b7f1041c960d8dd9de48cdeb6d7503e69086eb95bfe66b39eb097990b39ef",
+      "mtimeMs": 1784406817251.1782,
+      "size": 6546,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -955,32 +1140,74 @@
           "endLine": 95
         },
         {
-          "name": "Finding",
+          "name": "TextEvidence",
           "kind": "const",
           "line": 104,
           "exported": true,
           "endLine": 104
         },
         {
-          "name": "Report",
-          "kind": "const",
-          "line": 113,
+          "name": "TextEvidence",
+          "kind": "type",
+          "line": 110,
           "exported": true,
-          "endLine": 113
+          "endLine": 110
         },
         {
-          "name": "JobQueue",
+          "name": "ResearchCitation",
           "kind": "const",
+          "line": 112,
+          "exported": true,
+          "endLine": 112
+        },
+        {
+          "name": "ResearchCitation",
+          "kind": "type",
+          "line": 116,
+          "exported": true,
+          "endLine": 116
+        },
+        {
+          "name": "ResearchAnswer",
+          "kind": "const",
+          "line": 118,
+          "exported": true,
+          "endLine": 118
+        },
+        {
+          "name": "ResearchAnswer",
+          "kind": "type",
           "line": 122,
           "exported": true,
           "endLine": 122
         },
         {
+          "name": "Finding",
+          "kind": "const",
+          "line": 124,
+          "exported": true,
+          "endLine": 124
+        },
+        {
+          "name": "Report",
+          "kind": "const",
+          "line": 133,
+          "exported": true,
+          "endLine": 133
+        },
+        {
+          "name": "JobQueue",
+          "kind": "const",
+          "line": 142,
+          "exported": true,
+          "endLine": 142
+        },
+        {
           "name": "EventJournal",
           "kind": "const",
-          "line": 135,
+          "line": 155,
           "exported": true,
-          "endLine": 135
+          "endLine": 155
         }
       ],
       "imports": [
@@ -999,9 +1226,9 @@
         }
       ],
       "exports": [],
-      "hash": "f8a7a45c5cb9ed48fcee09f12cfb8e735823d09b528118663f41af355c1ba682",
-      "mtimeMs": 1784394077324.6106,
-      "size": 3847,
+      "hash": "5117b2ef3e8db240cfa8d979ce466f842645d17022c218097111db8ef232e4f6",
+      "mtimeMs": 1784406240477.6716,
+      "size": 4461,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1100,6 +1327,34 @@
           "line": 75,
           "exported": true,
           "endLine": 75
+        },
+        {
+          "name": "RetrievalQueryError",
+          "kind": "class",
+          "line": 81,
+          "exported": true,
+          "endLine": 81
+        },
+        {
+          "name": "EvidenceInsufficientError",
+          "kind": "class",
+          "line": 86,
+          "exported": true,
+          "endLine": 86
+        },
+        {
+          "name": "ResearchWorkflowError",
+          "kind": "class",
+          "line": 91,
+          "exported": true,
+          "endLine": 91
+        },
+        {
+          "name": "ResearchCitationValidationError",
+          "kind": "class",
+          "line": 96,
+          "exported": true,
+          "endLine": 96
         }
       ],
       "imports": [
@@ -1113,9 +1368,205 @@
         }
       ],
       "exports": [],
-      "hash": "f2ac61b728ddd72221634b32d888e58eb3bd84278104a372f528c4f1e9cd18bd",
-      "mtimeMs": 1784393916200.1948,
-      "size": 2510,
+      "hash": "0ad325a472321d599cb4cc399d0d3fc1a6fe93f1f83cf34ad8675c5b1425d259",
+      "mtimeMs": 1784406240477.9697,
+      "size": 3273,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/fred-workflows/src/adapters/fred-runtime.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "FredRuntimeConfig",
+          "kind": "interface",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "fredRuntimeConfig",
+          "kind": "const",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "FredClientFactory",
+          "kind": "interface",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "defaultFactory",
+          "kind": "const",
+          "line": 43,
+          "exported": false,
+          "endLine": 43
+        },
+        {
+          "name": "runFredWalkingSkeleton",
+          "kind": "const",
+          "line": 45,
+          "exported": true,
+          "endLine": 45
+        }
+      ],
+      "imports": [
+        {
+          "source": "Config, Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Config",
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ResearchWorkflowError",
+          "specifier": "@struct/domain",
+          "imported": [
+            "ResearchWorkflowError"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "501ef395598164e95a81fd3160ee4fc4f147eeddf0c612c25a8858587c34ac0c",
+      "mtimeMs": 1784406984679.396,
+      "size": 3501,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/fred-workflows/src/graphs/walking-skeleton.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "WALKING_SKELETON_WORKFLOW_ID",
+          "kind": "const",
+          "line": 11,
+          "exported": true,
+          "endLine": 11
+        },
+        {
+          "name": "ANSWER_SYNTHESIZER_AGENT_ID",
+          "kind": "const",
+          "line": 12,
+          "exported": true,
+          "endLine": 12
+        },
+        {
+          "name": "SEARCH_TEXT_TOOL_ID",
+          "kind": "const",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "WalkingSkeletonGraphDependencies",
+          "kind": "interface",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "answerSynthesizerAgent",
+          "kind": "const",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "makeSearchTextTool",
+          "kind": "const",
+          "line": 40,
+          "exported": true,
+          "endLine": 40
+        },
+        {
+          "name": "decodeAgentAnswer",
+          "kind": "function",
+          "line": 59,
+          "exported": false,
+          "endLine": 59,
+          "signature": "(input: unknown)"
+        },
+        {
+          "name": "makeWalkingSkeletonWorkflow",
+          "kind": "function",
+          "line": 65,
+          "exported": true,
+          "endLine": 65
+        }
+      ],
+      "imports": [
+        {
+          "source": "defineWorkflow",
+          "specifier": "@fancyrobot/fred",
+          "imported": [
+            "defineWorkflow"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ResearchAnswer, TextEvidence",
+          "specifier": "@struct/domain",
+          "imported": [
+            "ResearchAnswer",
+            "TextEvidence"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "380502ffc2d1415a53e379c16d5afec0ca02c117de2479d0bd864fcb5ea91d7c",
+      "mtimeMs": 1784406949147.2817,
+      "size": 4145,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/fred-workflows/test/fixtures/mock-provider.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "MockModelProvider",
+          "kind": "const",
+          "line": 5,
+          "exported": true,
+          "endLine": 5
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Layer",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Layer"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "9384a1f20f3158861ac7c30d3ee2f1ce0f6b4c2b55ebb08115050c5e9110595c",
+      "mtimeMs": 1784406984679.7046,
+      "size": 454,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1235,44 +1686,44 @@
         {
           "name": "textDecoder",
           "kind": "const",
-          "line": 42,
-          "exported": false,
-          "endLine": 42
-        },
-        {
-          "name": "textEncoder",
-          "kind": "const",
           "line": 43,
           "exported": false,
           "endLine": 43
         },
         {
+          "name": "textEncoder",
+          "kind": "const",
+          "line": 44,
+          "exported": false,
+          "endLine": 44
+        },
+        {
           "name": "hashBytes",
           "kind": "const",
-          "line": 45,
+          "line": 46,
           "exported": false,
-          "endLine": 45
+          "endLine": 46
         },
         {
           "name": "normalizeTextBytes",
           "kind": "const",
-          "line": 48,
+          "line": 49,
           "exported": true,
-          "endLine": 48
+          "endLine": 49
         },
         {
           "name": "manifestBytes",
           "kind": "const",
-          "line": 60,
+          "line": 61,
           "exported": false,
-          "endLine": 60
+          "endLine": 61
         },
         {
           "name": "ingestTextSource",
           "kind": "const",
-          "line": 63,
+          "line": 64,
           "exported": true,
-          "endLine": 63
+          "endLine": 64
         }
       ],
       "imports": [
@@ -1320,9 +1771,9 @@
         }
       ],
       "exports": [],
-      "hash": "ad225ebecf35206f3d7d7eb556789bdb901f354378f46d035004a34079461ad7",
-      "mtimeMs": 1784394869960.812,
-      "size": 4055,
+      "hash": "5812735eb9b1e647c2221e7af2c006176040841b74ce11f3f3931aebeee4f474",
+      "mtimeMs": 1784406441266.7456,
+      "size": 4149,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1421,9 +1872,9 @@
           "kind": "reexport"
         }
       ],
-      "hash": "9cff3e154d7b7c8dd66c515e0af547cf4399ebed5378d6d22fa3f5c4a7b8a535",
-      "mtimeMs": 1784404818148.0168,
-      "size": 2078,
+      "hash": "01cb7ea11576ceee54ec0594b60399c9cb3ded2667367222ea00f81c376a2dbf",
+      "mtimeMs": 1784406396714.3403,
+      "size": 2269,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1449,9 +1900,9 @@
       ],
       "imports": [],
       "exports": [],
-      "hash": "7254d6be4e9275095e4ab94df6a40bae00b2774a182b0bf3708f0b247d0bb367",
-      "mtimeMs": 1784351399164.596,
-      "size": 798,
+      "hash": "fd649d97df7be947d777ad63b2ccc6f5809c7143d09e069874cb3f29dd0d8cd5",
+      "mtimeMs": 1784406240478.5872,
+      "size": 1014,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2185,6 +2636,101 @@
       "parser": "regex"
     },
     {
+      "path": "packages/persistence/src/repositories/research-execution.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ResearchRegistrationInput",
+          "kind": "interface",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
+          "name": "ResearchRegistrationResult",
+          "kind": "interface",
+          "line": 36,
+          "exported": true,
+          "endLine": 36
+        },
+        {
+          "name": "CompleteResearchInput",
+          "kind": "interface",
+          "line": 43,
+          "exported": true,
+          "endLine": 43
+        },
+        {
+          "name": "FailResearchInput",
+          "kind": "interface",
+          "line": 51,
+          "exported": true,
+          "endLine": 51
+        },
+        {
+          "name": "persistenceDecodeError",
+          "kind": "function",
+          "line": 57,
+          "exported": false,
+          "endLine": 57
+        },
+        {
+          "name": "ResearchExecutionRepo",
+          "kind": "class",
+          "line": 68,
+          "exported": true,
+          "endLine": 68
+        },
+        {
+          "name": "ResearchExecutionError",
+          "kind": "type",
+          "line": 373,
+          "exported": true,
+          "endLine": 373
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Option",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "QueryError, type PersistenceError",
+          "specifier": "../errors.js",
+          "imported": [
+            "QueryError",
+            "typePersistenceError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlClient",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "./decode.js",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "de31514cbe5cf462624178d2a886e2fb5c9d8d910fbc7135da18bb6fbc636e6c",
+      "mtimeMs": 1784406949147.7231,
+      "size": 13725,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/persistence/src/repositories/source-registration.ts",
       "language": "TypeScript",
       "symbols": [
@@ -2323,6 +2869,189 @@
       "hash": "c606e07cabcfd6fa88296d5ecaa1e06c9c0f8d1d558a9c3f88ca38442ecc47e6",
       "mtimeMs": 1784404818147.3438,
       "size": 2186,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/research-engine/src/run-walking-skeleton.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "WalkingSkeletonResearchInput",
+          "kind": "const",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "WalkingSkeletonResearchInput",
+          "kind": "type",
+          "line": 20,
+          "exported": true,
+          "endLine": 20
+        },
+        {
+          "name": "WalkingSkeletonPlan",
+          "kind": "const",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "WalkingSkeletonPlan",
+          "kind": "type",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "WalkingSkeletonWorkflowResult",
+          "kind": "const",
+          "line": 30,
+          "exported": true,
+          "endLine": 30
+        },
+        {
+          "name": "WalkingSkeletonWorkflowResult",
+          "kind": "type",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        },
+        {
+          "name": "makeWalkingSkeletonPlan",
+          "kind": "const",
+          "line": 37,
+          "exported": true,
+          "endLine": 37
+        },
+        {
+          "name": "requireEvidence",
+          "kind": "const",
+          "line": 46,
+          "exported": true,
+          "endLine": 46
+        },
+        {
+          "name": "validateAnswerCitations",
+          "kind": "const",
+          "line": 59,
+          "exported": true,
+          "endLine": 59
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "399e9782309ecf3570385d8cecbc6c43c5d2b47b363cd6bff4b9ffd51a62f4c5",
+      "mtimeMs": 1784406328279.0547,
+      "size": 2799,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/retrieval/src/search-text.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "TextSearchRequest",
+          "kind": "const",
+          "line": 11,
+          "exported": true,
+          "endLine": 11
+        },
+        {
+          "name": "TextSearchRequest",
+          "kind": "type",
+          "line": 18,
+          "exported": true,
+          "endLine": 18
+        },
+        {
+          "name": "TextSearchResult",
+          "kind": "const",
+          "line": 20,
+          "exported": true,
+          "endLine": 20
+        },
+        {
+          "name": "TextSearchResult",
+          "kind": "type",
+          "line": 23,
+          "exported": true,
+          "endLine": 23
+        },
+        {
+          "name": "IndexTextInput",
+          "kind": "interface",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "SearchRow",
+          "kind": "interface",
+          "line": 32,
+          "exported": false,
+          "endLine": 32
+        },
+        {
+          "name": "MAX_EXCERPT_CHARS",
+          "kind": "const",
+          "line": 38,
+          "exported": false,
+          "endLine": 38
+        },
+        {
+          "name": "boundedExcerpt",
+          "kind": "function",
+          "line": 40,
+          "exported": false,
+          "endLine": 40,
+          "signature": "(content: string, query: string)"
+        },
+        {
+          "name": "TextRetrieval",
+          "kind": "class",
+          "line": 57,
+          "exported": true,
+          "endLine": 57
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlClient",
+          "specifier": "@struct/persistence",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "271465cd76b574f29bb61b29d01c55403a7e688ea972f0ffae0750d008d1f682",
+      "mtimeMs": 1784406328278.8174,
+      "size": 4641,
       "generated": false,
       "vendor": false,
       "parser": "regex"

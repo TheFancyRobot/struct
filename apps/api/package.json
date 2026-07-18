@@ -23,6 +23,8 @@
   },
   "devDependencies": {
     "@struct/ingestion": "workspace:*",
+    "@struct/research-engine": "workspace:*",
+    "@struct/retrieval": "workspace:*",
     "typescript": "7.0.2",
     "tsx": "4.23.1"
   }

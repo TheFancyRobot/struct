@@ -77,3 +77,24 @@ export class JobClaimError extends Schema.TaggedError<JobClaimError>()('JobClaim
   reason: Schema.String,
   message: Schema.String,
 }) {}
+
+export class RetrievalQueryError extends Schema.TaggedError<RetrievalQueryError>()('RetrievalQueryError', {
+  operation: Schema.String,
+  message: Schema.String,
+}) {}
+
+export class EvidenceInsufficientError extends Schema.TaggedError<EvidenceInsufficientError>()('EvidenceInsufficientError', {
+  question: Schema.String,
+  message: Schema.String,
+}) {}
+
+export class ResearchWorkflowError extends Schema.TaggedError<ResearchWorkflowError>()('ResearchWorkflowError', {
+  stage: Schema.String,
+  message: Schema.String,
+}) {}
+
+export class ResearchCitationValidationError extends Schema.TaggedError<ResearchCitationValidationError>()('ResearchCitationValidationError', {
+  sourceVersionId: Schema.String,
+  locator: Schema.String,
+  message: Schema.String,
+}) {}

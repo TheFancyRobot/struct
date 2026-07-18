@@ -111,6 +111,7 @@ export const registerTextSource = (
       mediaType: input.mediaType,
       byteLength: staged.byteLength,
       sourceId,
+      projectId: input.projectId,
     } satisfies Record<string, unknown> & { stagedRef: StagedArtifactRef }
     const job: typeof JobQueue.Type = {
       id: deps.randomJobQueueId(),

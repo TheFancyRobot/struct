@@ -107,8 +107,11 @@ describe('Migration Runner', () => {
       await Effect.runPromise(runMigrationsDown(fakeSql))
 
       // Should have deleted the last migration record
+      const latestMigration = migrations[migrations.length - 1]
       const deleteQuery = fakeSql.queries.find(
-        (q) => q.startsWith('DELETE FROM _migrations WHERE name') && q.includes('0002_init_tables'),
+        (q) =>
+          q.startsWith('DELETE FROM _migrations WHERE name') &&
+          q.includes(latestMigration?.name ?? ''),
       )
       expect(deleteQuery).toBeDefined()
     })

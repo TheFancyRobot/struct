@@ -21,4 +21,9 @@ export const migrations: readonly Migration[] = [
     upPath: new URL('./0002_init_tables.sql', import.meta.url).pathname,
     downPath: new URL('./0002_init_tables.down.sql', import.meta.url).pathname,
   },
+  {
+    name: '0003_research_text_index',
+    upPath: new URL('./0003_research_text_index.sql', import.meta.url).pathname,
+    downPath: new URL('./0003_research_text_index.down.sql', import.meta.url).pathname,
+  },
 ] as const
