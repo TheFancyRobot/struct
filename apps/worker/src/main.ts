@@ -12,6 +12,7 @@ import {
   QueryError,
   ResearchExecutionRepo,
   ResearchRunRepo,
+  SourceTextReindexRepo,
   SourceRepo,
   SourceVersionRepo,
   SqlClientLive,
@@ -35,6 +36,7 @@ import {
 } from './config'
 import { processOneIngestionJob } from './jobs/ingest-source'
 import { processOneResearchJob } from './jobs/run-research'
+import { processOneSourceTextReindex } from './jobs/reindex-source-text'
 import { runWorkerPollLoops } from './polling'
 
 const program = Effect.gen(function* () {
@@ -57,6 +59,7 @@ const program = Effect.gen(function* () {
   const retrievalLayer = Layer.provide(TextRetrieval.Default, sqlLayer)
   const researchExecutionLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
   const researchRunLayer = Layer.provide(ResearchRunRepo.Default, sqlLayer)
+  const sourceTextReindexLayer = Layer.provide(SourceTextReindexRepo.Default, sqlLayer)
 
   yield* Effect.log(`Worker starting (metrics on port ${metricsPort})`)
   yield* Effect.tryPromise({
@@ -115,6 +118,10 @@ const program = Effect.gen(function* () {
         ResearchExecutionRepo.appendEvent(event).pipe(
           Effect.provide(researchExecutionLayer),
         ),
+      appendInProgressEvent: (jobId, event) =>
+        ResearchExecutionRepo.appendInProgressEvent(jobId, event).pipe(
+          Effect.provide(researchExecutionLayer),
+        ),
       complete: (input) =>
         ResearchExecutionRepo.complete(input).pipe(
           Effect.provide(researchExecutionLayer),
@@ -138,7 +145,7 @@ const program = Effect.gen(function* () {
               question: run.question,
             },
             {
-              searchText: (input) =>
+              searchText: (input, signal) =>
                 Effect.runPromise(
                   TextRetrieval.searchText({
                     workspaceId: input.workspaceId,
@@ -150,11 +157,18 @@ const program = Effect.gen(function* () {
                     Effect.map((result) => result.evidence),
                     Effect.provide(retrievalLayer),
                   ),
+                  { signal },
                 ),
-              onRetrievalCompleted: (evidence) =>
-                Effect.runPromise(onRetrievalCompleted(evidence).pipe(Effect.asVoid)),
-              validate: (answer, evidence, question) =>
-                Effect.runPromise(validateAnswerCitations(answer, evidence, question)),
+              onRetrievalCompleted: (evidence, signal) =>
+                Effect.runPromise(
+                  onRetrievalCompleted(evidence).pipe(Effect.asVoid),
+                  { signal },
+                ),
+              validate: (answer, evidence, question, signal) =>
+                Effect.runPromise(
+                  validateAnswerCitations(answer, evidence, question),
+                  { signal },
+                ),
             },
             fredConfig,
           )
@@ -162,7 +176,28 @@ const program = Effect.gen(function* () {
     },
   }))
 
-  yield* runWorkerPollLoops(poll, researchPoll, pollMs)
+  const reindexPoll = Effect.suspend(() => processOneSourceTextReindex({
+    staleBeforeMs: Date.now() - staleMs,
+    jobs: {
+      recoverStale: (staleBeforeMs) =>
+        SourceTextReindexRepo.recoverStale(staleBeforeMs).pipe(
+          Effect.provide(sourceTextReindexLayer),
+        ),
+      claimNext: () =>
+        SourceTextReindexRepo.claimNext().pipe(Effect.provide(sourceTextReindexLayer)),
+      recordFailure: (job, errorCode) =>
+        SourceTextReindexRepo.recordFailure(job, errorCode).pipe(
+          Effect.provide(sourceTextReindexLayer),
+        ),
+    },
+    store: storage,
+    textIndex: {
+      indexText: (input) =>
+        TextRetrieval.indexText(input).pipe(Effect.provide(retrievalLayer)),
+    },
+  }))
+
+  yield* runWorkerPollLoops(poll, researchPoll, pollMs, reindexPoll)
 })
 
 Effect.runPromise(Effect.scoped(program)).catch((error) => {

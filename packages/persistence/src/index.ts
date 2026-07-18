@@ -39,6 +39,7 @@ export {
   EventJournalRepo,
   SourceRegistrationRepo,
   ResearchExecutionRepo,
+  SourceTextReindexRepo,
   // Persistence errors
   QueryError,
   EntityNotFoundError,
@@ -88,3 +89,5 @@ export type {
   FailResearchInput,
   ResearchExecutionError,
 } from './repositories/research-execution.js'
+
+export type { SourceTextReindexJob } from './repositories/source-text-reindex.js'

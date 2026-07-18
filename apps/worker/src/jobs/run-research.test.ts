@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Effect, Option } from 'effect'
+import { Effect, Exit, Option } from 'effect'
 import {
   CitationId,
   EventJournalId,
@@ -66,6 +66,11 @@ function deps(failWorkflow = false) {
       recoverStale: () => Effect.succeed([]),
       claimNext: () => Effect.succeed(Option.some(job)),
       appendEvent: (journalEvent) => {
+        events.push(journalEvent.eventType)
+        eventPayloads.push(journalEvent.payload)
+        return Effect.void
+      },
+      appendInProgressEvent: (_jobId, journalEvent) => {
         events.push(journalEvent.eventType)
         eventPayloads.push(journalEvent.payload)
         return Effect.void
@@ -189,5 +194,41 @@ describe('processOneResearchJob', () => {
     expect(result).toEqual({ processed: false })
     expect(testDeps.calls.events).toEqual([])
     expect(testDeps.calls.failed).toHaveLength(0)
+  })
+
+  it('rejects a late retrieval callback after terminal failure', async () => {
+    const base = deps()
+    let terminal = false
+    let lateCallback:
+      | ((items: typeof evidence) => Effect.Effect<unknown, unknown, never>)
+      | undefined
+    const testDeps: ResearchWorkerDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        appendInProgressEvent: (_jobId, journalEvent) =>
+          terminal
+            ? Effect.fail(new Error('research-event-ownership-lost'))
+            : base.jobs.appendInProgressEvent(job.id, journalEvent),
+        fail: (input) => {
+          terminal = true
+          return base.jobs.fail(input)
+        },
+      },
+      workflow: {
+        run: ({ onRetrievalCompleted }) => {
+          lateCallback = onRetrievalCompleted as typeof lateCallback
+          return Effect.fail({ _tag: 'ResearchWorkflowError' })
+        },
+      },
+    }
+
+    await Effect.runPromise(processOneResearchJob(testDeps))
+    expect(lateCallback).toBeDefined()
+    const lateExit = await Effect.runPromiseExit(lateCallback!(evidence))
+
+    expect(terminal).toBe(true)
+    expect(Exit.isFailure(lateExit)).toBe(true)
+    expect(base.calls.events).toEqual(['research-failed'])
   })
 })

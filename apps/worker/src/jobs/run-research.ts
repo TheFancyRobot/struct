@@ -27,6 +27,10 @@ export interface ResearchWorkerDeps {
     readonly appendEvent: (
       event: typeof Domain.EventJournal.Type,
     ) => Effect.Effect<unknown, unknown, never>
+    readonly appendInProgressEvent: (
+      jobId: typeof Domain.JobQueue.Type['id'],
+      event: typeof Domain.EventJournal.Type,
+    ) => Effect.Effect<unknown, unknown, never>
     readonly complete: (input: {
       readonly runId: typeof Domain.ResearchRun.Type['id']
       readonly jobId: typeof Domain.JobQueue.Type['id']
@@ -151,7 +155,8 @@ export const processOneResearchJob = (
         projectId: payload.projectId,
         sourceVersionIds: payload.sourceVersionIds,
         onRetrievalCompleted: (evidence) =>
-          deps.jobs.appendEvent(
+          deps.jobs.appendInProgressEvent(
+            job.id,
             event(deps, job, 'retrieval-completed', {
               evidenceCount: evidence.length,
               sourceVersionIds: evidence.map((item) => item.sourceVersionId),

@@ -17,6 +17,7 @@ describe('TextRetrieval', () => {
     const calls: Array<{ query: string; params?: readonly unknown[] }> = []
     const sqlLayer = SqlClientTest(async (query, params) => {
       calls.push({ query, params })
+      if (query.includes('AS ready_count')) return [{ ready_count: 1 }]
       return [{
         source_version_id: sourceVersionId,
         content: 'Alpha\nThe launch date is July 18.\nOmega',
@@ -40,13 +41,15 @@ describe('TextRetrieval', () => {
       }).pipe(Effect.provide(layer)),
     )
 
-    expect(calls[0]?.query).toMatch(/websearch_to_tsquery/)
-    expect(calls[0]?.query).toMatch(/JOIN projects/)
-    expect(calls[0]?.query).toMatch(/source_version_id = ANY/)
-    expect(calls[0]?.query).toMatch(/WITH ORDINALITY/)
-    expect(calls[0]?.query).toMatch(/LEFT JOIN LATERAL/)
-    expect(calls[0]?.query).toMatch(/locator_query/)
-    expect(calls[0]?.query).toMatch(/ts_headline/)
+    expect(calls[0]?.query).toMatch(/source_text_reindex_jobs/)
+    expect(calls[0]?.query).toMatch(/status = 'completed'/)
+    expect(calls[1]?.query).toMatch(/websearch_to_tsquery/)
+    expect(calls[1]?.query).toMatch(/JOIN projects/)
+    expect(calls[1]?.query).toMatch(/source_version_id = ANY/)
+    expect(calls[1]?.query).toMatch(/WITH ORDINALITY/)
+    expect(calls[1]?.query).toMatch(/LEFT JOIN LATERAL/)
+    expect(calls[1]?.query).toMatch(/locator_query/)
+    expect(calls[1]?.query).toMatch(/ts_headline/)
     expect(calls[0]?.params?.slice(0, 3)).toEqual([
       workspaceId,
       projectId,
@@ -79,10 +82,69 @@ describe('TextRetrieval', () => {
 
     expect(calls.join('\n')).toMatch(/JOIN projects/)
     expect(calls.join('\n')).toMatch(/DO UPDATE SET content = source_text_index\.content/)
+    expect(calls.join('\n')).toMatch(/UPDATE source_text_reindex_jobs/)
+    expect(calls.join('\n')).toMatch(/status = 'completed'/)
+    expect(calls.join('\n')).toMatch(/status = 'pending'/)
+    expect(calls.join('\n')).toMatch(/attempts = \$4/)
+  })
+
+  it('completes reindexing only for the worker claim attempt that produced the text', async () => {
+    const calls: Array<{ query: string; params?: readonly unknown[] }> = []
+    const sqlLayer = SqlClientTest(async (query, params) => {
+      calls.push({ query, params })
+      return [{ source_version_id: sourceVersionId }]
+    })
+    const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
+
+    await Effect.runPromise(
+      TextRetrieval.indexText({
+        workspaceId,
+        projectId,
+        sourceVersionId,
+        content: 'normalized text',
+        reindexAttempt: 2,
+      }).pipe(Effect.provide(layer)),
+    )
+
+    const completion = calls.find(({ query }) =>
+      query.includes('UPDATE source_text_reindex_jobs'))
+    expect(completion?.query).toMatch(/status = 'in-progress'/)
+    expect(completion?.query).toMatch(/attempts = \$4/)
+    expect(completion?.params).toEqual([
+      sourceVersionId,
+      workspaceId,
+      projectId,
+      2,
+    ])
+  })
+
+  it('fails explicitly while a requested source version is not durably indexed', async () => {
+    const calls: string[] = []
+    const sqlLayer = SqlClientTest(async (query) => {
+      calls.push(query)
+      return [{ ready_count: 0 }]
+    })
+    const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
+
+    const exit = await Effect.runPromiseExit(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [sourceVersionId],
+        query: 'launch',
+        limit: 1,
+      }).pipe(Effect.provide(layer)),
+    )
+
+    expect(exit._tag).toBe('Failure')
+    expect(calls).toHaveLength(1)
+    expect(calls[0]).toMatch(/source_text_reindex_jobs/)
   })
 
   it('anchors a stem-only match after the first six lines to the PostgreSQL match line', async () => {
-    const sqlLayer = SqlClientTest(async () => [{
+    const sqlLayer = SqlClientTest(async (query) => query.includes('AS ready_count')
+      ? [{ ready_count: 1 }]
+      : [{
       source_version_id: sourceVersionId,
       content: [
         'Unrelated one',
@@ -100,7 +162,7 @@ describe('TextRetrieval', () => {
         line_number: 7,
         highlighted_line: `The service \uE000runs\uE001 nightly.`,
       }],
-    }])
+      }])
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
 
     const result = await Effect.runPromise(
@@ -133,7 +195,9 @@ describe('TextRetrieval', () => {
       'omega',
       'Epilogue',
     ].join('\n')
-    const sqlLayer = SqlClientTest(async () => [{
+    const sqlLayer = SqlClientTest(async (query) => query.includes('AS ready_count')
+      ? [{ ready_count: 1 }]
+      : [{
       source_version_id: sourceVersionId,
       content,
       rank: 0.4,
@@ -142,7 +206,7 @@ describe('TextRetrieval', () => {
         { line_number: 2, highlighted_line: `\uE000alpha\uE001` },
         { line_number: 10, highlighted_line: `\uE000omega\uE001` },
       ],
-    }])
+      }])
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
 
     const result = await Effect.runPromise(
@@ -166,13 +230,15 @@ describe('TextRetrieval', () => {
   it('centers a long-line excerpt on a late PostgreSQL match and locates its exact characters', async () => {
     const content = `${'prefix '.repeat(220)}lateanchor trailing context`
     const highlightedLine = `${'prefix '.repeat(220)}\uE000lateanchor\uE001 trailing context`
-    const sqlLayer = SqlClientTest(async () => [{
+    const sqlLayer = SqlClientTest(async (query) => query.includes('AS ready_count')
+      ? [{ ready_count: 1 }]
+      : [{
       source_version_id: sourceVersionId,
       content,
       rank: 0.3,
       match_line: 1,
       match_passages: [{ line_number: 1, highlighted_line: highlightedLine }],
-    }])
+      }])
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
 
     const result = await Effect.runPromise(

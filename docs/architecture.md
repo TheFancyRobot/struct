@@ -316,6 +316,11 @@ This preserves reproducibility, makes citations stable, and prevents historical 
 - **Forward:** `bun run migrations:up` (executed by `apps/api`) applies all pending migrations in order.
 - **Rollback:** `bun run migrations:down` (executed by `apps/api`) reverts exactly one migration. A migration must be reversible or explicitly marked irreversible with a recorded reason; irreversible, data-losing migrations require an ADR.
 - **Test contract:** `migrations:up && migrations:down && migrations:up` against an ephemeral PostgreSQL instance must be idempotent and leave a clean schema. This round-trip is a required CI gate (see [`docs/repository-contract.md`](./repository-contract.md)).
+- **Upgrade indexing:** the text-index migration durably queues every existing
+  `SourceVersion` from its stored manifest ref, tenant scope, and immutable
+  content hash. A worker reconstructs the index from normalized artifacts with
+  bounded retries; unavailable artifacts remain explicitly observable in
+  `source_text_reindex_jobs` and never masquerade as a completed empty index.
 - **Recovery policy:** forward-only is the production default. Rollback is permitted in dev and CI for reversible migrations only. No production rollback may be executed without a matching ADR for irreversible steps.
 - **Executor uniqueness:** a CI/static check verifies that migration-runner imports live only in `apps/api`; any migration import in `apps/worker` or `apps/web` fails the gate.
 

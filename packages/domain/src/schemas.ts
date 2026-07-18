@@ -116,7 +116,10 @@ export const ResearchCitation = Schema.Struct({
 export type ResearchCitation = Schema.Schema.Type<typeof ResearchCitation>
 
 export const ResearchAnswer = Schema.Struct({
-  answer: Schema.String,
+  answer: Schema.String.pipe(
+    Schema.minLength(1),
+    Schema.pattern(/\S/),
+  ),
   citations: Schema.Array(ResearchCitation),
 })
 export type ResearchAnswer = Schema.Schema.Type<typeof ResearchAnswer>

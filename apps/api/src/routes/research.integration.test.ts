@@ -16,6 +16,7 @@ import {
 import {
   ResearchExecutionRepo,
   ResearchRunRepo,
+  SourceTextReindexRepo,
   SqlClientLive,
 } from '@struct/persistence'
 import { TextRetrieval } from '@struct/retrieval'
@@ -145,6 +146,12 @@ describeIf('research walking slice real DB integration', () => {
        VALUES ($1, $2)`,
       [longLineSourceVersionId, longLineContent],
     )
+    await sql.unsafe(
+      `UPDATE source_text_reindex_jobs
+       SET status = 'completed', updated_at = NOW()
+       WHERE project_id = $1`,
+      [projectId],
+    )
   })
 
   afterAll(async () => {
@@ -200,6 +207,10 @@ describeIf('research walking slice real DB integration', () => {
           ResearchExecutionRepo.claimNext().pipe(Effect.provide(executionLayer)),
         appendEvent: (event) =>
           ResearchExecutionRepo.appendEvent(event).pipe(
+            Effect.provide(executionLayer),
+          ),
+        appendInProgressEvent: (jobId, event) =>
+          ResearchExecutionRepo.appendInProgressEvent(jobId, event).pipe(
             Effect.provide(executionLayer),
           ),
         complete: (input) =>
@@ -534,6 +545,19 @@ describeIf('research walking slice real DB integration', () => {
       }).pipe(Effect.provide(executionLayer)),
     )
     expect(Exit.isFailure(completion)).toBe(true)
+    const lateRetrieval = await Effect.runPromiseExit(
+      ResearchExecutionRepo.appendInProgressEvent(jobId, {
+        id: EventJournalId.make('f50e8400-e29b-41d4-a716-446655440073'),
+        workspaceId,
+        entityType: 'research',
+        entityId: runId,
+        eventType: 'retrieval-completed',
+        payload: { evidenceCount: 1, sourceVersionIds: [sourceVersionId] },
+        cursor: 0n,
+        createdAt: BigInt(Date.now()),
+      }).pipe(Effect.provide(executionLayer)),
+    )
+    expect(Exit.isFailure(lateRetrieval)).toBe(true)
 
     const [runRow] = await sql.unsafe(
       `SELECT status FROM research_runs WHERE id = $1`,
@@ -564,6 +588,88 @@ describeIf('research walking slice real DB integration', () => {
     expect(events[1]?.['payload']).toMatchObject({
       errorTag: 'ResearchJobStaleError',
       message: 'Research failed',
+    })
+  })
+
+  it('rejects stale reindex completion and failure after a newer claim owns the lease', async () => {
+    const sqlLayer = SqlClientLive(sql)
+    const reindexLayer = Layer.provide(SourceTextReindexRepo.Default, sqlLayer)
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, sqlLayer)
+    await sql.unsafe(
+      `UPDATE source_text_reindex_jobs
+       SET status = 'pending', attempts = 0, updated_at = NOW()
+       WHERE source_version_id = $1`,
+      [sourceVersionId],
+    )
+
+    const first = await Effect.runPromise(
+      SourceTextReindexRepo.claimNext().pipe(Effect.provide(reindexLayer)),
+    )
+    if (Option.isNone(first)) throw new Error('first reindex lease was not claimed')
+    await sql.unsafe(
+      `UPDATE source_text_reindex_jobs
+       SET updated_at = NOW() - INTERVAL '10 minutes'
+       WHERE source_version_id = $1`,
+      [sourceVersionId],
+    )
+    await Effect.runPromise(
+      SourceTextReindexRepo.recoverStale(Date.now() - 300_000).pipe(
+        Effect.provide(reindexLayer),
+      ),
+    )
+    const second = await Effect.runPromise(
+      SourceTextReindexRepo.claimNext().pipe(Effect.provide(reindexLayer)),
+    )
+    if (Option.isNone(second)) throw new Error('second reindex lease was not claimed')
+
+    const staleFailure = await Effect.runPromiseExit(
+      SourceTextReindexRepo.recordFailure(
+        first.value,
+        'artifact-unavailable',
+      ).pipe(Effect.provide(reindexLayer)),
+    )
+    const staleCompletion = await Effect.runPromiseExit(
+      TextRetrieval.indexText({
+        workspaceId,
+        projectId,
+        sourceVersionId,
+        content: 'The launch date is July 18.',
+        reindexAttempt: first.value.attempts,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+    const [owned] = await sql.unsafe(
+      `SELECT status, attempts, last_error_code
+       FROM source_text_reindex_jobs
+       WHERE source_version_id = $1`,
+      [sourceVersionId],
+    )
+
+    expect(Exit.isFailure(staleFailure)).toBe(true)
+    expect(Exit.isFailure(staleCompletion)).toBe(true)
+    expect(owned).toMatchObject({
+      status: 'in-progress',
+      attempts: second.value.attempts,
+      last_error_code: null,
+    })
+
+    await Effect.runPromise(
+      TextRetrieval.indexText({
+        workspaceId,
+        projectId,
+        sourceVersionId,
+        content: 'The launch date is July 18.',
+        reindexAttempt: second.value.attempts,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+    const [completed] = await sql.unsafe(
+      `SELECT status, attempts
+       FROM source_text_reindex_jobs
+       WHERE source_version_id = $1`,
+      [sourceVersionId],
+    )
+    expect(completed).toMatchObject({
+      status: 'completed',
+      attempts: second.value.attempts,
     })
   })
 })

@@ -116,6 +116,41 @@ If Docker is unavailable, only PostgreSQL is affected:
 - **Model-dependent paths require provider API keys.** Any research/ingestion path that calls a model needs `FRED_*` provider keys; absence is a reproduction blocker, not a bug.
 - **Irreversible migrations need an ADR.** A local rollback that hits an irreversible migration cannot proceed without the matching decision record (see [`architecture.md` §6.5](./architecture.md)).
 
+### Source text reindexing after upgrade
+
+Migration `0003_research_text_index` does not assume an empty installation. It
+creates one `source_text_reindex_jobs` row for every existing immutable
+`SourceVersion`, and a trigger creates the same durable state for future
+versions. The worker reads the stored manifest and normalized artifact, verifies
+the normalized bytes against `content_hash`, indexes in the recorded workspace
+and project scope, and atomically marks the row `completed`.
+
+Check upgrade progress and failures with:
+
+```sql
+SELECT status, last_error_code, count(*)
+FROM source_text_reindex_jobs
+GROUP BY status, last_error_code
+ORDER BY status, last_error_code;
+```
+
+`artifact-unavailable` is an explicit terminal/retry state, not a silently empty
+index. It means the deployment's `ARTIFACT_STORAGE_ROOT` does not contain the
+content-addressed objects referenced by the source-version manifest. Restore or
+mount the original artifact store first, then requeue only the affected rows:
+
+```sql
+UPDATE source_text_reindex_jobs
+SET status = 'pending', attempts = 0, last_error_code = NULL, updated_at = NOW()
+WHERE status = 'failed' AND last_error_code = 'artifact-unavailable';
+```
+
+Do not requeue hash mismatches until the immutable artifact/content-hash
+inconsistency has been investigated. Research against a source version is ready
+only when its reindex row is `completed`; deterministic retrieval rejects
+pending or failed versions explicitly instead of treating a missing index row as
+ordinary zero-result evidence.
+
 ## 5. DuckDB local boundary (from STEP-00-03)
 
 The chosen DuckDB runtime boundary, restated for local development:

@@ -27,6 +27,11 @@ export interface IndexTextInput {
   readonly projectId: typeof ProjectId.Type
   readonly sourceVersionId: typeof SourceVersionId.Type
   readonly content: string
+  /**
+   * The incremented attempt number returned by a durable reindex claim.
+   * Omit only for the ingestion fast path, which owns the initial pending row.
+   */
+  readonly reindexAttempt?: number
 }
 
 interface SearchRow {
@@ -232,20 +237,47 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
     const indexText = Effect.fn('TextRetrieval.indexText')(function* (input: IndexTextInput) {
       yield* Effect.tryPromise({
         try: () =>
-          sql.unsafe(
-            `INSERT INTO source_text_index (source_version_id, content)
-             SELECT sv.id, $4
-             FROM source_versions sv
-             JOIN sources s ON s.id = sv.source_id
-             JOIN projects p ON p.id = s.project_id
-             WHERE sv.id = $3
-               AND p.id = $2
-               AND p.workspace_id = $1
-             ON CONFLICT (source_version_id)
-             DO UPDATE SET content = source_text_index.content
-             RETURNING source_version_id`,
-            [input.workspaceId, input.projectId, input.sourceVersionId, input.content],
-          ),
+          sql.transaction(async (transaction) => {
+            const indexed = await transaction.unsafe(
+              `INSERT INTO source_text_index (source_version_id, content)
+               SELECT sv.id, $4
+               FROM source_versions sv
+               JOIN sources s ON s.id = sv.source_id
+               JOIN projects p ON p.id = s.project_id
+               WHERE sv.id = $3
+                 AND p.id = $2
+                 AND p.workspace_id = $1
+               ON CONFLICT (source_version_id)
+               DO UPDATE SET content = source_text_index.content
+               RETURNING source_version_id`,
+              [input.workspaceId, input.projectId, input.sourceVersionId, input.content],
+            )
+            if (indexed.length !== 1) return indexed
+            const completed = await transaction.unsafe(
+              `UPDATE source_text_reindex_jobs
+               SET status = 'completed',
+                   last_error_code = NULL,
+                   updated_at = NOW()
+              WHERE source_version_id = $1
+                 AND workspace_id = $2
+                 AND project_id = $3
+                 AND (
+                   ($4::integer IS NULL AND status = 'pending')
+                   OR (status = 'in-progress' AND attempts = $4)
+                 )
+               RETURNING source_version_id`,
+              [
+                input.sourceVersionId,
+                input.workspaceId,
+                input.projectId,
+                input.reindexAttempt ?? null,
+              ],
+            )
+            if (completed.length !== 1) {
+              throw new Error('source-text-reindex-state-missing')
+            }
+            return indexed
+          }),
         catch: () =>
           new RetrievalQueryError({
             operation: 'indexText',
@@ -276,8 +308,26 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
       )
       const rows = yield* Effect.tryPromise({
         try: () =>
-          sql.unsafe(
-            `WITH search_query AS (
+          sql.transaction(async (transaction) => {
+            const readiness = await transaction.unsafe(
+              `SELECT COUNT(DISTINCT sv.id)::int AS ready_count
+               FROM source_versions sv
+               JOIN sources s ON s.id = sv.source_id
+               JOIN projects p ON p.id = s.project_id
+               JOIN source_text_reindex_jobs reindex
+                 ON reindex.source_version_id = sv.id
+                AND reindex.status = 'completed'
+               JOIN source_text_index sti ON sti.source_version_id = sv.id
+               WHERE p.workspace_id = $1
+                 AND p.id = $2
+                 AND sv.id = ANY($3::uuid[])`,
+              [decoded.workspaceId, decoded.projectId, decoded.sourceVersionIds],
+            )
+            if (Number(readiness[0]?.['ready_count']) !== decoded.sourceVersionIds.length) {
+              throw new Error('source-text-index-not-ready')
+            }
+            return transaction.unsafe(
+              `WITH search_query AS (
                SELECT websearch_to_tsquery('english', $4) AS query,
                       to_tsquery(
                         'english',
@@ -325,14 +375,15 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
                AND sti.search_vector @@ search_query.query
              ORDER BY rank DESC, source_version_id ASC
              LIMIT $5`,
-            [
-              decoded.workspaceId,
-              decoded.projectId,
-              decoded.sourceVersionIds,
-              decoded.query,
-              decoded.limit,
-            ],
-          ),
+              [
+                decoded.workspaceId,
+                decoded.projectId,
+                decoded.sourceVersionIds,
+                decoded.query,
+                decoded.limit,
+              ],
+            )
+          }),
         catch: () =>
           new RetrievalQueryError({
             operation: 'searchText',

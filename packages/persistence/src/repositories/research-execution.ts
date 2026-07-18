@@ -318,6 +318,51 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
       )
     })
 
+    const appendInProgressEvent = Effect.fn(
+      'ResearchExecutionRepo.appendInProgressEvent',
+    )(function* (
+      jobId: typeof JobQueue.Type['id'],
+      event: typeof EventJournal.Type,
+    ) {
+      yield* Effect.tryPromise({
+        try: () =>
+          sql.transaction(async (transaction) => {
+            const ownership = await transaction.unsafe(
+              `SELECT id
+               FROM job_queue
+               WHERE id = $1
+                 AND entity_type = 'research'
+                 AND entity_id = $2
+                 AND status = 'in-progress'
+               FOR UPDATE`,
+              [jobId, event.entityId],
+            )
+            if (ownership.length !== 1) {
+              throw new Error('research-event-ownership-lost')
+            }
+            await transaction.unsafe(
+              `INSERT INTO event_journal
+                 (id, workspace_id, entity_type, entity_id, event_type, payload, created_at)
+               VALUES ($1, $2, 'research', $3, $4, $5::jsonb, to_timestamp($6 / 1000.0))`,
+              [
+                event.id,
+                event.workspaceId,
+                event.entityId,
+                event.eventType,
+                JSON.stringify(event.payload),
+                Number(event.createdAt),
+              ],
+            )
+          }),
+        catch: () =>
+          new QueryError({
+            operation: 'appendInProgressResearchEvent',
+            entity: 'ResearchExecution',
+            message: 'Research event append lost in-progress ownership',
+          }),
+      })
+    })
+
     const complete = Effect.fn('ResearchExecutionRepo.complete')(function* (
       input: CompleteResearchInput,
     ) {
@@ -438,7 +483,15 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
       })
     })
 
-    return { register, recoverStale, claimNext, appendEvent, complete, fail }
+    return {
+      register,
+      recoverStale,
+      claimNext,
+      appendEvent,
+      appendInProgressEvent,
+      complete,
+      fail,
+    }
   }),
 }) {}
 

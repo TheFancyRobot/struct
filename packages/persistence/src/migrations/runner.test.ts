@@ -74,6 +74,12 @@ describe('Migration Runner', () => {
         )
         expect(insertQuery).toBeDefined()
       }
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /INSERT INTO source_text_reindex_jobs[\s\S]*FROM source_versions/i,
+      )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /CREATE TRIGGER source_versions_enqueue_text_reindex/i,
+      )
     })
 
     it('skips already-applied migrations', async () => {

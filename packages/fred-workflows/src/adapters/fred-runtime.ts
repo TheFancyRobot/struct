@@ -1,4 +1,4 @@
-import { Config, Effect, Schema } from 'effect'
+import { Config, Effect, Runtime, Schema } from 'effect'
 import type * as Fred from '@fancyrobot/fred'
 import { ResearchWorkflowError } from '@struct/domain'
 import {
@@ -33,26 +33,57 @@ export const fredRuntimeConfig = Config.all({
 })
 
 export interface FredClientFactory {
-  readonly create: () => Promise<Fred.FredClient>
-  readonly execute?: (
+  readonly create: (signal: AbortSignal) => Promise<Fred.FredClient>
+  readonly execute: (
     fred: Fred.FredClient,
     workflow: Fred.WorkflowIR,
     input: typeof Research.WalkingSkeletonResearchInput.Type,
     maxElapsedMs: number,
+    signal: AbortSignal,
   ) => Promise<Fred.WorkflowExecutionResult>
 }
 
+function assertActive(signal: AbortSignal): void {
+  if (signal.aborted) {
+    throw signal.reason instanceof Error
+      ? signal.reason
+      : new Error('Fred workflow was interrupted')
+  }
+}
+
+async function boundedShutdown(
+  fred: Fred.FredClient,
+  maxElapsedMs: number,
+): Promise<void> {
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  try {
+    await Promise.race([
+      fred.shutdown(),
+      new Promise<void>((resolve) => {
+        timeout = setTimeout(resolve, Math.max(1, maxElapsedMs))
+      }),
+    ])
+  } catch {
+    // Shutdown cannot replace the workflow result or timeout.
+  } finally {
+    if (timeout !== undefined) clearTimeout(timeout)
+  }
+}
+
 const defaultFactory: FredClientFactory = {
-  create: async () => {
+  create: async (signal) => {
     const { createFred } = await import('@fancyrobot/fred')
+    assertActive(signal)
     return createFred()
   },
-  execute: async (fred, workflow, input, maxElapsedMs) => {
+  execute: async (fred, workflow, input, _maxElapsedMs, signal) => {
+    assertActive(signal)
     const {
       AgentService,
       SessionService,
       executeWorkflowEffect,
     } = await import('@fancyrobot/fred/effect')
+    assertActive(signal)
     const execution = Effect.gen(function* () {
       const agentService = yield* AgentService
       const agents = yield* agentService.getAllAgents()
@@ -66,13 +97,8 @@ const defaultFactory: FredClientFactory = {
       })
       const sessions = yield* SessionService
       return yield* sessions.withSession(input.runId, workflowEffect)
-    }).pipe(
-      Effect.timeoutFail({
-        duration: maxElapsedMs,
-        onTimeout: () => new Error('Research workflow exceeded elapsed-time budget'),
-      }),
-    )
-    return fred.effects.run(execution)
+    })
+    return Runtime.runPromise(fred.runtime)(execution, { signal })
   },
 }
 
@@ -82,7 +108,7 @@ export const preflightFredRuntime = (
 ): Effect.Effect<void, ResearchWorkflowError, never> =>
   Effect.acquireUseRelease(
     Effect.tryPromise({
-      try: () => factory.create(),
+      try: (signal) => factory.create(signal),
       catch: () =>
         new ResearchWorkflowError({
           stage: 'fred-runtime',
@@ -99,8 +125,8 @@ export const preflightFredRuntime = (
             stage: 'provider-preflight',
             message: 'Fred provider could not be loaded',
           }),
-      }),
-    (fred) => Effect.promise(() => fred.shutdown()).pipe(Effect.ignore),
+    }),
+    (fred) => Effect.promise(() => boundedShutdown(fred, config.maxElapsedMs)).pipe(Effect.ignore),
   )
 
 export const runFredWalkingSkeleton = (
@@ -111,7 +137,14 @@ export const runFredWalkingSkeleton = (
 ): Effect.Effect<typeof WalkingSkeletonWorkflowResult.Type, ResearchWorkflowError, never> =>
   Effect.acquireUseRelease(
     Effect.tryPromise({
-      try: () => factory.create(),
+      try: async (signal) => {
+        const fred = await factory.create(signal)
+        if (signal.aborted) {
+          void boundedShutdown(fred, config.maxElapsedMs)
+          assertActive(signal)
+        }
+        return fred
+      },
       catch: () =>
         new ResearchWorkflowError({
           stage: 'fred-runtime',
@@ -120,19 +153,25 @@ export const runFredWalkingSkeleton = (
     }),
     (fred) =>
       Effect.tryPromise({
-        try: async () => {
+        try: async (signal) => {
+          assertActive(signal)
           const provider = await fred.providers.use(config.providerPackage)
-          await fred.tools.register(makeSearchTextTool(deps.searchText))
+          assertActive(signal)
+          await fred.tools.register(makeSearchTextTool(deps.searchText, signal))
+          assertActive(signal)
           await fred.agents.register(answerSynthesizerAgent(provider.id, config.model))
-          const workflow = makeWalkingSkeletonWorkflow(deps)
+          assertActive(signal)
+          const workflow = makeWalkingSkeletonWorkflow(deps, signal)
           await fred.workflows.define(workflow)
-          const result: Fred.WorkflowExecutionResult = factory.execute
-            ? await factory.execute(fred, workflow, input, config.maxElapsedMs)
-            : await fred.workflows.run(
-                workflow.id,
-                input,
-                { sessionId: input.runId },
-              ) as Fred.WorkflowExecutionResult
+          assertActive(signal)
+          const result = await factory.execute(
+            fred,
+            workflow,
+            input,
+            config.maxElapsedMs,
+            signal,
+          )
+          assertActive(signal)
           if (!result.success || result.status !== 'completed') {
             throw result.error ?? new Error(`Fred workflow ended with ${result.status}`)
           }
@@ -143,15 +182,15 @@ export const runFredWalkingSkeleton = (
             stage: 'workflow-execution',
             message: 'Fred research workflow failed',
           }),
-      }).pipe(
-        Effect.timeoutFail({
-          duration: config.maxElapsedMs,
-          onTimeout: () =>
-            new ResearchWorkflowError({
-              stage: 'workflow-execution',
-              message: 'Fred research workflow exceeded elapsed-time budget',
-            }),
+      }),
+    (fred) => Effect.promise(() => boundedShutdown(fred, config.maxElapsedMs)).pipe(Effect.ignore),
+  ).pipe(
+    Effect.timeoutFail({
+      duration: config.maxElapsedMs,
+      onTimeout: () =>
+        new ResearchWorkflowError({
+          stage: 'workflow-execution',
+          message: 'Fred research workflow exceeded elapsed-time budget',
         }),
-      ),
-    (fred) => Effect.promise(() => fred.shutdown()).pipe(Effect.ignore),
+    }),
   )

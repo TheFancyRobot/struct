@@ -179,10 +179,15 @@ describe('Fred walking-skeleton workflow', () => {
         { providerPackage: 'mock', model: 'fixed', maxElapsedMs: 1000 },
         {
           create: async () => client,
-          execute: async (fred, workflow, workflowInput) =>
-            await fred.workflows.run(workflow.id, workflowInput, {
-              sessionId: workflowInput.runId,
-            }) as WorkflowExecutionResult,
+          execute: async () => ({
+            success: true,
+            status: 'completed',
+            context: { input, outputs: {}, history: [], metadata: {}, pipelineId: 'test' },
+            outputs: {},
+            executedNodes: ['searchText', 'synthesize', 'validateCitations'],
+            finalOutput,
+            runId: input.runId,
+          }),
         },
       ),
     )
@@ -197,8 +202,11 @@ describe('Fred walking-skeleton workflow', () => {
     ])
   })
 
-  it('shuts down the Fred runtime when the elapsed-time budget expires', async () => {
+  it('interrupts retrieval before callbacks or model work and shuts down on timeout', async () => {
     let shutdownCalls = 0
+    let retrievalInterrupts = 0
+    let retrievalCallbacks = 0
+    let modelWork = 0
     const client = {
       providers: { use: async () => MockModelProvider },
       tools: { register: async () => undefined },
@@ -216,19 +224,282 @@ describe('Fred walking-skeleton workflow', () => {
       runFredWalkingSkeleton(
         input,
         {
-          searchText: async () => evidence,
-          onRetrievalCompleted: async () => undefined,
+          searchText: async (_input, signal) =>
+            await new Promise<ReadonlyArray<(typeof evidence)[number]>>(
+              (_resolve, reject) => {
+                signal.addEventListener('abort', () => {
+                  retrievalInterrupts += 1
+                  reject(signal.reason)
+                }, { once: true })
+              },
+            ),
+          onRetrievalCompleted: async () => {
+            retrievalCallbacks += 1
+          },
           validate: async (answer) => answer,
         },
         { providerPackage: 'mock', model: 'fixed', maxElapsedMs: 10 },
         {
           create: async () => client,
-          execute: () => new Promise<WorkflowExecutionResult>(() => undefined),
+          execute: async (_fred, workflow) => {
+            const searchNode = workflow.nodes.find((node) => node.id === 'searchText')
+            if (!searchNode || searchNode.kind !== 'function') {
+              throw new Error('searchText function node was not defined')
+            }
+            await searchNode.fn({
+              input,
+              outputs: {},
+              history: [],
+              metadata: {},
+              pipelineId: workflow.id,
+            } as never)
+            modelWork += 1
+            throw new Error('timeout failed to interrupt workflow')
+          },
         },
       ),
     )
 
+    await new Promise((resolve) => setTimeout(resolve, 20))
     expect(Exit.isFailure(result)).toBe(true)
+    expect(retrievalInterrupts).toBe(1)
+    expect(retrievalCallbacks).toBe(0)
+    expect(modelWork).toBe(0)
     expect(shutdownCalls).toBeGreaterThanOrEqual(1)
+  })
+
+  it('does not continue registration when provider setup resolves after timeout', async () => {
+    const calls: string[] = []
+    const client = {
+      providers: {
+        use: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 30))
+          calls.push('provider-resolved')
+          return MockModelProvider
+        },
+      },
+      tools: { register: async () => { calls.push('tool') } },
+      agents: { register: async () => { calls.push('agent') } },
+      workflows: {
+        define: async () => { calls.push('workflow') },
+        run: async () => {
+          calls.push('non-cancellable-run')
+          throw new Error('non-cancellable execution must never be used')
+        },
+      },
+      shutdown: async () => {
+        calls.push('shutdown')
+        await new Promise<never>(() => undefined)
+      },
+    } as unknown as FredClient
+    const startedAt = Date.now()
+
+    const exit = await Effect.runPromiseExit(
+      runFredWalkingSkeleton(
+        input,
+        {
+          searchText: async () => evidence,
+          onRetrievalCompleted: async () => undefined,
+          validate: async (answer) => answer,
+        },
+        { providerPackage: 'delayed', model: 'fixed', maxElapsedMs: 5 },
+        {
+          create: async () => client,
+          execute: async () => {
+            calls.push('execute')
+            throw new Error('execution must not start')
+          },
+        },
+      ),
+    )
+    const elapsedMs = Date.now() - startedAt
+
+    await new Promise((resolve) => setTimeout(resolve, 45))
+    expect(Exit.isFailure(exit)).toBe(true)
+    expect(elapsedMs).toBeLessThan(100)
+    expect(calls).toContain('provider-resolved')
+    expect(calls).toContain('shutdown')
+    expect(calls).not.toContain('tool')
+    expect(calls).not.toContain('agent')
+    expect(calls).not.toContain('workflow')
+    expect(calls).not.toContain('execute')
+    expect(calls).not.toContain('non-cancellable-run')
+  })
+
+  it('releases a client created after timeout without starting provider setup', async () => {
+    const calls: string[] = []
+    const client = {
+      providers: { use: async () => { calls.push('provider') } },
+      tools: { register: async () => undefined },
+      agents: { register: async () => undefined },
+      workflows: {
+        define: async () => undefined,
+        run: async () => {
+          calls.push('non-cancellable-run')
+          throw new Error('non-cancellable execution must never be used')
+        },
+      },
+      shutdown: async () => { calls.push('shutdown') },
+    } as unknown as FredClient
+    const startedAt = Date.now()
+
+    const exit = await Effect.runPromiseExit(
+      runFredWalkingSkeleton(
+        input,
+        {
+          searchText: async () => evidence,
+          onRetrievalCompleted: async () => undefined,
+          validate: async (answer) => answer,
+        },
+        { providerPackage: 'mock', model: 'fixed', maxElapsedMs: 5 },
+        {
+          create: async () => {
+            await new Promise((resolve) => setTimeout(resolve, 30))
+            calls.push('created')
+            return client
+          },
+          execute: async () => {
+            calls.push('execute')
+            throw new Error('execution must not start')
+          },
+        },
+      ),
+    )
+    const elapsedMs = Date.now() - startedAt
+
+    expect(Exit.isFailure(exit)).toBe(true)
+    expect(elapsedMs).toBeLessThan(100)
+    await new Promise((resolve) => setTimeout(resolve, 45))
+    expect(calls).toEqual(['created', 'shutdown'])
+  })
+
+  it('stops after a non-abortable delayed retrieval resolves post-timeout', async () => {
+    const calls: string[] = []
+    const client = {
+      providers: { use: async () => MockModelProvider },
+      tools: { register: async () => undefined },
+      agents: { register: async () => undefined },
+      workflows: {
+        define: async () => undefined,
+        run: async () => {
+          calls.push('non-cancellable-run')
+          throw new Error('non-cancellable execution must never be used')
+        },
+      },
+      shutdown: async () => { calls.push('shutdown') },
+    } as unknown as FredClient
+
+    const exit = await Effect.runPromiseExit(
+      runFredWalkingSkeleton(
+        input,
+        {
+          searchText: async () => {
+            await new Promise((resolve) => setTimeout(resolve, 30))
+            calls.push('retrieval-resolved')
+            return evidence
+          },
+          onRetrievalCompleted: async () => { calls.push('retrieval-event') },
+          validate: async (answer) => {
+            calls.push('validation')
+            return answer
+          },
+        },
+        { providerPackage: 'mock', model: 'fixed', maxElapsedMs: 5 },
+        {
+          create: async () => client,
+          execute: async (_fred, workflow) => {
+            const searchNode = workflow.nodes.find((node) => node.id === 'searchText')
+            if (!searchNode || searchNode.kind !== 'function') {
+              throw new Error('searchText function node was not defined')
+            }
+            await searchNode.fn({
+              input,
+              outputs: {},
+              history: [],
+              metadata: {},
+              pipelineId: workflow.id,
+            } as never)
+            calls.push('model')
+            throw new Error('aborted graph continued to model work')
+          },
+        },
+      ),
+    )
+
+    await new Promise((resolve) => setTimeout(resolve, 45))
+    expect(Exit.isFailure(exit)).toBe(true)
+    expect(calls).toContain('retrieval-resolved')
+    expect(calls).toContain('shutdown')
+    expect(calls).not.toContain('retrieval-event')
+    expect(calls).not.toContain('model')
+    expect(calls).not.toContain('validation')
+    expect(calls).not.toContain('non-cancellable-run')
+  })
+
+  it('interrupts delayed model execution and prevents workflow continuation', async () => {
+    const calls: string[] = []
+    const client = {
+      providers: { use: async () => MockModelProvider },
+      tools: { register: async () => undefined },
+      agents: { register: async () => undefined },
+      workflows: {
+        define: async () => undefined,
+        run: async () => {
+          calls.push('non-cancellable-run')
+          throw new Error('non-cancellable execution must never be used')
+        },
+      },
+      shutdown: async () => { calls.push('shutdown') },
+    } as unknown as FredClient
+
+    const exit = await Effect.runPromiseExit(
+      runFredWalkingSkeleton(
+        input,
+        {
+          searchText: async () => evidence,
+          onRetrievalCompleted: async () => { calls.push('retrieval-event') },
+          validate: async (answer) => {
+            calls.push('validation')
+            return answer
+          },
+        },
+        { providerPackage: 'mock', model: 'fixed', maxElapsedMs: 10 },
+        {
+          create: async () => client,
+          execute: async (_fred, workflow, _workflowInput, _maxElapsedMs, signal) => {
+            const searchNode = workflow.nodes.find((node) => node.id === 'searchText')
+            if (!searchNode || searchNode.kind !== 'function') {
+              throw new Error('searchText function node was not defined')
+            }
+            await searchNode.fn({
+              input,
+              outputs: {},
+              history: [],
+              metadata: {},
+              pipelineId: workflow.id,
+            } as never)
+            calls.push('model-started')
+            await new Promise<void>((resolve, reject) => {
+              const timeout = setTimeout(resolve, 50)
+              signal.addEventListener('abort', () => {
+                clearTimeout(timeout)
+                reject(signal.reason)
+              }, { once: true })
+            })
+            calls.push('model-completed')
+            return {} as WorkflowExecutionResult
+          },
+        },
+      ),
+    )
+
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(Exit.isFailure(exit)).toBe(true)
+    expect(calls).toContain('retrieval-event')
+    expect(calls).toContain('model-started')
+    expect(calls).toContain('shutdown')
+    expect(calls).not.toContain('model-completed')
+    expect(calls).not.toContain('validation')
+    expect(calls).not.toContain('non-cancellable-run')
   })
 })

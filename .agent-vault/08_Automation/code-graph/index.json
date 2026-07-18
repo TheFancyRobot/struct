@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-18T22:34:35.698Z",
+  "generatedAt": "2026-07-18T23:05:27.947Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -623,6 +623,129 @@
       "parser": "regex"
     },
     {
+      "path": "apps/worker/src/jobs/reindex-source-text.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ReindexArtifactError",
+          "kind": "class",
+          "line": 6,
+          "exported": false,
+          "endLine": 6
+        },
+        {
+          "name": "SourceTextReindexWorkerDeps",
+          "kind": "interface",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "StoredManifest",
+          "kind": "interface",
+          "line": 37,
+          "exported": false,
+          "endLine": 37
+        },
+        {
+          "name": "decoder",
+          "kind": "const",
+          "line": 44,
+          "exported": false,
+          "endLine": 44
+        },
+        {
+          "name": "artifactRef",
+          "kind": "function",
+          "line": 46,
+          "exported": false,
+          "endLine": 46,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "decodeManifest",
+          "kind": "function",
+          "line": 50,
+          "exported": false,
+          "endLine": 50,
+          "signature": "(bytes: Uint8Array, job: SourceTextReindexJob)"
+        },
+        {
+          "name": "decodeNormalized",
+          "kind": "function",
+          "line": 77,
+          "exported": false,
+          "endLine": 77,
+          "signature": "(bytes: Uint8Array, expectedHash: string)"
+        },
+        {
+          "name": "failureCode",
+          "kind": "function",
+          "line": 89,
+          "exported": false,
+          "endLine": 89,
+          "signature": "(error: unknown)"
+        },
+        {
+          "name": "processClaimed",
+          "kind": "function",
+          "line": 102,
+          "exported": false,
+          "endLine": 102
+        },
+        {
+          "name": "processOneSourceTextReindex",
+          "kind": "const",
+          "line": 130,
+          "exported": true,
+          "endLine": 130
+        }
+      ],
+      "imports": [
+        {
+          "source": "createHash",
+          "specifier": "node:crypto",
+          "imported": [
+            "createHash"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect, Option",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SourceTextReindexJob",
+          "specifier": "@struct/persistence",
+          "imported": [
+            "SourceTextReindexJob"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "ArtifactRef, ArtifactStoreShape",
+          "specifier": "@struct/source-storage",
+          "imported": [
+            "ArtifactRef",
+            "ArtifactStoreShape"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "d8b7ccaa7c58cd82f493ea46c1b11ce52afe031edfed58bc6b54c1788e96d4c4",
+      "mtimeMs": 1784415615107.9412,
+      "size": 4710,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "apps/worker/src/jobs/run-research.ts",
       "language": "TypeScript",
       "symbols": [
@@ -643,38 +766,38 @@
         {
           "name": "decodePayload",
           "kind": "function",
-          "line": 61,
+          "line": 65,
           "exported": false,
-          "endLine": 61
+          "endLine": 65
         },
         {
           "name": "event",
           "kind": "function",
-          "line": 96,
+          "line": 100,
           "exported": false,
-          "endLine": 96
+          "endLine": 100
         },
         {
           "name": "citationsFor",
           "kind": "function",
-          "line": 114,
+          "line": 118,
           "exported": false,
-          "endLine": 114
+          "endLine": 118
         },
         {
           "name": "safeFailureTag",
           "kind": "function",
-          "line": 129,
+          "line": 133,
           "exported": false,
-          "endLine": 129,
+          "endLine": 133,
           "signature": "(error: unknown)"
         },
         {
           "name": "processOneResearchJob",
           "kind": "const",
-          "line": 135,
+          "line": 139,
           "exported": true,
-          "endLine": 135
+          "endLine": 139
         }
       ],
       "imports": [
@@ -690,9 +813,9 @@
         }
       ],
       "exports": [],
-      "hash": "13a613bddd1c7bef1356d4962ea7b627113c66e0f4046837d68738ee99afe1b4",
-      "mtimeMs": 1784413857676.525,
-      "size": 6279,
+      "hash": "1691c0aadf9cbdb40914c8643134f7a5257da31c5beaedc6dfff173328ce9b49",
+      "mtimeMs": 1784414820617.089,
+      "size": 6489,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -704,9 +827,9 @@
         {
           "name": "program",
           "kind": "const",
-          "line": 40,
+          "line": 42,
           "exported": false,
-          "endLine": 40
+          "endLine": 42
         }
       ],
       "imports": [
@@ -786,6 +909,14 @@
           "kind": "static"
         },
         {
+          "source": "processOneSourceTextReindex",
+          "specifier": "./jobs/reindex-source-text",
+          "imported": [
+            "processOneSourceTextReindex"
+          ],
+          "kind": "static"
+        },
+        {
           "source": "runWorkerPollLoops",
           "specifier": "./polling",
           "imported": [
@@ -795,9 +926,9 @@
         }
       ],
       "exports": [],
-      "hash": "5ce10691ea2ef57a714e40b33f67e6a0a7679dab82750f236e78c1c209e1fb1e",
-      "mtimeMs": 1784413952804.0522,
-      "size": 6876,
+      "hash": "49bf7d670f56e5967338e37c83e29aae2f356a33ae7d1363776ded8d143e046a",
+      "mtimeMs": 1784414824192.095,
+      "size": 8175,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -826,9 +957,9 @@
         }
       ],
       "exports": [],
-      "hash": "5e9fd2271d7509f5c30753212be1a6013a918951ac0518cf4c29d8ab6cde49a9",
-      "mtimeMs": 1784411938630.0144,
-      "size": 650,
+      "hash": "72861682ff6ff54245b76dfbea85c7f39da16b2372ddde66aa39f0a049c5319c",
+      "mtimeMs": 1784414916729.7515,
+      "size": 929,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1220,37 +1351,37 @@
         {
           "name": "ResearchAnswer",
           "kind": "type",
-          "line": 122,
+          "line": 125,
           "exported": true,
-          "endLine": 122
+          "endLine": 125
         },
         {
           "name": "Finding",
           "kind": "const",
-          "line": 124,
+          "line": 127,
           "exported": true,
-          "endLine": 124
+          "endLine": 127
         },
         {
           "name": "Report",
           "kind": "const",
-          "line": 133,
+          "line": 136,
           "exported": true,
-          "endLine": 133
+          "endLine": 136
         },
         {
           "name": "JobQueue",
           "kind": "const",
-          "line": 142,
+          "line": 145,
           "exported": true,
-          "endLine": 142
+          "endLine": 145
         },
         {
           "name": "EventJournal",
           "kind": "const",
-          "line": 155,
+          "line": 158,
           "exported": true,
-          "endLine": 155
+          "endLine": 158
         }
       ],
       "imports": [
@@ -1269,9 +1400,9 @@
         }
       ],
       "exports": [],
-      "hash": "5117b2ef3e8db240cfa8d979ce466f842645d17022c218097111db8ef232e4f6",
-      "mtimeMs": 1784406240477.6716,
-      "size": 4461,
+      "hash": "1505c8215197a976b321f9ec161890ba220bb57254cc841383bf6a0c717f232a",
+      "mtimeMs": 1784414845098.7668,
+      "size": 4522,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1444,34 +1575,50 @@
           "endLine": 35
         },
         {
+          "name": "assertActive",
+          "kind": "function",
+          "line": 46,
+          "exported": false,
+          "endLine": 46,
+          "signature": "(signal: AbortSignal)"
+        },
+        {
+          "name": "boundedShutdown",
+          "kind": "function",
+          "line": 54,
+          "exported": false,
+          "endLine": 54
+        },
+        {
           "name": "defaultFactory",
           "kind": "const",
-          "line": 45,
+          "line": 73,
           "exported": false,
-          "endLine": 45
+          "endLine": 73
         },
         {
           "name": "preflightFredRuntime",
           "kind": "const",
-          "line": 79,
+          "line": 105,
           "exported": true,
-          "endLine": 79
+          "endLine": 105
         },
         {
           "name": "runFredWalkingSkeleton",
           "kind": "const",
-          "line": 106,
+          "line": 132,
           "exported": true,
-          "endLine": 106
+          "endLine": 132
         }
       ],
       "imports": [
         {
-          "source": "Config, Effect, Schema",
+          "source": "Config, Effect, Runtime, Schema",
           "specifier": "effect",
           "imported": [
             "Config",
             "Effect",
+            "Runtime",
             "Schema"
           ],
           "kind": "static"
@@ -1496,9 +1643,9 @@
         }
       ],
       "exports": [],
-      "hash": "1a26111e426907f50074e119d6a9281300fb25d4460ec57db14fa7dc9c07cb72",
-      "mtimeMs": 1784411173008.9458,
-      "size": 5618,
+      "hash": "2703cad8ced424e1a7e8a7a6861865f3cde1fa1f23b54ffbf09d1933e51c4e4c",
+      "mtimeMs": 1784415596778.114,
+      "size": 6577,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1538,38 +1685,38 @@
         {
           "name": "AnswerSynthesizerInput",
           "kind": "const",
-          "line": 29,
+          "line": 32,
           "exported": true,
-          "endLine": 29
+          "endLine": 32
         },
         {
           "name": "answerSynthesizerAgent",
           "kind": "const",
-          "line": 36,
+          "line": 39,
           "exported": true,
-          "endLine": 36
+          "endLine": 39
         },
         {
           "name": "makeSearchTextTool",
           "kind": "const",
-          "line": 51,
+          "line": 54,
           "exported": true,
-          "endLine": 51
+          "endLine": 54
         },
         {
           "name": "decodeAgentAnswer",
           "kind": "function",
-          "line": 70,
+          "line": 74,
           "exported": false,
-          "endLine": 70,
+          "endLine": 74,
           "signature": "(input: unknown)"
         },
         {
           "name": "makeWalkingSkeletonWorkflow",
           "kind": "function",
-          "line": 76,
+          "line": 80,
           "exported": true,
-          "endLine": 76
+          "endLine": 80
         }
       ],
       "imports": [
@@ -1593,9 +1740,9 @@
         }
       ],
       "exports": [],
-      "hash": "390b593ebcc1995e5c408e4d1d47e6b9b518cba68b8639e381b60b2ab3aadd6f",
-      "mtimeMs": 1784413857676.1528,
-      "size": 4594,
+      "hash": "fc4c03dad0fff2abd117a37f2b8f09a6c39203f2ef99a49c6b15b5025f3dac98",
+      "mtimeMs": 1784414786014.9373,
+      "size": 5204,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1932,9 +2079,9 @@
           "kind": "reexport"
         }
       ],
-      "hash": "18f8706ba90466a28682097c24aa76935d09aa8ce26783ede0610788ebcd8104",
-      "mtimeMs": 1784409746585.26,
-      "size": 2295,
+      "hash": "a449760ffa1b80e5f460edc654f5433346b9c83d64649806b39c333d240f523e",
+      "mtimeMs": 1784414703668.8984,
+      "size": 2403,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2751,9 +2898,9 @@
         {
           "name": "ResearchExecutionError",
           "kind": "type",
-          "line": 445,
+          "line": 498,
           "exported": true,
-          "endLine": 445
+          "endLine": 498
         }
       ],
       "imports": [
@@ -2798,9 +2945,9 @@
         }
       ],
       "exports": [],
-      "hash": "2af4343df8a228c849c60abdea94987d73d58bd28d564944c09232d798ed318f",
-      "mtimeMs": 1784410217929.1843,
-      "size": 16970,
+      "hash": "786574ebb637edec67b0c3f9808cfdecc4a969d04a04143cf40c9ae25aa0e4df",
+      "mtimeMs": 1784414820616.8062,
+      "size": 18600,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2879,6 +3026,83 @@
       "hash": "4c66a0e53c69caf4a547eda55f7a0641dc08d43e834dd94d2bfadaf2878a84c3",
       "mtimeMs": 1784404965580.3406,
       "size": 3991,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/repositories/source-text-reindex.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "SourceTextReindexStatus",
+          "kind": "const",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        },
+        {
+          "name": "SourceTextReindexJob",
+          "kind": "interface",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "SourceTextReindexRow",
+          "kind": "const",
+          "line": 28,
+          "exported": false,
+          "endLine": 28
+        },
+        {
+          "name": "decodeJob",
+          "kind": "function",
+          "line": 39,
+          "exported": false,
+          "endLine": 39,
+          "signature": "(row: unknown)"
+        },
+        {
+          "name": "SourceTextReindexRepo",
+          "kind": "class",
+          "line": 61,
+          "exported": true,
+          "endLine": 61
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "QueryError",
+          "specifier": "../errors.js",
+          "imported": [
+            "QueryError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlClient",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "4c4bcc8a80921696e80d59ca13d599875dcab75ae8795635f737bb78e867ce8b",
+      "mtimeMs": 1784415615108.2407,
+      "size": 6282,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3077,110 +3301,110 @@
         {
           "name": "SearchRow",
           "kind": "interface",
-          "line": 32,
+          "line": 37,
           "exported": false,
-          "endLine": 32
+          "endLine": 37
         },
         {
           "name": "MAX_EXCERPT_CHARS",
           "kind": "const",
-          "line": 40,
+          "line": 45,
           "exported": false,
-          "endLine": 40
+          "endLine": 45
         },
         {
           "name": "MAX_CONTEXT_CHARS_PER_SIDE",
           "kind": "const",
-          "line": 41,
-          "exported": false,
-          "endLine": 41
-        },
-        {
-          "name": "MATCH_START",
-          "kind": "const",
-          "line": 42,
-          "exported": false,
-          "endLine": 42
-        },
-        {
-          "name": "MATCH_END",
-          "kind": "const",
-          "line": 43,
-          "exported": false,
-          "endLine": 43
-        },
-        {
-          "name": "OMITTED_SOURCE",
-          "kind": "const",
-          "line": 44,
-          "exported": false,
-          "endLine": 44
-        },
-        {
-          "name": "MatchPassage",
-          "kind": "interface",
           "line": 46,
           "exported": false,
           "endLine": 46
         },
         {
-          "name": "MatchRange",
+          "name": "MATCH_START",
+          "kind": "const",
+          "line": 47,
+          "exported": false,
+          "endLine": 47
+        },
+        {
+          "name": "MATCH_END",
+          "kind": "const",
+          "line": 48,
+          "exported": false,
+          "endLine": 48
+        },
+        {
+          "name": "OMITTED_SOURCE",
+          "kind": "const",
+          "line": 49,
+          "exported": false,
+          "endLine": 49
+        },
+        {
+          "name": "MatchPassage",
           "kind": "interface",
           "line": 51,
           "exported": false,
           "endLine": 51
         },
         {
+          "name": "MatchRange",
+          "kind": "interface",
+          "line": 56,
+          "exported": false,
+          "endLine": 56
+        },
+        {
           "name": "SourceRange",
           "kind": "interface",
-          "line": 58,
+          "line": 63,
           "exported": false,
-          "endLine": 58
+          "endLine": 63
         },
         {
           "name": "fallbackExcerpt",
           "kind": "function",
-          "line": 64,
+          "line": 69,
           "exported": false,
-          "endLine": 64,
+          "endLine": 69,
           "signature": "(content: string, matchLine: number)"
         },
         {
           "name": "decodeMatchPassages",
           "kind": "function",
-          "line": 79,
+          "line": 84,
           "exported": false,
-          "endLine": 79,
+          "endLine": 84,
           "signature": "(value: unknown)"
         },
         {
           "name": "matchRanges",
           "kind": "function",
-          "line": 92,
+          "line": 97,
           "exported": false,
-          "endLine": 92
+          "endLine": 97
         },
         {
           "name": "mergeRanges",
           "kind": "function",
-          "line": 149,
+          "line": 154,
           "exported": false,
-          "endLine": 149,
+          "endLine": 154,
           "signature": "(ranges: ReadonlyArray<SourceRange>)"
         },
         {
           "name": "matchedExcerpt",
           "kind": "function",
-          "line": 166,
+          "line": 171,
           "exported": false,
-          "endLine": 166
+          "endLine": 171
         },
         {
           "name": "TextRetrieval",
           "kind": "class",
-          "line": 227,
+          "line": 232,
           "exported": true,
-          "endLine": 227
+          "endLine": 232
         }
       ],
       "imports": [
@@ -3203,9 +3427,9 @@
         }
       ],
       "exports": [],
-      "hash": "92f2f083bc5745623a484fa82b9b1ed51c350590b77e1035df7d2f3df4b39742",
-      "mtimeMs": 1784413066524.791,
-      "size": 13506,
+      "hash": "6a9b1a73f438b39b1a98636cfe496a1742c200d41dfe4221bc5f11d38418f28a",
+      "mtimeMs": 1784415615107.5696,
+      "size": 15770,
       "generated": false,
       "vendor": false,
       "parser": "regex"

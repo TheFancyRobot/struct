@@ -5,6 +5,7 @@ import {
   Project,
   Source,
   SourceVersion,
+  ResearchAnswer,
   ResearchThread,
   ResearchRun,
   Citation,
@@ -94,6 +95,20 @@ describe('Domain Schemas', () => {
       }
       expect(() => Schema.decodeUnknownSync(SourceVersion)(input)).toThrow()
     })
+  })
+
+  describe('ResearchAnswer', () => {
+    it.each(['', ' ', '\n\t'])(
+      'rejects an empty or whitespace-only answer before completion (%j)',
+      (answer) => {
+        expect(() =>
+          Schema.decodeUnknownSync(ResearchAnswer)({
+            answer,
+            citations: [],
+          }),
+        ).toThrow()
+      },
+    )
   })
 
   describe('ResearchThread', () => {
