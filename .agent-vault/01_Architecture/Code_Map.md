@@ -26,10 +26,10 @@ tags:
 
 ## Overview
 
-- Current state: Phase 01 (walking skeleton) — STEP-01-01 scaffold complete and STEP-01-02 domain schemas/persistence migrations complete.
+- Current state: Phase 01 (walking skeleton) — STEP-01-01 through STEP-01-04 are implemented; STEP-01-05 progress streaming and citation navigation is next.
 - `README.md` has the bootstrap quick-start, `AGENTS.md` contains vault instructions, and `docs/product-brief.md` is the product specification.
 - Runtime apps (`apps/web`, `apps/api`, `apps/worker`), core packages (`domain`, `persistence`, `observability`), Bun workspace manifests, ESLint 10 flat config, dependency-cruiser, Vitest tests, and Docker Compose for PostgreSQL+pgvector are all implemented and passing all gates.
-- STEP-01-03 has scaffolded and implemented walking-slice `packages/source-storage` and `packages/ingestion`; later-phase packages (`document-processing`, `retrieval`, `data-engine`, `research-engine`, `fred-workflows`, `evaluation`, `shared-ui`) remain planned and are scaffolded when their owning step needs them.
+- STEP-01-03 implemented walking-slice `packages/source-storage` and `packages/ingestion`; STEP-01-04 implemented `packages/retrieval`, `packages/research-engine`, and `packages/fred-workflows`. Later-phase packages (`document-processing`, `data-engine`, `evaluation`, `shared-ui`) remain planned and are scaffolded when their owning step needs them.
 - Persistence migrations and core postgres-backed repository services are implemented; STEP-01-03 adds typed `job_queue` and `event_journal` repositories for ingestion dispatch/events. API currently exposes healthz, SSE placeholder, and `POST /sources/text` for one text-source registration path.
 - STEP-01-04 supersedes the earlier planned-package snapshot: `packages/retrieval`, `packages/research-engine`, and `packages/fred-workflows` now exist with typed public roots and tests. API adds `POST /research/runs`; worker adds durable bounded research execution and stale recovery; persistence adds migration 0003 and atomic research repositories.
 
@@ -38,7 +38,8 @@ tags:
 <!-- AGENT-START:architecture-key-components -->
 - Scaffolded applications (STEP-01-01): `apps/web` (SolidJS 1.9 + Vite 8 + Solid Router + Tailwind 4 + DaisyUI), `apps/api` (Bun HTTP + Effect Config), `apps/worker` (Effect Config skeleton plus STEP-01-03 ingestion polling/claim/retry job loop).
 - Core packages: `domain` (branded IDs, Effect Schemas, Schema.TaggedError), `persistence` (pgvector migrations, typed row decoders, postgres-backed repository services plus JobQueue/EventJournal repositories), `source-storage` (local content-addressed artifact and staged-upload adapter), `ingestion` (text classification/normalization/manifest creation), `observability` (placeholder).
-- Planned core packages (scaffolded by their owning step): `document-processing`, `retrieval`, `data-engine`, `research-engine`, `fred-workflows`.
+- Implemented STEP-01-04 packages: `retrieval`, `research-engine`, and `fred-workflows`.
+- Planned core packages (scaffolded by their owning step): `document-processing` and `data-engine`.
 - Planned support packages: `evaluation`, `shared-ui`.
 - Architecture deliverables: architecture, domain model, research execution, provenance, security, evaluation, roadmap, implementation plan, and ADR documents.
 <!-- AGENT-END:architecture-key-components -->
@@ -58,7 +59,9 @@ tags:
 - `packages/source-storage` — local content-addressed artifact store with startup/root/symlink/traversal/NUL/atomic-write controls.
 - `packages/ingestion` — narrow `.txt`/`.md` classifier, UTF-8 normalization, deterministic normalized content hash, and source-version manifest creation.
 - `packages/observability` — placeholder (scaffolded).
-- `packages/fred-workflows` — planned product-specific Fred agents, tools, graphs, and prompts (STEP-01-04+).
+- `packages/retrieval` — tenant-scoped PostgreSQL full-text indexing, ranked search, and match-anchored evidence excerpts.
+- `packages/research-engine` — bounded plan, evidence sufficiency, and exact citation gates.
+- `packages/fred-workflows` — Fred 2.0 walking-skeleton workflow, provider preflight, structured timeout cancellation, and typed synthesis boundary.
 - `eslint.config.mjs` — ESLint 10 flat config with TS/Solid/Effect convention enforcement.
 - `dependency-cruiser.config.mjs` — SWC-based dependency analysis.
 - `scripts/boundary-check.ts` — Bun-aware import boundary checker.

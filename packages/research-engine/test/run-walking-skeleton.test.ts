@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Effect, Exit } from 'effect'
+import { Cause, Effect, Exit, Option } from 'effect'
 import {
   ResearchAnswer,
   SourceVersionId,
@@ -44,5 +44,25 @@ describe('walking-skeleton research gates', () => {
 
     expect(Exit.isFailure(noEvidence)).toBe(true)
     expect(Exit.isFailure(invalidCitation)).toBe(true)
+  })
+
+  it('returns EvidenceInsufficientError when an uncited answer has no evidence', async () => {
+    const result = await Effect.runPromiseExit(
+      validateAnswerCitations(
+        { answer: 'Unsupported answer', citations: [] },
+        [],
+        'What is supported?',
+      ),
+    )
+
+    expect(Exit.isFailure(result)).toBe(true)
+    if (Exit.isFailure(result)) {
+      expect(result.cause.toString()).toContain('EvidenceInsufficientError')
+      const failure = Option.getOrUndefined(Cause.failureOption(result.cause))
+      expect(failure).toMatchObject({
+        _tag: 'EvidenceInsufficientError',
+        question: 'What is supported?',
+      })
+    }
   })
 })

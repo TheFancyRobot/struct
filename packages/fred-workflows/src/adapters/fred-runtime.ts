@@ -1,8 +1,5 @@
 import { Config, Effect, Schema } from 'effect'
-import type {
-  FredClient,
-  WorkflowExecutionResult,
-} from '@fancyrobot/fred'
+import type * as Fred from '@fancyrobot/fred'
 import { ResearchWorkflowError } from '@struct/domain'
 import {
   WalkingSkeletonWorkflowResult,
@@ -36,7 +33,13 @@ export const fredRuntimeConfig = Config.all({
 })
 
 export interface FredClientFactory {
-  readonly create: () => Promise<FredClient>
+  readonly create: () => Promise<Fred.FredClient>
+  readonly execute?: (
+    fred: Fred.FredClient,
+    workflow: Fred.WorkflowIR,
+    input: typeof Research.WalkingSkeletonResearchInput.Type,
+    maxElapsedMs: number,
+  ) => Promise<Fred.WorkflowExecutionResult>
 }
 
 const defaultFactory: FredClientFactory = {
@@ -44,7 +47,61 @@ const defaultFactory: FredClientFactory = {
     const { createFred } = await import('@fancyrobot/fred')
     return createFred()
   },
+  execute: async (fred, workflow, input, maxElapsedMs) => {
+    const {
+      AgentService,
+      SessionService,
+      executeWorkflowEffect,
+    } = await import('@fancyrobot/fred/effect')
+    const execution = Effect.gen(function* () {
+      const agentService = yield* AgentService
+      const agents = yield* agentService.getAllAgents()
+      const agentMap = new Map(agents.map((agent) => [agent.id, agent]))
+      const workflowEffect = executeWorkflowEffect(workflow, input, {
+        agentManager: {
+          getAgent: (agentId) => agentMap.get(agentId),
+          hasAgent: (agentId) => agentMap.has(agentId),
+        },
+        conversationId: input.runId,
+      })
+      const sessions = yield* SessionService
+      return yield* sessions.withSession(input.runId, workflowEffect)
+    }).pipe(
+      Effect.timeoutFail({
+        duration: maxElapsedMs,
+        onTimeout: () => new Error('Research workflow exceeded elapsed-time budget'),
+      }),
+    )
+    return fred.effects.run(execution)
+  },
 }
+
+export const preflightFredRuntime = (
+  config: FredRuntimeConfig,
+  factory: FredClientFactory = defaultFactory,
+): Effect.Effect<void, ResearchWorkflowError, never> =>
+  Effect.acquireUseRelease(
+    Effect.tryPromise({
+      try: () => factory.create(),
+      catch: () =>
+        new ResearchWorkflowError({
+          stage: 'fred-runtime',
+          message: 'Fred runtime could not be created',
+        }),
+    }),
+    (fred) =>
+      Effect.tryPromise({
+        try: async () => {
+          await fred.providers.use(config.providerPackage)
+        },
+        catch: () =>
+          new ResearchWorkflowError({
+            stage: 'provider-preflight',
+            message: 'Fred provider could not be loaded',
+          }),
+      }),
+    (fred) => Effect.promise(() => fred.shutdown()).pipe(Effect.ignore),
+  )
 
 export const runFredWalkingSkeleton = (
   input: typeof Research.WalkingSkeletonResearchInput.Type,
@@ -69,19 +126,13 @@ export const runFredWalkingSkeleton = (
           await fred.agents.register(answerSynthesizerAgent(provider.id, config.model))
           const workflow = makeWalkingSkeletonWorkflow(deps)
           await fred.workflows.define(workflow)
-          let timeout: ReturnType<typeof setTimeout> | undefined
-          const timeoutPromise = new Promise<never>((_resolve, reject) => {
-            timeout = setTimeout(
-              () => reject(new Error('Research workflow exceeded elapsed-time budget')),
-              config.maxElapsedMs,
-            )
-          })
-          const result = (await Promise.race([
-            fred.workflows.run(workflow.id, input, { sessionId: input.runId }),
-            timeoutPromise,
-          ]).finally(() => {
-            if (timeout) clearTimeout(timeout)
-          })) as WorkflowExecutionResult
+          const result: Fred.WorkflowExecutionResult = factory.execute
+            ? await factory.execute(fred, workflow, input, config.maxElapsedMs)
+            : await fred.workflows.run(
+                workflow.id,
+                input,
+                { sessionId: input.runId },
+              ) as Fred.WorkflowExecutionResult
           if (!result.success || result.status !== 'completed') {
             throw result.error ?? new Error(`Fred workflow ended with ${result.status}`)
           }

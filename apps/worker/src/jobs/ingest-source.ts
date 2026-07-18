@@ -35,6 +35,11 @@ export interface IngestionWorkerDeps {
     readonly findBySourceId: (sourceId: SourceId) => Effect.Effect<ReadonlyArray<typeof SourceVersion.Type>, unknown, never>
     readonly create: (version: typeof SourceVersion.Type) => Effect.Effect<typeof SourceVersion.Type, unknown, never>
   }
+  readonly sources: {
+    readonly findProjectId: (
+      sourceId: SourceId,
+    ) => Effect.Effect<import('@struct/domain').ProjectId, unknown, never>
+  }
   readonly textIndex: {
     readonly indexText: (input: {
       readonly workspaceId: typeof JobQueue.Type['workspaceId']
@@ -70,7 +75,11 @@ interface IngestionPayload {
   readonly projectId: import('@struct/domain').ProjectId
 }
 
-function decodePayload(payload: Record<string, unknown>): Effect.Effect<IngestionPayload, ValidationError, never> {
+function decodePayload(
+  payload: Record<string, unknown>,
+  sourceId: SourceId,
+  deps: IngestionWorkerDeps,
+): Effect.Effect<IngestionPayload, ValidationError | unknown, never> {
   const stagedRef = payload['stagedRef']
   const name = payload['name']
   const mediaType = payload['mediaType']
@@ -78,22 +87,27 @@ function decodePayload(payload: Record<string, unknown>): Effect.Effect<Ingestio
   if (typeof stagedRef !== 'string' || !stagedRef.startsWith('staged://')) {
     return Effect.fail(new ValidationError({ field: 'payload.stagedRef', reason: 'invalid', message: 'Ingestion payload stagedRef is invalid' }))
   }
-  if (typeof name !== 'string' || typeof mediaType !== 'string' || typeof projectId !== 'string') {
+  if (typeof name !== 'string' || typeof mediaType !== 'string') {
     return Effect.fail(new ValidationError({ field: 'payload', reason: 'invalid', message: 'Ingestion payload is missing source metadata' }))
   }
-  return Effect.try({
-    try: () => ({
+  return Effect.gen(function* () {
+    const decodedProjectId = typeof projectId === 'undefined'
+      ? yield* deps.sources.findProjectId(sourceId)
+      : yield* Effect.try({
+          try: () => Schema.decodeUnknownSync(ProjectId)(projectId),
+          catch: () =>
+            new ValidationError({
+              field: 'payload.projectId',
+              reason: 'invalid',
+              message: 'Ingestion payload projectId is invalid',
+            }),
+        })
+    return {
       stagedRef: stagedRef as StagedArtifactRef,
       name,
       mediaType,
-      projectId: Schema.decodeUnknownSync(ProjectId)(projectId),
-    }),
-    catch: () =>
-      new ValidationError({
-        field: 'payload.projectId',
-        reason: 'invalid',
-        message: 'Ingestion payload projectId is invalid',
-      }),
+      projectId: decodedProjectId,
+    }
   })
 }
 
@@ -193,7 +207,7 @@ export const processOneIngestionJob = (
     }
 
     const job = claimed.value
-    const payload = yield* decodePayload(job.payload).pipe(
+    const payload = yield* decodePayload(job.payload, job.entityId as SourceId, deps).pipe(
       Effect.map(Option.some),
       Effect.catchAll((error) => failJob(deps, job, error).pipe(Effect.as(Option.none<IngestionPayload>()))),
     )

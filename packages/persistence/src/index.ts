@@ -86,4 +86,5 @@ export type {
   ResearchRegistrationResult,
   CompleteResearchInput,
   FailResearchInput,
+  ResearchExecutionError,
 } from './repositories/research-execution.js'

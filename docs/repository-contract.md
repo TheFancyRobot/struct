@@ -108,7 +108,7 @@ Packages (only the minimal set the walking skeleton needs):
 - `packages/source-storage/package.json` — local content-addressed artifact store and staged-upload refs for STEP-01-03.
 - `packages/ingestion/package.json` — walking-slice text classification, normalization, manifest creation, and typed ingestion failures.
 
-### 3.2 Intentional deferrals (created by their owning phase, not Phase 1)
+### 3.2 Implemented STEP-01-04 boundaries and intentional deferrals
 
 - `packages/retrieval`, `research-engine`, and `fred-workflows` were scaffolded by STEP-01-04 and now own the deterministic text-search, walking-slice research, and Fred orchestration boundaries.
 - `packages/document-processing`, `data-engine`, `evaluation`, and `shared-ui` — scaffolded when their owning phase needs them; not empty stubs.

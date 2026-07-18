@@ -12,6 +12,7 @@ import {
   QueryError,
   ResearchExecutionRepo,
   ResearchRunRepo,
+  SourceRepo,
   SourceVersionRepo,
   SqlClientLive,
 } from '@struct/persistence'
@@ -20,7 +21,11 @@ import { LocalArtifactStore } from '@struct/source-storage'
 import { ingestTextSource } from '@struct/ingestion'
 import { TextRetrieval } from '@struct/retrieval'
 import { validateAnswerCitations } from '@struct/research-engine'
-import { fredRuntimeConfig, runFredWalkingSkeleton } from '@struct/fred-workflows'
+import {
+  fredRuntimeConfig,
+  preflightFredRuntime,
+  runFredWalkingSkeleton,
+} from '@struct/fred-workflows'
 import {
   artifactStorageRootConfig,
   databaseUrlConfig,
@@ -37,6 +42,7 @@ const program = Effect.gen(function* () {
   const artifactRoot = yield* artifactStorageRootConfig
   const pollMs = yield* workerPollIntervalMsConfig
   const staleMs = yield* workerJobStaleMsConfig
+  const fredConfig = yield* fredRuntimeConfig
   const storage = yield* LocalArtifactStore.make({ root: artifactRoot })
   const sql = yield* Effect.acquireRelease(
     Effect.sync(() => postgres(databaseUrl, { max: 5, idle_timeout: 5, connect_timeout: 2 })),
@@ -45,6 +51,7 @@ const program = Effect.gen(function* () {
   const sqlLayer = SqlClientLive(sql)
   const jobLayer = Layer.provide(JobQueueRepo.Default, sqlLayer)
   const sourceVersionLayer = Layer.provide(SourceVersionRepo.Default, sqlLayer)
+  const sourceLayer = Layer.provide(SourceRepo.Default, sqlLayer)
   const eventLayer = Layer.provide(EventJournalRepo.Default, sqlLayer)
   const retrievalLayer = Layer.provide(TextRetrieval.Default, sqlLayer)
   const researchExecutionLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
@@ -55,6 +62,7 @@ const program = Effect.gen(function* () {
     try: () => sql.unsafe('SELECT 1'),
     catch: () => new QueryError({ operation: 'startupValidation', entity: 'WorkerDatabase', message: 'Worker database validation failed' }),
   })
+  yield* preflightFredRuntime(fredConfig)
   yield* Effect.log('Worker ready for ingestion and research jobs')
 
   const poll = Effect.suspend(() => processOneIngestionJob({
@@ -71,6 +79,13 @@ const program = Effect.gen(function* () {
     sourceVersions: {
       findBySourceId: (sourceId) => SourceVersionRepo.findBySourceId(sourceId).pipe(Effect.provide(sourceVersionLayer)),
       create: (version) => SourceVersionRepo.create(version).pipe(Effect.provide(sourceVersionLayer)),
+    },
+    sources: {
+      findProjectId: (sourceId) =>
+        SourceRepo.findById(sourceId).pipe(
+          Effect.map((source) => source.projectId),
+          Effect.provide(sourceLayer),
+        ),
     },
     textIndex: {
       indexText: (input) => TextRetrieval.indexText(input).pipe(Effect.provide(retrievalLayer)),
@@ -95,10 +110,6 @@ const program = Effect.gen(function* () {
         ),
       claimNext: () =>
         ResearchExecutionRepo.claimNext().pipe(Effect.provide(researchExecutionLayer)),
-      markInProgress: (runId) =>
-        ResearchExecutionRepo.markInProgress(runId).pipe(
-          Effect.provide(researchExecutionLayer),
-        ),
       appendEvent: (event) =>
         ResearchExecutionRepo.appendEvent(event).pipe(
           Effect.provide(researchExecutionLayer),
@@ -117,7 +128,6 @@ const program = Effect.gen(function* () {
     workflow: {
       run: ({ run, workspaceId, projectId, sourceVersionIds }) =>
         Effect.gen(function* () {
-          const config = yield* fredRuntimeConfig
           return yield* runFredWalkingSkeleton(
             {
               runId: run.id,
@@ -140,16 +150,19 @@ const program = Effect.gen(function* () {
                     Effect.provide(retrievalLayer),
                   ),
                 ),
-              validate: (answer, evidence) =>
-                Effect.runPromise(validateAnswerCitations(answer, evidence)),
+              validate: (answer, evidence, question) =>
+                Effect.runPromise(validateAnswerCitations(answer, evidence, question)),
             },
-            config,
+            fredConfig,
           )
         }),
     },
   }))
 
-  const pollAll = Effect.all([poll, researchPoll], { discard: true })
+  const pollAll = Effect.all([poll, researchPoll], {
+    concurrency: 'unbounded',
+    discard: true,
+  })
   yield* pollAll.pipe(Effect.repeat(Schedule.spaced(`${pollMs} millis`)))
 })
 

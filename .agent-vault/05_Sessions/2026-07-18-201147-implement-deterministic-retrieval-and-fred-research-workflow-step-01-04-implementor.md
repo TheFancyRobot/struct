@@ -7,7 +7,7 @@ session_id: SESSION-2026-07-18-201147
 date: '2026-07-18'
 status: completed
 owner: step-01-04-implementor
-branch: ''
+branch: agent/step-01-04-deterministic-retrieval-fred-workflow
 phase: '[[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]'
 context:
   context_id: SESSION-2026-07-18-201147
@@ -30,7 +30,7 @@ tags:
   - agent-vault
   - session
 context_status: completed
-summary: STEP-01-04 completed after retry-3 generated-artifact hygiene remediation; root validation and vault integrity pass with zero known defects.
+summary: 'STEP-01-04 implementation and all 22 PR #1 inline review findings are remediated locally; full repository, PostgreSQL, migration, provider, and strict Vault gates pass with zero known confirmed defects.'
 ---
 
 # step-01-04-implementor session for Implement Deterministic Retrieval and Fred Research Workflow
@@ -63,10 +63,14 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 2026-07-18 retry 3 hygiene audit — Removed generated `tsconfig.tsbuildinfo` files from `packages/retrieval`, `packages/research-engine`, and `packages/fred-workflows`, and added the repository-level `*.tsbuildinfo` ignore rule. A bounded generated/cache-artifact scan found no other STEP-01-04 hygiene defect; the unrelated DuckDB spike build-info file already had spike-local ignore coverage and is now also covered at the root.
 - No git command was run; the root orchestrator retains exclusive branch, staging, commit, push, PR, review, and merge control.
 - 2026-07-18: Root orchestrator pushed the completed STEP-01-04 branch and opened ready-for-review PR [#1](https://github.com/TheFancyRobot/struct/pull/1) into `main`. Awaiting configured checks and code-review bots before merge.
+- 2026-07-18 PR #1 review remediation completed without git or GitHub mutations. Root orchestrator retains publication, review-thread replies/resolution, automated re-review, and merge.
 
 ## Findings
 
 - Record important facts learned during the session.
+- 2026-07-18 PR #1 review remediation verified all 22 unresolved inline findings. Valid findings were corrected across tenant ownership, transactional research finalization, PostgreSQL match anchoring, Fred input typing/interruption, API error categories, startup readiness, legacy ingestion compatibility, test isolation, runtime dependencies, documentation, and Vault handoff state.
+- Fred 2.0.0's Promise `workflows.run` API exposes no AbortSignal. Production execution now uses Fred's exported Effect-native workflow executor under `Effect.timeoutFail`, so expiry interrupts the workflow fiber rather than merely abandoning a Promise; the injected Promise-client path remains test-only compatibility.
+- Qodo reported reviews paused and CodeRabbit's docstring-coverage warning was not one of the 22 inline actionable threads; neither represents a repository defect or implementable STEP-01-04 code finding.
 
 ## Context Handoff
 
@@ -101,6 +105,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Root-orchestrator verification: frozen install, typecheck, lint, import boundaries, Node Vitest (97 pass / 11 DB-only skipped), raw Bun (138 pass / 17 DB-only skipped), build, canonical secrets/docs scripts, Compose config, real-DB Node suite (108/108), real-DB raw Bun suite (149/149), migration down/up, Fred provider load, and Vault doctor all passed.
 - Retry-3 hygiene gates passed: root `typecheck`, ESLint, dependency/import boundaries, build, Node Vitest (97 passed, 11 database-only skipped), raw Bun (138 passed, 17 database-only skipped), canonical secrets/docs scripts, `docker compose config --quiet`, and Fred/Fred OpenAI package-load smoke from `packages/fred-workflows`.
 - Final post-validation filesystem audit confirmed the three STEP-01-04 `tsconfig.tsbuildinfo` files are absent, `*.tsbuildinfo` is ignored repository-wide, and no related cache artifact remains. STEP-01-04 and its mirrored context remain completed with zero known confirmed defects.
+- PR review remediation focused gates: root TypeScript compilation passed; 26 focused Node Vitest tests covering retrieval, research-engine, Fred workflow, API registration, ingestion, and research jobs passed after interface corrections. Full repository, real-PostgreSQL, migration, build, and strict Vault gates follow in this handoff.
+- Final PR-remediation gates PASS: frozen Bun install; root typecheck; zero-warning ESLint; dependency/import boundaries; build; Node Vitest 103 passed / 12 database-only skipped; raw Bun 144 passed / 18 database-only skipped; readiness-driven worker smoke under Node and Bun; canonical secrets/docs scripts; Compose validation; migration down/up; Fred provider preflight; real-PostgreSQL Node 12/12 and raw Bun 12/12; refreshed code graph (54 files, 572 symbols); refreshed authoritative context/indexes; and Vault doctor/all checks with 0 errors and 0 warnings.
+- Regression coverage proves tenant ownership is derived from immutable source relationships, excerpts use PostgreSQL match-line metadata including stem-only matches, legacy ingestion payloads remain processable, Fred input and empty-evidence failures remain typed, production Fred timeout uses Effect-native fiber interruption, startup validates provider config before readiness, polling is concurrent, API client/infrastructure failures stay distinct, and stale recovery cannot race terminal completion or leave split state.
 
 ## Bugs Encountered
 
@@ -117,9 +124,11 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Follow-Up Work
 
 <!-- AGENT-START:session-follow-up-work -->
-- [ ] Continue [[02_Phases/Phase_01_walking_skeleton/Steps/Step_04_implement-deterministic-retrieval-and-fred-research-workflow|STEP-01-04 Implement Deterministic Retrieval and Fred Research Workflow]].
+- [x] Complete [[02_Phases/Phase_01_walking_skeleton/Steps/Step_04_implement-deterministic-retrieval-and-fred-research-workflow|STEP-01-04 Implement Deterministic Retrieval and Fred Research Workflow]] implementation and local review remediation.
 <!-- AGENT-END:session-follow-up-work -->
+- [ ] Root orchestrator publishes this remediation to PR #1, resolves or replies to all verified threads with evidence, waits for automated re-review, and merges only after the zero-defect gate passes.
+- [ ] After merge, advance to [[02_Phases/Phase_01_walking_skeleton/Steps/Step_05_stream-persisted-progress-and-render-navigable-citation|STEP-01-05 Stream Persisted Progress and Render Navigable Citation]].
 
 ## Completion Summary
 
-- State what finished, what remains, and whether handoff is clean.
+- STEP-01-04 implementation and all 22 PR #1 inline review findings were addressed locally with regression coverage. The root orchestrator retains publication, thread resolution/replies, automated re-review, and merge ownership.

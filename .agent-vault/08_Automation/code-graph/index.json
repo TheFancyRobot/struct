@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-18T20:44:24.935Z",
+  "generatedAt": "2026-07-18T21:32:38.664Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -68,56 +68,66 @@
         {
           "name": "RegisterRequestBody",
           "kind": "interface",
-          "line": 35,
+          "line": 37,
           "exported": false,
-          "endLine": 35
+          "endLine": 37
         },
         {
           "name": "ResearchRequestBody",
           "kind": "interface",
-          "line": 43,
+          "line": 45,
           "exported": false,
-          "endLine": 43
+          "endLine": 45
         },
         {
           "name": "jsonResponse",
           "kind": "function",
-          "line": 50,
+          "line": 52,
           "exported": false,
-          "endLine": 50,
+          "endLine": 52,
           "signature": "(body: unknown, status = 200)"
         },
         {
           "name": "parseBody",
           "kind": "function",
-          "line": 57,
+          "line": 59,
           "exported": false,
-          "endLine": 57,
+          "endLine": 59,
           "signature": "(body: RegisterRequestBody): Effect.Effect<{"
         },
         {
           "name": "parseResearchBody",
           "kind": "function",
-          "line": 81,
+          "line": 83,
           "exported": false,
-          "endLine": 81,
+          "endLine": 83,
           "signature": "(body: ResearchRequestBody): Effect.Effect<{"
+        },
+        {
+          "name": "researchFailureResponse",
+          "kind": "function",
+          "line": 118,
+          "exported": false,
+          "endLine": 118,
+          "signature": "(cause: Cause.Cause<unknown>)"
         },
         {
           "name": "server",
           "kind": "const",
-          "line": 111,
+          "line": 129,
           "exported": false,
-          "endLine": 111
+          "endLine": 129
         }
       ],
       "imports": [
         {
-          "source": "Effect, Layer, Schema",
+          "source": "Cause, Effect, Layer, Option, Schema",
           "specifier": "effect",
           "imported": [
+            "Cause",
             "Effect",
             "Layer",
+            "Option",
             "Schema"
           ],
           "kind": "static"
@@ -156,9 +166,9 @@
         }
       ],
       "exports": [],
-      "hash": "fc620d9dd94d74e1203b022dd0db74ec9c08a063a3d7a147f2e418b0d87e9126",
-      "mtimeMs": 1784407179562.909,
-      "size": 7761,
+      "hash": "69cf996985f979336eaed131b02dbaefd19fde889f8af72c29f9859be14f6b98",
+      "mtimeMs": 1784409746585.8333,
+      "size": 8497,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -280,9 +290,9 @@
         }
       ],
       "exports": [],
-      "hash": "d7140b925561eee879903482a1c5d5204d8172ab3ad6b12483ed3848a4c279df",
-      "mtimeMs": 1784406949146.8447,
-      "size": 3552,
+      "hash": "3f86176d23001512d539fb452a302c5c5757849cce58b8b6ad390a72ae962087",
+      "mtimeMs": 1784409746585.565,
+      "size": 3381,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -512,61 +522,60 @@
         {
           "name": "ProcessOneResult",
           "kind": "interface",
-          "line": 61,
+          "line": 66,
           "exported": true,
-          "endLine": 61
+          "endLine": 66
         },
         {
           "name": "IngestionPayload",
           "kind": "interface",
-          "line": 66,
+          "line": 71,
           "exported": false,
-          "endLine": 66
+          "endLine": 71
         },
         {
           "name": "decodePayload",
           "kind": "function",
-          "line": 73,
+          "line": 78,
           "exported": false,
-          "endLine": 73,
-          "signature": "(payload: Record<string, unknown>)"
+          "endLine": 78
         },
         {
           "name": "sanitizedFailurePayload",
           "kind": "function",
-          "line": 100,
+          "line": 114,
           "exported": false,
-          "endLine": 100,
+          "endLine": 114,
           "signature": "(reason: unknown)"
         },
         {
           "name": "appendEvent",
           "kind": "function",
-          "line": 105,
+          "line": 119,
           "exported": false,
-          "endLine": 105
+          "endLine": 119
         },
         {
           "name": "completeJob",
           "kind": "function",
-          "line": 124,
+          "line": 138,
           "exported": false,
-          "endLine": 124
+          "endLine": 138
         },
         {
           "name": "failJob",
           "kind": "function",
-          "line": 169,
+          "line": 183,
           "exported": false,
-          "endLine": 169,
+          "endLine": 183,
           "signature": "(deps: IngestionWorkerDeps, job: typeof JobQueue.Type, reason: unknown)"
         },
         {
           "name": "processOneIngestionJob",
           "kind": "const",
-          "line": 180,
+          "line": 194,
           "exported": true,
-          "endLine": 180
+          "endLine": 194
         }
       ],
       "imports": [
@@ -598,12 +607,17 @@
           "source": "",
           "specifier": "@struct/domain",
           "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
         }
       ],
       "exports": [],
-      "hash": "088aedbee64c54c6f13aeda71de72edf56bfeaa5e240ed35a124d63d5c6d873e",
-      "mtimeMs": 1784407198674.6128,
-      "size": 7996,
+      "hash": "553392ab00f879bd9e3b3f568349f962ef6d40efbbdab38668ae91914f2d60f7",
+      "mtimeMs": 1784409635963.4338,
+      "size": 8452,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -629,38 +643,38 @@
         {
           "name": "decodePayload",
           "kind": "function",
-          "line": 61,
+          "line": 58,
           "exported": false,
-          "endLine": 61
+          "endLine": 58
         },
         {
           "name": "event",
           "kind": "function",
-          "line": 96,
+          "line": 93,
           "exported": false,
-          "endLine": 96
+          "endLine": 93
         },
         {
           "name": "citationsFor",
           "kind": "function",
-          "line": 114,
+          "line": 111,
           "exported": false,
-          "endLine": 114
+          "endLine": 111
         },
         {
           "name": "safeFailureTag",
           "kind": "function",
-          "line": 129,
+          "line": 126,
           "exported": false,
-          "endLine": 129,
+          "endLine": 126,
           "signature": "(error: unknown)"
         },
         {
           "name": "processOneResearchJob",
           "kind": "const",
-          "line": 135,
+          "line": 132,
           "exported": true,
-          "endLine": 135
+          "endLine": 132
         }
       ],
       "imports": [
@@ -676,9 +690,9 @@
         }
       ],
       "exports": [],
-      "hash": "0b6fc758568c0239f2f59c0dcd542ead650f496cb62ea5115568a5285057d8b8",
-      "mtimeMs": 1784407186758.1924,
-      "size": 6637,
+      "hash": "4584e4b4ae01f6206b7b7ee97600cd911fd4e333e1e5c4d293cefea46951b87c",
+      "mtimeMs": 1784410217929.5303,
+      "size": 6101,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -690,9 +704,9 @@
         {
           "name": "program",
           "kind": "const",
-          "line": 34,
+          "line": 39,
           "exported": false,
-          "endLine": 34
+          "endLine": 39
         }
       ],
       "imports": [
@@ -757,15 +771,6 @@
           "kind": "static"
         },
         {
-          "source": "fredRuntimeConfig, runFredWalkingSkeleton",
-          "specifier": "@struct/fred-workflows",
-          "imported": [
-            "fredRuntimeConfig",
-            "runFredWalkingSkeleton"
-          ],
-          "kind": "static"
-        },
-        {
           "source": "processOneIngestionJob",
           "specifier": "./jobs/ingest-source",
           "imported": [
@@ -783,9 +788,9 @@
         }
       ],
       "exports": [],
-      "hash": "634b7f1041c960d8dd9de48cdeb6d7503e69086eb95bfe66b39eb097990b39ef",
-      "mtimeMs": 1784406817251.1782,
-      "size": 6546,
+      "hash": "c2bfc9345ab45dee5cea4c3c9cea496b56fad141ace6b7df9458153d4181d85f",
+      "mtimeMs": 1784410217930.1965,
+      "size": 6805,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1382,37 +1387,44 @@
         {
           "name": "FredRuntimeConfig",
           "kind": "interface",
-          "line": 21,
+          "line": 17,
           "exported": true,
-          "endLine": 21
+          "endLine": 17
         },
         {
           "name": "fredRuntimeConfig",
           "kind": "const",
-          "line": 27,
+          "line": 23,
           "exported": true,
-          "endLine": 27
+          "endLine": 23
         },
         {
           "name": "FredClientFactory",
           "kind": "interface",
-          "line": 39,
+          "line": 35,
           "exported": true,
-          "endLine": 39
+          "endLine": 35
         },
         {
           "name": "defaultFactory",
           "kind": "const",
-          "line": 43,
+          "line": 45,
           "exported": false,
-          "endLine": 43
+          "endLine": 45
+        },
+        {
+          "name": "preflightFredRuntime",
+          "kind": "const",
+          "line": 79,
+          "exported": true,
+          "endLine": 79
         },
         {
           "name": "runFredWalkingSkeleton",
           "kind": "const",
-          "line": 45,
+          "line": 106,
           "exported": true,
-          "endLine": 45
+          "endLine": 106
         }
       ],
       "imports": [
@@ -1433,12 +1445,22 @@
             "ResearchWorkflowError"
           ],
           "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "@fancyrobot/fred",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@fancyrobot/fred/effect",
+          "kind": "dynamic"
         }
       ],
       "exports": [],
-      "hash": "501ef395598164e95a81fd3160ee4fc4f147eeddf0c612c25a8858587c34ac0c",
-      "mtimeMs": 1784406984679.396,
-      "size": 3501,
+      "hash": "14ea4ebaa982fb326037f8e8231824764a936e0fde22b10e7cf8e11318b67719",
+      "mtimeMs": 1784410139158.7485,
+      "size": 5318,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1476,48 +1498,48 @@
           "endLine": 15
         },
         {
+          "name": "AnswerSynthesizerInput",
+          "kind": "const",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
           "name": "answerSynthesizerAgent",
           "kind": "const",
-          "line": 25,
+          "line": 33,
           "exported": true,
-          "endLine": 25
+          "endLine": 33
         },
         {
           "name": "makeSearchTextTool",
           "kind": "const",
-          "line": 40,
+          "line": 48,
           "exported": true,
-          "endLine": 40
+          "endLine": 48
         },
         {
           "name": "decodeAgentAnswer",
           "kind": "function",
-          "line": 59,
+          "line": 67,
           "exported": false,
-          "endLine": 59,
+          "endLine": 67,
           "signature": "(input: unknown)"
         },
         {
           "name": "makeWalkingSkeletonWorkflow",
           "kind": "function",
-          "line": 65,
+          "line": 73,
           "exported": true,
-          "endLine": 65
+          "endLine": 73
         }
       ],
       "imports": [
         {
-          "source": "defineWorkflow",
-          "specifier": "@fancyrobot/fred",
-          "imported": [
-            "defineWorkflow"
-          ],
-          "kind": "static"
-        },
-        {
-          "source": "Schema",
+          "source": "Effect, Schema",
           "specifier": "effect",
           "imported": [
+            "Effect",
             "Schema"
           ],
           "kind": "static"
@@ -1533,9 +1555,9 @@
         }
       ],
       "exports": [],
-      "hash": "380502ffc2d1415a53e379c16d5afec0ca02c117de2479d0bd864fcb5ea91d7c",
-      "mtimeMs": 1784406949147.2817,
-      "size": 4145,
+      "hash": "a734cdbe58200ba95b9061a215d385c4295f0fc36cb0b743b6b0e82272cf2fce",
+      "mtimeMs": 1784409689126.0964,
+      "size": 4392,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1872,9 +1894,9 @@
           "kind": "reexport"
         }
       ],
-      "hash": "01cb7ea11576ceee54ec0594b60399c9cb3ded2667367222ea00f81c376a2dbf",
-      "mtimeMs": 1784406396714.3403,
-      "size": 2269,
+      "hash": "18f8706ba90466a28682097c24aa76935d09aa8ce26783ede0610788ebcd8104",
+      "mtimeMs": 1784409746585.26,
+      "size": 2295,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2642,51 +2664,58 @@
         {
           "name": "ResearchRegistrationInput",
           "kind": "interface",
-          "line": 26,
+          "line": 27,
           "exported": true,
-          "endLine": 26
+          "endLine": 27
         },
         {
           "name": "ResearchRegistrationResult",
           "kind": "interface",
-          "line": 36,
+          "line": 37,
           "exported": true,
-          "endLine": 36
+          "endLine": 37
         },
         {
           "name": "CompleteResearchInput",
           "kind": "interface",
-          "line": 43,
+          "line": 44,
           "exported": true,
-          "endLine": 43
+          "endLine": 44
         },
         {
           "name": "FailResearchInput",
           "kind": "interface",
-          "line": 51,
+          "line": 52,
           "exported": true,
-          "endLine": 51
+          "endLine": 52
+        },
+        {
+          "name": "ResearchScopeMismatchError",
+          "kind": "class",
+          "line": 58,
+          "exported": false,
+          "endLine": 58
         },
         {
           "name": "persistenceDecodeError",
           "kind": "function",
-          "line": 57,
+          "line": 60,
           "exported": false,
-          "endLine": 57
+          "endLine": 60
         },
         {
           "name": "ResearchExecutionRepo",
           "kind": "class",
-          "line": 68,
+          "line": 71,
           "exported": true,
-          "endLine": 68
+          "endLine": 71
         },
         {
           "name": "ResearchExecutionError",
           "kind": "type",
-          "line": 373,
+          "line": 445,
           "exported": true,
-          "endLine": 373
+          "endLine": 445
         }
       ],
       "imports": [
@@ -2696,6 +2725,14 @@
           "imported": [
             "Effect",
             "Option"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "AuthorizationError",
+          "specifier": "@struct/domain",
+          "imported": [
+            "AuthorizationError"
           ],
           "kind": "static"
         },
@@ -2723,9 +2760,9 @@
         }
       ],
       "exports": [],
-      "hash": "de31514cbe5cf462624178d2a886e2fb5c9d8d910fbc7135da18bb6fbc636e6c",
-      "mtimeMs": 1784406949147.7231,
-      "size": 13725,
+      "hash": "2af4343df8a228c849c60abdea94987d73d58bd28d564944c09232d798ed318f",
+      "mtimeMs": 1784410217929.1843,
+      "size": 16970,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2953,9 +2990,9 @@
         }
       ],
       "exports": [],
-      "hash": "399e9782309ecf3570385d8cecbc6c43c5d2b47b363cd6bff4b9ffd51a62f4c5",
-      "mtimeMs": 1784406328279.0547,
-      "size": 2799,
+      "hash": "b4dcfafc215ebdaeea203d4231c29dc2086b53f8adb48e26d3f3376e80c2b974",
+      "mtimeMs": 1784409689125.0256,
+      "size": 3055,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3009,24 +3046,24 @@
         {
           "name": "MAX_EXCERPT_CHARS",
           "kind": "const",
-          "line": 38,
+          "line": 39,
           "exported": false,
-          "endLine": 38
+          "endLine": 39
         },
         {
           "name": "boundedExcerpt",
           "kind": "function",
-          "line": 40,
+          "line": 41,
           "exported": false,
-          "endLine": 40,
-          "signature": "(content: string, query: string)"
+          "endLine": 41,
+          "signature": "(content: string, matchLine: number)"
         },
         {
           "name": "TextRetrieval",
           "kind": "class",
-          "line": 57,
+          "line": 53,
           "exported": true,
-          "endLine": 57
+          "endLine": 53
         }
       ],
       "imports": [
@@ -3049,9 +3086,9 @@
         }
       ],
       "exports": [],
-      "hash": "271465cd76b574f29bb61b29d01c55403a7e688ea972f0ffae0750d008d1f682",
-      "mtimeMs": 1784406328278.8174,
-      "size": 4641,
+      "hash": "0b0b43e02a64cd0ec3b8a6d8e10b35b5948119c490cc314ad0ab7885c53186af",
+      "mtimeMs": 1784409543078.2944,
+      "size": 5897,
       "generated": false,
       "vendor": false,
       "parser": "regex"

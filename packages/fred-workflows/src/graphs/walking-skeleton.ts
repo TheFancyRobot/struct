@@ -1,10 +1,11 @@
 import type * as Fred from '@fancyrobot/fred'
-import { Schema } from 'effect'
+import { Effect, Schema } from 'effect'
 import { ResearchAnswer, TextEvidence } from '@struct/domain'
 import {
   WalkingSkeletonResearchInput,
   WalkingSkeletonWorkflowResult,
   makeWalkingSkeletonPlan,
+  requireEvidence,
 } from '@struct/research-engine'
 
 export const WALKING_SKELETON_WORKFLOW_ID = 'struct.walking-skeleton-research'
@@ -18,17 +19,25 @@ export interface WalkingSkeletonGraphDependencies {
   readonly validate: (
     answer: typeof ResearchAnswer.Type,
     evidence: ReadonlyArray<typeof TextEvidence.Type>,
+    question: string,
   ) => Promise<typeof ResearchAnswer.Type>
 }
+
+export const AnswerSynthesizerInput = Schema.Struct({
+  input: WalkingSkeletonResearchInput,
+  question: Schema.String,
+  evidence: Schema.Array(TextEvidence).pipe(Schema.minItems(1)),
+  instruction: Schema.String,
+})
 
 export const answerSynthesizerAgent = (
   platform: string,
   model: string,
-): Fred.AgentConfig<typeof Schema.String, typeof ResearchAnswer> => ({
+): Fred.AgentConfig<typeof AnswerSynthesizerInput, typeof ResearchAnswer> => ({
   id: ANSWER_SYNTHESIZER_AGENT_ID,
   platform,
   model,
-  input: Schema.String,
+  input: AnswerSynthesizerInput,
   output: ResearchAnswer,
   maxSteps: 1,
   toolChoice: 'none',
@@ -77,10 +86,9 @@ export function makeWalkingSkeletonWorkflow(
         kind: 'function',
         fn: async (context) => {
           const input = Schema.decodeUnknownSync(WalkingSkeletonResearchInput)(context.input)
-          const evidence = await searchTool.execute(input)
-          if (evidence.length === 0) {
-            throw new Error('EvidenceInsufficientError: No relevant source text was found')
-          }
+          const evidence = await Effect.runPromise(
+            requireEvidence(input.question, await searchTool.execute(input)),
+          )
           return {
             input,
             question: input.question,
@@ -103,7 +111,11 @@ export function makeWalkingSkeletonWorkflow(
             readonly evidence: ReadonlyArray<typeof TextEvidence.Type>
           }
           const input = Schema.decodeUnknownSync(WalkingSkeletonResearchInput)(retrieval.input)
-          const answer = await deps.validate(decodeAgentAnswer(context.input), retrieval.evidence)
+          const answer = await deps.validate(
+            decodeAgentAnswer(context.input),
+            retrieval.evidence,
+            input.question,
+          )
           return {
             plan: makeWalkingSkeletonPlan(input),
             evidence: retrieval.evidence,

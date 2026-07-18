@@ -4,7 +4,7 @@
  * Runtime entry point — Effect.runPromise at the application boundary.
  */
 
-import { Effect, Layer, Schema } from 'effect'
+import { Cause, Effect, Layer, Option, Schema } from 'effect'
 import postgres from 'postgres'
 import {
   ProjectRepo,
@@ -15,12 +15,14 @@ import {
 import {
   EventJournalId,
   JobQueueId,
+  AuthorizationError,
   SourceId,
   WorkspaceId,
   ProjectId,
   ResearchRunId,
   ResearchThreadId,
   SourceVersionId,
+  ValidationError,
 } from '@struct/domain'
 import { LocalArtifactStore } from '@struct/source-storage'
 import {
@@ -83,7 +85,7 @@ function parseResearchBody(body: ResearchRequestBody): Effect.Effect<{
   readonly projectId: typeof ProjectId.Type
   readonly sourceVersionIds: ReadonlyArray<typeof SourceVersionId.Type>
   readonly question: string
-}, Error, never> {
+}, ValidationError, never> {
   return Effect.try({
     try: () => {
       if (
@@ -104,8 +106,24 @@ function parseResearchBody(body: ResearchRequestBody): Effect.Effect<{
         question: body.question,
       }
     },
-    catch: () => new Error('Invalid research payload'),
+    catch: () =>
+      new ValidationError({
+        field: 'research',
+        reason: 'invalid-payload',
+        message: 'Invalid research payload',
+      }),
   })
+}
+
+function researchFailureResponse(cause: Cause.Cause<unknown>): Response {
+  const failure = Option.getOrUndefined(Cause.failureOption(cause))
+  if (failure instanceof ValidationError) {
+    return jsonResponse({ error: 'InvalidResearchRequest' }, 400)
+  }
+  if (failure instanceof AuthorizationError) {
+    return jsonResponse({ error: 'ResearchScopeForbidden' }, 403)
+  }
+  return jsonResponse({ error: 'ResearchServiceUnavailable' }, 503)
 }
 
 const server = Effect.gen(function* () {
@@ -167,7 +185,12 @@ const server = Effect.gen(function* () {
         const program = Effect.gen(function* () {
           const body = yield* Effect.tryPromise({
             try: () => req.json() as Promise<ResearchRequestBody>,
-            catch: () => new Error('Invalid JSON body'),
+            catch: () =>
+              new ValidationError({
+                field: 'research',
+                reason: 'invalid-json',
+                message: 'Invalid JSON body',
+              }),
           })
           const parsed = yield* parseResearchBody(body)
           return yield* startResearch(parsed, {
@@ -183,7 +206,7 @@ const server = Effect.gen(function* () {
 
         const exit = await Effect.runPromiseExit(program)
         if (exit._tag === 'Failure') {
-          return jsonResponse({ error: 'ResearchRegistrationFailed' }, 400)
+          return researchFailureResponse(exit.cause)
         }
         return jsonResponse(
           {

@@ -33,18 +33,14 @@ interface SearchRow {
   readonly source_version_id: string
   readonly content: string
   readonly rank: number | string
+  readonly match_line: number | string
 }
 
 const MAX_EXCERPT_CHARS = 1200
 
-function boundedExcerpt(content: string, query: string): { excerpt: string; locator: string } {
-  const terms = query.toLocaleLowerCase().match(/[\p{L}\p{N}_-]+/gu) ?? []
+function boundedExcerpt(content: string, matchLine: number): { excerpt: string; locator: string } {
   const lines = content.split('\n')
-  const lineIndex = lines.findIndex((line) => {
-    const normalized = line.toLocaleLowerCase()
-    return terms.some((term) => normalized.includes(term))
-  })
-  const startLine = lineIndex < 0 ? 0 : lineIndex
+  const startLine = Math.max(0, Math.min(lines.length - 1, matchLine - 1))
   const excerptLines = lines.slice(startLine, startLine + 6)
   const excerpt = excerptLines.join('\n').slice(0, MAX_EXCERPT_CHARS)
   const endLine = startLine + Math.max(1, excerptLines.length)
@@ -63,17 +59,36 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
       yield* Effect.tryPromise({
         try: () =>
           sql.unsafe(
-            `INSERT INTO source_text_index (source_version_id, workspace_id, project_id, content)
-             VALUES ($1, $2, $3, $4)
-             ON CONFLICT (source_version_id) DO NOTHING`,
-            [input.sourceVersionId, input.workspaceId, input.projectId, input.content],
+            `INSERT INTO source_text_index (source_version_id, content)
+             SELECT sv.id, $4
+             FROM source_versions sv
+             JOIN sources s ON s.id = sv.source_id
+             JOIN projects p ON p.id = s.project_id
+             WHERE sv.id = $3
+               AND p.id = $2
+               AND p.workspace_id = $1
+             ON CONFLICT (source_version_id)
+             DO UPDATE SET content = source_text_index.content
+             RETURNING source_version_id`,
+            [input.workspaceId, input.projectId, input.sourceVersionId, input.content],
           ),
         catch: () =>
           new RetrievalQueryError({
             operation: 'indexText',
             message: 'Normalized source text could not be indexed',
           }),
-      })
+      }).pipe(
+        Effect.flatMap((rows) =>
+          rows.length === 1
+            ? Effect.void
+            : Effect.fail(
+                new RetrievalQueryError({
+                  operation: 'indexText.scope',
+                  message: 'Source version does not belong to the requested workspace and project',
+                }),
+              ),
+        ),
+      )
     })
 
     const searchText = Effect.fn('TextRetrieval.searchText')(function* (request: TextSearchRequest) {
@@ -88,13 +103,29 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
       const rows = yield* Effect.tryPromise({
         try: () =>
           sql.unsafe(
-            `SELECT source_version_id, content,
-                    ts_rank_cd(search_vector, websearch_to_tsquery('english', $4)) AS rank
-             FROM source_text_index
-             WHERE workspace_id = $1
-               AND project_id = $2
-               AND source_version_id = ANY($3::uuid[])
-               AND search_vector @@ websearch_to_tsquery('english', $4)
+            `WITH search_query AS (
+               SELECT websearch_to_tsquery('english', $4) AS query
+             )
+             SELECT sti.source_version_id, sti.content,
+                    ts_rank_cd(sti.search_vector, search_query.query) AS rank,
+                    matched_line.match_line
+             FROM source_text_index sti
+             JOIN source_versions sv ON sv.id = sti.source_version_id
+             JOIN sources s ON s.id = sv.source_id
+             JOIN projects p ON p.id = s.project_id
+             CROSS JOIN search_query
+             CROSS JOIN LATERAL (
+               SELECT line_number::int AS match_line
+               FROM unnest(string_to_array(sti.content, E'\n'))
+                 WITH ORDINALITY AS source_lines(line, line_number)
+               WHERE to_tsvector('english', source_lines.line) @@ search_query.query
+               ORDER BY line_number
+               LIMIT 1
+             ) matched_line
+             WHERE p.workspace_id = $1
+               AND p.id = $2
+               AND sti.source_version_id = ANY($3::uuid[])
+               AND sti.search_vector @@ search_query.query
              ORDER BY rank DESC, source_version_id ASC
              LIMIT $5`,
             [
@@ -113,7 +144,7 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
       })
 
       const evidence = (rows as unknown as readonly SearchRow[]).map((row) => {
-        const located = boundedExcerpt(row.content, decoded.query)
+        const located = boundedExcerpt(row.content, Number(row.match_line))
         return {
           sourceVersionId: SourceVersionId.make(row.source_version_id),
           locator: located.locator,

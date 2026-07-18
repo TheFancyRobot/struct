@@ -24,7 +24,7 @@ export interface StartResearchDeps {
   readonly randomEventId: () => typeof EventJournalId.Type
   readonly register: (
     input: Persistence.ResearchRegistrationInput,
-  ) => Effect.Effect<Persistence.ResearchRegistrationResult, unknown, never>
+  ) => Effect.Effect<Persistence.ResearchRegistrationResult, Persistence.ResearchExecutionError, never>
 }
 
 function titleFor(question: string): string {
@@ -34,7 +34,11 @@ function titleFor(question: string): string {
 export const startResearch = (
   input: StartResearchInput,
   deps: StartResearchDeps,
-): Effect.Effect<Persistence.ResearchRegistrationResult, ValidationError, never> =>
+): Effect.Effect<
+  Persistence.ResearchRegistrationResult,
+  ValidationError | Persistence.ResearchExecutionError,
+  never
+> =>
   Effect.gen(function* () {
     const question = input.question.trim()
     const uniqueVersions = [...new Set(input.sourceVersionIds)]
@@ -107,14 +111,5 @@ export const startResearch = (
       run,
       job,
       event,
-    }).pipe(
-      Effect.mapError(
-        () =>
-          new ValidationError({
-            field: 'research',
-            reason: 'registration-failed',
-            message: 'Research request could not be registered',
-          }),
-      ),
-    )
+    })
   })

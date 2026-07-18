@@ -105,6 +105,9 @@ describeIf('single text source ingestion real DB integration', () => {
         findBySourceId: (id) => SourceVersionRepo.findBySourceId(id).pipe(Effect.provide(sourceVersionLayer)),
         create: (version) => SourceVersionRepo.create(version).pipe(Effect.provide(sourceVersionLayer)),
       },
+      sources: {
+        findProjectId: () => Effect.succeed(projectId),
+      },
       textIndex: {
         indexText: (input) => TextRetrieval.indexText(input).pipe(Effect.provide(retrievalLayer)),
       },
@@ -119,7 +122,16 @@ describeIf('single text source ingestion real DB integration', () => {
     expect(workerResult).toEqual({ processed: true, jobId: '950e8400-e29b-41d4-a716-446655440010' })
 
     const [jobRow] = await sql.unsafe(`SELECT status, attempts, payload::text AS payload FROM job_queue WHERE id = $1`, ['950e8400-e29b-41d4-a716-446655440010'])
-    const [versionRow] = await sql.unsafe(`SELECT artifact_ref, content_hash FROM source_versions WHERE source_id = $1`, [sourceId])
+    const [versionRow] = await sql.unsafe(`SELECT id, artifact_ref, content_hash FROM source_versions WHERE source_id = $1`, [sourceId])
+    const [indexRow] = await sql.unsafe(
+      `SELECT sti.content, p.workspace_id, p.id AS project_id
+       FROM source_text_index sti
+       JOIN source_versions sv ON sv.id = sti.source_version_id
+       JOIN sources s ON s.id = sv.source_id
+       JOIN projects p ON p.id = s.project_id
+       WHERE sti.source_version_id = $1`,
+      [versionRow['id']],
+    )
     const events = await sql.unsafe(`SELECT event_type, payload::text AS payload FROM event_journal WHERE workspace_id = $1 ORDER BY cursor ASC`, [workspaceId])
     const manifest = JSON.parse(new TextDecoder().decode((await Effect.runPromise(storage.readObject(versionRow['artifact_ref'] as never))).bytes))
 
@@ -129,6 +141,11 @@ describeIf('single text source ingestion real DB integration', () => {
     expect(versionRow['content_hash']).toMatch(/^sha256:[a-f0-9]{64}$/)
     expect(versionRow['artifact_ref']).toMatch(/^artifact:\/\/sha256\//)
     expect(manifest.normalizedRef).toMatch(/^artifact:\/\/sha256\//)
+    expect(indexRow).toMatchObject({
+      content: '# Title\nhello',
+      workspace_id: workspaceId,
+      project_id: projectId,
+    })
     expect(events.map((event) => event['event_type'])).toEqual(['ingestion-requested', 'file-processed', 'ingestion-completed'])
     expect(JSON.stringify(events)).not.toContain('# Title')
     expect(JSON.stringify(events)).not.toContain('/Users/')

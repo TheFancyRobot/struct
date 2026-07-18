@@ -59,7 +59,20 @@ export const requireEvidence = (
 export const validateAnswerCitations = (
   answer: typeof ResearchAnswer.Type,
   evidence: ReadonlyArray<typeof TextEvidence.Type>,
-): Effect.Effect<typeof ResearchAnswer.Type, ResearchCitationValidationError, never> => {
+  question = 'research question',
+): Effect.Effect<
+  typeof ResearchAnswer.Type,
+  ResearchCitationValidationError | EvidenceInsufficientError,
+  never
+> => {
+  if (evidence.length === 0) {
+    return Effect.fail(
+      new EvidenceInsufficientError({
+        question,
+        message: 'No relevant source text was found',
+      }),
+    )
+  }
   const valid = new Set(evidence.map((item) => `${item.sourceVersionId}:${item.locator}`))
   const invalid = answer.citations.find(
     (citation) => !valid.has(`${citation.sourceVersionId}:${citation.locator}`),
@@ -74,7 +87,7 @@ export const validateAnswerCitations = (
     )
   }
   if (answer.citations.length === 0) {
-    const first = evidence[0]
+    const first = evidence[0]!
     return Effect.fail(
       new ResearchCitationValidationError({
         sourceVersionId: first.sourceVersionId,

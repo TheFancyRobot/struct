@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { execSync } from 'node:child_process'
+import { mkdtempSync, rmSync } from 'node:fs'
 import { createServer } from 'node:net'
+import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 
 const apiMainPath = resolve(import.meta.dirname, 'main.ts')
@@ -27,8 +29,13 @@ describe('API entrypoint config validation', () => {
   it('exits nonzero when API_PORT is not a number', () => {
     let exitCode: number | null = null
     try {
-      execSync(`API_PORT=not-a-number bun ${apiMainPath} 2>&1`, {
+      execSync('bun "$API_MAIN_PATH" 2>&1', {
         encoding: 'utf-8',
+        env: {
+          ...process.env,
+          API_MAIN_PATH: apiMainPath,
+          API_PORT: 'not-a-number',
+        },
         timeout: 5000,
         stdio: 'pipe',
       })
@@ -40,12 +47,34 @@ describe('API entrypoint config validation', () => {
   })
 
   it('starts successfully with valid API_PORT', async () => {
-    const port = await getAvailablePort()
-    // Start the server, wait for the log, then kill it
-    const result = execSync(
-      `root=$(mktemp -d); API_PORT=${port} DATABASE_URL=postgres://struct:struct@localhost:5432/struct ARTIFACT_STORAGE_ROOT=$root bun ${apiMainPath} & sleep 2; kill %1 2>/dev/null; wait 2>/dev/null; rm -rf "$root"`,
-      { encoding: 'utf-8', timeout: 8000, shell: '/bin/bash' },
-    )
+    let result = ''
+    let port = 0
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      port = await getAvailablePort()
+      const root = mkdtempSync(`${tmpdir()}/struct-api-entrypoint-`)
+      try {
+        result = execSync(
+          'bun "$API_MAIN_PATH" & child=$!; sleep 2; kill "$child" 2>/dev/null; wait "$child" 2>/dev/null; true',
+          {
+            encoding: 'utf-8',
+            timeout: 8000,
+            shell: '/bin/bash',
+            env: {
+              ...process.env,
+              API_MAIN_PATH: apiMainPath,
+              API_PORT: String(port),
+              DATABASE_URL: 'postgres://struct:struct@localhost:5432/struct',
+              ARTIFACT_STORAGE_ROOT: root,
+            },
+          },
+        )
+      } finally {
+        rmSync(root, { recursive: true, force: true })
+      }
+      if (!result.includes('EADDRINUSE')) break
+    }
+
+    expect(result).not.toContain('EADDRINUSE')
     expect(result).toContain(`API server starting on port ${port}`)
     expect(result).toContain('Health check')
   })

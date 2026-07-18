@@ -41,10 +41,16 @@ const run: typeof ResearchRun.Type = {
 
 function deps(failWorkflow = false) {
   const events: string[] = []
+  const eventPayloads: unknown[] = []
   const completed: unknown[] = []
   const failed: unknown[] = []
   const value: ResearchWorkerDeps & {
-    readonly calls: { readonly events: string[]; readonly completed: unknown[]; readonly failed: unknown[] }
+    readonly calls: {
+      readonly events: string[]
+      readonly eventPayloads: unknown[]
+      readonly completed: unknown[]
+      readonly failed: unknown[]
+    }
   } = {
     now: () => 1700000000000n,
     staleBeforeMs: 1699999999999,
@@ -53,19 +59,21 @@ function deps(failWorkflow = false) {
     jobs: {
       recoverStale: () => Effect.succeed([]),
       claimNext: () => Effect.succeed(Option.some(job)),
-      markInProgress: () => Effect.void,
       appendEvent: (journalEvent) => {
         events.push(journalEvent.eventType)
+        eventPayloads.push(journalEvent.payload)
         return Effect.void
       },
       complete: (input) => {
         completed.push(input)
         events.push(input.event.eventType)
+        eventPayloads.push(input.event.payload)
         return Effect.void
       },
       fail: (input) => {
         failed.push(input)
         events.push(input.event.eventType)
+        eventPayloads.push(input.event.payload)
         return Effect.void
       },
     },
@@ -93,7 +101,7 @@ function deps(failWorkflow = false) {
               },
             }),
     },
-    calls: { events, completed, failed },
+    calls: { events, eventPayloads, completed, failed },
   }
   return value
 }
@@ -120,7 +128,7 @@ describe('processOneResearchJob', () => {
     expect(testDeps.calls.events).toEqual(['research-failed'])
     expect(testDeps.calls.completed).toHaveLength(0)
     expect(testDeps.calls.failed).toHaveLength(1)
-    expect(testDeps.calls.events).not.toContain('Launch is July 18.')
+    expect(JSON.stringify(testDeps.calls.eventPayloads)).not.toContain('Launch is July 18.')
   })
 
   it('terminal-fails stale in-progress research work before claiming new work', async () => {
@@ -137,7 +145,7 @@ describe('processOneResearchJob', () => {
     const result = await Effect.runPromise(processOneResearchJob(testDeps))
 
     expect(result).toEqual({ processed: false })
-    expect(testDeps.calls.events).toEqual(['research-failed'])
-    expect(testDeps.calls.failed).toHaveLength(1)
+    expect(testDeps.calls.events).toEqual([])
+    expect(testDeps.calls.failed).toHaveLength(0)
   })
 })

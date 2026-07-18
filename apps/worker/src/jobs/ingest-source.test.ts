@@ -12,6 +12,7 @@ interface IngestionWorkerTestDeps extends IngestionWorkerDeps {
   readonly calls: {
     readonly events: string[]
     readonly eventPayloads: unknown[]
+    readonly indexedInputs: unknown[]
     readonly completed: string[]
     readonly pending: string[]
     readonly failed: string[]
@@ -25,6 +26,7 @@ function deps(overrides: Partial<Omit<IngestionWorkerDeps, 'calls'>> = {}): Inge
   const calls = {
     events: [] as string[],
     eventPayloads: [] as unknown[],
+    indexedInputs: [] as unknown[],
     completed: [] as string[],
     pending: [] as string[],
     failed: [] as string[],
@@ -67,8 +69,14 @@ function deps(overrides: Partial<Omit<IngestionWorkerDeps, 'calls'>> = {}): Inge
         return Effect.succeed(version)
       },
     },
+    sources: {
+      findProjectId: () => Effect.succeed(projectId),
+    },
     textIndex: {
-      indexText: () => Effect.void,
+      indexText: (input) => {
+        calls.indexedInputs.push(input)
+        return Effect.void
+      },
     },
     events: {
       append: (event) => {
@@ -104,6 +112,12 @@ describe('processOneIngestionJob', () => {
     expect(testDeps.calls.versions).toHaveLength(1)
     expect(testDeps.calls.completed).toEqual(['850e8400-e29b-41d4-a716-446655440010'])
     expect(testDeps.calls.versions[0]).toMatchObject({ artifactRef: 'artifact://sha256/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc' })
+    expect(testDeps.calls.indexedInputs).toEqual([{
+      workspaceId,
+      projectId,
+      sourceVersionId,
+      content: 'hello source text',
+    }])
     expect(JSON.stringify(testDeps.calls.events)).not.toContain('hello source text')
     expect(JSON.stringify(testDeps.calls.events)).not.toContain('/Users/')
   })
@@ -122,6 +136,43 @@ describe('processOneIngestionJob', () => {
 
     expect(testDeps.calls.versions).toHaveLength(1)
     expect(testDeps.calls.versions[0]).toMatchObject({ version: 5 })
+  })
+
+  it('derives project scope for legacy queued payloads that predate projectId', async () => {
+    const base = deps()
+    const testDeps: IngestionWorkerTestDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        claimNextIngestionJob: () => Effect.succeed(Option.some({
+          id: jobId,
+          workspaceId,
+          entityType: 'ingestion',
+          entityId: sourceId,
+          status: 'in-progress' as const,
+          payload: {
+            stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/legacy.md',
+            name: 'legacy.md',
+            mediaType: 'text/markdown',
+            byteLength: 10,
+          },
+          attempts: 1,
+          maxAttempts: 3,
+          createdAt: 0n,
+          updatedAt: 0n,
+        })),
+      },
+    }
+
+    await Effect.runPromise(processOneIngestionJob(testDeps))
+
+    expect(testDeps.calls.completed).toEqual([jobId])
+    expect(testDeps.calls.indexedInputs).toEqual([{
+      workspaceId,
+      projectId,
+      sourceVersionId,
+      content: 'hello source text',
+    }])
   })
 
   it('records sanitized ingestion-failed and retries while attempts remain when storage or ingestion fails', async () => {

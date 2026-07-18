@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Effect, Exit } from 'effect'
 import {
+  AuthorizationError,
   EventJournalId,
   JobQueueId,
   ProjectId,
@@ -9,6 +10,7 @@ import {
   SourceVersionId,
   WorkspaceId,
 } from '@struct/domain'
+import { QueryError } from '@struct/persistence'
 import { startResearch } from './research'
 
 const workspaceId = WorkspaceId.make('d50e8400-e29b-41d4-a716-446655440000')
@@ -77,5 +79,51 @@ describe('startResearch', () => {
     expect(Exit.isFailure(empty)).toBe(true)
     expect(Exit.isFailure(duplicate)).toBe(true)
     expect(registered).toBe(false)
+  })
+
+  it('preserves authorization and infrastructure registration failures', async () => {
+    const baseDeps = {
+      now: () => 0n,
+      randomThreadId: () => ResearchThreadId.make(crypto.randomUUID()),
+      randomRunId: () => ResearchRunId.make(crypto.randomUUID()),
+      randomJobId: () => JobQueueId.make(crypto.randomUUID()),
+      randomEventId: () => EventJournalId.make(crypto.randomUUID()),
+    }
+    const input = {
+      workspaceId,
+      projectId,
+      sourceVersionIds: [sourceVersionId],
+      question: 'When?',
+    }
+    const forbidden = await Effect.runPromiseExit(startResearch(input, {
+      ...baseDeps,
+      register: () =>
+        Effect.fail(
+          new AuthorizationError({
+            detail: 'research-source-scope-mismatch',
+            message: 'Outside scope',
+          }),
+        ),
+    }))
+    const unavailable = await Effect.runPromiseExit(startResearch(input, {
+      ...baseDeps,
+      register: () =>
+        Effect.fail(
+          new QueryError({
+            operation: 'registerResearch',
+            entity: 'ResearchExecution',
+            message: 'Unavailable',
+          }),
+        ),
+    }))
+
+    expect(Exit.isFailure(forbidden)).toBe(true)
+    expect(Exit.isFailure(unavailable)).toBe(true)
+    if (Exit.isFailure(forbidden) && Exit.isFailure(unavailable)) {
+      expect(forbidden.cause.toString()).toContain('AuthorizationError')
+      expect(unavailable.cause.toString()).toContain('QueryError')
+      expect(forbidden.cause.toString()).not.toContain('ValidationError')
+      expect(unavailable.cause.toString()).not.toContain('ValidationError')
+    }
   })
 })

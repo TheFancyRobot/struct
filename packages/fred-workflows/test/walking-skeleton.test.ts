@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { Effect } from 'effect'
-import type { FredClient, WorkflowIR } from '@fancyrobot/fred'
+import { Effect, Exit, Schema } from 'effect'
+import type {
+  FredClient,
+  WorkflowExecutionResult,
+  WorkflowIR,
+} from '@fancyrobot/fred'
 import {
   ProjectId,
   ResearchRunId,
@@ -9,6 +13,7 @@ import {
 } from '@struct/domain'
 import {
   ANSWER_SYNTHESIZER_AGENT_ID,
+  AnswerSynthesizerInput,
   SEARCH_TEXT_TOOL_ID,
   answerSynthesizerAgent,
   makeSearchTextTool,
@@ -54,6 +59,40 @@ describe('Fred walking-skeleton workflow', () => {
     expect(agent.id).toBe(ANSWER_SYNTHESIZER_AGENT_ID)
     expect(agent.tools).toBeUndefined()
     expect(agent.maxSteps).toBe(1)
+    expect(
+      Schema.decodeUnknownSync(AnswerSynthesizerInput)({
+        input,
+        question: input.question,
+        evidence,
+        instruction: 'Use exact citations.',
+      }),
+    ).toMatchObject({ question: input.question, evidence })
+  })
+
+  it('preserves EvidenceInsufficientError when deterministic search is empty', async () => {
+    const workflow = makeWalkingSkeletonWorkflow({
+      searchText: async () => [],
+      validate: async (answer) => answer,
+    })
+    const searchNode = workflow.nodes.find((node) => node.id === 'searchText')
+    if (!searchNode || searchNode.kind !== 'function') {
+      throw new Error('searchText function node was not defined')
+    }
+
+    let failure: unknown
+    try {
+      await searchNode.fn({
+        input,
+        outputs: {},
+        history: [],
+        metadata: {},
+        pipelineId: workflow.id,
+      } as never)
+    } catch (error) {
+      failure = error
+    }
+    expect(failure).toBeInstanceOf(Error)
+    expect((failure as Error).name).toContain('EvidenceInsufficientError')
   })
 
   it('runs with a fixed mock provider/client and no provider keys', async () => {
@@ -103,7 +142,13 @@ describe('Fred walking-skeleton workflow', () => {
           validate: async (answer) => answer,
         },
         { providerPackage: 'mock', model: 'fixed', maxElapsedMs: 1000 },
-        { create: async () => client },
+        {
+          create: async () => client,
+          execute: async (fred, workflow, workflowInput) =>
+            await fred.workflows.run(workflow.id, workflowInput, {
+              sessionId: workflowInput.runId,
+            }) as WorkflowExecutionResult,
+        },
       ),
     )
 
@@ -115,5 +160,47 @@ describe('Fred walking-skeleton workflow', () => {
       'workflow:struct.walking-skeleton-research',
       'shutdown',
     ])
+  })
+
+  it('shuts down the Fred runtime when the elapsed-time budget expires', async () => {
+    let shutdownCalls = 0
+    const client = {
+      providers: { use: async () => MockModelProvider },
+      tools: { register: async () => undefined },
+      agents: { register: async () => undefined },
+      workflows: {
+        define: async () => undefined,
+        run: async () => Effect.runPromise(Effect.never),
+      },
+      shutdown: async () => {
+        shutdownCalls += 1
+      },
+    } as unknown as FredClient
+
+    const result = await Effect.runPromiseExit(
+      runFredWalkingSkeleton(
+        input,
+        {
+          searchText: async () => evidence,
+          validate: async (answer) => answer,
+        },
+        { providerPackage: 'mock', model: 'fixed', maxElapsedMs: 10 },
+        {
+          create: async () => client,
+          execute: (_fred, _workflow, _workflowInput, maxElapsedMs) =>
+            Effect.runPromise(
+              Effect.never.pipe(
+                Effect.timeoutFail({
+                  duration: maxElapsedMs,
+                  onTimeout: () => new Error('Research workflow exceeded elapsed-time budget'),
+                }),
+              ),
+            ),
+        },
+      ),
+    )
+
+    expect(Exit.isFailure(result)).toBe(true)
+    expect(shutdownCalls).toBeGreaterThanOrEqual(1)
   })
 })

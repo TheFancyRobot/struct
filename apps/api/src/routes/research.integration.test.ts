@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { Effect, Layer } from 'effect'
+import { Effect, Exit, Layer, Option } from 'effect'
 import postgres from 'postgres'
 import type postgresTypes from 'postgres'
 import {
@@ -70,9 +70,9 @@ describeIf('research walking slice real DB integration', () => {
       [sourceVersionId, sourceId],
     )
     await sql.unsafe(
-      `INSERT INTO source_text_index (source_version_id, workspace_id, project_id, content)
-       VALUES ($1, $2, $3, 'The launch date is July 18.')`,
-      [sourceVersionId, workspaceId, projectId],
+      `INSERT INTO source_text_index (source_version_id, content)
+       VALUES ($1, 'The launch date is July 18.')`,
+      [sourceVersionId],
     )
   })
 
@@ -119,10 +119,6 @@ describeIf('research walking slice real DB integration', () => {
           ),
         claimNext: () =>
           ResearchExecutionRepo.claimNext().pipe(Effect.provide(executionLayer)),
-        markInProgress: (id) =>
-          ResearchExecutionRepo.markInProgress(id).pipe(
-            Effect.provide(executionLayer),
-          ),
         appendEvent: (event) =>
           ResearchExecutionRepo.appendEvent(event).pipe(
             Effect.provide(executionLayer),
@@ -217,5 +213,105 @@ describeIf('research walking slice real DB integration', () => {
       'research-failed',
     ])
     expect(JSON.stringify(events)).not.toContain('The launch date is July 18.')
+  })
+
+  it('atomically terminal-fails stale work and rejects a racing completion', async () => {
+    const sqlLayer = SqlClientLive(sql)
+    const executionLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
+    const runId = ResearchRunId.make('f50e8400-e29b-41d4-a716-446655440013')
+    const jobId = JobQueueId.make('f50e8400-e29b-41d4-a716-446655440023')
+
+    await Effect.runPromise(startResearch({
+      workspaceId,
+      projectId,
+      sourceVersionIds: [sourceVersionId],
+      question: 'Can stale completion win?',
+    }, {
+      now: () => BigInt(Date.now()),
+      randomThreadId: () =>
+        ResearchThreadId.make('f50e8400-e29b-41d4-a716-446655440033'),
+      randomRunId: () => runId,
+      randomJobId: () => jobId,
+      randomEventId: () =>
+        EventJournalId.make('f50e8400-e29b-41d4-a716-446655440043'),
+      register: (input) =>
+        ResearchExecutionRepo.register(input).pipe(Effect.provide(executionLayer)),
+    }))
+    const claimed = await Effect.runPromise(
+      ResearchExecutionRepo.claimNext().pipe(Effect.provide(executionLayer)),
+    )
+    expect(Option.isSome(claimed)).toBe(true)
+    await sql.unsafe(
+      `UPDATE job_queue SET updated_at = NOW() - INTERVAL '10 minutes' WHERE id = $1`,
+      [jobId],
+    )
+
+    const recovered = await Effect.runPromise(
+      ResearchExecutionRepo.recoverStale(Date.now() - 300_000).pipe(
+        Effect.provide(executionLayer),
+      ),
+    )
+    expect(recovered.map((item) => item.id)).toContain(jobId)
+
+    const completion = await Effect.runPromiseExit(
+      ResearchExecutionRepo.complete({
+        runId,
+        jobId,
+        answer: {
+          answer: 'This must not persist.',
+          citations: [{ sourceVersionId, locator: 'lines:1-1' }],
+        },
+        citations: [{
+          id: CitationId.make('f50e8400-e29b-41d4-a716-446655440053'),
+          runId,
+          sourceVersionId,
+          locator: 'lines:1-1',
+          status: 'validated',
+          createdAt: BigInt(Date.now()),
+        }],
+        event: {
+          id: EventJournalId.make('f50e8400-e29b-41d4-a716-446655440063'),
+          workspaceId,
+          entityType: 'research',
+          entityId: runId,
+          eventType: 'research-completed',
+          payload: {},
+          cursor: 0n,
+          createdAt: BigInt(Date.now()),
+        },
+      }).pipe(Effect.provide(executionLayer)),
+    )
+    expect(Exit.isFailure(completion)).toBe(true)
+
+    const [runRow] = await sql.unsafe(
+      `SELECT status FROM research_runs WHERE id = $1`,
+      [runId],
+    )
+    const [jobRow] = await sql.unsafe(
+      `SELECT status FROM job_queue WHERE id = $1`,
+      [jobId],
+    )
+    const resultRows = await sql.unsafe(
+      `SELECT run_id FROM research_run_results WHERE run_id = $1`,
+      [runId],
+    )
+    const events = await sql.unsafe(
+      `SELECT event_type, payload
+       FROM event_journal
+       WHERE entity_id = $1
+       ORDER BY cursor`,
+      [runId],
+    )
+    expect(runRow['status']).toBe('failed')
+    expect(jobRow['status']).toBe('failed')
+    expect(resultRows).toHaveLength(0)
+    expect(events.map((item) => item['event_type'])).toEqual([
+      'research-started',
+      'research-failed',
+    ])
+    expect(events[1]?.['payload']).toMatchObject({
+      errorTag: 'ResearchJobStaleError',
+      message: 'Research failed',
+    })
   })
 })

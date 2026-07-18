@@ -24,9 +24,6 @@ export interface ResearchWorkerDeps {
       staleBeforeMs: number,
     ) => Effect.Effect<ReadonlyArray<typeof Domain.JobQueue.Type>, unknown, never>
     readonly claimNext: () => Effect.Effect<Option.Option<typeof Domain.JobQueue.Type>, unknown, never>
-    readonly markInProgress: (
-      runId: typeof Domain.ResearchRun.Type['id'],
-    ) => Effect.Effect<unknown, unknown, never>
     readonly appendEvent: (
       event: typeof Domain.EventJournal.Type,
     ) => Effect.Effect<unknown, unknown, never>
@@ -137,19 +134,7 @@ export const processOneResearchJob = (
 ): Effect.Effect<{ readonly processed: boolean; readonly jobId?: string }, unknown, never> =>
   Effect.gen(function* () {
     const stale = yield* deps.jobs.recoverStale(deps.staleBeforeMs)
-    yield* Effect.forEach(
-      stale,
-      (job) =>
-        deps.jobs.fail({
-          runId: job.entityId as typeof Domain.ResearchRun.Type['id'],
-          jobId: job.id,
-          event: event(deps, job, 'research-failed', {
-            errorTag: 'ResearchJobStaleError',
-            message: 'Research failed',
-          }),
-        }),
-      { discard: true },
-    )
+    void stale
     const claimed = yield* deps.jobs.claimNext()
     if (Option.isNone(claimed)) return { processed: false }
     const job = claimed.value
@@ -157,7 +142,6 @@ export const processOneResearchJob = (
     const executed = yield* Effect.gen(function* () {
       const run = yield* deps.runs.findById(job.entityId as typeof Domain.ResearchRun.Type['id'])
       const payload = yield* decodePayload(job.payload)
-      yield* deps.jobs.markInProgress(run.id)
       const result = yield* deps.workflow.run({
         run,
         workspaceId: job.workspaceId,

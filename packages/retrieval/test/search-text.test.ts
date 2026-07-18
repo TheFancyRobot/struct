@@ -21,6 +21,7 @@ describe('TextRetrieval', () => {
         source_version_id: sourceVersionId,
         content: 'Alpha\nThe launch date is July 18.\nOmega',
         rank: 0.75,
+        match_line: 2,
       }]
     })
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
@@ -36,7 +37,9 @@ describe('TextRetrieval', () => {
     )
 
     expect(calls[0]?.query).toMatch(/websearch_to_tsquery/)
+    expect(calls[0]?.query).toMatch(/JOIN projects/)
     expect(calls[0]?.query).toMatch(/source_version_id = ANY/)
+    expect(calls[0]?.query).toMatch(/WITH ORDINALITY/)
     expect(calls[0]?.params?.slice(0, 3)).toEqual([
       workspaceId,
       projectId,
@@ -54,7 +57,7 @@ describe('TextRetrieval', () => {
     const calls: string[] = []
     const sqlLayer = SqlClientTest(async (query) => {
       calls.push(query)
-      return []
+      return [{ source_version_id: sourceVersionId }]
     })
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
 
@@ -67,6 +70,41 @@ describe('TextRetrieval', () => {
       }).pipe(Effect.provide(layer)),
     )
 
-    expect(calls.join('\n')).toMatch(/ON CONFLICT \(source_version_id\) DO NOTHING/)
+    expect(calls.join('\n')).toMatch(/JOIN projects/)
+    expect(calls.join('\n')).toMatch(/DO UPDATE SET content = source_text_index\.content/)
+  })
+
+  it('anchors a stem-only match after the first six lines to the PostgreSQL match line', async () => {
+    const sqlLayer = SqlClientTest(async () => [{
+      source_version_id: sourceVersionId,
+      content: [
+        'Unrelated one',
+        'Unrelated two',
+        'Unrelated three',
+        'Unrelated four',
+        'Unrelated five',
+        'Unrelated six',
+        'The service runs nightly.',
+        'Relevant continuation.',
+      ].join('\n'),
+      rank: 0.5,
+      match_line: 7,
+    }])
+    const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
+
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [sourceVersionId],
+        query: 'running',
+        limit: 1,
+      }).pipe(Effect.provide(layer)),
+    )
+
+    expect(result.evidence[0]).toMatchObject({
+      locator: 'lines:7-8',
+      excerpt: 'The service runs nightly.\nRelevant continuation.',
+    })
   })
 })

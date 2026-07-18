@@ -10,6 +10,7 @@ import type {
   SourceVersionId,
   WorkspaceId,
 } from '@struct/domain'
+import { AuthorizationError } from '@struct/domain'
 import { QueryError, type PersistenceError } from '../errors.js'
 import { SqlClient } from '../sql-client.js'
 import {
@@ -54,6 +55,8 @@ export interface FailResearchInput {
   readonly event: typeof EventJournal.Type
 }
 
+class ResearchScopeMismatchError extends Error {}
+
 function persistenceDecodeError(
   operation: string,
   error: import('./decode.js').DecodeError,
@@ -87,7 +90,7 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
               [input.projectId, input.workspaceId, input.sourceVersionIds],
             )
             if (Number(authorized[0]?.['count']) !== input.sourceVersionIds.length) {
-              throw new Error('research-source-scope-mismatch')
+              throw new ResearchScopeMismatchError('research-source-scope-mismatch')
             }
             const threadRows = await transaction.unsafe(
               `INSERT INTO research_threads (id, project_id, title, created_at, updated_at)
@@ -150,12 +153,17 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
               event: eventRows[0] as unknown as EventJournalRow,
             }
           }),
-        catch: () =>
-          new QueryError({
-            operation: 'registerResearch',
-            entity: 'ResearchExecution',
-            message: 'Atomic research registration failed',
-          }),
+        catch: (error) =>
+          error instanceof ResearchScopeMismatchError
+            ? new AuthorizationError({
+                detail: 'research-source-scope-mismatch',
+                message: 'One or more source versions are outside the requested scope',
+              })
+            : new QueryError({
+                operation: 'registerResearch',
+                entity: 'ResearchExecution',
+                message: 'Atomic research registration failed',
+              }),
       })
       const [thread, run, job, event] = yield* Effect.all([
         decodeResearchThreadRow(rows.thread),
@@ -171,19 +179,33 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
     const claimNext = Effect.fn('ResearchExecutionRepo.claimNext')(function* () {
       const rows = yield* Effect.tryPromise({
         try: () =>
-          sql.unsafe(
-            `WITH next_job AS (
-               SELECT id FROM job_queue
-               WHERE entity_type = 'research' AND status = 'pending'
-               ORDER BY created_at ASC
-               FOR UPDATE SKIP LOCKED
-               LIMIT 1
-             )
-             UPDATE job_queue
-             SET status = 'in-progress', attempts = attempts + 1, updated_at = NOW()
-             WHERE id IN (SELECT id FROM next_job)
-             RETURNING *`,
-          ),
+          sql.transaction(async (transaction) => {
+            const claimedRows = await transaction.unsafe(
+              `WITH next_job AS (
+                 SELECT id FROM job_queue
+                 WHERE entity_type = 'research' AND status = 'pending'
+                 ORDER BY created_at ASC
+                 FOR UPDATE SKIP LOCKED
+                 LIMIT 1
+               )
+               UPDATE job_queue
+               SET status = 'in-progress', attempts = attempts + 1, updated_at = NOW()
+               WHERE id IN (SELECT id FROM next_job)
+               RETURNING *`,
+            )
+            if (claimedRows.length === 0) return claimedRows
+            const runRows = await transaction.unsafe(
+              `UPDATE research_runs
+               SET status = 'in-progress', updated_at = NOW()
+               WHERE id = $1 AND status = 'pending'
+               RETURNING id`,
+              [claimedRows[0]?.['entity_id']],
+            )
+            if (runRows.length !== 1) {
+              throw new Error('research-run-claim-transition-conflict')
+            }
+            return claimedRows
+          }),
         catch: () =>
           new QueryError({
             operation: 'claimNextResearch',
@@ -203,15 +225,53 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
     ) {
       const rows = yield* Effect.tryPromise({
         try: () =>
-          sql.unsafe(
-            `UPDATE job_queue
-             SET status = 'failed', updated_at = NOW()
-             WHERE entity_type = 'research'
-               AND status = 'in-progress'
-               AND updated_at < to_timestamp($1 / 1000.0)
-             RETURNING *`,
-            [staleBeforeMs],
-          ),
+          sql.transaction(async (transaction) => {
+            const staleRows = await transaction.unsafe(
+              `UPDATE job_queue
+               SET status = 'failed', updated_at = NOW()
+               WHERE entity_type = 'research'
+                 AND status = 'in-progress'
+                 AND updated_at < to_timestamp($1 / 1000.0)
+               RETURNING *`,
+              [staleBeforeMs],
+            )
+            if (staleRows.length === 0) return staleRows
+
+            const jobIds = staleRows.map((row) => row['id'])
+            const runIds = staleRows.map((row) => row['entity_id'])
+            const runRows = await transaction.unsafe(
+              `UPDATE research_runs
+               SET status = 'failed', updated_at = NOW()
+               WHERE id = ANY($1::uuid[])
+                 AND status IN ('pending', 'in-progress')
+               RETURNING id`,
+              [runIds],
+            )
+            if (runRows.length !== staleRows.length) {
+              throw new Error('stale-research-run-transition-conflict')
+            }
+            const eventRows = await transaction.unsafe(
+              `INSERT INTO event_journal
+                 (id, workspace_id, entity_type, entity_id, event_type, payload, created_at)
+               SELECT
+                 md5(j.id::text || ':research-stale')::uuid,
+                 j.workspace_id,
+                 'research',
+                 j.entity_id,
+                 'research-failed',
+                 '{"errorTag":"ResearchJobStaleError","message":"Research failed"}'::jsonb,
+                 NOW()
+               FROM job_queue j
+               WHERE j.id = ANY($1::uuid[])
+               ON CONFLICT (id) DO NOTHING
+               RETURNING id`,
+              [jobIds],
+            )
+            if (eventRows.length !== staleRows.length) {
+              throw new Error('stale-research-event-transition-conflict')
+            }
+            return staleRows
+          }),
         catch: () =>
           new QueryError({
             operation: 'recoverStaleResearch',
@@ -258,30 +318,35 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
       )
     })
 
-    const markInProgress = Effect.fn('ResearchExecutionRepo.markInProgress')(function* (
-      runId: typeof ResearchRun.Type['id'],
-    ) {
-      yield* Effect.tryPromise({
-        try: () =>
-          sql.unsafe(
-            `UPDATE research_runs SET status = 'in-progress', updated_at = NOW() WHERE id = $1`,
-            [runId],
-          ),
-        catch: () =>
-          new QueryError({
-            operation: 'markResearchInProgress',
-            entity: 'ResearchExecution',
-            message: 'Research run state update failed',
-          }),
-      })
-    })
-
     const complete = Effect.fn('ResearchExecutionRepo.complete')(function* (
       input: CompleteResearchInput,
     ) {
       yield* Effect.tryPromise({
         try: () =>
           sql.transaction(async (transaction) => {
+            const jobRows = await transaction.unsafe(
+              `UPDATE job_queue
+               SET status = 'completed', updated_at = NOW()
+               WHERE id = $1
+                 AND entity_type = 'research'
+                 AND entity_id = $2
+                 AND status = 'in-progress'
+               RETURNING id`,
+              [input.jobId, input.runId],
+            )
+            if (jobRows.length !== 1) {
+              throw new Error('research-job-completion-ownership-lost')
+            }
+            const runRows = await transaction.unsafe(
+              `UPDATE research_runs
+               SET status = 'completed', updated_at = NOW()
+               WHERE id = $1 AND status = 'in-progress'
+               RETURNING id`,
+              [input.runId],
+            )
+            if (runRows.length !== 1) {
+              throw new Error('research-run-completion-transition-conflict')
+            }
             await transaction.unsafe(
               `INSERT INTO research_run_results (run_id, answer, citations)
                VALUES ($1, $2, $3::jsonb)
@@ -302,14 +367,6 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
                 ],
               )
             }
-            await transaction.unsafe(
-              `UPDATE research_runs SET status = 'completed', updated_at = NOW() WHERE id = $1`,
-              [input.runId],
-            )
-            await transaction.unsafe(
-              `UPDATE job_queue SET status = 'completed', updated_at = NOW() WHERE id = $1`,
-              [input.jobId],
-            )
             await transaction.unsafe(
               `INSERT INTO event_journal (id, workspace_id, entity_type, entity_id, event_type, payload, created_at)
                VALUES ($1, $2, 'research', $3, $4, $5::jsonb, to_timestamp($6 / 1000.0))`,
@@ -336,14 +393,29 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
       yield* Effect.tryPromise({
         try: () =>
           sql.transaction(async (transaction) => {
-            await transaction.unsafe(
-              `UPDATE research_runs SET status = 'failed', updated_at = NOW() WHERE id = $1`,
+            const jobRows = await transaction.unsafe(
+              `UPDATE job_queue
+               SET status = 'failed', updated_at = NOW()
+               WHERE id = $1
+                 AND entity_type = 'research'
+                 AND entity_id = $2
+                 AND status = 'in-progress'
+               RETURNING id`,
+              [input.jobId, input.runId],
+            )
+            if (jobRows.length !== 1) {
+              throw new Error('research-job-failure-ownership-lost')
+            }
+            const runRows = await transaction.unsafe(
+              `UPDATE research_runs
+               SET status = 'failed', updated_at = NOW()
+               WHERE id = $1 AND status = 'in-progress'
+               RETURNING id`,
               [input.runId],
             )
-            await transaction.unsafe(
-              `UPDATE job_queue SET status = 'failed', updated_at = NOW() WHERE id = $1`,
-              [input.jobId],
-            )
+            if (runRows.length !== 1) {
+              throw new Error('research-run-failure-transition-conflict')
+            }
             await transaction.unsafe(
               `INSERT INTO event_journal (id, workspace_id, entity_type, entity_id, event_type, payload, created_at)
                VALUES ($1, $2, 'research', $3, $4, $5::jsonb, to_timestamp($6 / 1000.0))`,
@@ -366,8 +438,8 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
       })
     })
 
-    return { register, recoverStale, claimNext, appendEvent, markInProgress, complete, fail }
+    return { register, recoverStale, claimNext, appendEvent, complete, fail }
   }),
 }) {}
 
-export type ResearchExecutionError = PersistenceError
+export type ResearchExecutionError = PersistenceError | AuthorizationError
