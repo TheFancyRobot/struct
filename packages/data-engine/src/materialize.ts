@@ -10,7 +10,7 @@ import {
 import { Effect, Schema } from 'effect'
 import {
   DataEngineProtocolError,
-  type DataEngineClientShape,
+  type DataEngineMaterializationClientShape,
 } from './client.js'
 import {
   DATA_ENGINE_PROTOCOL_VERSION,
@@ -39,7 +39,7 @@ export interface MaterializedDataset {
 }
 
 export interface MaterializeDatasetDependencies {
-  readonly client: DataEngineClientShape
+  readonly client: DataEngineMaterializationClientShape
   readonly store: Pick<ArtifactStoreShape, 'writeObject'>
 }
 

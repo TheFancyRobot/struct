@@ -21,7 +21,7 @@ related_decisions:
   - '[[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009 Sandbox Filesystem Roots and Allowlist Read-Only SQL]]'
   - '[[04_Decisions/DEC-0011_gate-releases-on-a-reproducible-25000-file-evaluation-corpus|DEC-0011 Gate Releases on a Reproducible 25000-File Evaluation Corpus]]'
 related_bugs:
-  - '[[03_Bugs/BUG-0007_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0007 Solid theme toggle does not apply the selected theme]]'
+  - '[[03_Bugs/BUG-0010_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0010 Solid theme toggle does not apply the selected theme]]'
 tags:
   - agent-vault
   - phase
@@ -123,7 +123,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Related Bugs
 
 <!-- AGENT-START:phase-related-bugs -->
-- [[03_Bugs/BUG-0007_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0007 Solid theme toggle does not apply the selected theme]]
+- [[03_Bugs/BUG-0010_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0010 Solid theme toggle does not apply the selected theme]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps

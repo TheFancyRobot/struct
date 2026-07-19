@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import {
   DataEngineOperationError,
   materializeDataset,
-  type DataEngineClientShape,
+  type DataEngineMaterializationClientShape,
 } from '@struct/data-engine'
 import {
   DatasetId,
@@ -99,7 +99,7 @@ const family = {
 
 describe('processOneDatasetMaterialization', () => {
   it('rejects a sidecar result for another snapshot before reading artifacts', async () => {
-    const client: DataEngineClientShape = {
+    const client: DataEngineMaterializationClientShape = {
       materialize: () => Effect.succeed({
         protocolVersion: '1',
         snapshotId: DatasetSnapshotId.make(
@@ -133,7 +133,7 @@ describe('processOneDatasetMaterialization', () => {
     expect(String(exit)).toContain('DataEngineProtocolError')
     expect(String(exit)).toContain('requested snapshot')
 
-    const profileMismatchClient: DataEngineClientShape = {
+    const profileMismatchClient: DataEngineMaterializationClientShape = {
       materialize: () => Effect.succeed({
         protocolVersion: '1',
         snapshotId,
@@ -174,7 +174,7 @@ describe('processOneDatasetMaterialization', () => {
     let pending = true
     let recordedFailure: { retryable: boolean; errorCode: string } | undefined
     let completed: DatasetMaterialization | undefined
-    const client: DataEngineClientShape = {
+    const client: DataEngineMaterializationClientShape = {
       materialize: () => {
         attempts += 1
         if (attempts === 1) {
@@ -269,7 +269,7 @@ describe('processOneDatasetMaterialization', () => {
   it('records invalid input as a terminal non-retryable failure', async () => {
     let failure: { retryable: boolean; errorCode: string } | undefined
     const claimed = job(1)
-    const client: DataEngineClientShape = {
+    const client: DataEngineMaterializationClientShape = {
       materialize: () => Effect.fail(new DataEngineOperationError({
         code: 'invalid-input',
         message: 'Integer value would lose precision',

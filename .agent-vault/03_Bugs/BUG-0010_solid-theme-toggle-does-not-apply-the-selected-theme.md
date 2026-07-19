@@ -3,7 +3,7 @@ note_type: bug
 template_version: 2
 contract_version: 1
 title: Solid theme toggle does not apply the selected theme
-bug_id: BUG-0007
+bug_id: BUG-0010
 status: fixed
 severity: sev-3
 category: logic
@@ -20,7 +20,7 @@ tags:
   - bug
 ---
 
-# BUG-0007 - Solid theme toggle does not apply the selected theme
+# BUG-0010 - Solid theme toggle does not apply the selected theme
 
 Use one note per bug. Capture reproduction, impact, root cause, workaround, and verification, then link back to the relevant phase, step, decision, or session. See [[07_Templates/Note_Contracts|Note Contracts]].
 

@@ -1,7 +1,7 @@
 import {
   DataEngineOperationError,
   DataEngineTransportError,
-  type DataEngineClientShape,
+  type DataEngineMaterializationClientShape,
   type MaterializationLimits,
   materializeDataset,
 } from '@struct/data-engine'
@@ -61,7 +61,7 @@ export interface DatasetMaterializationWorkerDeps {
       familyId: typeof DatasetSchemaFamily.Type['id'],
     ) => Effect.Effect<Option.Option<typeof DatasetSchemaFamily.Type>, unknown>
   }
-  readonly client: DataEngineClientShape
+  readonly client: DataEngineMaterializationClientShape
   readonly store: Pick<ArtifactStoreShape, 'writeObject'>
 }
 

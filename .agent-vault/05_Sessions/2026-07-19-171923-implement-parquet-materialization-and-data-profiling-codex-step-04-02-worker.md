@@ -23,7 +23,7 @@ context:
   last_action:
     type: saved
 related_bugs:
-  - '[[03_Bugs/BUG-0007_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0007 Solid theme toggle does not apply the selected theme]]'
+  - '[[03_Bugs/BUG-0010_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0010 Solid theme toggle does not apply the selected theme]]'
 related_decisions: []
 created: '2026-07-19'
 updated: '2026-07-19'
@@ -106,7 +106,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Bugs Encountered
 
 <!-- AGENT-START:session-bugs-encountered -->
-- [[03_Bugs/BUG-0007_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0007 Solid theme toggle does not apply the selected theme]] - Linked from bug generator.
+- [[03_Bugs/BUG-0010_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0010 Solid theme toggle does not apply the selected theme]] - Linked from bug generator.
 <!-- AGENT-END:session-bugs-encountered -->
 
 ## Decisions Made or Updated

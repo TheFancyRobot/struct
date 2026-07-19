@@ -148,4 +148,6 @@ export type {
 
 export type {
   DatasetMaterializationJob,
+  DatasetQuerySnapshotRequest,
+  ResolvedDatasetQuerySnapshot,
 } from './repositories/dataset-materializations.js'

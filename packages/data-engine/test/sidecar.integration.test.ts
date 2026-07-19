@@ -55,11 +55,36 @@ async function openIncompleteMaterialization(): Promise<Socket> {
   })
 }
 
+async function disconnectQuery(body: unknown): Promise<void> {
+  const encoded = JSON.stringify(body)
+  return new Promise((resolve, reject) => {
+    const socket = createConnection({ host: '127.0.0.1', port: 4300 })
+    socket.once('error', reject)
+    socket.once('connect', () => {
+      socket.write([
+        'POST /v1/query HTTP/1.1',
+        'Host: 127.0.0.1:4300',
+        `Authorization: Bearer ${token}`,
+        'Content-Type: application/json',
+        `Content-Length: ${Buffer.byteLength(encoded)}`,
+        'Connection: close',
+        '',
+        encoded,
+      ].join('\r\n'))
+      setTimeout(() => {
+        socket.destroy()
+        resolve()
+      }, 5)
+    })
+  })
+}
+
 interface ContainerResponse {
   readonly status: number
   readonly json?: unknown
   readonly digest?: string
   readonly byteLength?: number
+  readonly bytes?: Uint8Array
 }
 
 async function hostRequest(input: {
@@ -82,6 +107,7 @@ async function hostRequest(input: {
       status: response.status,
       digest: new Bun.CryptoHasher('sha256').update(bytes).digest('hex'),
       byteLength: bytes.byteLength,
+      bytes,
     }
   }
   return {
@@ -236,6 +262,221 @@ suite('data-engine sidecar', () => {
     })
     expect(firstArtifact.digest).toBe(first.parquetDigest)
     expect(firstArtifact.byteLength).toBe(first.parquetByteLength)
+    if (firstArtifact.bytes === undefined || firstArtifact.digest === undefined) {
+      throw new Error('sidecar did not return Parquet bytes')
+    }
+    const parquetPath = join(
+      process.cwd(),
+      '.local/artifacts/objects/sha256',
+      firstArtifact.digest.slice(0, 2),
+      firstArtifact.digest,
+    )
+    await mkdir(dirname(parquetPath), { recursive: true })
+    await Bun.write(parquetPath, firstArtifact.bytes)
+
+    const query = {
+      protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
+      operation: 'query',
+      workspaceId: '550e8400-e29b-41d4-a716-446655440001',
+      projectId: '550e8400-e29b-41d4-a716-446655440002',
+      sql: `
+        WITH totals AS (
+          SELECT active, sum(amount) AS total
+          FROM records
+          GROUP BY active
+        )
+        SELECT active, total FROM totals ORDER BY ALL
+      `,
+      snapshots: [{
+        alias: 'records',
+        datasetId: '550e8400-e29b-41d4-a716-446655440004',
+        snapshotId,
+        schemaHash: `sha256:${'a'.repeat(64)}`,
+        parquetDigest: firstArtifact.digest,
+      }],
+      limits: {
+        maxRows: 100,
+        maxOutputBytes: 100_000,
+        maxMemoryMb: 64,
+        timeoutMs: 5_000,
+      },
+    }
+    const queryResult = await hostRequest({
+      path: '/v1/query',
+      method: 'POST',
+      credential: token,
+      body: query,
+    })
+    const queryReplay = await hostRequest({
+      path: '/v1/query',
+      method: 'POST',
+      credential: token,
+      body: query,
+    })
+    expect(queryResult.status).toBe(200)
+    expect(queryReplay.status).toBe(200)
+    const firstQuery = queryResult.json as {
+      readonly result: {
+        readonly executionMs: unknown
+        readonly [key: string]: unknown
+      }
+    }
+    const replayQuery = queryReplay.json as typeof firstQuery
+    expect({
+      ...replayQuery.result,
+      executionMs: firstQuery.result['executionMs'],
+    }).toEqual(firstQuery.result)
+    expect(firstQuery.result['rows']).toEqual([
+      [false, '7.2500000000'],
+      [true, '12.5000000000'],
+    ])
+    expect(firstQuery.result['truncated']).toBe(false)
+    const joinedQuery = await hostRequest({
+      path: '/v1/query',
+      method: 'POST',
+      credential: token,
+      body: {
+        ...query,
+        sql: `SELECT left_rows.id, right_rows.name
+              FROM records left_rows
+              JOIN records right_rows ON right_rows.id = left_rows.id
+              WHERE left_rows.active = true
+              ORDER BY ALL`,
+      },
+    })
+    expect(joinedQuery.status).toBe(200)
+    expect(joinedQuery.json).toMatchObject({
+      ok: true,
+      result: { rows: [['1', 'alpha']], truncated: false },
+    })
+    const projectedQuery = await hostRequest({
+      path: '/v1/query',
+      method: 'POST',
+      credential: token,
+      body: {
+        ...query,
+        sql: 'SELECT id FROM records ORDER BY ALL',
+      },
+    })
+    expect(projectedQuery.status).toBe(200)
+    expect(
+      (projectedQuery.json as { result: { schemaHash: string } }).result
+        .schemaHash,
+    ).not.toBe(firstQuery.result['schemaHash'])
+
+    const rejectedQueries = [
+      'DELETE FROM records',
+      'INSERT INTO records SELECT * FROM records',
+      'UPDATE records SET id = 1',
+      'CREATE TABLE escaped AS SELECT * FROM records',
+      'DROP VIEW records',
+      "COPY records TO '/tmp/export.csv'",
+      "ATTACH '/tmp/other.db' AS other",
+      'DETACH other',
+      'INSTALL httpfs',
+      'LOAD httpfs',
+      'SELECT * FROM records',
+      'SELECT id FROM records ORDER BY id',
+      'SELECT * FROM records; SELECT * FROM records ORDER BY ALL',
+      "SELECT read_csv_auto('/etc/passwd') FROM records ORDER BY ALL",
+      "SELECT read_json_auto('../secret.json') FROM records ORDER BY ALL",
+      "SELECT read_parquet('relative/file.parquet') FROM records ORDER BY ALL",
+      "SELECT glob('*.csv') FROM records ORDER BY ALL",
+      'PRAGMA version',
+      'SELECT * FROM unknown ORDER BY ALL',
+      'SELECT * FROM records -- bypass\nORDER BY ALL',
+      'SELECT * FROM records /* bypass */ ORDER BY ALL',
+      "SELECT * FROM records WHERE name = 'https://example.com/x' ORDER BY ALL",
+      'SELECT CURRENT_TIMESTAMP FROM records ORDER BY ALL',
+      'SELECT CURRENT_DATE FROM records ORDER BY ALL',
+      'SELECT LOCALTIME FROM records ORDER BY ALL',
+      'SELECT * FROM records TABLESAMPLE 10% ORDER BY ALL',
+      'SELECT * FROM records USING SAMPLE 1 ROWS ORDER BY ALL',
+    ]
+    for (const sql of rejectedQueries) {
+      const rejected = await hostRequest({
+        path: '/v1/query',
+        method: 'POST',
+        credential: token,
+        body: { ...query, sql },
+      })
+      expect(rejected.status).toBe(400)
+      expect(rejected.json).toMatchObject({ ok: false })
+      expect(JSON.stringify(rejected.json)).not.toContain('/artifacts')
+      expect(JSON.stringify(rejected.json)).not.toContain('DuckDB')
+    }
+    const truncatedQuery = await hostRequest({
+      path: '/v1/query',
+      method: 'POST',
+      credential: token,
+      body: {
+        ...query,
+        sql: 'SELECT id FROM records ORDER BY ALL',
+        limits: { ...query.limits, maxRows: 1 },
+      },
+    })
+    expect(truncatedQuery.status).toBe(200)
+    expect(truncatedQuery.json).toMatchObject({
+      ok: true,
+      result: { rows: [['1']], rowCount: 1, truncated: true },
+    })
+    const oversizedQuery = await hostRequest({
+      path: '/v1/query',
+      method: 'POST',
+      credential: token,
+      body: {
+        ...query,
+        limits: { ...query.limits, maxOutputBytes: 1 },
+      },
+    })
+    expect(oversizedQuery.status).toBe(413)
+    expect(oversizedQuery.json).toMatchObject({
+      ok: false,
+      error: { code: 'resource-limit' },
+    })
+    const expensiveSql = `SELECT sum(r01.id)
+      FROM records r01
+      ${Array.from(
+        { length: 20 },
+        (_, index) =>
+          `CROSS JOIN records r${String(index + 2).padStart(2, '0')}`,
+      ).join('\n')}
+      ORDER BY ALL`
+    const timedOutQuery = await hostRequest({
+      path: '/v1/query',
+      method: 'POST',
+      credential: token,
+      body: {
+        ...query,
+        sql: expensiveSql,
+        limits: { ...query.limits, timeoutMs: 1 },
+      },
+    })
+    expect(timedOutQuery.status).toBe(400)
+    expect(timedOutQuery.json).toMatchObject({
+      ok: false,
+      error: { code: 'timeout' },
+    })
+    await disconnectQuery({
+      ...query,
+      sql: expensiveSql,
+      limits: { ...query.limits, timeoutMs: 5_000 },
+    })
+    let recovered: ContainerResponse | undefined
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      recovered = await hostRequest({
+        path: '/v1/query',
+        method: 'POST',
+        credential: token,
+        body: {
+          ...query,
+          sql: 'SELECT id FROM records ORDER BY ALL',
+        },
+      })
+      if (recovered.status === 200) break
+      await Bun.sleep(10)
+    }
+    expect(recovered?.status).toBe(200)
 
     const unauthorized = await hostRequest({
       path: '/v1/materialize',

@@ -16,6 +16,10 @@ const PositiveInteger = Schema.Union(
   Schema.Number,
   Schema.NumberFromString,
 ).pipe(Schema.int(), Schema.positive())
+const QueryAlias = Schema.String.pipe(
+  Schema.pattern(/^[a-z][a-z0-9_]{0,62}$/),
+)
+const ParquetDigest = Schema.String.pipe(Schema.pattern(/^[a-f0-9]{64}$/))
 
 export const DatasetMaterializationJob = Schema.Struct({
   jobId: JobQueueId,
@@ -57,6 +61,24 @@ export const DatasetMaterializationEnqueueInput = Schema.Struct({
 })
 export type DatasetMaterializationEnqueueInput =
   Schema.Schema.Type<typeof DatasetMaterializationEnqueueInput>
+
+export const DatasetQuerySnapshotRequest = Schema.Struct({
+  alias: QueryAlias,
+  datasetId: DatasetId,
+  snapshotId: DatasetSnapshotId,
+})
+export type DatasetQuerySnapshotRequest =
+  Schema.Schema.Type<typeof DatasetQuerySnapshotRequest>
+
+export const ResolvedDatasetQuerySnapshot = Schema.Struct({
+  alias: QueryAlias,
+  datasetId: DatasetId,
+  snapshotId: DatasetSnapshotId,
+  schemaHash: Sha256Digest,
+  parquetDigest: ParquetDigest,
+})
+export type ResolvedDatasetQuerySnapshot =
+  Schema.Schema.Type<typeof ResolvedDatasetQuerySnapshot>
 
 export class DatasetMaterializationPersistenceError
   extends Schema.TaggedError<DatasetMaterializationPersistenceError>()(
@@ -610,6 +632,82 @@ export class DatasetMaterializationRepo
           }
         })
 
+        const resolveQuerySnapshots = Effect.fn(
+          'DatasetMaterializationRepo.resolveQuerySnapshots',
+        )(function* (
+          workspaceId: typeof WorkspaceId.Type,
+          projectId: typeof ProjectId.Type,
+          requests: ReadonlyArray<DatasetQuerySnapshotRequest>,
+        ) {
+          const decoded = yield* Schema.decodeUnknown(
+            Schema.Array(DatasetQuerySnapshotRequest).pipe(
+              Schema.minItems(1),
+              Schema.maxItems(8),
+              Schema.filter((items) => {
+                const aliases = new Set(items.map((item) => item.alias))
+                const snapshots = new Set(
+                  items.map((item) => item.snapshotId),
+                )
+                return aliases.size === items.length
+                  && snapshots.size === items.length
+              }),
+            ),
+          )(requests).pipe(
+            Effect.mapError(() => failure('query snapshot validation')),
+          )
+          return yield* Effect.forEach(decoded, (request) =>
+            Effect.gen(function* () {
+              const rows = yield* Effect.tryPromise({
+                try: () => sql.unsafe(
+                  `SELECT snapshot.dataset_id, snapshot.id AS snapshot_id,
+                          family.schema_hash, materialization.parquet_hash
+                   FROM dataset_snapshots snapshot
+                   JOIN dataset_schema_families family
+                     ON family.id = snapshot.schema_family_id
+                    AND family.dataset_id = snapshot.dataset_id
+                    AND family.workspace_id = snapshot.workspace_id
+                    AND family.project_id = snapshot.project_id
+                   JOIN dataset_materializations materialization
+                     ON materialization.snapshot_id = snapshot.id
+                    AND materialization.dataset_id = snapshot.dataset_id
+                    AND materialization.workspace_id = snapshot.workspace_id
+                    AND materialization.project_id = snapshot.project_id
+                   WHERE snapshot.id = $1
+                     AND snapshot.dataset_id = $2
+                     AND snapshot.workspace_id = $3
+                     AND snapshot.project_id = $4`,
+                  [
+                    request.snapshotId,
+                    request.datasetId,
+                    workspaceId,
+                    projectId,
+                  ],
+                ),
+                catch: () => failure('query snapshot resolution'),
+              })
+              if (rows.length !== 1) {
+                return yield* new DatasetMaterializationScopeError({
+                  snapshotId: request.snapshotId,
+                  message:
+                    'Materialized dataset snapshot was not found in this workspace and project',
+                })
+              }
+              const row = rows[0]!
+              const parquetHash = row['parquet_hash']
+              return yield* Schema.decodeUnknown(ResolvedDatasetQuerySnapshot)({
+                alias: request.alias,
+                datasetId: row['dataset_id'],
+                snapshotId: row['snapshot_id'],
+                schemaHash: row['schema_hash'],
+                parquetDigest: typeof parquetHash === 'string'
+                  ? parquetHash.slice('sha256:'.length)
+                  : parquetHash,
+              }).pipe(
+                Effect.mapError(() => failure('query snapshot decode')),
+              )
+            }))
+        })
+
         return {
           enqueue,
           claimNext,
@@ -617,6 +715,7 @@ export class DatasetMaterializationRepo
           renewLease,
           complete,
           recordFailure,
+          resolveQuerySnapshots,
         }
       }),
     },

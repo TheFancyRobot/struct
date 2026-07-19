@@ -4,7 +4,10 @@ import {
   MaterializeFailure,
   MaterializeRequest,
   MaterializeResponse,
+  QueryRequest,
+  QueryResponse,
   type MaterializeResult,
+  type QueryResult,
 } from './protocol.js'
 
 export class DataEngineConfigurationError
@@ -41,7 +44,7 @@ export type DataEngineFetch = (
   init?: RequestInit,
 ) => Promise<Response>
 
-export interface DataEngineClientShape {
+export interface DataEngineMaterializationClientShape {
   readonly materialize: (
     request: typeof MaterializeRequest.Type,
   ) => Effect.Effect<
@@ -59,11 +62,35 @@ export interface DataEngineClientShape {
   >
 }
 
+export interface DataEngineClientShape
+  extends DataEngineMaterializationClientShape {
+  readonly query: (
+    request: typeof QueryRequest.Type,
+  ) => Effect.Effect<
+    QueryResult,
+    DataEngineTransportError | DataEngineProtocolError | DataEngineOperationError
+  >
+}
+
 function reason(cause: unknown): string {
   return cause instanceof Error ? cause.name : 'unknown'
 }
 
 class ArtifactLimitExceeded extends Error {}
+
+function timeoutError(message: string): DataEngineTransportError {
+  return new DataEngineTransportError({ reason: 'timeout', message })
+}
+
+function remainingBudget(
+  deadline: number,
+  message: string,
+): Effect.Effect<number, DataEngineTransportError> {
+  const remaining = deadline - Date.now()
+  return remaining > 0
+    ? Effect.succeed(remaining)
+    : Effect.fail(timeoutError(message))
+}
 
 function readJsonBody(
   response: Response,
@@ -116,6 +143,11 @@ export function makeDataEngineClient(
           new DataEngineProtocolError({ message: 'Data-engine request is invalid' }),
         ),
       )
+      const deadline = Date.now() + request.limits.timeoutMs
+      const fetchBudget = yield* remainingBudget(
+        deadline,
+        'Data-engine request timed out',
+      )
       const response = yield* Effect.tryPromise({
         try: (signal) =>
           fetcher(`${config.baseUrl}/v1/materialize`, {
@@ -127,7 +159,7 @@ export function makeDataEngineClient(
             body: JSON.stringify(encoded),
             signal: AbortSignal.any([
               signal,
-              AbortSignal.timeout(request.limits.timeoutMs),
+              AbortSignal.timeout(fetchBudget),
             ]),
           }),
         catch: (cause) =>
@@ -137,15 +169,15 @@ export function makeDataEngineClient(
           }),
       }).pipe(
         Effect.timeoutFail({
-          duration: request.limits.timeoutMs,
-          onTimeout: () =>
-            new DataEngineTransportError({
-              reason: 'timeout',
-              message: 'Data-engine request timed out',
-            }),
+          duration: fetchBudget,
+          onTimeout: () => timeoutError('Data-engine request timed out'),
         }),
       )
-      const body = yield* readJsonBody(response, request.limits.timeoutMs)
+      const bodyBudget = yield* remainingBudget(
+        deadline,
+        'Data-engine request timed out',
+      )
+      const body = yield* readJsonBody(response, bodyBudget)
       const decoded = yield* Schema.decodeUnknown(MaterializeResponse)(body).pipe(
         Effect.mapError(() =>
           new DataEngineProtocolError({
@@ -186,11 +218,16 @@ export function makeDataEngineClient(
           message: 'Data-engine artifact output limit is invalid',
         })
       }
+      const deadline = Date.now() + timeoutMs
+      const fetchBudget = yield* remainingBudget(
+        deadline,
+        'Data-engine artifact download timed out',
+      )
       const response = yield* Effect.tryPromise({
         try: (signal) =>
           fetcher(`${config.baseUrl}/v1/artifacts/${token}/${digest}`, {
             headers: { authorization: `Bearer ${config.credential}` },
-            signal: AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]),
+            signal: AbortSignal.any([signal, AbortSignal.timeout(fetchBudget)]),
           }),
         catch: (cause) =>
           new DataEngineTransportError({
@@ -199,28 +236,30 @@ export function makeDataEngineClient(
           }),
       }).pipe(
         Effect.timeoutFail({
-          duration: timeoutMs,
+          duration: fetchBudget,
           onTimeout: () =>
-            new DataEngineTransportError({
-              reason: 'timeout',
-              message: 'Data-engine artifact download timed out',
-            }),
+            timeoutError('Data-engine artifact download timed out'),
         }),
       )
       if (!response.ok) {
-        const failureBody = yield* readJsonBody(response, timeoutMs)
-        const failure = (() => {
-          try {
-            return Schema.decodeUnknownSync(MaterializeFailure)(
-              failureBody,
-            )
-          } catch {
-            return undefined
-          }
-        })()
+        const bodyBudget = deadline - Date.now()
+        const failureBody = bodyBudget > 0
+          ? yield* Effect.either(readJsonBody(response, bodyBudget))
+          : undefined
+        const failure = failureBody?._tag === 'Right'
+          ? (() => {
+              try {
+                return Schema.decodeUnknownSync(MaterializeFailure)(
+                  failureBody.right,
+                )
+              } catch {
+                return undefined
+              }
+            })()
+          : undefined
         return yield* new DataEngineOperationError({
           code: failure?.error.code
-            ?? (response.status === 404 ? 'not-found' : 'engine'),
+            ?? (response.status === 404 ? 'handoff-not-found' : 'engine'),
           message: 'Data-engine artifact download was rejected',
         })
       }
@@ -235,6 +274,10 @@ export function makeDataEngineClient(
           message: 'Data-engine artifact exceeds the configured output limit',
         })
       }
+      const bodyBudget = yield* remainingBudget(
+        deadline,
+        'Data-engine artifact download timed out',
+      )
       const bytes = yield* Effect.tryPromise({
         try: async (signal) => {
           if (response.body === null) {
@@ -281,12 +324,9 @@ export function makeDataEngineClient(
               }),
       }).pipe(
         Effect.timeoutFail({
-          duration: timeoutMs,
+          duration: bodyBudget,
           onTimeout: () =>
-            new DataEngineTransportError({
-              reason: 'timeout',
-              message: 'Data-engine artifact download timed out',
-            }),
+            timeoutError('Data-engine artifact download timed out'),
         }),
       )
       if (bytes.byteLength !== declaredLength) {
@@ -297,7 +337,96 @@ export function makeDataEngineClient(
       return bytes
     },
   )
-  return { materialize, readArtifact }
+  const query = Effect.fn('DataEngineClient.query')(
+    function* (request: typeof QueryRequest.Type) {
+      const encoded = yield* Schema.encode(QueryRequest)(request).pipe(
+        Effect.mapError(() =>
+          new DataEngineProtocolError({
+            message: 'Data-engine query request is invalid',
+          }),
+        ),
+      )
+      const deadline = Date.now() + request.limits.timeoutMs
+      const fetchBudget = yield* remainingBudget(
+        deadline,
+        'Data-engine query request timed out',
+      )
+      const response = yield* Effect.tryPromise({
+        try: (signal) =>
+          fetcher(`${config.baseUrl}/v1/query`, {
+            method: 'POST',
+            headers: {
+              authorization: `Bearer ${config.credential}`,
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify(encoded),
+            signal: AbortSignal.any([
+              signal,
+              AbortSignal.timeout(fetchBudget),
+            ]),
+          }),
+        catch: (cause) =>
+          new DataEngineTransportError({
+            reason: reason(cause),
+            message: 'Data-engine query request failed',
+          }),
+      }).pipe(
+        Effect.timeoutFail({
+          duration: fetchBudget,
+          onTimeout: () => timeoutError('Data-engine query request timed out'),
+        }),
+      )
+      const bodyBudget = yield* remainingBudget(
+        deadline,
+        'Data-engine query request timed out',
+      )
+      const body = yield* readJsonBody(response, bodyBudget)
+      const decoded = yield* Schema.decodeUnknown(QueryResponse)(body).pipe(
+        Effect.mapError(() =>
+          new DataEngineProtocolError({
+            message: 'Data-engine query response did not match protocol version 1',
+          }),
+        ),
+      )
+      if (!decoded.ok) {
+        return yield* new DataEngineOperationError(decoded.error)
+      }
+      if (
+        decoded.result.workspaceId !== request.workspaceId
+        || decoded.result.projectId !== request.projectId
+        || decoded.result.snapshots.length !== request.snapshots.length
+        || decoded.result.snapshots.some((snapshot, index) => {
+          const requested = request.snapshots[index]
+          return requested === undefined
+            || snapshot.alias !== requested.alias
+            || snapshot.datasetId !== requested.datasetId
+            || snapshot.snapshotId !== requested.snapshotId
+            || snapshot.schemaHash !== requested.schemaHash
+            || snapshot.parquetDigest !== requested.parquetDigest
+        })
+      ) {
+        return yield* new DataEngineProtocolError({
+          message: 'Data-engine query response does not match requested catalog scope',
+        })
+      }
+      if (
+        !decoded.result.columns.every(
+          (column, index) => column.ordinal === index,
+        )
+        || decoded.result.rows.some(
+          (row) => row.length !== decoded.result.columns.length,
+        )
+        || decoded.result.rowCount !== decoded.result.rows.length
+        || decoded.result.rowCount > request.limits.maxRows
+      ) {
+        return yield* new DataEngineProtocolError({
+          message: 'Data-engine query response has inconsistent result shape',
+        })
+      }
+      return decoded.result
+    },
+  )
+  return { materialize, readArtifact, query }
 }
 
 export class DataEngineClient extends Effect.Service<DataEngineClient>()(
