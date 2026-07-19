@@ -52,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: completed
+- Current owner: Codex
+- Last touched: 2026-07-19
+- Next action: Complete PR review and merge, then begin STEP-03-04 in a fresh worker.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

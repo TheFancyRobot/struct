@@ -476,6 +476,13 @@ export class DirectoryIngestionJobRepo
                   const current = Schema.decodeUnknownSync(
                     DirectoryIngestionJobStatus,
                   )(rows[0]?.['status'])
+                  if (transition === 'claim') {
+                    throw new InvalidDirectoryIngestionTransitionError({
+                      current,
+                      transition,
+                      message: 'Directory ingestion jobs must be claimed through claimNext',
+                    })
+                  }
                   if (
                     transition === 'retry'
                     && Number(rows[0]?.['attempts']) >= Number(rows[0]?.['max_attempts'])

@@ -50,6 +50,23 @@ describeIf('DirectoryIngestionJobRepo (PostgreSQL)', () => {
   const run = <A, E>(effect: Effect.Effect<A, E, DirectoryIngestionJobRepo>) =>
     Effect.runPromise(effect.pipe(Effect.provide(layer)))
 
+  const countArtifacts = async (jobId: typeof JobQueueId.Type) => {
+    const rows = await sql.unsafe(
+      `SELECT
+         (SELECT COUNT(*)::int FROM directory_ingestion_idempotency_results WHERE job_id = $1) AS idempotency,
+         (SELECT COUNT(*)::int FROM directory_ingestion_work_records WHERE job_id = $1) AS work,
+         (SELECT COUNT(*)::int FROM directory_ingestion_checkpoints WHERE job_id = $1) AS checkpoints,
+         (SELECT COUNT(*)::int FROM event_journal WHERE entity_type = 'directory-ingestion' AND entity_id = $1) AS events`,
+      [jobId],
+    )
+    return {
+      idempotency: rows[0]?.['idempotency'],
+      work: rows[0]?.['work'],
+      checkpoints: rows[0]?.['checkpoints'],
+      events: rows[0]?.['events'],
+    }
+  }
+
   it('allows only one concurrent claim', async () => {
     const jobId = makeJobId('0002')
     await run(DirectoryIngestionJobRepo.create({
@@ -58,6 +75,27 @@ describeIf('DirectoryIngestionJobRepo (PostgreSQL)', () => {
       snapshotId,
       maxAttempts: 3,
     }))
+
+    const directClaim = await Effect.runPromise(
+      DirectoryIngestionJobRepo.transition(
+        jobId,
+        workspaceId,
+        'claim',
+      ).pipe(
+        Effect.provide(layer),
+        Effect.flip,
+      ),
+    )
+    expect(directClaim).toBeInstanceOf(InvalidDirectoryIngestionTransitionError)
+    const unleased = await sql.unsafe(
+      `SELECT status, lease_token, lease_expires_at FROM job_queue WHERE id = $1`,
+      [jobId],
+    )
+    expect(unleased[0]).toMatchObject({
+      status: 'pending',
+      lease_token: null,
+      lease_expires_at: null,
+    })
 
     const claims = await Promise.all([
       run(DirectoryIngestionJobRepo.claimNext(30_000)),
@@ -150,20 +188,7 @@ describeIf('DirectoryIngestionJobRepo (PostgreSQL)', () => {
       reason: 'lease-token-or-attempt-mismatch',
       acknowledged: false,
     })
-    const noStaleWrites = await sql.unsafe(
-      `SELECT
-         (SELECT COUNT(*)::int FROM directory_ingestion_idempotency_results WHERE job_id = $1) AS idempotency,
-         (SELECT COUNT(*)::int FROM directory_ingestion_work_records WHERE job_id = $1) AS work,
-         (SELECT COUNT(*)::int FROM directory_ingestion_checkpoints WHERE job_id = $1) AS checkpoints,
-         (SELECT COUNT(*)::int FROM event_journal WHERE entity_type = 'directory-ingestion' AND entity_id = $1) AS events`,
-      [jobId],
-    )
-    expect({
-      idempotency: noStaleWrites[0]?.['idempotency'],
-      work: noStaleWrites[0]?.['work'],
-      checkpoints: noStaleWrites[0]?.['checkpoints'],
-      events: noStaleWrites[0]?.['events'],
-    }).toEqual({
+    expect(await countArtifacts(jobId)).toEqual({
       idempotency: 0,
       work: 0,
       checkpoints: 0,
@@ -191,20 +216,7 @@ describeIf('DirectoryIngestionJobRepo (PostgreSQL)', () => {
       result: { indexed: true },
       acknowledged: true,
     })
-    const replayCounts = await sql.unsafe(
-      `SELECT
-         (SELECT COUNT(*)::int FROM directory_ingestion_idempotency_results WHERE job_id = $1) AS idempotency,
-         (SELECT COUNT(*)::int FROM directory_ingestion_work_records WHERE job_id = $1) AS work,
-         (SELECT COUNT(*)::int FROM directory_ingestion_checkpoints WHERE job_id = $1) AS checkpoints,
-         (SELECT COUNT(*)::int FROM event_journal WHERE entity_type = 'directory-ingestion' AND entity_id = $1) AS events`,
-      [jobId],
-    )
-    expect({
-      idempotency: replayCounts[0]?.['idempotency'],
-      work: replayCounts[0]?.['work'],
-      checkpoints: replayCounts[0]?.['checkpoints'],
-      events: replayCounts[0]?.['events'],
-    }).toEqual({
+    expect(await countArtifacts(jobId)).toEqual({
       idempotency: 1,
       work: 1,
       checkpoints: 1,

@@ -59,5 +59,15 @@ describe('directory ingestion job transitions', () => {
       outcome: 'unresolved',
       contentKey: `artifact://sha256/${'a'.repeat(64)}`,
     })).toThrow()
+    expect(() => Schema.decodeUnknownSync(DirectoryIngestionEntryCommit)({
+      ...base,
+      outcome: 'completed',
+      contentKey: `artifact://sha256/${'a'.repeat(64)}`,
+    })).not.toThrow()
+    expect(() => Schema.decodeUnknownSync(DirectoryIngestionEntryCommit)({
+      ...base,
+      outcome: 'unresolved',
+      contentKey: null,
+    })).not.toThrow()
   })
 })

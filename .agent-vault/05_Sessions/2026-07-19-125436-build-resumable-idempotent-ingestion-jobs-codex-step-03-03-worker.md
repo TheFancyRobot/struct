@@ -51,12 +51,13 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-START:session-execution-log -->
 - 12:54 - Created session note.
 - 12:54 - Linked related step [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs|STEP-03-03 Build Resumable Idempotent Ingestion Jobs]].
-<!-- AGENT-END:session-execution-log -->
 - 13:06 - Implemented typed Effect directory-ingestion job transitions, attempt budgets, lease tokens, stable content keys, and explicit unresolved entry outcomes.
 - 13:06 - Added migration 0007 and DirectoryIngestionJobRepo using the existing PostgreSQL job queue/event journal with atomic claim, renewal, recovery, idempotency, work-record, checkpoint, and event commits.
 - 13:06 - Independently fixed SQL typing, timestamp decoding, typed-transition propagation, idempotent-create integrity, and migration round-trip regressions found during validation.
 - 13:20 - Root self-review fixed expired-lease renew/commit fencing, workspace-scoped transitions, completion with unresolved latest outcomes, positive duration/attempt validation, exact idempotent result replay, content-key invariants, and PostgreSQL JSON decoding.
 - 13:20 - Added regression coverage for pre-recovery expired writes, foreign-workspace transitions, stored-result replay, unresolved completion, and later resolution.
+- 13:29 - Addressed every CodeRabbit finding: forced claims through the atomic lease-minting path, synchronized bounded vault state, added valid schema variants, and consolidated artifact-count assertions.
+<!-- AGENT-END:session-execution-log -->
 
 ## Findings
 
@@ -73,8 +74,6 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Changed Paths
 
 <!-- AGENT-START:session-changed-paths -->
-- None yet.
-<!-- AGENT-END:session-changed-paths -->
 - `packages/domain/src/ingestion-job.ts`
 - `packages/domain/src/ingestion-job.test.ts`
 - `packages/domain/src/index.ts`
@@ -93,14 +92,11 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `packages/persistence/src/repositories/idempotency-keys.ts`
 - `packages/persistence/src/repositories/index.ts`
 - `packages/persistence/src/index.ts`
+<!-- AGENT-END:session-changed-paths -->
 
 ## Validation Run
 
 <!-- AGENT-START:session-validation-run -->
-- Command: not run yet
-- Result: not run
-- Notes:
-<!-- AGENT-END:session-validation-run -->
 - `DATABASE_URL=postgres://struct:struct@localhost:5432/struct bun run migrations:up` - passed.
 - Focused PostgreSQL directory-job integration: 3 passed, 0 failed, 18 assertions.
 - Domain/ingestion/persistence suites with PostgreSQL: 188 passed, 0 failed, 1,104 assertions.
@@ -110,6 +106,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Focused PostgreSQL job validation — 3 passed, 0 failed, 25 assertions.
 - `bun run typecheck`, `bun run lint`, `bun run lint:imports`, `bun run build`, `bun run docs:lint`, and `bun run secrets:scan` — passed.
 - `git diff --check` — passed.
+- Post-review full regression: 442 passed, 0 failed, 2,021 assertions across 68 files; all static, build, docs, secret, and vault gates remained clean.
+<!-- AGENT-END:session-validation-run -->
 
 ## Bugs Encountered
 
@@ -126,7 +124,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Follow-Up Work
 
 <!-- AGENT-START:session-follow-up-work -->
-- [ ] Continue [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs|STEP-03-03 Build Resumable Idempotent Ingestion Jobs]].
+- [ ] Complete PR review and merge for [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs|STEP-03-03 Build Resumable Idempotent Ingestion Jobs]].
 <!-- AGENT-END:session-follow-up-work -->
 
 ## Completion Summary
