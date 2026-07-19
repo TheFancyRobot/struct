@@ -6,6 +6,7 @@ if (git === null) {
 const discovery = Bun.spawnSync([
   git,
   'ls-files',
+  '-z',
   '--cached',
   '--others',
   '--exclude-standard',
@@ -19,7 +20,7 @@ if (!discovery.success) {
   )
   process.exit(1)
 }
-const repositoryPaths = discovery.stdout.toString().split('\n').filter(Boolean)
+const repositoryPaths = discovery.stdout.toString().split('\0').filter(Boolean)
 
 const secretPatterns: ReadonlyArray<readonly [string, RegExp]> = [
   ['OpenAI key', /\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b/g],
