@@ -5,7 +5,7 @@ contract_version: 1
 title: Codex STEP-03-05 worker session for Expose Directory Status Recovery and Controls
 session_id: SESSION-2026-07-19-143611
 date: '2026-07-19'
-status: in_progress
+status: completed
 owner: Codex STEP-03-05 worker
 branch: agent/step-03-05-directory-controls
 phase: '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]]'
@@ -130,3 +130,5 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - STEP-03-05 is implemented and fully validated with a clean worker handoff.
 - The slice provides one typed path from scoped directory registration through persisted status, recovery controls, cursor SSE replay, and fine-grained SolidJS presentation.
 - No worker git command was run; root retains all branch, commit, push, PR, and merge ownership.
+- Root review and CodeRabbit review are complete; all five actionable threads were fixed, validated, acknowledged by CodeRabbit, and resolved.
+- The greenfield-only direct FK/NOT NULL migration path remains intentionally simple; no legacy-database rollout path was added.

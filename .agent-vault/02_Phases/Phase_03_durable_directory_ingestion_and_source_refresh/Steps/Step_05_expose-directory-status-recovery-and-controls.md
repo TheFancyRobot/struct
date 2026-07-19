@@ -5,7 +5,7 @@ contract_version: 1
 title: Expose Directory Status Recovery and Controls
 step_id: STEP-03-05
 phase: '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]]'
-status: in_progress
+status: completed
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
@@ -19,8 +19,8 @@ tags:
   - step
 context_id: SESSION-2026-07-19-143611
 active_session_id: 05_Sessions/2026-07-19-143611-expose-directory-status-recovery-and-controls-codex-step-03-05-worker
-context_status: in_progress
-context_summary: Implementation and root validation are complete; dedicated PR review and merge remain before STEP-03-05 is complete.
+context_status: completed
+context_summary: Implemented, independently validated, reviewed, and remediated scoped directory status, atomic recovery controls, persisted SSE replay, and SolidJS recovery states.
 ---
 
 # Step 05 - Expose Directory Status Recovery and Controls
@@ -52,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: in_progress
+- Status: completed
 - Current owner: Codex
 - Last touched: 2026-07-19
-- Next action: Address PR review feedback, revalidate, and merge STEP-03-05 before advancing.
+- Next action: Merge the reviewed PR, then advance to STEP-03-06.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
