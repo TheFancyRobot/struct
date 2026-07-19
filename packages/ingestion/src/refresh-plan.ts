@@ -1,4 +1,5 @@
 import {
+  compareDirectoryRelativePaths,
   type DirectoryRelativePath,
   type ManifestEntryId,
 } from '@struct/domain'
@@ -60,7 +61,7 @@ export function buildRefreshPlan(
   const paths = Array.from(new Set([
     ...previousByPath.keys(),
     ...currentByPath.keys(),
-  ])).sort()
+  ])).sort(compareDirectoryRelativePaths)
 
   return paths.map((relativePath) => {
     const previous = previousByPath.get(relativePath)

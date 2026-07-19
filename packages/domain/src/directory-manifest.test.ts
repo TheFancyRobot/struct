@@ -74,6 +74,7 @@ describe('directory manifest contracts', () => {
     'C:/Windows/file.txt',
     'folder/',
     'line\nbreak.txt',
+    'c1\u0085control.txt',
     'cafe\u0301.txt',
     `${'a'.repeat(256)}.txt`,
   ])('rejects non-canonical or escaping path %s', (relativePath) => {

@@ -90,4 +90,25 @@ describe('buildRefreshPlan', () => {
       summarize(buildRefreshPlan(previous.toReversed(), current.toReversed())),
     )
   })
+
+  it('uses the manifest contract UTF-8 ordering for non-ASCII paths', () => {
+    const privateUse = entry(
+      '550e8400-e29b-41d4-a716-446655440010',
+      currentSnapshotId,
+      '\uE000.txt',
+      hashA,
+    )
+    const astral = entry(
+      '550e8400-e29b-41d4-a716-446655440011',
+      currentSnapshotId,
+      '\u{10000}.txt',
+      hashB,
+    )
+
+    expect(buildRefreshPlan([], [astral, privateUse]).map((item) =>
+      String(item.relativePath))).toEqual([
+      '\uE000.txt',
+      '\u{10000}.txt',
+    ])
+  })
 })

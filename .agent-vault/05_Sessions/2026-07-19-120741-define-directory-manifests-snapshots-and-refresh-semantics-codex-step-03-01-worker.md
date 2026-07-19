@@ -7,7 +7,7 @@ session_id: SESSION-2026-07-19-120741
 date: '2026-07-19'
 status: completed
 owner: Codex STEP-03-01 worker
-branch: ''
+branch: agent/step-03-01-directory-manifest-contracts
 phase: '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]]'
 context:
   context_id: SESSION-2026-07-19-120741
@@ -55,6 +55,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 12:09 - Applied Effect guidance: Effect Schema at domain boundaries, branded identities, Schema filters for cross-field invariants, and Option for internal optional refresh references. No service, traversal worker, persistence, UI, queue, database, or runtime was introduced.
 - 12:10 - Completed focused and repository-wide self-review gates with zero known failures or lint warnings.
 - 12:12 - Root-orchestrator self-review found and fixed a UTF-16/code-point ordering mismatch by defining portable UTF-8 byte ordering and adding an astral-character regression test. Root also reconciled stale generated vault handoff fields before publication.
+- 12:23 - Addressed all four initial PR review findings: recorded branch provenance, disambiguated validation evidence, rejected C1 control characters, and reused the shared UTF-8 comparator in refresh planning with focused regressions.
 
 ## Findings
 
@@ -88,19 +89,13 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Validation Run
 
 <!-- AGENT-START:session-validation-run -->
-- Command: `bun run test && bun run typecheck && bun run lint && bun run lint:imports && bun run build && bun run docs:lint && bun run secrets:scan`
+- Command: Worker initial run: `bun test packages/domain packages/ingestion`; `bun run test`; `bun run typecheck`; `bun run lint`; `bun run lint:imports`; `bun run build`; `bun run docs:lint`; `bun run secrets:scan`.
 - Result: passed
-- Notes: 328 tests passed with 114 PostgreSQL-dependent skips; all remaining repository gates were clean.
+- Notes: 52 focused tests / 105 assertions and 328 full tests / 1,343 assertions passed with 114 PostgreSQL-dependent skips; the secrets scan covered 810 paths.
 <!-- AGENT-END:session-validation-run -->
-- `bun test packages/domain packages/ingestion`: 52 passed, 0 failed, 105 assertions.
-- `bun run test`: 328 passed, 0 failed, 114 PostgreSQL-dependent skips, 1,343 assertions.
-- `bun run typecheck`: passed across the full workspace.
-- `bun run lint`: passed with zero warnings.
-- `bun run lint:imports`: passed with 92 modules / 207 dependencies and zero boundary violations.
-- `bun run build`: web, API, and worker builds passed.
-- `bun run docs:lint`: passed for 38 Markdown files.
-- `bun run secrets:scan`: passed; 810 repository paths scanned with no committed secret findings.
-- Root independent rerun after remediation: 53 focused tests passed; 329 full repository tests passed with 114 PostgreSQL-dependent skips; full typecheck, lint, dependency/import boundaries, all builds, docs links, secrets scan over 811 paths, diff check, and Agent Vault doctor all passed.
+- Root authoritative handoff rerun after adding the UTF-8 ordering regression: `bun test packages/domain packages/ingestion` passed 53 tests / 106 assertions; `bun run test` passed 329 tests / 1,344 assertions with 114 PostgreSQL-dependent skips; `bun run typecheck`; `bun run lint`; `bun run lint:imports`; `bun run build`; `bun run docs:lint`; `bun run secrets:scan`; `git diff --check`; and Agent Vault doctor all passed.
+- The root rerun adds one regression test and assertion. Its secrets scan covered the final 811-path branch inventory rather than the worker's earlier 810-path inventory. The root rerun is the authoritative pre-PR handoff result.
+- Final authoritative post-review rerun: `bun test packages/domain packages/ingestion` passed 55 tests / 108 assertions; `bun run test` passed 331 tests / 1,346 assertions with 114 PostgreSQL-dependent skips; `bun run typecheck`; `bun run lint`; `bun run lint:imports`; `bun run build`; `bun run docs:lint`; `bun run secrets:scan`; and `git diff --check` passed. The scan covered 811 repository paths and 811 branch-history blobs. This post-review rerun supersedes the earlier handoff counts.
 
 ## Bugs Encountered
 

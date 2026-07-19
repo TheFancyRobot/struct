@@ -24,7 +24,11 @@ function isCanonicalRelativePath(value: string): boolean {
   const encoder = new TextEncoder()
   const hasControlCharacter = Array.from(value).some((character) => {
     const codePoint = character.codePointAt(0)
-    return codePoint !== undefined && (codePoint <= 31 || codePoint === 127)
+    return codePoint !== undefined
+      && (
+        codePoint <= 31
+        || (codePoint >= 127 && codePoint <= 159)
+      )
   })
   if (
     value.length === 0
@@ -107,13 +111,13 @@ export const DirectoryManifestEntry = Schema.Struct({
 )
 export type DirectoryManifestEntry = Schema.Schema.Type<typeof DirectoryManifestEntry>
 
-function compareRelativePaths(
-  left: Pick<DirectoryManifestEntry, 'relativePath'>,
-  right: Pick<DirectoryManifestEntry, 'relativePath'>,
+export function compareDirectoryRelativePaths(
+  left: DirectoryRelativePath,
+  right: DirectoryRelativePath,
 ): number {
   const encoder = new TextEncoder()
-  const leftBytes = encoder.encode(left.relativePath)
-  const rightBytes = encoder.encode(right.relativePath)
+  const leftBytes = encoder.encode(left)
+  const rightBytes = encoder.encode(right)
   const sharedLength = Math.min(leftBytes.length, rightBytes.length)
 
   for (let index = 0; index < sharedLength; index += 1) {
@@ -127,7 +131,8 @@ function compareRelativePaths(
 export function orderManifestEntries(
   entries: ReadonlyArray<DirectoryManifestEntry>,
 ): ReadonlyArray<DirectoryManifestEntry> {
-  return Array.from(entries).sort(compareRelativePaths)
+  return Array.from(entries).sort((left, right) =>
+    compareDirectoryRelativePaths(left.relativePath, right.relativePath))
 }
 
 function digestField(value: string): string {
