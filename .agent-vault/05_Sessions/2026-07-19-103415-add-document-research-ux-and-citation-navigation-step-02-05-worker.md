@@ -99,6 +99,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Resolved during root review: unconditional normalized-text fallback could resolve a document locator against the wrong content and alter line-locator behavior.
 - Resolved during root validation: delayed browser test gate inferred `() => undefined` instead of `() => void`.
 <!-- AGENT-END:session-bugs-encountered -->
+- Resolved in PR review: document citations were still excluded when `source_text_index` was absent because the projection joined it eagerly; the join is now optional and the document-only regression passes.
+- Resolved in PR review: synchronized the completed step frontmatter and agent-managed snapshot.
 
 ## Decisions Made or Updated
 

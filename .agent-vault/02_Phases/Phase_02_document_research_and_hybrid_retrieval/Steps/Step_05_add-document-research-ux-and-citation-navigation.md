@@ -52,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_05_add-document-research-ux-and-citation-navigation/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_05_add-document-research-ux-and-citation-navigation/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: completed
+- Current owner: Codex
+- Last touched: 2026-07-19
+- Next action: After this step is merged, continue with [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance|STEP-02-06 Evaluate Retrieval Provenance and Injection Resistance]].
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

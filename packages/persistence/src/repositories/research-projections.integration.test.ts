@@ -48,11 +48,6 @@ describeIf('ResearchProjectionRepo integration', () => {
       [sourceVersionId, sourceId],
     )
     await sql.unsafe(
-      `INSERT INTO source_text_index (source_version_id, content)
-       VALUES ($1, 'Raw source artifact differs from normalized preview.')`,
-      [sourceVersionId],
-    )
-    await sql.unsafe(
       `INSERT INTO documents (
          id, workspace_id, project_id, source_id, source_version_id, format,
          normalized_text, content_hash, parser_version
@@ -84,11 +79,6 @@ describeIf('ResearchProjectionRepo integration', () => {
       [citationId, runId, sourceVersionId, documentLocator],
     )
     await sql.unsafe(
-      `INSERT INTO citations (id, run_id, source_version_id, locator, status)
-       VALUES ($1, $2, $3, 'lines:1-1', 'validated')`,
-      [lineCitationId, runId, sourceVersionId],
-    )
-    await sql.unsafe(
       `INSERT INTO sources (id, project_id, name, kind)
        VALUES ($1, $2, 'missing-document.txt', 'document')`,
       [sourceWithoutDocumentId, projectId],
@@ -102,6 +92,11 @@ describeIf('ResearchProjectionRepo integration', () => {
       `INSERT INTO source_text_index (source_version_id, content)
        VALUES ($1, 'Text index must not satisfy a document locator.')`,
       [versionWithoutDocumentId],
+    )
+    await sql.unsafe(
+      `INSERT INTO citations (id, run_id, source_version_id, locator, status)
+       VALUES ($1, $2, $3, 'lines:1-1', 'validated')`,
+      [lineCitationId, runId, versionWithoutDocumentId],
     )
     await sql.unsafe(
       `INSERT INTO citations (id, run_id, source_version_id, locator, status)
@@ -166,7 +161,7 @@ describeIf('ResearchProjectionRepo integration', () => {
     })
     expect(citation.content).toBe('Normalized before\nLaunch is July 18.\nAfter')
     expect(lineCitation.content).toBe(
-      'Raw source artifact differs from normalized preview.',
+      'Text index must not satisfy a document locator.',
     )
     expect(Exit.isFailure(missingDocumentCitation)).toBe(true)
   })
