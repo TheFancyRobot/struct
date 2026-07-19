@@ -44,7 +44,11 @@ for (const file of repositoryPaths) {
     continue
   }
   const blob = Bun.file(file)
-  if (!(await blob.exists()) || blob.size > 2_000_000) continue
+  if (!(await blob.exists())) continue
+  if (blob.size > 2_000_000) {
+    findings.push(`${file}: file too large to scan safely`)
+    continue
+  }
   const text = await blob.text()
   if (text.includes('\0')) continue
   for (const [label, pattern] of secretPatterns) {

@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Bun 1.3.13 and Docker (for PostgreSQL)
-- See [local-development.md §4](./local-development.md#4-startup-shutdown-and-reset) for platform notes.
+- See [local-development.md §4](./local-development.md#4-platform-notes-and-fallbacks) for platform notes.
 
 ## Setup
 
@@ -17,7 +17,7 @@ The last command starts the web, API, and worker applications together.
 
 ## Environment
 
-- See [local-development.md §3](./local-development.md#3-environment-and-secrets-contract) for variable descriptions and secret-handling rules.
+- See [local-development.md §3](./local-development.md#3-environment-secrets-and-safe-volumes) for variable descriptions and secret-handling rules.
 
 ## Walking-skeleton demo
 
@@ -34,9 +34,14 @@ Register one UTF-8 source and let the running worker ingest it:
 curl -sS -X POST http://localhost:3001/api/projects/310e8400-e29b-41d4-a716-446655440001/sources \
   -H 'content-type: application/json' \
   -d '{"workspaceId":"310e8400-e29b-41d4-a716-446655440000","projectId":"310e8400-e29b-41d4-a716-446655440001","name":"launch.txt","mediaType":"text/plain","contentBase64":"VGhlIGxhdW5jaCBkYXRlIGlzIEp1bHkgMTgu"}'
-sleep 2
-SOURCE_VERSION_ID=$(docker compose exec -T postgres psql -U struct -d struct -Atc \
-  "SELECT sv.id FROM source_versions sv JOIN sources s ON s.id = sv.source_id WHERE s.project_id = '310e8400-e29b-41d4-a716-446655440001' ORDER BY sv.version DESC LIMIT 1" | tr -d '\r')
+SOURCE_VERSION_ID=
+for attempt in $(seq 1 30); do
+  SOURCE_VERSION_ID=$(docker compose exec -T postgres psql -U struct -d struct -Atc \
+    "SELECT sv.id FROM source_versions sv JOIN sources s ON s.id = sv.source_id WHERE s.project_id = '310e8400-e29b-41d4-a716-446655440001' ORDER BY sv.version DESC LIMIT 1" | tr -d '\r')
+  [ -n "$SOURCE_VERSION_ID" ] && break
+  sleep 1
+done
+[ -n "$SOURCE_VERSION_ID" ] || { echo "Source ingestion timed out" >&2; exit 1; }
 curl -sS -X POST http://localhost:3001/api/projects/310e8400-e29b-41d4-a716-446655440001/research \
   -H 'content-type: application/json' \
   -d "{\"workspaceId\":\"310e8400-e29b-41d4-a716-446655440000\",\"projectId\":\"310e8400-e29b-41d4-a716-446655440001\",\"sourceVersionIds\":[\"$SOURCE_VERSION_ID\"],\"question\":\"What is the launch date?\"}"

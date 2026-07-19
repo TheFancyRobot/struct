@@ -82,6 +82,7 @@ const program = Effect.gen(function* () {
   const researchRunLayer = Layer.provide(ResearchRunRepo.Default, sqlLayer)
   const sourceTextReindexLayer = Layer.provide(SourceTextReindexRepo.Default, sqlLayer)
   const effectRuntime = yield* Effect.runtime<never>()
+  let ready = false
   yield* Effect.acquireRelease(
     Effect.sync(() =>
       Bun.serve({
@@ -92,7 +93,9 @@ const program = Effect.gen(function* () {
             return new Response('Method Not Allowed', { status: 405 })
           }
           if (pathname === '/healthz') {
-            return new Response('ok')
+            return new Response(ready ? 'ok' : 'starting', {
+              status: ready ? 200 : 503,
+            })
           }
           if (pathname === '/metrics') {
             return new Response(
@@ -116,6 +119,7 @@ const program = Effect.gen(function* () {
     catch: () => new QueryError({ operation: 'startupValidation', entity: 'WorkerDatabase', message: 'Worker database validation failed' }),
   })
   yield* preflightFredRuntime(fredConfig)
+  ready = true
   yield* Effect.log('Worker ready for ingestion and research jobs')
 
   const poll = Effect.suspend(() => processOneIngestionJob({
