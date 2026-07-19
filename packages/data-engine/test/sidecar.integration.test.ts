@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { mkdir } from 'node:fs/promises'
+import { createConnection, type Socket } from 'node:net'
 import { dirname, join } from 'node:path'
 import { DatasetSnapshotId, Sha256Digest } from '@struct/domain'
 import {
@@ -32,6 +33,26 @@ async function storeInput(bytes: Uint8Array) {
   await mkdir(dirname(path), { recursive: true })
   await Bun.write(path, bytes)
   return { digest, bytes }
+}
+
+async function openIncompleteMaterialization(): Promise<Socket> {
+  return new Promise((resolve, reject) => {
+    const socket = createConnection({ host: '127.0.0.1', port: 4300 })
+    socket.once('error', reject)
+    socket.once('connect', () => {
+      socket.write([
+        'POST /v1/materialize HTTP/1.1',
+        'Host: 127.0.0.1:4300',
+        `Authorization: Bearer ${token}`,
+        'Content-Type: application/json',
+        'Content-Length: 1024',
+        'Connection: close',
+        '',
+        '{',
+      ].join('\r\n'))
+      setTimeout(() => resolve(socket), 50)
+    })
+  })
 }
 
 interface ContainerResponse {
@@ -247,6 +268,19 @@ suite('data-engine sidecar', () => {
       },
     })
 
+    const incomplete = await openIncompleteMaterialization()
+    try {
+      const concurrent = await hostRequest({
+        path: '/v1/materialize',
+        method: 'POST',
+        credential: token,
+        body: request,
+      })
+      expect(concurrent.status).toBe(200)
+    } finally {
+      incomplete.destroy()
+    }
+
     const unauthenticatedHealth = await hostRequest({ path: '/healthz' })
     expect(unauthenticatedHealth.status).toBe(401)
   }, 20_000)
@@ -305,6 +339,10 @@ suite('data-engine sidecar', () => {
         text: '[{"value":"not-a-date"}]',
         logicalType: 'date' as const,
       },
+      {
+        text: '[{"value":1e-3}]',
+        logicalType: 'integer' as const,
+      },
     ]
     for (const [index, candidate] of cases.entries()) {
       const response = await materializeValue(
@@ -327,15 +365,34 @@ suite('data-engine sidecar', () => {
       'value\n0000000000000000000000000001.00000000000\n',
       'csv',
       'decimal',
-      7,
+      8,
     )
     expect(exactDecimal.status).toBe(200)
+
+    const exponentInteger = await materializeValue(
+      '[{"value":1e3}]',
+      'json',
+      'integer',
+      9,
+    )
+    expect(exponentInteger.status).toBe(200)
+    expect(exponentInteger.json).toMatchObject({
+      ok: true,
+      result: {
+        profile: {
+          columns: [{
+            minimum: '1000',
+            maximum: '1000',
+          }],
+        },
+      },
+    })
 
     const exactJsonDecimal = await materializeValue(
       '[{"value":1234567890123456.1234567891}]',
       'json',
       'decimal',
-      8,
+      'a',
     )
     expect(exactJsonDecimal.status).toBe(200)
     expect(exactJsonDecimal.json).toMatchObject({
@@ -354,7 +411,7 @@ suite('data-engine sidecar', () => {
       '{"value":1234567890123456.1234567891}\n',
       'jsonl',
       'decimal',
-      9,
+      'b',
     )
     expect(exactJsonlDecimal.status).toBe(200)
     expect(exactJsonlDecimal.json).toMatchObject({
@@ -373,7 +430,7 @@ suite('data-engine sidecar', () => {
       '[{"value":1,"extra":2}]',
       'json',
       'integer',
-      'a',
+      'c',
     )
     expect(unexpectedColumn.status).toBe(400)
     expect(unexpectedColumn.json).toEqual({

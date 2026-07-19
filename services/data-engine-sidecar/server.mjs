@@ -383,9 +383,17 @@ async function materialize(request, httpRequest) {
       const text = `trim(CAST(${name} AS VARCHAR))`
       let invalid = `${name} IS NOT NULL AND TRY_CAST(${name} AS ${duckType(field.logicalType)}) IS NULL`
       if (field.logicalType === 'integer') {
+        const fraction = `regexp_extract(${text}, '^[+-]?[0-9]+(?:\\.([0-9]+))?', 1)`
+        const digits = `regexp_replace(regexp_replace(split_part(lower(${text}), 'e', 1), '^[+-]', ''), '\\.', '')`
+        const exponentText = `regexp_extract(lower(${text}), 'e([+-]?[0-9]+)$', 1)`
+        const exponent = `COALESCE(TRY_CAST(NULLIF(${exponentText}, '') AS INTEGER), 0)`
+        const scale = `(length(${fraction}) - ${exponent})`
+        const trailingZeros = `(length(${digits}) - length(rtrim(${digits}, '0')))`
         invalid = `${name} IS NOT NULL AND (
-             NOT regexp_full_match(${text}, '^[+-]?[0-9]+(\\.0+)?$')
+             NOT regexp_full_match(${text}, '^[+-]?[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?$')
+             OR (${exponentText} <> '' AND TRY_CAST(${exponentText} AS INTEGER) IS NULL)
              OR TRY_CAST(${name} AS BIGINT) IS NULL
+             OR ${scale} > ${trailingZeros}
            )`
       } else if (field.logicalType === 'decimal') {
         const unsigned = `regexp_replace(${text}, '^[+-]', '')`
@@ -529,10 +537,18 @@ const server = createServer(async (request, response) => {
   if (request.method !== 'POST' || url.pathname !== '/v1/materialize') {
     return fail(response, 404, 'protocol', 'Unknown operation')
   }
+  let validated
+  try {
+    validated = validateRequest(await body(request))
+  } catch (error) {
+    const code = error instanceof RequestFailure ? error.code : 'engine'
+    const status = code === 'not-found' ? 404 : code === 'resource-limit' ? 413 : 400
+    return fail(response, status, code, error instanceof RequestFailure ? error.message : 'Materialization failed')
+  }
   if (busy) return fail(response, 429, 'busy', 'Materializer concurrency limit reached')
   busy = true
   try {
-    const result = await materialize(validateRequest(await body(request)), request)
+    const result = await materialize(validated, request)
     return json(response, 200, { ok: true, result })
   } catch (error) {
     const code = error instanceof RequestFailure ? error.code : 'engine'

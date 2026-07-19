@@ -8,6 +8,9 @@ RUN npm ci --omit=dev --ignore-scripts=false --no-audit --no-fund \
   && npm cache clean --force
 COPY server.mjs gateway.mjs ./
 
+RUN mkdir -p /scratch/tmp /scratch/output \
+  && chown -R 1000:1000 /scratch
+
 USER 1000:1000
 EXPOSE 4300
 CMD ["node", "server.mjs"]

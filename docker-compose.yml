@@ -27,7 +27,7 @@ services:
       - data-engine
     volumes:
       - ./.local/artifacts:/artifacts:ro
-      - ./.local/data-engine:/scratch:rw
+      - data-engine-scratch:/scratch:rw
     read_only: true
     tmpfs:
       - /tmp:size=16m,mode=1777
@@ -75,3 +75,6 @@ services:
 networks:
   data-engine:
     internal: true
+
+volumes:
+  data-engine-scratch:

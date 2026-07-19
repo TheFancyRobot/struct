@@ -22,7 +22,7 @@ selected production topology.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | PostgreSQL 16 + pgvector | `apps/api` (migrations/schema) | `5432` (host→container) | `./.local/pgdata` (gitignored, persistent) | `pg_isready -h localhost -p 5432 -U struct` or `SELECT 1` | 1 (first) | stop container / `pg_ctl stop` | drop volume, then `migrations:up` |
 | Artifact storage (dev FS adapter) | `packages/source-storage` adapter; written by `apps/worker`, read by `apps/api` | none (filesystem path) | `./.local/artifacts` (gitignored, persistent) | directory exists and is writable | 2 (after PG, before worker) | no process to stop | delete `./.local/artifacts` |
-| DuckDB data-plane sidecar | `packages/data-engine` owns the typed client/protocol; Compose owns service lifecycle | sidecar is internal/no-egress; fixed-target gateway publishes authenticated `127.0.0.1:4300` and has no mounts | `./.local/artifacts` read-only and `./.local/data-engine` read/write | authenticated `GET /healthz`; host Bun-client materialization integration probe | after artifact storage, before worker | stop/restart sidecar and gateway; remove unpromoted partials | remove `./.local/data-engine` |
+| DuckDB data-plane sidecar | `packages/data-engine` owns the typed client/protocol; Compose owns service lifecycle | sidecar is internal/no-egress; fixed-target gateway publishes authenticated `127.0.0.1:4300` and has no mounts | `./.local/artifacts` read-only and the `data-engine-scratch` local Docker volume read/write | authenticated `GET /healthz`; host Bun-client materialization integration probe | after artifact storage, before worker | stop/restart sidecar and gateway; remove unpromoted partials | `docker compose down -v` removes scratch |
 | `apps/worker` | itself | no inbound HTTP; optional metrics on `3002`; authenticated data-engine access through the loopback gateway | reads `./.local/artifacts` | `GET /healthz` on metrics port (optional) or process liveness | 3 (after PG + storage dirs) | `SIGTERM`; finish in-flight, checkpoint, exit | stop process |
 | `apps/api` | itself | `3001` (HTTP) | reads PG + artifact refs | `GET /healthz` → `200` | 4 (after worker) | `SIGTERM`; drain SSE, exit | stop process |
 | `apps/web` | itself | `3000` (Vite 8 dev) | none | `GET /` → `200` | 5 (after API) | `SIGTERM`; exit | stop process |
@@ -38,7 +38,7 @@ Ownership rules captured by the table:
 
 ## 2. Startup, shutdown, and reset
 
-**Startup order:** PostgreSQL → artifact + data-engine scratch directories →
+**Startup order:** PostgreSQL → artifact directory + data-engine scratch volume →
 DuckDB sidecar → `apps/worker` → `apps/api` → `apps/web`.
 
 **Shutdown order:** reverse. Stop the sidecar after the worker and before
@@ -51,7 +51,7 @@ in-flight jobs before exit; the API must drain SSE streams.
 # planned commands, created by STEP-01-01
 bun run dev:stop              # stop web/api/worker
 docker compose down -v        # stop and remove PG container + volume (or stop local PG)
-rm -rf ./.local               # remove pgdata, artifacts, duckdb-sandbox
+rm -rf ./.local               # remove host-visible pgdata and artifacts
 docker compose up -d postgres # start PG (or start local PG)
 bun run migrations:up         # apps/api rebuilds schema + pgvector extension
 bun run dev                   # start worker, api, web
@@ -98,10 +98,14 @@ Additional variables (budgets, limits, log level) are added as their owning phas
 
 ### 3.3 Safe volumes and temp roots
 
-- All local state lives under `./.local/`, which is gitignored. This preserves STEP-00-03/STEP-00-05 isolation: local convenience never widens production permissions.
+- Host-visible local state lives under `./.local/`, which is gitignored; isolated
+  data-engine scratch state lives in the Compose-managed local volume and is
+  removed by `docker compose down -v`. This preserves STEP-00-03/STEP-00-05
+  isolation: local convenience never widens production permissions.
 - The local artifact adapter creates and startup-validates `ARTIFACT_STORAGE_ROOT`, rejects symlink roots and out-of-root refs, and returns stable logical refs such as `artifact://sha256/<hash>` and `staged://<uuid>/<name>` rather than host paths.
 - DuckDB temp files, staged Parquet, and profiles stay under the sidecar's
-  `/scratch` mount (`./.local/data-engine`). No source
+  local Docker volume at `/scratch`. The image seeds that volume with UID 1000
+  ownership so a clean checkout starts under the non-root runtime. No source
   tree, home directory, Docker socket, or unrelated artifact root is mounted.
   Parquet writes use atomic promote (`<dest>.tmp-<pid>-<ts>` then `rename` on
   the same filesystem) with a byte cap; no partial is ever promoted as a
