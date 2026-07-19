@@ -56,4 +56,9 @@ export const migrations: readonly Migration[] = [
     upPath: new URL('./0009_directory_controls.sql', import.meta.url).pathname,
     downPath: new URL('./0009_directory_controls.down.sql', import.meta.url).pathname,
   },
+  {
+    name: '0010_dataset_catalog',
+    upPath: new URL('./0010_dataset_catalog.sql', import.meta.url).pathname,
+    downPath: new URL('./0010_dataset_catalog.down.sql', import.meta.url).pathname,
+  },
 ] as const

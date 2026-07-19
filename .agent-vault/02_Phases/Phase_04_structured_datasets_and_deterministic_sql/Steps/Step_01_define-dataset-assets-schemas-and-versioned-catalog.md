@@ -5,8 +5,8 @@ contract_version: 1
 title: Define Dataset Assets Schemas and Versioned Catalog
 step_id: STEP-04-01
 phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]'
-status: planned
-owner: ''
+status: in_progress
+owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
 depends_on:
@@ -14,14 +14,15 @@ depends_on:
 related_sessions:
   - '[[05_Sessions/2026-07-19-155643-define-dataset-assets-schemas-and-versioned-catalog-codex-phase-04-refiner|SESSION-2026-07-19-155643 Codex Phase 04 refiner session for Define Dataset Assets Schemas and Versioned Catalog]]'
   - '[[05_Sessions/2026-07-19-160148-define-dataset-assets-schemas-and-versioned-catalog-codex-phase-04-refinement|SESSION-2026-07-19-160148 Codex Phase 04 refinement session for Define Dataset Assets Schemas and Versioned Catalog]]'
+  - '[[05_Sessions/2026-07-19-162624-define-dataset-assets-schemas-and-versioned-catalog-codex-step-04-01-worker|SESSION-2026-07-19-162624 Codex STEP-04-01 worker session for Define Dataset Assets Schemas and Versioned Catalog]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
-context_id: SESSION-2026-07-19-160148
-active_session_id: 05_Sessions/2026-07-19-160148-define-dataset-assets-schemas-and-versioned-catalog-codex-phase-04-refinement
+context_id: SESSION-2026-07-19-162624
+active_session_id: 05_Sessions/2026-07-19-162624-define-dataset-assets-schemas-and-versioned-catalog-codex-step-04-01-worker
 context_status: completed
-context_summary: Phase 04 refinement completed; all six steps have implementation-ready contracts. STEP-04-01 remains planned for a fresh execution session.
+context_summary: STEP-04-01 implementation and all validation are complete; awaiting root self-review, commit, PR review, and merge before marking the step completed.
 ---
 
 # Step 01 - Define Dataset Assets Schemas and Versioned Catalog
@@ -53,21 +54,23 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
+- Status: in_progress
+- Current owner: Codex
 - Last touched: 2026-07-19
-- Next action: After the Phase 04 refinement PR merges, execute the refined [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_01_define-dataset-assets-schemas-and-versioned-catalog/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_01_define-dataset-assets-schemas-and-versioned-catalog/Validation_Plan|Validation Plan]] with a fresh non-git worker.
+- Next action: Complete PR review and merge after all findings are resolved; then mark the step completed before advancing to STEP-04-02.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
 
 - Keep this step narrow and explicit; planned paths may not exist yet and should be created only when execution begins.
+- Implementation complete in SESSION-2026-07-19-162624. The catalog-only slice is green and awaits root review/PR/merge; STEP-04-02 remains out of scope until this step merges.
 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
 - 2026-07-19 - [[05_Sessions/2026-07-19-155643-define-dataset-assets-schemas-and-versioned-catalog-codex-phase-04-refiner|SESSION-2026-07-19-155643 Codex Phase 04 refiner session for Define Dataset Assets Schemas and Versioned Catalog]] - Superseded before refinement work began.
 - 2026-07-19 - [[05_Sessions/2026-07-19-160148-define-dataset-assets-schemas-and-versioned-catalog-codex-phase-04-refinement|SESSION-2026-07-19-160148 Codex Phase 04 refinement session for Define Dataset Assets Schemas and Versioned Catalog]] - Refined Phase 04 and all six step contracts.
+- 2026-07-19 - [[05_Sessions/2026-07-19-162624-define-dataset-assets-schemas-and-versioned-catalog-codex-step-04-01-worker|SESSION-2026-07-19-162624 Codex STEP-04-01 worker session for Define Dataset Assets Schemas and Versioned Catalog]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes
