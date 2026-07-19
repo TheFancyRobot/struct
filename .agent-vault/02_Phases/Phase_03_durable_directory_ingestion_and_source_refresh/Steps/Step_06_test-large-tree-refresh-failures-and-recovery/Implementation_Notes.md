@@ -8,6 +8,8 @@
 - Self-review corrected the generated-tree path bucketing so the reported ten nested directories exactly match both manifests. No production defect remains known.
 - Root review exercised the current migration rather than trusting the first green run. It exposed and fixed the missing `directory_root_id` in `DirectoryIngestionJobRepo.create`, then updated all repository and recovery fixtures.
 - The checked-in evaluator now executes the real configured-entry-limit and canonical permission-failure paths and verifies the production preparation-concurrency constant.
+- PR review remediation makes every injected failure cross a real worker-restart boundary: the original lease expires, recovery requeues it, a new attempt and lease token reclaim it, and only then does retry plus replay prove convergence.
+- Terminal progress is derived from the decoded refreshed manifest instead of fixed constants, and the step's generated agent snapshot remains aligned with its pending PR state.
 
 ## Related Notes
 

@@ -23,7 +23,6 @@ import {
   SourceVersionId,
   StorageWriteError,
   WorkspaceId,
-  type DirectoryIngestionJob,
   type DirectoryManifest,
 } from '@struct/domain'
 import {
@@ -280,7 +279,9 @@ describeIf('directory refresh restart recovery (PostgreSQL)', () => {
       }))
       const claimed = await runJob(DirectoryIngestionJobRepo.claimNext(30_000))
       if (Option.isNone(claimed)) throw new Error('expected claimed recovery job')
-      const job: DirectoryIngestionJob = claimed.value
+      let activeJob = claimed.value
+      const firstAttempt = activeJob.attempt
+      const firstLeaseToken = activeJob.leaseToken
       const writes = new Set<string>()
       const store = artifactStore(boundary === 'artifact-persistence', writes)
       let firstDiscovery = true
@@ -339,7 +340,7 @@ describeIf('directory refresh restart recovery (PostgreSQL)', () => {
             commit: (input) =>
               runRefresh(DirectorySourceVersionRepo.commitRefresh(input)),
           }, {
-            job,
+            job: activeJob,
             idempotencyKey,
             projectId,
             previousManifest: null,
@@ -355,6 +356,30 @@ describeIf('directory refresh restart recovery (PostgreSQL)', () => {
         expect(observations.injectedHashPath).toBe('restricted/denied.txt')
       }
       await removeFailureTrigger(sql)
+      await sql.unsafe(
+        `UPDATE job_queue
+         SET lease_expires_at = NOW() - INTERVAL '1 second'
+         WHERE id = $1`,
+        [jobId],
+      )
+      expect(
+        await runJob(DirectoryIngestionJobRepo.recoverExpired()),
+        `${boundary} expired recovery`,
+      ).toEqual({ requeued: 1, exhausted: 0 })
+      const reclaimed = await runJob(
+        DirectoryIngestionJobRepo.claimNext(30_000),
+      )
+      if (Option.isNone(reclaimed)) {
+        throw new Error(`expected reclaimed ${boundary} recovery job`)
+      }
+      activeJob = reclaimed.value
+      expect(activeJob.attempt, `${boundary} reclaimed attempt`).toBe(
+        firstAttempt + 1,
+      )
+      expect(
+        activeJob.leaseToken === firstLeaseToken,
+        `${boundary} reclaimed lease`,
+      ).toBe(false)
 
       const beforeRetry = await sql.unsafe(
         `SELECT

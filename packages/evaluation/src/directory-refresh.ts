@@ -1,5 +1,6 @@
 import {
   DirectoryManifest,
+  DirectoryProgressCounts,
   DirectoryRelativePath,
   DirectoryRootId,
   DirectorySnapshotId,
@@ -73,9 +74,9 @@ export interface DirectoryRefreshEvaluationReport {
     readonly reproducible: boolean
   }
   readonly progress: {
-    readonly processed: 975
-    readonly unsupported: 25
-    readonly pending: 0
+    readonly processed: number
+    readonly unsupported: number
+    readonly pending: number
     readonly exact: boolean
   }
   readonly resources: {
@@ -405,12 +406,31 @@ export const evaluateDirectoryRefreshRecovery = Effect.fn(
   }
   const recovery = directoryRefreshFailureBoundaries.map((boundary) =>
     recoveryResult(boundary, fixture.initial, fixture.refreshed))
+  const processedEntries = fixture.refreshed.entries.filter((entry) =>
+    entry.status === 'included').length
+  const unsupportedEntries = fixture.refreshed.entries.filter((entry) =>
+    entry.status === 'unsupported').length
+  const projectedCounts = Schema.decodeUnknownSync(DirectoryProgressCounts)({
+    total: fixture.refreshed.entries.length,
+    processed: processedEntries,
+    succeeded: processedEntries,
+    failed: 0,
+    unsupported: unsupportedEntries,
+    pending:
+      fixture.refreshed.entries.length
+      - processedEntries
+      - unsupportedEntries,
+  })
   const progress = {
-    processed: 975,
-    unsupported: 25,
-    pending: 0,
-    exact: 975 + 25 === DIRECTORY_REFRESH_FILE_COUNT,
-  } as const
+    processed: projectedCounts.processed,
+    unsupported: projectedCounts.unsupported,
+    pending: projectedCounts.pending,
+    exact:
+      projectedCounts.total === fixture.refreshed.entries.length
+      && projectedCounts.processed + projectedCounts.unsupported
+        === projectedCounts.total
+      && projectedCounts.pending === 0,
+  }
   const gates = [
     {
       id: 'fixed-1000-file-tree',

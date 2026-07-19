@@ -6,8 +6,10 @@ It does not introduce another queue, runtime, or recovery coordinator.
 
 ## Operator contract
 
-- Retry only the same claimed directory job and idempotency key while its lease
-  remains valid. A stale worker receives `StaleWorkerNoOp`.
+- Retry the same logical directory job and idempotency key. A live worker must
+  still own its lease; after a restart, expire and recover the old lease, then
+  reclaim with a new attempt and token. A stale worker receives
+  `StaleWorkerNoOp`.
 - Discovery or hashing failure commits no manifest. A partial discovery result
   with any `DirectoryEntryFailure` is observable progress, not a committable
   snapshot.
@@ -46,7 +48,8 @@ DATABASE_URL=postgres://struct:struct@localhost:5432/struct \
 
 The integration test injects failure at discovery, hashing, artifact
 persistence, source-version creation, event publication, and final checkpoint
-persistence. Every case must show zero database effects before retry and
+persistence. Every case must show zero committed refresh-aggregate effects
+before recovery, the expected lease-expiry/requeue/reclaim transitions, and
 exactly one manifest, source version, terminal event, and checkpoint after
 retry plus replay.
 
@@ -58,4 +61,3 @@ bun run directory:eval
 
 Its checked-in result is
 [`packages/evaluation/results/phase-03-directory-refresh-evaluation.json`](../../packages/evaluation/results/phase-03-directory-refresh-evaluation.json).
-

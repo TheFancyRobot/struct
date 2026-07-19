@@ -32,8 +32,9 @@ The permission fixture uses `restricted/denied.txt`.
 - Preparation concurrency remains bounded at four.
 - Model calls remain zero.
 - Discovery, hashing, artifact, version, event, and checkpoint failure cases
-  each converge after one retry and one replay with zero duplicate manifests,
-  versions, or events.
+  each expire and recover the original lease, reclaim with a new attempt and
+  token, then converge after one retry and one replay with zero duplicate
+  manifests, versions, or events.
 
 ## Reproduce
 
@@ -60,4 +61,3 @@ The authoritative result is
 [`packages/evaluation/results/phase-03-directory-refresh-evaluation.json`](../../packages/evaluation/results/phase-03-directory-refresh-evaluation.json).
 It records Bun as the sole host runtime, a hardware-independent assumption,
 four-way bounded preparation, and a `null` latency threshold.
-

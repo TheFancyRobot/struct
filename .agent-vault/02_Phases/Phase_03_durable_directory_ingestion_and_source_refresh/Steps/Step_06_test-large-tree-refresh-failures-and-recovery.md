@@ -52,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_06_test-large-tree-refresh-failures-and-recovery/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_06_test-large-tree-refresh-failures-and-recovery/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: in_progress
+- Current owner: Codex
+- Last touched: 2026-07-19
+- Next action: Complete PR review remediation and merge before Phase 03 close-out and Phase 04 refinement.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
