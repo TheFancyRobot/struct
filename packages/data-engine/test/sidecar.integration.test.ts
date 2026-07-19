@@ -216,7 +216,14 @@ suite('data-engine sidecar', () => {
       path: `/v1/artifacts/${first.parquetDigest}`,
       credential: token,
     })
-    expect(replayArtifact).toEqual(firstArtifact)
+    expect(replayArtifact.status).toBe(404)
+    expect(replayArtifact.json).toEqual({
+      ok: false,
+      error: {
+        code: 'not-found',
+        message: 'Materialized artifact was not found',
+      },
+    })
     expect(firstArtifact.digest).toBe(first.parquetDigest)
     expect(firstArtifact.byteLength).toBe(first.parquetByteLength)
 

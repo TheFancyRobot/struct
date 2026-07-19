@@ -27,7 +27,7 @@ services:
       - data-engine
     volumes:
       - type: bind
-        source: ./.local/artifacts
+        source: "${ARTIFACT_STORAGE_ROOT:-./.local/artifacts}"
         target: /artifacts
         read_only: true
         bind:

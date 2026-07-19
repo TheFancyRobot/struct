@@ -401,6 +401,7 @@ export class DatasetMaterializationRepo
                      AND job.attempts = $3
                      AND job.status = 'in-progress'
                      AND materialization.lease_token = $4
+                     AND materialization.lease_expires_at >= clock_timestamp()
                      AND materialization.snapshot_id = $5
                    FOR UPDATE OF job`,
                   [

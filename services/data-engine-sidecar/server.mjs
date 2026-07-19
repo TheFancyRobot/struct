@@ -3,6 +3,7 @@ import { createHash, timingSafeEqual } from 'node:crypto'
 import { createReadStream, createWriteStream } from 'node:fs'
 import {
   mkdir,
+  open,
   rename,
   rm,
   stat,
@@ -590,15 +591,22 @@ const server = createServer(async (request, response) => {
   const artifactMatch = /^\/v1\/artifacts\/([a-f0-9]{64})$/.exec(url.pathname)
   if (request.method === 'GET' && artifactMatch !== null) {
     const path = join(OUTPUT_ROOT, artifactMatch[1])
+    let artifact
     try {
-      const metadata = await stat(path)
+      artifact = await open(path, 'r')
+      const metadata = await artifact.stat()
+      await rm(path)
       response.writeHead(200, {
         'content-type': 'application/vnd.apache.parquet',
         'content-length': metadata.size,
       })
-      return createReadStream(path).pipe(response)
+      await pipeline(artifact.createReadStream({ autoClose: false }), response)
+      return
     } catch {
+      if (response.headersSent) return response.destroy()
       return fail(response, 404, 'not-found', 'Materialized artifact was not found')
+    } finally {
+      await artifact?.close()
     }
   }
   if (request.method !== 'POST' || url.pathname !== '/v1/materialize') {

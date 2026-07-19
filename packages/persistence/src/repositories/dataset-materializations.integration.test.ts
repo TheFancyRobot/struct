@@ -171,6 +171,18 @@ describeIf('DatasetMaterializationRepo (PostgreSQL)', () => {
     expect(Option.isSome(retry)).toBe(true)
     if (Option.isNone(retry)) throw new Error('failed job was not reclaimed')
     expect(retry.value.attempt).toBe(2)
+    const materialization = {
+      snapshotId,
+      workspaceId,
+      projectId,
+      datasetId,
+      parquetRef: `artifact://sha256/${'c'.repeat(64)}`,
+      parquetHash: Sha256Digest.make(`sha256:${'c'.repeat(64)}`),
+      parquetByteLength: 643,
+      profileRef: `artifact://sha256/${'d'.repeat(64)}`,
+      profileHash: Sha256Digest.make(`sha256:${'d'.repeat(64)}`),
+      profile: { rowCount: 2, columns: [] },
+    }
     await sql.unsafe(
       `UPDATE dataset_materialization_jobs
        SET lease_expires_at = clock_timestamp() - interval '1 second'
@@ -185,6 +197,14 @@ describeIf('DatasetMaterializationRepo (PostgreSQL)', () => {
     expect(String(expiredRenewal)).toContain(
       'DatasetMaterializationOwnershipLostError',
     )
+    const expiredCompletion = await Effect.runPromiseExit(
+      DatasetMaterializationRepo.complete(retry.value, materialization).pipe(
+        Effect.provide(layer),
+      ),
+    )
+    expect(String(expiredCompletion)).toContain(
+      'DatasetMaterializationOwnershipLostError',
+    )
     expect(await Effect.runPromise(
       DatasetMaterializationRepo.recoverExpired().pipe(Effect.provide(layer)),
     )).toBe(1)
@@ -195,18 +215,6 @@ describeIf('DatasetMaterializationRepo (PostgreSQL)', () => {
     if (Option.isNone(recovered)) throw new Error('expired job was not reclaimed')
     expect(recovered.value.attempt).toBe(3)
 
-    const materialization = {
-      snapshotId,
-      workspaceId,
-      projectId,
-      datasetId,
-      parquetRef: `artifact://sha256/${'c'.repeat(64)}`,
-      parquetHash: Sha256Digest.make(`sha256:${'c'.repeat(64)}`),
-      parquetByteLength: 643,
-      profileRef: `artifact://sha256/${'d'.repeat(64)}`,
-      profileHash: Sha256Digest.make(`sha256:${'d'.repeat(64)}`),
-      profile: { rowCount: 2, columns: [] },
-    }
     const stale = await Effect.runPromiseExit(
       DatasetMaterializationRepo.complete(retry.value, materialization).pipe(
         Effect.provide(layer),
