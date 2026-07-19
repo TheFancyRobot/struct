@@ -11,6 +11,7 @@ import {
   ResearchCitationValidationError,
   ResearchThreadId,
   SourceVersionId,
+  UnsupportedSourceTypeError,
   WorkspaceId,
   type JobQueue,
   type ResearchRun,
@@ -189,6 +190,15 @@ describe('processOneResearchJob', () => {
         message: 'Citation was rejected',
       }),
       'ResearchCitationValidationError',
+    ],
+    [
+      'UnsupportedSourceTypeError',
+      new UnsupportedSourceTypeError({
+        name: 'unsupported.bin',
+        mediaType: 'application/octet-stream',
+        message: 'Source type is unsupported',
+      }),
+      'UnsupportedSourceTypeError',
     ],
   ])('durably records the exact typed document-research failure tag: %s', async (
     _label,

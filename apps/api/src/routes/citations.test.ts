@@ -58,6 +58,149 @@ describe('getCitationDetail', () => {
     ])
   })
 
+  it('resolves a document locator against immutable normalized text', async () => {
+    const content = 'Before\nLaunch is July 18.\nAfter'
+    const cited = 'Launch is July 18.'
+    const charStart = content.indexOf(cited)
+    const charEnd = charStart + cited.length
+    const encoder = new TextEncoder()
+    const detail = await Effect.runPromise(getCitationDetail(
+      projectId,
+      threadId,
+      citationId,
+      () => Effect.succeed({
+        id: citationId,
+        runId: 'c50e8400-e29b-41d4-a716-446655440004',
+        sourceVersionId: 'c50e8400-e29b-41d4-a716-446655440005',
+        sourceName: 'launch.md',
+        sourceVersion: 2,
+        locator: [
+          'document:section:Launch%20date',
+          'paragraph:1',
+          `chars:${charStart}-${charEnd}`,
+          `bytes:${encoder.encode(content.slice(0, charStart)).byteLength}-${encoder.encode(content.slice(0, charEnd)).byteLength}`,
+        ].join(','),
+        content,
+      }),
+    ))
+
+    expect(detail.contextLines).toContainEqual({
+      lineNumber: 2,
+      segments: [{ text: cited, cited: true }],
+    })
+    expect(detail.startLine).toBe(2)
+    expect(detail.endLine).toBe(2)
+    expect(detail.sourceVersion).toBe(2)
+  })
+
+  it('fails closed when document byte offsets do not match normalized text', async () => {
+    const exit = await Effect.runPromiseExit(getCitationDetail(
+      projectId,
+      threadId,
+      citationId,
+      () => Effect.succeed({
+        id: citationId,
+        runId: 'c50e8400-e29b-41d4-a716-446655440004',
+        sourceVersionId: 'c50e8400-e29b-41d4-a716-446655440005',
+        sourceName: 'launch.md',
+        sourceVersion: 1,
+        locator: 'document:paragraph:1,chars:0-6,bytes:0-5',
+        content: 'café launch',
+      }),
+    ))
+
+    expect(Exit.isFailure(exit)).toBe(true)
+    if (Exit.isFailure(exit)) expect(exit.cause.toString()).toContain('NotFoundError')
+  })
+
+  it('fails closed when the preview budget cannot represent the full document range', async () => {
+    const content = `Before\n${'evidence '.repeat(600)}\nAfter`
+    const charStart = content.indexOf('evidence')
+    const charEnd = content.lastIndexOf('evidence') + 'evidence'.length
+    const encoder = new TextEncoder()
+    const exit = await Effect.runPromiseExit(getCitationDetail(
+      projectId,
+      threadId,
+      citationId,
+      () => Effect.succeed({
+        id: citationId,
+        runId: 'c50e8400-e29b-41d4-a716-446655440004',
+        sourceVersionId: 'c50e8400-e29b-41d4-a716-446655440005',
+        sourceName: 'large.md',
+        sourceVersion: 1,
+        locator: [
+          'document:paragraph:1',
+          `chars:${charStart}-${charEnd}`,
+          `bytes:${encoder.encode(content.slice(0, charStart)).byteLength}-${encoder.encode(content.slice(0, charEnd)).byteLength}`,
+        ].join(','),
+        content,
+      }),
+    ))
+
+    expect(Exit.isFailure(exit)).toBe(true)
+    if (Exit.isFailure(exit)) expect(exit.cause.toString()).toContain('NotFoundError')
+  })
+
+  it('represents a complete document range spanning normalized lines', async () => {
+    const content = 'Before\nFirst cited line.\nSecond cited line.\nAfter'
+    const cited = 'First cited line.\nSecond cited line.'
+    const charStart = content.indexOf(cited)
+    const charEnd = charStart + cited.length
+    const encoder = new TextEncoder()
+    const detail = await Effect.runPromise(getCitationDetail(
+      projectId,
+      threadId,
+      citationId,
+      () => Effect.succeed({
+        id: citationId,
+        runId: 'c50e8400-e29b-41d4-a716-446655440004',
+        sourceVersionId: 'c50e8400-e29b-41d4-a716-446655440005',
+        sourceName: 'multi-line.md',
+        sourceVersion: 1,
+        locator: [
+          'document:section:Evidence',
+          `chars:${charStart}-${charEnd}`,
+          `bytes:${encoder.encode(content.slice(0, charStart)).byteLength}-${encoder.encode(content.slice(0, charEnd)).byteLength}`,
+        ].join(','),
+        content,
+      }),
+    ))
+
+    expect(detail.contextLines.filter((line) =>
+      line.segments.some((segment) => segment.cited)
+    )).toHaveLength(2)
+    expect(detail.startLine).toBe(2)
+    expect(detail.endLine).toBe(3)
+  })
+
+  it('represents a document chunk spanning normalized paragraph separators', async () => {
+    const content = 'Before\nFirst cited paragraph.\n\nSecond cited paragraph.\nAfter'
+    const cited = 'First cited paragraph.\n\nSecond cited paragraph.'
+    const charStart = content.indexOf(cited)
+    const charEnd = charStart + cited.length
+    const encoder = new TextEncoder()
+    const detail = await Effect.runPromise(getCitationDetail(
+      projectId,
+      threadId,
+      citationId,
+      () => Effect.succeed({
+        id: citationId,
+        runId: 'c50e8400-e29b-41d4-a716-446655440004',
+        sourceVersionId: 'c50e8400-e29b-41d4-a716-446655440005',
+        sourceName: 'multi-paragraph.md',
+        sourceVersion: 1,
+        locator: `document:chars:${charStart}-${charEnd},bytes:${encoder.encode(content.slice(0, charStart)).byteLength}-${encoder.encode(content.slice(0, charEnd)).byteLength}`,
+        content,
+      }),
+    ))
+
+    expect(detail.contextLines.filter((line) =>
+      line.segments.some((segment) => segment.cited)
+    )).toHaveLength(2)
+    expect(detail.startLine).toBe(2)
+    expect(detail.endLine).toBe(4)
+  })
+
   it('returns a typed not-found failure for a stale locator', async () => {
     const exit = await Effect.runPromiseExit(getCitationDetail(
       projectId,

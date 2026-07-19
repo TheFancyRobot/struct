@@ -176,13 +176,22 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
                       citation.locator,
                       source.name AS source_name,
                       version.version AS source_version,
-                      text.content
+                      CASE
+                        WHEN citation.locator LIKE 'document:%'
+                          THEN document.normalized_text
+                        ELSE text.content
+                      END AS content
                FROM citations citation
                JOIN research_runs run ON run.id = citation.run_id
                JOIN research_threads thread ON thread.id = run.thread_id
                JOIN source_versions version ON version.id = citation.source_version_id
                JOIN sources source ON source.id = version.source_id
-               JOIN source_text_index text ON text.source_version_id = version.id
+               LEFT JOIN source_text_index text
+                 ON text.source_version_id = version.id
+               LEFT JOIN documents document
+                 ON document.source_version_id = version.id
+                AND document.project_id = thread.project_id
+                AND document.source_id = source.id
                WHERE citation.id = $1
                  AND citation.status = 'validated'
                  AND thread.id = $2

@@ -11,10 +11,23 @@ import { ResearchStream } from '../components/ResearchStream'
 export const ResearchPage: Component = () => {
   const params = useParams()
   return (
-    <ResearchStream
-      projectId={ProjectId.make(params.projectId ?? '')}
-      threadId={ResearchThreadId.make(params.threadId ?? '')}
-      runId={ResearchRunId.make(params.runId ?? '')}
-    />
+    <section
+      aria-labelledby="document-research-title"
+      class="mx-auto max-w-4xl space-y-6"
+    >
+      <header>
+        <p class="text-sm font-medium uppercase tracking-wide text-primary">
+          Document research
+        </p>
+        <h1 id="document-research-title" class="text-3xl font-semibold">
+          Grounded answer
+        </h1>
+      </header>
+      <ResearchStream
+        projectId={ProjectId.make(params.projectId ?? '')}
+        threadId={ResearchThreadId.make(params.threadId ?? '')}
+        runId={ResearchRunId.make(params.runId ?? '')}
+      />
+    </section>
   )
 }

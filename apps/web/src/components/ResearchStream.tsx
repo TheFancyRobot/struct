@@ -20,10 +20,29 @@ interface ResearchStreamProps {
 const eventLabel = (event: ResearchEvent): string => {
   switch (event.type) {
     case 'research-started': return 'Research started'
-    case 'retrieval-completed': return `Retrieved ${event.data.evidenceCount} evidence items`
+    case 'retrieval-completed': return event.data.evidenceCount === 0
+      ? 'No evidence matched the selected documents'
+      : `Retrieved ${event.data.evidenceCount} evidence items`
     case 'citations-validated': return `Validated ${event.data.citationCount} citations`
     case 'research-completed': return 'Research completed'
     case 'research-failed': return event.data.message
+  }
+}
+
+const failureGuidance = (errorTag: string): string => {
+  switch (errorTag) {
+    case 'EvidenceInsufficientError':
+      return 'The selected documents did not contain enough support for an answer. Add relevant sources or narrow the question.'
+    case 'EvidenceContradictionError':
+      return 'The selected documents conflict on this question. Review the evidence before drawing a conclusion.'
+    case 'ResearchCitationValidationError':
+      return 'The answer was withheld because its supporting citation could not be verified.'
+    case 'RetrievalQueryError':
+      return 'The selected document evidence could not be retrieved. Retry the run.'
+    case 'UnsupportedSourceTypeError':
+      return 'A selected source has a format that document research does not support.'
+    default:
+      return 'Research could not be completed. Retry the run or review the source selection.'
   }
 }
 
@@ -59,13 +78,25 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
         </Show>
         <Show
           when={state.events.length > 0}
-          fallback={<p class="text-base-content/60">Waiting for persisted progress…</p>}
+          fallback={<p role="status" class="text-base-content/60">Waiting for persisted progress…</p>}
         >
-          <ol class="timeline timeline-vertical">
+          <ol aria-live="polite" class="timeline timeline-vertical">
             <For each={state.events}>
               {(event) => (
                 <li class="timeline-box">
                   <p class="font-medium">{eventLabel(event)}</p>
+                  <Show when={event.type === 'retrieval-completed' && event.data.evidenceCount === 0}>
+                    <p class="mt-2 text-sm text-base-content/70">
+                      The run will stop unless the workflow can establish sufficient evidence.
+                    </p>
+                  </Show>
+                  <Show when={event.type === 'research-failed' ? event : undefined}>
+                    {(failed) => (
+                      <div role="alert" class="alert alert-warning mt-3">
+                        <span>{failureGuidance(failed().data.errorTag)}</span>
+                      </div>
+                    )}
+                  </Show>
                   <Show when={event.type === 'research-completed' ? event : undefined}>
                     {(completed) => (
                       <div class="mt-3 space-y-3">
@@ -75,6 +106,7 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
                             <A
                               class="link link-primary"
                               href={`/projects/${props.projectId}/research/${props.threadId}/citation/${citation.id}`}
+                              aria-label={`Open citation ${index() + 1} in source version`}
                             >
                               Open citation {index() + 1}
                             </A>

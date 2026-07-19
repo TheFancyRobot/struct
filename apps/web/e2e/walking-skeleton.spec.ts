@@ -107,7 +107,9 @@ describe('walking-skeleton browser path', () => {
     )
     await page.getByText('The source confirms the walking slice.').waitFor()
 
-    const citationLink = page.getByRole('link', { name: 'Open citation 1' })
+    const citationLink = page.getByRole('link', {
+      name: 'Open citation 1 in source version',
+    })
     await citationLink.focus()
     expect(await citationLink.evaluate((element) => element === document.activeElement))
       .toBe(true)
@@ -116,8 +118,147 @@ describe('walking-skeleton browser path', () => {
     await page.waitForURL(`**/citation/${citationId}`)
     expect(await page.getByRole('heading', { name: 'walking-skeleton.txt' }).textContent())
       .toBe('walking-skeleton.txt')
+    expect(await page.getByRole('heading', { name: 'Source preview' }).textContent())
+      .toBe('Source preview')
     expect(await page.locator('span.bg-warning\\/40').textContent())
       .toBe('The source confirms the walking slice.')
+
+    await page.close()
+  })
+
+  it('shows an explicit insufficient-evidence state without an uncited answer', async () => {
+    const page = await browser.newPage()
+    await page.route(`**/api/projects/${projectId}/runs/${runId}/events*`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream',
+        body: [
+          'id: 1',
+          'event: retrieval-completed',
+          `data: ${JSON.stringify({
+            id: eventId,
+            cursor: '1',
+            runId,
+            createdAt: 1,
+            type: 'retrieval-completed',
+            data: {
+              jobId,
+              attempt: 0,
+              evidenceCount: 0,
+              sourceVersionIds: [],
+            },
+          })}`,
+          '',
+          'id: 2',
+          'event: research-failed',
+          `data: ${JSON.stringify({
+            id: '750e8400-e29b-41d4-a716-446655440008',
+            cursor: '2',
+            runId,
+            createdAt: 2,
+            type: 'research-failed',
+            data: {
+              jobId,
+              attempt: 0,
+              errorTag: 'EvidenceInsufficientError',
+              message: 'Evidence was insufficient',
+            },
+          })}`,
+          '',
+          '',
+        ].join('\n'),
+      }))
+
+    await page.goto(
+      `${origin}/projects/${projectId}/research/${threadId}/runs/${runId}`,
+    )
+
+    await page.getByText('No evidence matched the selected documents').waitFor()
+    expect(await page.getByRole('alert').textContent()).toContain(
+      'did not contain enough support',
+    )
+    expect(await page.getByRole('link', { name: /Open citation/ }).count()).toBe(0)
+
+    await page.close()
+  })
+
+  it('shows loading and tenant-safe not-found citation states', async () => {
+    const loadingPage = await browser.newPage()
+    await loadingPage.route(
+      `**/api/projects/${projectId}/research/${threadId}/citation/${citationId}`,
+      () => undefined,
+    )
+    await loadingPage.goto(
+      `${origin}/projects/${projectId}/research/${threadId}/citation/${citationId}`,
+    )
+    await loadingPage.getByText('Loading citation…').waitFor()
+    await loadingPage.close()
+
+    const missingPage = await browser.newPage()
+    await missingPage.route(
+      `**/api/projects/${projectId}/research/${threadId}/citation/${citationId}`,
+      (route) => route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'CitationNotFound' }),
+      }),
+    )
+    await missingPage.goto(
+      `${origin}/projects/${projectId}/research/${threadId}/citation/${citationId}`,
+    )
+    await missingPage.getByRole('alert').waitFor()
+    expect(await missingPage.getByRole('alert').textContent()).toContain(
+      'no longer available',
+    )
+
+    await missingPage.close()
+  })
+
+  it('shows empty progress and an explicit supported typed-format failure', async () => {
+    const page = await browser.newPage()
+    let finishStream: () => void = () => undefined
+    const streamGate = new Promise<void>((resolve) => {
+      finishStream = resolve
+    })
+    await page.route(`**/api/projects/${projectId}/runs/${runId}/events*`, async (route) => {
+      await streamGate
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream',
+        body: [
+          'id: 1',
+          'event: research-failed',
+          `data: ${JSON.stringify({
+            id: eventId,
+            cursor: '1',
+            runId,
+            createdAt: 1,
+            type: 'research-failed',
+            data: {
+              jobId,
+              attempt: 0,
+              errorTag: 'UnsupportedSourceTypeError',
+              message: 'Source type is unsupported',
+            },
+          })}`,
+          '',
+          '',
+        ].join('\n'),
+      })
+    })
+
+    await page.goto(
+      `${origin}/projects/${projectId}/research/${threadId}/runs/${runId}`,
+    )
+    await page.getByText('Waiting for persisted progress…').waitFor()
+    expect(await page.getByRole('status').textContent()).toContain(
+      'Waiting for persisted progress',
+    )
+    finishStream()
+    await page.getByRole('alert').waitFor()
+    expect(await page.getByRole('alert').textContent()).toContain(
+      'format that document research does not support',
+    )
 
     await page.close()
   })

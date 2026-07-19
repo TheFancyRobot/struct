@@ -32,9 +32,11 @@ class FakeEventSource {
 function fakeLifecycle() {
   const sources: Array<FakeEventSource> = []
   const scheduled: Array<() => void> = []
+  const endpoints: URL[] = []
   const environment: SSEEnvironment = {
     origin: 'http://localhost',
-    createSource: () => {
+    createSource: (endpoint) => {
+      endpoints.push(endpoint)
       const source = new FakeEventSource()
       sources.push(source)
       return source
@@ -45,7 +47,7 @@ function fakeLifecycle() {
     },
     cancel: () => undefined,
   }
-  return { environment, sources, scheduled }
+  return { environment, sources, scheduled, endpoints }
 }
 
 describe('SSE retry policy', () => {
@@ -125,6 +127,28 @@ describe('SSE retry policy', () => {
       expect(second?.closed).toBe(false)
       expect(state.connected()).toBe(true)
       expect(lifecycle.scheduled).toHaveLength(0)
+      dispose()
+    })
+  })
+
+  it('replays from the last persisted cursor after reconnecting', () => {
+    const lifecycle = fakeLifecycle()
+    createRoot((dispose) => {
+      useSSE(
+        () => '/events',
+        (input) => input,
+        () => undefined,
+        [],
+        lifecycle.environment,
+      )
+      lifecycle.sources[0]?.onmessage?.(new MessageEvent('message', {
+        data: '{}',
+        lastEventId: '42',
+      }))
+      lifecycle.sources[0]?.onerror?.(new Event('error'))
+      lifecycle.scheduled.shift()?.()
+
+      expect(lifecycle.endpoints[1]?.searchParams.get('cursor')).toBe('42')
       dispose()
     })
   })
