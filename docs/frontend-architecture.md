@@ -121,7 +121,7 @@ Three test tiers, aligned with the repository testing strategy:
 
 ### 7.1 Unit tests
 
-- **Components:** render isolation, event handling, signal/store reactivity. Run with Vite's built-in test runner (Vitest).
+- **Components:** render isolation, event handling, signal/store reactivity. Run with the repository-wide native `bun:test` runner.
 - **Stores:** signal updates, computed derivations, SSE event dispatch.
 - **API client:** request construction, response decoding, error mapping.
 

@@ -11,7 +11,7 @@ All commands run from the repository root via the Bun workspace scripts that STE
 | Command (planned) | Intent | Owner | Phase introduced |
 | --- | --- | --- | --- |
 | `bun install --frozen-lockfile` | Install pinned dependencies from the committed lockfile | root `package.json` | STEP-01-01 |
-| `bun run dev` | Start worker, API, and web concurrently for local development | root scripts | STEP-01-01 |
+| `bun run dev` | Start worker, API, and web in parallel with Bun for local development | root scripts | STEP-01-01 |
 | `bun run dev:stop` | Stop local web/api/worker | root scripts | STEP-01-01 |
 | `bun run build` | Build all apps and packages | root scripts | STEP-01-01 |
 | `bun run typecheck` | `tsc --noEmit` across the workspace via `tsconfig.base.json` | root scripts | STEP-01-01 |

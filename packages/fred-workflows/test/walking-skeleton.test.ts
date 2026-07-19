@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { Effect, Exit, Schema } from 'effect'
 import type {
   FredClient,
@@ -184,7 +184,12 @@ describe('Fred walking-skeleton workflow', () => {
   it('runs with a fixed mock provider/client and no provider keys', async () => {
     const calls: string[] = []
     const finalOutput = {
-      plan: { query: input.question, maxSteps: 5, maxToolCalls: 1, maxModelCalls: 1 },
+      plan: {
+        query: input.question,
+        maxSteps: 5 as const,
+        maxToolCalls: 1 as const,
+        maxModelCalls: 1 as const,
+      },
       evidence,
       answer: {
         answer: 'Launch is July 18.',

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'bun:test'
 import { Effect, Exit } from 'effect'
 import { createHash } from 'node:crypto'
 import { access, mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises'

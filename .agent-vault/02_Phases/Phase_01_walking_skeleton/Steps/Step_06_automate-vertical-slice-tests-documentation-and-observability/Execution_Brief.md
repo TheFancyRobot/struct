@@ -52,15 +52,19 @@ The integration test must prove the full walking-slice path:
 6. Validate one citation (worker → citation validation → PostgreSQL)
 7. Verify the answer survives restart (PostgreSQL persistence check)
 
-Test framework: Vitest (already installed). Run via `bun run test:integration`.
+Test framework: Bun's native test runner. Run via
+`DATABASE_URL=... bun test` or a `bun run test:integration` alias that invokes
+Bun-native tests.
 
 ### E2E test scope (frontend-architecture.md §7.3)
 
-- Use **Vitest browser mode** (preferred over Playwright for this stack: same test runner as unit/integration tests, no additional binary dependency, SolidJS works natively)
+- Use a Bun-native test entry point with the smallest browser-driving dependency
+  needed for the real web path.
 - Cover: create project → add source → ingest → run research → view answer → open citation
 - Include keyboard navigation assertions (accessibility)
 - Mock model calls in deterministic e2e (no real provider keys required)
-- The `bun run test:e2e` script (currently a placeholder) must invoke `vitest --browser` with the appropriate config
+- The `bun run test:e2e` script (currently a placeholder) must invoke a
+  Bun-native test entry point such as `bun test test/e2e`.
 
 ### Observability (architecture.md §11)
 
@@ -83,9 +87,9 @@ Test framework: Vitest (already installed). Run via `bun run test:integration`.
     "version": "0.0.1",
     "private": true,
     "scripts": {
-      "corpus:smoke": "tsx src/corpus-smoke.ts",
-      "corpus:eval": "tsx src/corpus-eval.ts",
-      "bench": "tsx src/benchmarks/run.ts"
+      "corpus:smoke": "bun src/corpus-smoke.ts",
+      "corpus:eval": "bun src/corpus-eval.ts",
+      "bench": "bun src/benchmarks/run.ts"
     },
     "dependencies": {
       "effect": "3.22.0",
@@ -111,7 +115,7 @@ Test framework: Vitest (already installed). Run via `bun run test:integration`.
 # Quickstart
 
 ## Prerequisites
-- Bun 1.3.13, Node v24.15.0, Docker (for PostgreSQL)
+- Bun 1.3.13 and Docker (for PostgreSQL)
 - See [local-development.md §4](./local-development.md) for platform-specific notes
 
 ## Setup
@@ -150,6 +154,31 @@ This step ensures the walking slice passes the PR gate:
 - `bun run secrets:scan` → no committed secrets
 - `bun run docs:lint` → docs link-check
 - migration round-trip: `migrations:up && migrations:down && migrations:up`
+
+### Authoritative Bun runtime boundary (2026-07-19)
+
+- Maintained host applications, workspace packages, scripts, and tests use Bun
+  only. Do not add or require Vitest, `tsx`, or Node for this step.
+- Implement unit and integration coverage with Bun's native test runner.
+  Canonical direct commands are `bun test` and, when PostgreSQL coverage is
+  required, `DATABASE_URL=... bun test`. Root aliases such as
+  `bun run test:integration` are permitted only when they invoke Bun-native
+  tests.
+- Implement the deterministic browser/E2E gate through a Bun-owned script and
+  Bun-native test entry point (for example, `bun test test/e2e`).
+  Browser-driving libraries may be dependencies, but Vitest browser mode is not
+  the runner and `test:e2e` must not invoke `vitest`.
+- Evaluation package executables run directly with Bun:
+  `bun src/corpus-smoke.ts`, `bun src/corpus-eval.ts`, and
+  `bun src/benchmarks/run.ts`.
+- Quickstart prerequisites list Bun 1.3.13 and Docker for maintained host
+  development; Node is not a host prerequisite. An explicitly isolated DuckDB
+  or other native-dependency process/container may carry the runtime required
+  by its adapter, but that exception stays inside the documented boundary and
+  does not establish a second workspace toolchain.
+- CI and completion evidence use the native Bun equivalents above, including
+  serial execution for PostgreSQL-backed suites where shared database state
+  requires it.
 
 ## Constraints and Non-Goals
 

@@ -44,7 +44,7 @@ A prior attempt used Next.js, which required a local `typescript/lib/typescript.
 - Fine-grained reactivity reduces unnecessary re-renders for SSE-driven state
 - SolidJS produces a smaller runtime bundle than React + React DOM
 - Solid's type system maps cleanly to TS 7.0.2 with no patches needed
-- Vite 8 provides first-class test runner integration (Vitest)
+- The frontend uses the repository-wide native `bun:test` runner; Vite remains the build and development tool only
 - Library-mode Solid Router gives full programmatic control over routes
 - Aligns with the Effect/functional-reactive paradigm already chosen for the backend
 

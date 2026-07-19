@@ -150,7 +150,7 @@ Run from `spikes/research-durability/`:
 ```bash
 bun install --frozen-lockfile
 bun test
-bunx tsc -p tsconfig.json --noEmit
+bun --bun tsc -p tsconfig.json --noEmit
 bun run scenario:restart
 ```
 

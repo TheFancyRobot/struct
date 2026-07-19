@@ -163,7 +163,7 @@ export default [
       '**/node_modules/**',
       '**/dist/**',
       '**/.local/**',
-      '**/bun.lockb',
+      '**/bun.lock',
       '**/spikes/**',
       '**/*.d.ts',
       '**/*.test.ts',

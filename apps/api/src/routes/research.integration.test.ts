@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { Effect, Exit, Layer, Option } from 'effect'
 import postgres from 'postgres'
 import type postgresTypes from 'postgres'

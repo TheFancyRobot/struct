@@ -5,8 +5,8 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "typecheck": "tsc --noEmit --project tsconfig.json",
-    "test": "vitest run --root ../.. packages/ingestion"
+    "typecheck": "bun --bun tsc --noEmit --project tsconfig.json",
+    "test": "bun test --max-concurrency 1 ."
   },
   "dependencies": {
     "@struct/domain": "workspace:*",

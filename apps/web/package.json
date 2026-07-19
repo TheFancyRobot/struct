@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "typecheck": "tsc --noEmit --project tsconfig.json",
-    "test": "vitest run"
+    "dev": "bun --bun vite",
+    "build": "bun --bun vite build",
+    "typecheck": "bun --bun tsc --noEmit --project tsconfig.json",
+    "test": "bun test --max-concurrency 1 --pass-with-no-tests ."
   },
   "dependencies": {
     "solid-js": "1.9.14",

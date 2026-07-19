@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { Effect, Layer } from 'effect'
 import {
   JobQueueRepo,
@@ -36,7 +36,7 @@ describe('job_queue and event_journal decoders', () => {
     }))
 
     expect(job.status).toBe('pending')
-    expect(job.workspaceId).toBe('650e8400-e29b-41d4-a716-446655440000')
+    expect(String(job.workspaceId)).toBe('650e8400-e29b-41d4-a716-446655440000')
     expect(event.cursor).toBe(42n)
     expect(event.eventType).toBe('ingestion-requested')
   })

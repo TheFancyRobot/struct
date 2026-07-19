@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'bun:test'
 import { Effect } from 'effect'
 import {
   decodeWorkspaceRow,
@@ -26,7 +26,7 @@ describe('Repository Row Decoders (typed decode)', () => {
         updated_at: updatedAt,
       }
       const result = await Effect.runPromise(decodeWorkspaceRow(row))
-      expect(result.id).toBe('550e8400-e29b-41d4-a716-446655440000')
+      expect(String(result.id)).toBe('550e8400-e29b-41d4-a716-446655440000')
       expect(result.name).toBe('Test Workspace')
       expect(result.createdAt).toBe(BigInt(createdAt.getTime()))
       expect(result.updatedAt).toBe(BigInt(updatedAt.getTime()))
@@ -68,7 +68,7 @@ describe('Repository Row Decoders (typed decode)', () => {
         updated_at: ts,
       }
       const result = await Effect.runPromise(decodeProjectRow(row))
-      expect(result.workspaceId).toBe('550e8400-e29b-41d4-a716-446655440000')
+      expect(String(result.workspaceId)).toBe('550e8400-e29b-41d4-a716-446655440000')
       expect(result.createdAt).toBe(BigInt(ts.getTime()))
     })
 
@@ -188,7 +188,7 @@ describe('Repository Row Decoders (typed decode)', () => {
         created_at: ts,
       }
       const result = await Effect.runPromise(decodeCitationRow(row))
-      expect(result.sourceVersionId).toBe('550e8400-e29b-41d4-a716-446655440003')
+      expect(String(result.sourceVersionId)).toBe('550e8400-e29b-41d4-a716-446655440003')
       expect(result.status).toBe('validated')
     })
 

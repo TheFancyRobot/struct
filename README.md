@@ -2,7 +2,7 @@
 
 A trustworthy, source-grounded research workspace for documents, datasets, and directories. Documents are retrieved, datasets are queried, directories are navigated, and large corpora are recursively analyzed — with deterministic computation, verifiable citations, and durable, resumable work.
 
-> **Current state: Phase 01 (walking skeleton) — STEP-01-01 through STEP-01-04 are implemented.** The monorepo now includes deterministic PostgreSQL text retrieval, typed research contracts, pinned Fred 2.0.0 workflow orchestration, `POST /research/runs`, durable research jobs/events, citation validation, and persisted grounded answers in addition to the single-text ingestion path. All gates pass when validated locally (typecheck, lint, lint:imports, build, Vitest, database integration tests, migration up/down/up, Compose config, app smokes).
+> **Current state: Phase 01 (walking skeleton) — STEP-01-01 through STEP-01-04 are implemented.** The monorepo now includes deterministic PostgreSQL text retrieval, typed research contracts, pinned Fred 2.0.0 workflow orchestration, `POST /research/runs`, durable research jobs/events, citation validation, and persisted grounded answers in addition to the single-text ingestion path. All gates pass when validated locally (typecheck, lint, lint:imports, build, native Bun tests, database integration tests, migration up/down/up, Compose config, app smokes).
 
 ## Canonical documents
 
@@ -46,7 +46,7 @@ Package dependency flows downward only; no app imports another app; `domain` is 
 bun install --frozen-lockfile   # pinned dependencies (Bun 1.3.13, TS 7.0.2)
 cp .env.example .env           # then fill in real values (DATABASE_URL, FRED_* provider keys)
 docker compose up -d postgres  # PostgreSQL 16 + pgvector (or use a local Postgres install)
-bun run dev                     # starts web (3000), api (3001), worker (3002) concurrently
+bun run dev                     # starts web (3000), api (3001), worker (3002) in parallel
 ```
 
 > Migrations (`bun run migrations:up` / `bun run migrations:down`) are implemented and executed only through `apps/api` as the sole migration executor. The healthz endpoint works without a database connection.
@@ -59,7 +59,7 @@ Docker-unavailable fallback, platform notes, and reset steps are in [docs/local-
 bun run typecheck   # tsc --noEmit across all workspace configs
 bun run lint        # ESLint flat config (TS/Solid/Effect conventions)
 bun run lint:imports  # dependency-cruiser + Bun-aware boundary checker
-bun run test        # vitest unit + entrypoint tests
+bun run test        # native Bun unit, integration, and entrypoint tests (serial)
 bun run build       # build all apps (web Vite, api/worker tsc)
 bun run test:integration   # integration tests (planned, Phase 01+)
 bun run test:e2e           # browser/e2e (planned, Phase 01+)

@@ -517,9 +517,6 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
                FROM source_versions sv
                JOIN sources s ON s.id = sv.source_id
                JOIN projects p ON p.id = s.project_id
-               JOIN source_text_reindex_jobs reindex
-                 ON reindex.source_version_id = sv.id
-                AND reindex.status = 'completed'
                JOIN source_text_index sti ON sti.source_version_id = sv.id
                WHERE p.workspace_id = $1
                  AND p.id = $2

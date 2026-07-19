@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'bun:test'
 import { Effect } from 'effect'
 import { runMigrationsUp, runMigrationsDown, type SqlExecutorWithTransactions } from './runner'
 import { migrations } from './manifest'

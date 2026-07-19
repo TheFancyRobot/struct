@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { Effect, Exit } from 'effect'
 import { EventJournalId, JobQueueId, ProjectId, SourceId, WorkspaceId } from '@struct/domain'
 import { registerTextSource, ValidationError } from './sources'

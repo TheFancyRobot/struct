@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { Effect, Layer } from 'effect'
 import {
   ProjectId,
@@ -44,8 +44,8 @@ describe('TextRetrieval', () => {
       }).pipe(Effect.provide(layer)),
     )
 
-    expect(calls[0]?.query).toMatch(/source_text_reindex_jobs/)
-    expect(calls[0]?.query).toMatch(/status = 'completed'/)
+    expect(calls[0]?.query).toMatch(/source_text_index/)
+    expect(calls[0]?.query).not.toMatch(/source_text_reindex_jobs/)
     expect(calls[1]?.query).toMatch(/websearch_to_tsquery/)
     expect(calls[1]?.query).toMatch(/JOIN projects/)
     expect(calls[1]?.query).toMatch(/source_version_id = ANY/)
@@ -145,6 +145,51 @@ describe('TextRetrieval', () => {
     expect(calls[0]?.query).not.toMatch(/UPDATE source_text_reindex_jobs/)
   })
 
+  it('searches an immutable index row even while its background reindex lease is active', async () => {
+    const calls: string[] = []
+    const sqlLayer = SqlClientTest(async (query) => {
+      calls.push(query)
+      if (query.includes('AS ready_count')) {
+        // A completed-status join would make this source appear unavailable while
+        // its trigger-created reindex job is actively leased by another worker.
+        return [{ ready_count: query.includes('source_text_reindex_jobs') ? 0 : 1 }]
+      }
+      if (query.includes('AS candidates(excerpt, candidate_number)')) {
+        return [{ candidate_number: 1 }]
+      }
+      return [{
+        source_version_id: sourceVersionId,
+        content: 'The immutable indexed launch plan is ready.',
+        rank: 0.8,
+        match_line: 1,
+        match_passages: [{
+          line_number: 1,
+          highlighted_line: 'The immutable indexed \uE000launch\uE001 plan is ready.',
+        }],
+      }]
+    })
+    const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
+
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [sourceVersionId],
+        query: 'launch',
+        limit: 1,
+      }).pipe(Effect.provide(layer)),
+    )
+
+    expect(calls[0]).toMatch(/JOIN source_text_index/)
+    expect(calls[0]).not.toMatch(/source_text_reindex_jobs/)
+    expect(result.evidence).toEqual([{
+      sourceVersionId,
+      locator: 'lines:1-1',
+      excerpt: 'The immutable indexed launch plan is ready.',
+      rank: 0.8,
+    }])
+  })
+
   it('fails explicitly while a requested source version is not durably indexed', async () => {
     const calls: string[] = []
     const sqlLayer = SqlClientTest(async (query) => {
@@ -165,7 +210,8 @@ describe('TextRetrieval', () => {
 
     expect(exit._tag).toBe('Failure')
     expect(calls).toHaveLength(1)
-    expect(calls[0]).toMatch(/source_text_reindex_jobs/)
+    expect(calls[0]).toMatch(/source_text_index/)
+    expect(calls[0]).not.toMatch(/source_text_reindex_jobs/)
   })
 
   it('anchors a stem-only match after the first six lines to the PostgreSQL match line', async () => {

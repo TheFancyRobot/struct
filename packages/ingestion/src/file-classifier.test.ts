@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { Cause, Effect, Exit } from 'effect'
 import { classifyTextSource, UnsupportedSourceTypeError } from './file-classifier'
 
@@ -16,7 +16,7 @@ describe('classifyTextSource', () => {
       const failure = Cause.failureOption(result.cause)
       expect(failure._tag).toBe('Some')
       if (failure._tag === 'Some') {
-        expect(failure.value._tag).toBe(UnsupportedSourceTypeError.name)
+        expect(String(failure.value._tag)).toBe(UnsupportedSourceTypeError.name)
         expect(failure.value.message).not.toContain('/Users/')
         expect(failure.value.message).not.toContain('DATABASE_URL')
       }

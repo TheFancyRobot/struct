@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { Effect, Layer } from 'effect'
 import postgres from 'postgres'
 import type postgresTypes from 'postgres'
@@ -99,8 +99,8 @@ describeIf('JobQueueRepo stale ingestion recovery (PostgreSQL)', () => {
     const recovered = await Effect.runPromise(
       JobQueueRepo.recoverStaleIngestionJobs(Date.now()).pipe(Effect.provide(layer)),
     )
-    expect(recovered.requeued.map((job) => job.id)).toEqual([requeuedJobId])
-    expect(recovered.failed.map((job) => job.id)).toEqual([exhaustedJobId])
+    expect(recovered.requeued.map((job) => String(job.id))).toEqual([requeuedJobId])
+    expect(recovered.failed.map((job) => String(job.id))).toEqual([exhaustedJobId])
 
     const terminal = await sql.unsafe(
       `SELECT job.status, event.event_type, event.payload
@@ -111,14 +111,13 @@ describeIf('JobQueueRepo stale ingestion recovery (PostgreSQL)', () => {
        WHERE job.id = $1`,
       [exhaustedJobId],
     )
-    expect(terminal).toEqual([expect.objectContaining({
-      status: 'failed',
-      event_type: 'ingestion-failed',
-      payload: {
-        errorTag: 'StaleIngestionJobExhausted',
-        message: 'Ingestion failed',
-      },
-    })])
+    expect(terminal).toHaveLength(1)
+    expect(terminal[0]?.['status']).toBe('failed')
+    expect(terminal[0]?.['event_type']).toBe('ingestion-failed')
+    expect(terminal[0]?.['payload']).toEqual({
+      errorTag: 'StaleIngestionJobExhausted',
+      message: 'Ingestion failed',
+    })
 
     const repeated = await Effect.runPromise(
       JobQueueRepo.recoverStaleIngestionJobs(Date.now()).pipe(Effect.provide(layer)),

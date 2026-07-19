@@ -7,9 +7,8 @@ STEP-00-01 validates the smallest public Fred surface the product can safely con
 ## Environment Evidence
 
 - `bun --version` → `1.3.13`
-- `node --version` → `v24.15.0`
-- `npm view @fancyrobot/fred version` → `2.0.0`
-- `npm view @fancyrobot/fred-http version` → `1.0.0`
+- `bun pm view @fancyrobot/fred version` → `2.0.0`
+- `bun pm view @fancyrobot/fred-http version` → `1.0.0`
 - Local Fred checkout inspected for examples only → `b964f3480c177ba3e3805cb66356c1e0f3f30cce`
 
 ## Compatible Public Surface

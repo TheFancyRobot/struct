@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'bun:test'
 import { Effect } from 'effect'
 import { createHash } from 'node:crypto'
 import { mkdtemp, rm } from 'node:fs/promises'
@@ -27,7 +27,7 @@ describe('normalizeTextBytes', () => {
     const expectedHash = `sha256:${createHash('sha256').update(expected).digest('hex')}`
 
     expect(new TextDecoder().decode(result.bytes)).toBe('hello\nworld\n')
-    expect(result.contentHash).toBe(expectedHash)
+    expect(String(result.contentHash)).toBe(expectedHash)
   })
 })
 

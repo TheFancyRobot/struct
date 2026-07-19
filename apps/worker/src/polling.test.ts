@@ -1,5 +1,5 @@
 import { Deferred, Effect, Either, Ref, TestClock, TestContext } from 'effect'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { runWorkerPollLoops } from './polling'
 
 const pollInterval = 100
