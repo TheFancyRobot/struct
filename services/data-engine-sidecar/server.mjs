@@ -4,6 +4,7 @@ import { createReadStream, createWriteStream } from 'node:fs'
 import {
   mkdir,
   open,
+  readdir,
   rename,
   rm,
   stat,
@@ -28,7 +29,25 @@ const MAX_INPUT_BYTES = 64 * 1024 * 1024
 const MAX_ROWS = 1_000_000
 const MAX_OUTPUT_BYTES = 128 * 1024 * 1024
 const MAX_TIMEOUT_MS = 60_000
+const HANDOFF_TTL_MS = 5 * 60_000
+const HANDOFF_SWEEP_MS = 60_000
 let busy = false
+
+async function sweepExpiredHandoffs() {
+  const now = Date.now()
+  const entries = await readdir(OUTPUT_ROOT, { withFileTypes: true })
+  await Promise.all(entries.map(async (entry) => {
+    if (
+      !entry.isFile()
+      || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}-[a-f0-9]{64}$/.test(entry.name)
+    ) return
+    const path = join(OUTPUT_ROOT, entry.name)
+    const metadata = await stat(path)
+    if (now - metadata.mtimeMs >= HANDOFF_TTL_MS) {
+      await rm(path, { force: true })
+    }
+  }))
+}
 
 function json(response, status, body) {
   const encoded = JSON.stringify(body)
@@ -623,5 +642,9 @@ const server = createServer(async (request, response) => {
 })
 
 await mkdir(join(SCRATCH_ROOT, 'tmp'), { recursive: true })
+await rm(OUTPUT_ROOT, { recursive: true, force: true })
 await mkdir(OUTPUT_ROOT, { recursive: true })
+setInterval(() => {
+  void sweepExpiredHandoffs().catch(() => undefined)
+}, HANDOFF_SWEEP_MS).unref()
 server.listen(4300, '0.0.0.0')

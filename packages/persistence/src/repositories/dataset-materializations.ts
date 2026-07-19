@@ -237,6 +237,15 @@ export class DatasetMaterializationRepo
                        ON materialization.job_id = job.id
                      WHERE job.entity_type = 'dataset-materialization'
                        AND job.status = 'pending'
+                       AND (
+                         job.attempts = 0
+                         OR job.updated_at <=
+                           clock_timestamp()
+                           - (
+                             LEAST(60, 5 * power(2, job.attempts - 1))
+                             * interval '1 second'
+                           )
+                       )
                      ORDER BY job.created_at, job.id
                      FOR UPDATE OF job SKIP LOCKED
                      LIMIT 1

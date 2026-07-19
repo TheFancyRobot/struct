@@ -165,6 +165,16 @@ describeIf('DatasetMaterializationRepo (PostgreSQL)', () => {
         'engine',
       ).pipe(Effect.provide(layer)),
     )
+    const delayedRetry = await Effect.runPromise(
+      DatasetMaterializationRepo.claimNext(1_000).pipe(Effect.provide(layer)),
+    )
+    expect(Option.isNone(delayedRetry)).toBe(true)
+    await sql.unsafe(
+      `UPDATE job_queue
+       SET updated_at = clock_timestamp() - interval '6 seconds'
+       WHERE id = $1`,
+      [jobId],
+    )
     const retry = await Effect.runPromise(
       DatasetMaterializationRepo.claimNext(1_000).pipe(Effect.provide(layer)),
     )
@@ -218,6 +228,16 @@ describeIf('DatasetMaterializationRepo (PostgreSQL)', () => {
     expect(await Effect.runPromise(
       DatasetMaterializationRepo.recoverExpired().pipe(Effect.provide(layer)),
     )).toBe(1)
+    const delayedRecovery = await Effect.runPromise(
+      DatasetMaterializationRepo.claimNext(1_000).pipe(Effect.provide(layer)),
+    )
+    expect(Option.isNone(delayedRecovery)).toBe(true)
+    await sql.unsafe(
+      `UPDATE job_queue
+       SET updated_at = clock_timestamp() - interval '11 seconds'
+       WHERE id = $1`,
+      [jobId],
+    )
     const recovered = await Effect.runPromise(
       DatasetMaterializationRepo.claimNext(1_000).pipe(Effect.provide(layer)),
     )
