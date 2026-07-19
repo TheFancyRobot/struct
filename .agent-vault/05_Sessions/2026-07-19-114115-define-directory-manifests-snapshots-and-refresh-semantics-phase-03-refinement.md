@@ -60,6 +60,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Closed Phase 02 only after all six steps were merged and the final review/remediation suite passed.
 - Refined Phase 03 from the merged Phase 02 baseline, corrected its dependency and sequential delivery policy, and bounded all six step handoffs.
 - Preserved Bun-only host execution, existing PostgreSQL/Effect/job/SSE/SolidJS boundaries, and the one-step-per-branch workflow.
+- 2026-07-19: Follow-up PR review identified a stale-worker fencing gap in STEP-03-03. Refined the execution contract to lock the owning job row, verify lease token and attempt inside the transaction, make ownership mismatches typed no-ops, and require integration coverage proving no records are mutated by a stale worker. Validation: `bun run docs:lint`, `git diff --check`, and Agent Vault doctor all passed.
 
 ## Findings
 
