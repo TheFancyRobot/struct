@@ -337,8 +337,8 @@ async function writeParquetWithinLimit(
   if (monitorFailure !== undefined) throw monitorFailure
 }
 
-async function materialize(request, httpRequest) {
-  let cancelled = false
+async function materialize(request, httpRequest, httpResponse) {
+  let cancelled = httpResponse.destroyed
   let instance
   let connection
   const preparedPaths = []
@@ -353,6 +353,7 @@ async function materialize(request, httpRequest) {
     }
   }
   httpRequest.once('aborted', interrupt)
+  httpResponse.once('close', interrupt)
   const timeout = setTimeout(interrupt, request.limits.timeoutMs)
   try {
     await mkdir(OUTPUT_ROOT, { recursive: true })
@@ -558,6 +559,7 @@ async function materialize(request, httpRequest) {
   } finally {
     clearTimeout(timeout)
     httpRequest.off('aborted', interrupt)
+    httpResponse.off('close', interrupt)
     await rm(temporary, { force: true })
     await Promise.all(preparedPaths.map((path) => rm(path, { force: true })))
     connection?.disconnectSync()
@@ -609,7 +611,7 @@ const server = createServer(async (request, response) => {
   if (busy) return fail(response, 429, 'busy', 'Materializer concurrency limit reached')
   busy = true
   try {
-    const result = await materialize(validated, request)
+    const result = await materialize(validated, request, response)
     return json(response, 200, { ok: true, result })
   } catch (error) {
     const code = error instanceof RequestFailure ? error.code : 'engine'

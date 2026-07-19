@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import {
   DataEngineOperationError,
+  materializeDataset,
   type DataEngineClientShape,
 } from '@struct/data-engine'
 import {
@@ -97,6 +98,42 @@ const family = {
 }
 
 describe('processOneDatasetMaterialization', () => {
+  it('rejects a sidecar result for another snapshot before reading artifacts', async () => {
+    const client: DataEngineClientShape = {
+      materialize: () => Effect.succeed({
+        protocolVersion: '1',
+        snapshotId: DatasetSnapshotId.make(
+          '650e8400-e29b-41d4-a716-446655440099',
+        ),
+        artifactToken: '00000000-0000-4000-8000-000000000001',
+        parquetDigest,
+        parquetByteLength: parquetBytes.byteLength,
+        profileHash: Sha256Digest.make(`sha256:${profileDigest}`),
+        profile,
+      }),
+      readArtifact: () => Effect.die('artifact read must not run'),
+    }
+    const exit = await Effect.runPromiseExit(materializeDataset(
+      {
+        client,
+        store: { writeObject: () => Effect.die('artifact write must not run') },
+      },
+      {
+        snapshot,
+        schemaFamily: family,
+        sourceFormats: ['json'],
+        limits: {
+          maxInputBytes: 1_024,
+          maxRows: 100,
+          maxOutputBytes: 1_024,
+          timeoutMs: 1_000,
+        },
+      },
+    ))
+    expect(String(exit)).toContain('DataEngineProtocolError')
+    expect(String(exit)).toContain('requested snapshot')
+  })
+
   it('recovers an interrupted attempt and commits one immutable result', async () => {
     let attempts = 0
     let pending = true

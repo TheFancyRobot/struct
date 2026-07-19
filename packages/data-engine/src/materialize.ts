@@ -88,6 +88,11 @@ export const materializeDataset = Effect.fn('materializeDataset')(
       ),
     )
     const result = yield* client.materialize(request)
+    if (result.snapshotId !== input.snapshot.id) {
+      return yield* new DataEngineProtocolError({
+        message: 'Materialization response does not match the requested snapshot',
+      })
+    }
     const parquetBytes = yield* client.readArtifact(
       result.artifactToken,
       result.parquetDigest,
