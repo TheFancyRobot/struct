@@ -53,7 +53,7 @@ describe('document parsers', () => {
   })
 
   it('extracts HTML blocks while excluding nested script content', async () => {
-    const document = await Effect.runPromise(parseHtml(encode('<h1>Guide</h1><p>Safe <script>secret()</script>text</p><p>More</p>')))
+    const document = await Effect.runPromise(parseHtml(encode('<h1>Guide</h1><p>Safe<br><script>secret()</script>text</p><p>More</p>')))
     expect(document.text).toBe('Guide\n\nSafe text\n\nMore')
     expect(document.fragments).toEqual(expect.arrayContaining([expect.objectContaining({ section: 'Guide', paragraph: 2, text: 'Safe text' })]))
     expect(document.text).not.toContain('secret')
@@ -70,9 +70,9 @@ describe('document parsers', () => {
   })
 
   it('marks a majority of pages without embedded text as OCR-heavy', () => {
-    expect(isOcrHeavyPdf(['enough embedded text', ''])).toBe(false)
-    expect(isOcrHeavyPdf(['enough embedded text', '', ''])).toBe(true)
-    expect(isOcrHeavyPdf(['enough embedded text'])).toBe(false)
+    expect(isOcrHeavyPdf(['Hi', ''])).toBe(false)
+    expect(isOcrHeavyPdf(['Hi', '', ''])).toBe(true)
+    expect(isOcrHeavyPdf(['Hi'])).toBe(false)
   })
 
   it('extracts a real embedded-text PDF through pdfjs with page provenance', async () => {

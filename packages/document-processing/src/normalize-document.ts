@@ -55,13 +55,18 @@ export const normalizeSourceDocument = (
 ) => {
   const text = normalize(source)
   let cursor = 0
+  let byteCursor = 0
   const located = fragments.flatMap((fragment) => {
     const fragmentText = normalize(fragment.text).trim()
     if (!fragmentText) return []
     const charStart = text.indexOf(fragmentText, cursor)
     if (charStart < 0) return []
     const charEnd = charStart + fragmentText.length
+    const byteStart = byteCursor
+      + encoder.encode(text.slice(cursor, charStart)).byteLength
+    const byteEnd = byteStart + encoder.encode(fragmentText).byteLength
     cursor = charEnd
+    byteCursor = byteEnd
     return [{
       text: fragmentText,
       page: fragment.page ?? null,
@@ -69,8 +74,8 @@ export const normalizeSourceDocument = (
       paragraph: fragment.paragraph ?? null,
       charStart,
       charEnd,
-      byteStart: encoder.encode(text.slice(0, charStart)).byteLength,
-      byteEnd: encoder.encode(text.slice(0, charEnd)).byteLength,
+      byteStart,
+      byteEnd,
     }]
   })
   return { format, text, fragments: located }

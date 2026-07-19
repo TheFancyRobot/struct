@@ -59,6 +59,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Record important facts learned during the session.
 - Root pre-PR review found and fixed a Markdown trailing-newline compatibility regression, nested HTML ignored-content leakage, unbounded concurrent PDF expansion, an over-eager OCR heuristic, incomplete PDF cleanup, missing real-PDF/v2-manifest coverage, and an unused worker dependency.
 - Source-backed Markdown/text normalization now preserves line endings, indentation, and multibyte locator round-trips. PDF parsing is sequential with explicit page and extracted-character caps.
+- Codex exact-head review found and root fixed four additional issues: upload/persistence format gating, quadratic byte-locator calculation, short embedded-text PDF false rejection, and HTML line-break collapse. Final full suite increased to 301 passing tests.
 
 ## Context Handoff
 

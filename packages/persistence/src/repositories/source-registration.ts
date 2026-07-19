@@ -22,10 +22,19 @@ export interface SourceRegistrationInput {
   readonly event: typeof EventJournal.Type
 }
 
+export type SourceRegistrationMediaType =
+  | 'text/plain'
+  | 'text/markdown'
+  | 'text/html'
+  | 'application/pdf'
+  | 'application/json'
+  | 'text/css'
+  | 'application/javascript'
+
 export interface SourceRegistrationJobPayload {
   readonly stagedRef: `staged://${string}/${string}`
   readonly name: string
-  readonly mediaType: 'text/plain' | 'text/markdown'
+  readonly mediaType: SourceRegistrationMediaType
   readonly byteLength: number
   readonly sourceId: typeof Source.Type['id']
   readonly projectId: typeof Source.Type['projectId']
@@ -35,7 +44,7 @@ export interface SourceRegistrationEventPayload {
   readonly sourceId: typeof Source.Type['id']
   readonly jobId: typeof JobQueue.Type['id']
   readonly stagedRef: `staged://${string}/${string}`
-  readonly mediaType: 'text/plain' | 'text/markdown'
+  readonly mediaType: SourceRegistrationMediaType
   readonly byteLength: number
 }
 
@@ -43,6 +52,25 @@ export interface SourceRegistrationResult {
   readonly source: typeof Source.Type
   readonly job: typeof JobQueue.Type
   readonly event: typeof EventJournal.Type
+}
+
+function isSupportedRegistrationUpload(
+  name: unknown,
+  mediaType: unknown,
+): mediaType is SourceRegistrationMediaType {
+  if (typeof name !== 'string' || typeof mediaType !== 'string') return false
+  const lower = name.toLowerCase()
+  return (lower.endsWith('.txt') && mediaType === 'text/plain')
+    || (lower.endsWith('.md') && mediaType === 'text/markdown')
+    || ((lower.endsWith('.html') || lower.endsWith('.htm')) && mediaType === 'text/html')
+    || (lower.endsWith('.pdf') && mediaType === 'application/pdf')
+    || (lower.endsWith('.json') && mediaType === 'application/json')
+    || (lower.endsWith('.css') && mediaType === 'text/css')
+    || ((lower.endsWith('.js') || lower.endsWith('.jsx')) && mediaType === 'application/javascript')
+    || (
+      ['.ts', '.tsx', '.py', '.go', '.rs'].some((extension) => lower.endsWith(extension))
+      && mediaType === 'text/plain'
+    )
 }
 
 export interface SourceRegistrationRepository {
@@ -214,7 +242,7 @@ function validateRegistrationAggregate(
     [jobPayload['name'] === input.source.name, 'job.payload.name'],
     [isCanonicalStagedArtifactRef(stagedRef), 'job.payload.stagedRef'],
     [
-      mediaType === 'text/plain' || mediaType === 'text/markdown',
+      isSupportedRegistrationUpload(jobPayload['name'], mediaType),
       'job.payload.mediaType',
     ],
     [

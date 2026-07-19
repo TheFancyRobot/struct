@@ -103,6 +103,34 @@ describe('registerTextSource', () => {
     )
   })
 
+  it.each([
+    ['paper.pdf', 'application/pdf'],
+    ['page.html', 'text/html'],
+    ['module.ts', 'text/plain'],
+    ['data.json', 'application/json'],
+  ] as const)('accepts the supported %s upload boundary', async (name, mediaType) => {
+    const testDeps = deps({
+      storage: {
+        stageObject: () =>
+          Effect.succeed({
+            ref: `staged://750e8400-e29b-41d4-a716-446655440100/${name}`,
+            byteLength: 1,
+          }),
+      },
+    })
+
+    const result = await Effect.runPromise(registerTextSource({
+      workspaceId,
+      projectId,
+      name,
+      mediaType,
+      bytes: new Uint8Array([1]),
+    }, testDeps))
+
+    expect(result.job.payload['mediaType']).toBe(mediaType)
+    expect(result.job.payload['name']).toBe(name)
+  })
+
   it('rejects workspace/project mismatches before staging or enqueueing', async () => {
     let staged = false
     const testDeps = deps({

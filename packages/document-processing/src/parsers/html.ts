@@ -11,6 +11,8 @@ interface HtmlNode { readonly nodeName?: string; readonly tagName?: string; read
 const nodeText = (node: HtmlNode): string =>
   node.tagName !== undefined && ignoredTags.has(node.tagName.toLowerCase())
     ? ''
+    : node.tagName?.toLowerCase() === 'br'
+      ? '\n'
     : node.value ?? (node.childNodes ?? []).map(nodeText).join('')
 
 export const parseHtml = (bytes: Uint8Array) =>

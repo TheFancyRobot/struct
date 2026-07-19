@@ -2,13 +2,12 @@ import { Effect } from 'effect'
 import { DocumentProcessingError } from '../errors.js'
 import { normalizeDocument } from '../normalize-document.js'
 
-const MINIMUM_EMBEDDED_TEXT_PER_PAGE = 8
 const MAX_PDF_PAGES = 1_000
 const MAX_EXTRACTED_CHARACTERS = 5_000_000
 
 export const isOcrHeavyPdf = (pageText: ReadonlyArray<string>): boolean =>
   pageText.length === 0
-  || pageText.filter((text) => text.length < MINIMUM_EMBEDDED_TEXT_PER_PAGE).length
+  || pageText.filter((text) => text.length === 0).length
     > pageText.length / 2
 
 interface PdfTextItem { readonly str?: string }
