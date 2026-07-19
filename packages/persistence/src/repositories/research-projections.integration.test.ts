@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { Effect, Layer } from 'effect'
+import { Effect, Exit, Layer } from 'effect'
 import postgres from 'postgres'
 import {
   CitationId,
@@ -19,6 +19,14 @@ const sourceVersionId = 'e70e8400-e29b-41d4-a716-446655440004'
 const threadId = ResearchThreadId.make('e70e8400-e29b-41d4-a716-446655440005')
 const runId = ResearchRunId.make('e70e8400-e29b-41d4-a716-446655440006')
 const citationId = CitationId.make('e70e8400-e29b-41d4-a716-446655440007')
+const lineCitationId = CitationId.make('e70e8400-e29b-41d4-a716-446655440012')
+const missingDocumentCitationId = CitationId.make(
+  'e70e8400-e29b-41d4-a716-446655440013',
+)
+const documentId = 'e70e8400-e29b-41d4-a716-446655440011'
+const documentLocator = 'document:paragraph:1,chars:18-36,bytes:18-36'
+const sourceWithoutDocumentId = 'e70e8400-e29b-41d4-a716-446655440014'
+const versionWithoutDocumentId = 'e70e8400-e29b-41d4-a716-446655440015'
 
 describeIf('ResearchProjectionRepo integration', () => {
   const sql = postgres(DATABASE_URL ?? '', { max: 2, idle_timeout: 5 })
@@ -41,8 +49,20 @@ describeIf('ResearchProjectionRepo integration', () => {
     )
     await sql.unsafe(
       `INSERT INTO source_text_index (source_version_id, content)
-       VALUES ($1, 'Before\nLaunch is July 18.\nAfter')`,
+       VALUES ($1, 'Raw source artifact differs from normalized preview.')`,
       [sourceVersionId],
+    )
+    await sql.unsafe(
+      `INSERT INTO documents (
+         id, workspace_id, project_id, source_id, source_version_id, format,
+         normalized_text, content_hash, parser_version
+       )
+       VALUES (
+         $1, $2, $3, $4, $5, 'text',
+         'Normalized before\nLaunch is July 18.\nAfter',
+         'sha256:normalized-projection', 'text-v1'
+       )`,
+      [documentId, workspaceId, projectId, sourceId, sourceVersionId],
     )
     await sql.unsafe(
       `INSERT INTO research_threads (id, project_id, title) VALUES ($1, $2, 'Launch')`,
@@ -60,8 +80,33 @@ describeIf('ResearchProjectionRepo integration', () => {
     )
     await sql.unsafe(
       `INSERT INTO citations (id, run_id, source_version_id, locator, status)
-       VALUES ($1, $2, $3, 'lines:2-2', 'validated')`,
-      [citationId, runId, sourceVersionId],
+       VALUES ($1, $2, $3, $4, 'validated')`,
+      [citationId, runId, sourceVersionId, documentLocator],
+    )
+    await sql.unsafe(
+      `INSERT INTO citations (id, run_id, source_version_id, locator, status)
+       VALUES ($1, $2, $3, 'lines:1-1', 'validated')`,
+      [lineCitationId, runId, sourceVersionId],
+    )
+    await sql.unsafe(
+      `INSERT INTO sources (id, project_id, name, kind)
+       VALUES ($1, $2, 'missing-document.txt', 'document')`,
+      [sourceWithoutDocumentId, projectId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_versions (id, source_id, version, artifact_ref, content_hash)
+       VALUES ($1, $2, 1, 'artifact://missing-document', 'sha256:missing-document')`,
+      [versionWithoutDocumentId, sourceWithoutDocumentId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_text_index (source_version_id, content)
+       VALUES ($1, 'Text index must not satisfy a document locator.')`,
+      [versionWithoutDocumentId],
+    )
+    await sql.unsafe(
+      `INSERT INTO citations (id, run_id, source_version_id, locator, status)
+       VALUES ($1, $2, $3, 'document:chars:0-4,bytes:0-4', 'validated')`,
+      [missingDocumentCitationId, runId, versionWithoutDocumentId],
     )
     await sql.unsafe(
       `INSERT INTO event_journal
@@ -99,14 +144,31 @@ describeIf('ResearchProjectionRepo integration', () => {
       ResearchProjectionRepo.findCitation(projectId, threadId, citationId)
         .pipe(Effect.provide(layer)),
     )
+    const lineCitation = await Effect.runPromise(
+      ResearchProjectionRepo.findCitation(projectId, threadId, lineCitationId)
+        .pipe(Effect.provide(layer)),
+    )
+    const missingDocumentCitation = await Effect.runPromiseExit(
+      ResearchProjectionRepo.findCitation(
+        projectId,
+        threadId,
+        missingDocumentCitationId,
+      ).pipe(Effect.provide(layer)),
+    )
 
     expect(exists).toBe(true)
     expect(events.map((event) => event.eventType)).toEqual(['research-completed'])
-    expect(completed).toMatchObject({
-      answer: 'July 18.',
-      citations: [{ id: citationId, sourceVersionId, locator: 'lines:2-2' }],
+    expect(completed.answer).toBe('July 18.')
+    expect(completed.citations).toContainEqual({
+      id: citationId,
+      sourceVersionId,
+      locator: documentLocator,
     })
-    expect(citation.content).toContain('Launch is July 18.')
+    expect(citation.content).toBe('Normalized before\nLaunch is July 18.\nAfter')
+    expect(lineCitation.content).toBe(
+      'Raw source artifact differs from normalized preview.',
+    )
+    expect(Exit.isFailure(missingDocumentCitation)).toBe(true)
   })
 
   it('does not expose a run through a different project scope', async () => {
@@ -124,7 +186,12 @@ describeIf('ResearchProjectionRepo integration', () => {
         10,
       ).pipe(Effect.provide(layer)),
     )
+    const citation = await Effect.runPromiseExit(
+      ResearchProjectionRepo.findCitation(otherProjectId, threadId, citationId)
+        .pipe(Effect.provide(layer)),
+    )
     expect(exists).toBe(false)
     expect(events).toEqual([])
+    expect(Exit.isFailure(citation)).toBe(true)
   })
 })
