@@ -58,6 +58,11 @@ export {
   DatasetMaterializationOwnershipLostError,
   DatasetMaterializationScopeError,
   DatasetMaterializationConflictError,
+  DatasetQueryEvidenceRepo,
+  DatasetQueryEvidencePersistenceError,
+  DatasetQueryEvidenceScopeError,
+  DatasetQueryEvidenceConflictError,
+  DatasetCitationValidationError,
   // Persistence errors
   QueryError,
   EntityNotFoundError,
@@ -151,3 +156,7 @@ export type {
   DatasetQuerySnapshotRequest,
   ResolvedDatasetQuerySnapshot,
 } from './repositories/dataset-materializations.js'
+
+export type {
+  DatasetQueryEvidenceError,
+} from './repositories/dataset-query-evidence.js'

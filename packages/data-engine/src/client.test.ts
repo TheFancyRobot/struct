@@ -65,6 +65,12 @@ const queryRequest: QueryRequest = {
   },
 }
 
+function hashJson(value: unknown): string {
+  return `sha256:${new Bun.CryptoHasher('sha256')
+    .update(`${JSON.stringify(value)}\n`)
+    .digest('hex')}`
+}
+
 function delayedResponse(
   body: Uint8Array,
   delayMs: number,
@@ -207,20 +213,30 @@ describe('DataEngineClient', () => {
 
   it('authenticates a scoped query and rejects response-scope drift', async () => {
     const calls: RequestInit[] = []
+    const artifact = {
+      columns: [{ ordinal: 0, name: 'id', type: 'BIGINT' }],
+      rows: [['1']],
+      rowCount: 1,
+      truncated: false,
+    }
+    const resultArtifactHash = hashJson(artifact)
+    const hashInput = {
+      engineVersion: 'duckdb-1.5.4',
+      engineConfigHash: `sha256:${'e'.repeat(64)}`,
+      canonicalSql: queryRequest.sql,
+      snapshots: queryRequest.snapshots,
+      schemaHash: `sha256:${'c'.repeat(64)}`,
+      resultArtifactHash,
+      ...artifact,
+    }
     const response = {
       ok: true as const,
       result: {
         protocolVersion: '1' as const,
         workspaceId,
         projectId,
-        canonicalSql: queryRequest.sql,
-        snapshots: queryRequest.snapshots,
-        schemaHash: `sha256:${'c'.repeat(64)}`,
-        resultHash: `sha256:${'d'.repeat(64)}`,
-        columns: [{ ordinal: 0, name: 'id', type: 'BIGINT' }],
-        rows: [['1']],
-        rowCount: 1,
-        truncated: false,
+        ...hashInput,
+        resultHash: hashJson(hashInput),
         executionMs: 1,
       },
     }
@@ -277,6 +293,17 @@ describe('DataEngineClient', () => {
       expect(String(driftExit)).toContain('DataEngineProtocolError')
       expect(String(driftExit)).toContain('inconsistent result shape')
     }
+    const tampered = makeDataEngineClient({
+      baseUrl: 'http://data-engine',
+      credential: 'test-credential-value',
+    }, async () => Response.json({
+      ...response,
+      result: { ...response.result, rows: [['tampered']] },
+    }))
+    const tamperedExit = await Effect.runPromiseExit(
+      tampered.query(queryRequest),
+    )
+    expect(String(tamperedExit)).toContain('result hash validation')
     const oversized = makeDataEngineClient({
       baseUrl: 'http://data-engine',
       credential: 'test-credential-value',
@@ -302,6 +329,8 @@ describe('DataEngineClient', () => {
       ok: true,
       result: {
         protocolVersion: '1',
+        engineVersion: 'duckdb-1.5.4',
+        engineConfigHash: `sha256:${'e'.repeat(64)}`,
         snapshotId,
         artifactToken,
         parquetDigest: digest,
@@ -320,6 +349,7 @@ describe('DataEngineClient', () => {
         snapshots: queryRequest.snapshots,
         schemaHash: `sha256:${'c'.repeat(64)}`,
         resultHash: `sha256:${'d'.repeat(64)}`,
+        resultArtifactHash: `sha256:${'f'.repeat(64)}`,
         columns: [],
         rows: [],
         rowCount: 0,

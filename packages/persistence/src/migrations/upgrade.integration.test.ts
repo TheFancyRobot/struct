@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { Effect } from 'effect'
 import postgres from 'postgres'
 import type postgresTypes from 'postgres'
+import { migrations } from './manifest'
 import {
   runMigrationsDown,
   runMigrationsUp,
@@ -52,16 +53,11 @@ describeIf('existing database migration upgrades (PostgreSQL)', () => {
     if (!scoped) return
     const executor = migrationExecutor(scoped)
     await Effect.runPromise(runMigrationsUp(executor))
-    // Remove 0010 through 0004 first, then 0003 so this fixture represents
+    // Remove every migration through 0003 so this fixture represents
     // the state immediately before the SourceVersion text-index upgrade.
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
+    for (let number = migrations.length; number >= 3; number -= 1) {
+      await Effect.runPromise(runMigrationsDown(executor))
+    }
 
     await scoped.unsafe(`
       INSERT INTO workspaces (id, name)

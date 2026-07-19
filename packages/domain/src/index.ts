@@ -8,6 +8,7 @@
 export * from './branded-ids.js'
 export * from './directory-manifest.js'
 export * from './dataset-catalog.js'
+export * from './dataset-query-evidence.js'
 export * from './directory-controls.js'
 export * from './ingestion-job.js'
 export * from './document.js'

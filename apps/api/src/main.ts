@@ -9,6 +9,7 @@ import postgres from 'postgres'
 import {
   ProjectRepo,
   DirectoryControlRepo,
+  DatasetQueryEvidenceRepo,
   EntityNotFoundError,
   ResearchExecutionRepo,
   ResearchProjectionRepo,
@@ -65,6 +66,11 @@ import {
   parseEventCursor,
   researchEventsResponse,
 } from './routes/research-events'
+import {
+  datasetQueryReadRoute,
+  listDatasetQueryHistory,
+  reopenDatasetCitation,
+} from './routes/dataset-queries'
 
 interface RegisterRequestBody {
   readonly workspaceId?: unknown
@@ -176,6 +182,10 @@ const server = Effect.gen(function* () {
   const projectionLayer = Layer.provide(ResearchProjectionRepo.Default, sqlLayer)
   const directoryControlLayer = Layer.provide(
     DirectoryControlRepo.Default,
+    sqlLayer,
+  )
+  const datasetQueryEvidenceLayer = Layer.provide(
+    DatasetQueryEvidenceRepo.Default,
     sqlLayer,
   )
   const effectRuntime = yield* Effect.runtime<never>()
@@ -672,6 +682,23 @@ const server = Effect.gen(function* () {
       const citationRoute =
         /^\/api\/projects\/([^/]+)\/research\/([^/]+)\/citation\/([^/]+)$/
           .exec(url.pathname)
+
+      const datasetQueryResponse = await Runtime.runPromise(effectRuntime)(
+        datasetQueryReadRoute(req, {
+          list: (workspaceId, projectId, limit) =>
+            listDatasetQueryHistory(workspaceId, projectId, limit).pipe(
+              Effect.provide(datasetQueryEvidenceLayer),
+            ),
+          reopen: (workspaceId, projectId, citationId) =>
+            reopenDatasetCitation(
+              workspaceId,
+              projectId,
+              citationId,
+            ).pipe(Effect.provide(datasetQueryEvidenceLayer)),
+        }),
+      )
+      if (datasetQueryResponse !== undefined) return datasetQueryResponse
+
       if (citationRoute !== null && req.method === 'GET') {
         const identifiers = Effect.try({
           try: () => ({

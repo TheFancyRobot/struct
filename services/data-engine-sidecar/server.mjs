@@ -19,6 +19,7 @@ import Parser from 'stream-json/Parser.js'
 import Stringer from 'stream-json/Stringer.js'
 
 const PROTOCOL_VERSION = '1'
+const ENGINE_VERSION = 'duckdb-1.5.4'
 const ARTIFACT_ROOT = '/artifacts'
 const SCRATCH_ROOT = '/scratch'
 const OUTPUT_ROOT = join(SCRATCH_ROOT, 'output')
@@ -1000,10 +1001,30 @@ async function querySnapshots(request, httpRequest, httpResponse) {
     const schemaHash = `sha256:${createHash('sha256')
       .update(`${JSON.stringify(columns)}\n`)
       .digest('hex')}`
+    const resultArtifactHash = `sha256:${createHash('sha256')
+      .update(`${JSON.stringify({
+        columns,
+        rows,
+        rowCount: rows.length,
+        truncated,
+      })}\n`)
+      .digest('hex')}`
     const hashInput = {
+      engineVersion: ENGINE_VERSION,
+      engineConfigHash: `sha256:${createHash('sha256').update(`${JSON.stringify({
+        protocolVersion: PROTOCOL_VERSION,
+        engineVersion: ENGINE_VERSION,
+        threads: THREADS,
+        memoryMb: request.limits.maxMemoryMb,
+        maxRows: request.limits.maxRows,
+        maxOutputBytes: request.limits.maxOutputBytes,
+        timeoutMs: request.limits.timeoutMs,
+        externalAccess: false,
+      })}\n`).digest('hex')}`,
       canonicalSql,
       snapshots,
       schemaHash,
+      resultArtifactHash,
       columns,
       rows,
       rowCount: rows.length,

@@ -331,6 +331,21 @@ suite('data-engine sidecar', () => {
       [true, '12.5000000000'],
     ])
     expect(firstQuery.result['truncated']).toBe(false)
+    expect(firstQuery.result['engineVersion']).toBe('duckdb-1.5.4')
+    expect(firstQuery.result['engineConfigHash']).toMatch(
+      /^sha256:[a-f0-9]{64}$/,
+    )
+    const expectedArtifactHash = new Bun.CryptoHasher('sha256')
+      .update(`${JSON.stringify({
+        columns: firstQuery.result['columns'],
+        rows: firstQuery.result['rows'],
+        rowCount: firstQuery.result['rowCount'],
+        truncated: firstQuery.result['truncated'],
+      })}\n`)
+      .digest('hex')
+    expect(firstQuery.result['resultArtifactHash']).toBe(
+      `sha256:${expectedArtifactHash}`,
+    )
     const joinedQuery = await hostRequest({
       path: '/v1/query',
       method: 'POST',

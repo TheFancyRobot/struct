@@ -83,6 +83,10 @@ export type DatasetSchemaFamilyId =
 export const QueryResultSnapshotId = BrandedUUID.pipe(Schema.brand('QueryResultSnapshotId'))
 export type QueryResultSnapshotId = Schema.Schema.Type<typeof QueryResultSnapshotId>
 
+/** DatasetCitationId — identity of immutable structured-data evidence. */
+export const DatasetCitationId = BrandedUUID.pipe(Schema.brand('DatasetCitationId'))
+export type DatasetCitationId = Schema.Schema.Type<typeof DatasetCitationId>
+
 /** EventJournalId — identity of a journal entry. */
 export const EventJournalId = BrandedUUID.pipe(Schema.brand('EventJournalId'))
 export type EventJournalId = Schema.Schema.Type<typeof EventJournalId>

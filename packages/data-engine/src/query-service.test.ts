@@ -78,12 +78,15 @@ function dependencies(overrides?: {
         overrides?.onQuery?.()
         return Effect.succeed({
           protocolVersion: '1' as const,
+          engineVersion: 'duckdb-1.5.4',
+          engineConfigHash: Sha256Digest.make(`sha256:${'d'.repeat(64)}`),
           workspaceId,
           projectId,
           canonicalSql: input.sql,
           snapshots: request.snapshots,
           schemaHash,
           resultHash: Sha256Digest.make(`sha256:${'c'.repeat(64)}`),
+          resultArtifactHash: Sha256Digest.make(`sha256:${'e'.repeat(64)}`),
           columns: [{ ordinal: 0, name: 'id', type: 'BIGINT' }],
           rows: [['1']],
           rowCount: 1,
