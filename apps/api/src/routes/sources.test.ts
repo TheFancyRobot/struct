@@ -60,6 +60,47 @@ describe('registerTextSource', () => {
     expect(JSON.stringify(testDeps.calls.jobPayloads)).not.toContain('# Title')
     expect(JSON.stringify(testDeps.calls.events)).not.toContain('# Title')
     expect(JSON.stringify(testDeps.calls.jobPayloads)).not.toContain('/Users/')
+    expect(Object.keys(result.job.payload).sort()).toEqual([
+      'byteLength',
+      'mediaType',
+      'name',
+      'projectId',
+      'sourceId',
+      'stagedRef',
+    ])
+    expect(Object.keys(result.event.payload).sort()).toEqual([
+      'byteLength',
+      'jobId',
+      'mediaType',
+      'sourceId',
+      'stagedRef',
+    ])
+  })
+
+  it('preserves a mixed-case user-visible source name while carrying the canonical staged ref', async () => {
+    const testDeps = deps({
+      storage: {
+        stageObject: () =>
+          Effect.succeed({
+            ref: 'staged://750e8400-e29b-41d4-a716-446655440100/notes.md',
+            byteLength: 7,
+          }),
+      },
+    })
+
+    const result = await Effect.runPromise(registerTextSource({
+      workspaceId,
+      projectId,
+      name: 'Notes.MD',
+      mediaType: 'text/markdown',
+      bytes: new TextEncoder().encode('# Title'),
+    }, testDeps))
+
+    expect(result.source.name).toBe('Notes.MD')
+    expect(result.job.payload['name']).toBe('Notes.MD')
+    expect(result.job.payload['stagedRef']).toBe(
+      'staged://750e8400-e29b-41d4-a716-446655440100/notes.md',
+    )
   })
 
   it('rejects workspace/project mismatches before staging or enqueueing', async () => {

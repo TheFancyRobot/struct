@@ -10,7 +10,7 @@ import type {
   SourceVersionId,
   WorkspaceId,
 } from '@struct/domain'
-import { AuthorizationError } from '@struct/domain'
+import { AuthorizationError, ValidationError } from '@struct/domain'
 import {
   QueryError,
   ResearchJobOwnershipLostError,
@@ -47,7 +47,7 @@ export interface ResearchRegistrationResult {
 
 export interface CompleteResearchInput {
   readonly runId: typeof ResearchRun.Type['id']
-  readonly jobId: typeof JobQueue.Type['id']
+  readonly job: typeof JobQueue.Type
   readonly answer: typeof ResearchAnswer.Type
   readonly citations: ReadonlyArray<typeof Citation.Type>
   readonly event: typeof EventJournal.Type
@@ -55,19 +55,290 @@ export interface CompleteResearchInput {
 
 export interface FailResearchInput {
   readonly runId: typeof ResearchRun.Type['id']
-  readonly jobId: typeof JobQueue.Type['id']
+  readonly job: typeof JobQueue.Type
   readonly event: typeof EventJournal.Type
 }
 
 class ResearchScopeMismatchError extends Error {}
+class ResearchAggregateMismatchError extends Error {
+  constructor(readonly field: string) {
+    super(`research-aggregate-mismatch:${field}`)
+  }
+}
+
+const MAX_RESEARCH_EVIDENCE_COUNT = 80
+const MAX_RESEARCH_CITATION_COUNT = 80
+const MAX_RESEARCH_FAILURE_TAG_LENGTH = 64
+const RESEARCH_FAILURE_MESSAGE = 'Research failed'
+
+type ResearchEventPayload = Readonly<Record<string, unknown>>
+
+function hasExactKeys(
+  value: unknown,
+  expectedKeys: ReadonlyArray<string>,
+): value is Record<string, unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+  const keys = Object.keys(value)
+  return keys.length === expectedKeys.length
+    && expectedKeys.every((key) => Object.hasOwn(value, key))
+}
+
+function boundedInteger(value: unknown, maximum: number): value is number {
+  return typeof value === 'number'
+    && Number.isSafeInteger(value)
+    && value >= 0
+    && value <= maximum
+}
+
+function persistedResearchScope(payload: unknown): {
+  readonly projectId: typeof ProjectId.Type
+  readonly sourceVersionIds: ReadonlyArray<typeof SourceVersionId.Type>
+} {
+  const normalized = normalizePersistedPayload(payload)
+  if (
+    normalized === undefined
+    || !hasExactKeys(normalized, ['projectId', 'sourceVersionIds'])
+    || typeof normalized['projectId'] !== 'string'
+    || !Array.isArray(normalized['sourceVersionIds'])
+    || normalized['sourceVersionIds'].length === 0
+    || normalized['sourceVersionIds'].length > 10
+    || normalized['sourceVersionIds'].some((sourceVersionId) =>
+      typeof sourceVersionId !== 'string'
+    )
+    || new Set(normalized['sourceVersionIds']).size
+      !== normalized['sourceVersionIds'].length
+  ) {
+    throw new ResearchAggregateMismatchError('job.payload')
+  }
+  return {
+    projectId: normalized['projectId'] as typeof ProjectId.Type,
+    sourceVersionIds:
+      normalized['sourceVersionIds'] as ReadonlyArray<typeof SourceVersionId.Type>,
+  }
+}
+
+function validateAppendEventPayload(
+  event: typeof EventJournal.Type,
+  registeredSourceVersionIds: ReadonlyArray<typeof SourceVersionId.Type>,
+  job: typeof JobQueue.Type,
+): ResearchEventPayload {
+  if (event.cursor !== 0n) {
+    throw new ResearchAggregateMismatchError('event.cursor')
+  }
+  if (event.eventType === 'retrieval-completed') {
+    if (
+      !hasExactKeys(event.payload, ['evidenceCount', 'sourceVersionIds'])
+      || !boundedInteger(
+        event.payload['evidenceCount'],
+        MAX_RESEARCH_EVIDENCE_COUNT,
+      )
+      || !Array.isArray(event.payload['sourceVersionIds'])
+      || event.payload['sourceVersionIds'].length !== event.payload['evidenceCount']
+      || event.payload['sourceVersionIds'].some((sourceVersionId) =>
+        typeof sourceVersionId !== 'string'
+        || !registeredSourceVersionIds.includes(
+          sourceVersionId as typeof SourceVersionId.Type,
+        )
+      )
+    ) {
+      throw new ResearchAggregateMismatchError('event.payload')
+    }
+    return {
+      jobId: job.id,
+      attempt: job.attempts,
+      evidenceCount: event.payload['evidenceCount'],
+      sourceVersionIds: [...event.payload['sourceVersionIds']],
+    }
+  }
+  if (event.eventType === 'citations-validated') {
+    if (
+      !hasExactKeys(event.payload, ['citationCount'])
+      || !boundedInteger(
+        event.payload['citationCount'],
+        MAX_RESEARCH_CITATION_COUNT,
+      )
+    ) {
+      throw new ResearchAggregateMismatchError('event.payload')
+    }
+    return {
+      jobId: job.id,
+      attempt: job.attempts,
+      citationCount: event.payload['citationCount'],
+    }
+  }
+  throw new ResearchAggregateMismatchError('event.eventType')
+}
+
+function validateCompletedEventPayload(
+  event: typeof EventJournal.Type,
+  citationCount: number,
+  job: typeof JobQueue.Type,
+): ResearchEventPayload {
+  if (
+    event.cursor !== 0n
+    || event.eventType !== 'research-completed'
+    || !hasExactKeys(event.payload, ['citationCount'])
+    || event.payload['citationCount'] !== citationCount
+    || !boundedInteger(
+      event.payload['citationCount'],
+      MAX_RESEARCH_CITATION_COUNT,
+    )
+  ) {
+    throw new ResearchAggregateMismatchError('event.payload')
+  }
+  return { jobId: job.id, attempt: job.attempts, citationCount }
+}
+
+function validateFailedEventPayload(
+  event: typeof EventJournal.Type,
+  job: typeof JobQueue.Type,
+): ResearchEventPayload {
+  if (
+    event.cursor !== 0n
+    || event.eventType !== 'research-failed'
+    || !hasExactKeys(event.payload, ['errorTag', 'message'])
+    || typeof event.payload['errorTag'] !== 'string'
+    || event.payload['errorTag'].length === 0
+    || event.payload['errorTag'].length > MAX_RESEARCH_FAILURE_TAG_LENGTH
+    || !/^[A-Za-z][A-Za-z0-9]*$/.test(event.payload['errorTag'])
+    || event.payload['message'] !== RESEARCH_FAILURE_MESSAGE
+  ) {
+    throw new ResearchAggregateMismatchError('event.payload')
+  }
+  return {
+    jobId: job.id,
+    attempt: job.attempts,
+    errorTag: event.payload['errorTag'],
+    message: RESEARCH_FAILURE_MESSAGE,
+  }
+}
 
 function ownershipLost(
-  transition: 'append-event' | 'complete' | 'fail',
+  transition: 'renew-lease' | 'append-event' | 'complete' | 'fail',
 ): ResearchJobOwnershipLostError {
   return new ResearchJobOwnershipLostError({
     transition,
     message: 'Research job no longer has in-progress ownership',
   })
+}
+
+function sameIds(
+  left: ReadonlyArray<typeof SourceVersionId.Type>,
+  right: unknown,
+): boolean {
+  return Array.isArray(right)
+    && right.length === left.length
+    && right.every((value, index) => value === left[index])
+}
+
+function normalizePersistedPayload(payload: unknown): Record<string, unknown> | undefined {
+  let decoded = payload
+  if (typeof decoded === 'string') {
+    try {
+      decoded = JSON.parse(decoded) as unknown
+    } catch {
+      return undefined
+    }
+  }
+  return typeof decoded === 'object'
+      && decoded !== null
+      && !Array.isArray(decoded)
+    ? decoded as Record<string, unknown>
+    : undefined
+}
+
+function completionSourceScope(input: CompleteResearchInput): {
+  readonly projectId: typeof ProjectId.Type
+  readonly sourceVersionIds: ReadonlyArray<typeof SourceVersionId.Type>
+} {
+  return persistedResearchScope(input.job.payload)
+}
+
+function validateRegistrationAggregate(input: ResearchRegistrationInput): void {
+  const payloadProjectId = input.job.payload['projectId']
+  const payloadSourceVersionIds = input.job.payload['sourceVersionIds']
+  const eventJobId = input.event.payload['jobId']
+  const eventThreadId = input.event.payload['threadId']
+  const uniqueSourceVersionIds = new Set(input.sourceVersionIds)
+  const checks: ReadonlyArray<readonly [boolean, string]> = [
+    [
+      input.sourceVersionIds.length > 0
+      && input.sourceVersionIds.length <= 10
+      && uniqueSourceVersionIds.size === input.sourceVersionIds.length,
+      'sourceVersionIds',
+    ],
+    [input.thread.projectId === input.projectId, 'thread.projectId'],
+    [input.run.threadId === input.thread.id, 'run.threadId'],
+    [input.run.status === 'pending', 'run.status'],
+    [input.job.workspaceId === input.workspaceId, 'job.workspaceId'],
+    [input.job.entityType === 'research', 'job.entityType'],
+    [input.job.entityId === input.run.id, 'job.entityId'],
+    [input.job.status === 'pending', 'job.status'],
+    [input.job.attempts === 0, 'job.attempts'],
+    [payloadProjectId === input.projectId, 'job.payload.projectId'],
+    [
+      hasExactKeys(input.job.payload, ['projectId', 'sourceVersionIds']),
+      'job.payload',
+    ],
+    [sameIds(input.sourceVersionIds, payloadSourceVersionIds), 'job.payload.sourceVersionIds'],
+    [input.event.workspaceId === input.workspaceId, 'event.workspaceId'],
+    [input.event.entityType === 'research', 'event.entityType'],
+    [input.event.entityId === input.run.id, 'event.entityId'],
+    [input.event.eventType === 'research-started', 'event.eventType'],
+    [input.event.cursor === 0n, 'event.cursor'],
+    [
+      hasExactKeys(input.event.payload, ['jobId', 'threadId']),
+      'event.payload',
+    ],
+    [eventJobId === input.job.id, 'event.payload.jobId'],
+    [eventThreadId === input.thread.id, 'event.payload.threadId'],
+  ]
+  const mismatch = checks.find(([valid]) => !valid)
+  if (mismatch !== undefined) {
+    throw new ResearchAggregateMismatchError(mismatch[1])
+  }
+}
+
+function validateOwnedEvent(
+  job: typeof JobQueue.Type,
+  runId: typeof ResearchRun.Type['id'],
+  event: typeof EventJournal.Type,
+  transition: 'append-event' | 'complete' | 'fail',
+): void {
+  if (
+    job.entityType !== 'research'
+    || job.status !== 'in-progress'
+    || job.entityId !== runId
+    || event.workspaceId !== job.workspaceId
+    || event.entityType !== 'research'
+    || event.entityId !== runId
+  ) {
+    throw ownershipLost(transition)
+  }
+}
+
+function validateCompletionAggregate(input: CompleteResearchInput): void {
+  const answerCitations = input.answer.citations
+  const sourceScope = completionSourceScope(input)
+  if (answerCitations.length !== input.citations.length) {
+    throw new ResearchAggregateMismatchError('citations')
+  }
+  if (new Set(input.citations.map((citation) => citation.id)).size !== input.citations.length) {
+    throw new ResearchAggregateMismatchError('citations.id')
+  }
+  for (const [index, citation] of input.citations.entries()) {
+    const answerCitation = answerCitations[index]
+    if (
+      citation.runId !== input.runId
+      || citation.status !== 'validated'
+      || answerCitation === undefined
+      || citation.sourceVersionId !== answerCitation.sourceVersionId
+      || citation.locator !== answerCitation.locator
+      || !sourceScope.sourceVersionIds.includes(citation.sourceVersionId)
+    ) {
+      throw new ResearchAggregateMismatchError(`citations[${index}]`)
+    }
+  }
 }
 
 function persistenceDecodeError(
@@ -92,6 +363,7 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
       const rows = yield* Effect.tryPromise({
         try: () =>
           sql.transaction(async (transaction) => {
+            validateRegistrationAggregate(input)
             const authorized = await transaction.unsafe(
               `SELECT COUNT(*)::int AS count
                FROM source_versions sv
@@ -172,6 +444,12 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
                 detail: 'research-source-scope-mismatch',
                 message: 'One or more source versions are outside the requested scope',
               })
+            : error instanceof ResearchAggregateMismatchError
+              ? new ValidationError({
+                  field: error.field,
+                  reason: 'research-aggregate-mismatch',
+                  message: 'Research registration aggregate is inconsistent',
+                })
             : new QueryError({
                 operation: 'registerResearch',
                 entity: 'ResearchExecution',
@@ -234,7 +512,7 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
     })
 
     const recoverStale = Effect.fn('ResearchExecutionRepo.recoverStale')(function* (
-      staleBeforeMs: number,
+      staleAfterMs: number,
     ) {
       const rows = yield* Effect.tryPromise({
         try: () =>
@@ -244,9 +522,9 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
                SET status = 'failed', updated_at = NOW()
                WHERE entity_type = 'research'
                  AND status = 'in-progress'
-                 AND updated_at < to_timestamp($1 / 1000.0)
+                 AND updated_at < NOW() - ($1::bigint * INTERVAL '1 millisecond')
                RETURNING *`,
-              [staleBeforeMs],
+              [staleAfterMs],
             )
             if (staleRows.length === 0) return staleRows
 
@@ -272,7 +550,12 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
                  'research',
                  j.entity_id,
                  'research-failed',
-                 '{"errorTag":"ResearchJobStaleError","message":"Research failed"}'::jsonb,
+                 jsonb_build_object(
+                   'jobId', j.id::text,
+                   'attempt', j.attempts,
+                   'errorTag', 'ResearchJobStaleError',
+                   'message', 'Research failed'
+                 ),
                  NOW()
                FROM job_queue j
                WHERE j.id = ANY($1::uuid[])
@@ -301,68 +584,86 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
       )
     })
 
-    const appendEvent = Effect.fn('ResearchExecutionRepo.appendEvent')(function* (
-      event: typeof EventJournal.Type,
+    const renewLease = Effect.fn('ResearchExecutionRepo.renewLease')(function* (
+      job: typeof JobQueue.Type,
     ) {
-      const rows = yield* Effect.tryPromise({
-        try: () =>
-          sql.unsafe(
-            `INSERT INTO event_journal (id, workspace_id, entity_type, entity_id, event_type, payload, created_at)
-             VALUES ($1, $2, 'research', $3, $4, $5::jsonb, to_timestamp($6 / 1000.0))
-             RETURNING *`,
-            [
-              event.id,
-              event.workspaceId,
-              event.entityId,
-              event.eventType,
-              JSON.stringify(event.payload),
-              Number(event.createdAt),
-            ],
-          ),
-        catch: () =>
-          new QueryError({
-            operation: 'appendResearchEvent',
-            entity: 'ResearchExecution',
-            message: 'Research event append failed',
-          }),
+      yield* Effect.tryPromise({
+        try: async () => {
+          const rows = await sql.unsafe(
+            `UPDATE job_queue
+             SET updated_at = NOW()
+             WHERE id = $1
+               AND entity_type = 'research'
+               AND entity_id = $2
+               AND workspace_id = $3
+               AND status = 'in-progress'
+               AND attempts = $4
+             RETURNING id`,
+            [job.id, job.entityId, job.workspaceId, job.attempts],
+          )
+          if (rows.length !== 1) {
+            throw ownershipLost('renew-lease')
+          }
+        },
+        catch: (error) =>
+          error instanceof ResearchJobOwnershipLostError
+            ? error
+            : new QueryError({
+                operation: 'renewResearchLease',
+                entity: 'ResearchExecution',
+                message: 'Research lease renewal failed',
+              }),
       })
-      return yield* decodeEventJournalRow(rows[0] as unknown as EventJournalRow).pipe(
-        Effect.mapError((error) => persistenceDecodeError('appendResearchEvent.decode', error)),
-      )
     })
 
     const appendInProgressEvent = Effect.fn(
       'ResearchExecutionRepo.appendInProgressEvent',
     )(function* (
-      jobId: typeof JobQueue.Type['id'],
+      job: typeof JobQueue.Type,
       event: typeof EventJournal.Type,
     ) {
       yield* Effect.tryPromise({
         try: () =>
           sql.transaction(async (transaction) => {
+            validateOwnedEvent(
+              job,
+              job.entityId as typeof ResearchRun.Type['id'],
+              event,
+              'append-event',
+            )
             const ownership = await transaction.unsafe(
-              `SELECT id
+              `SELECT id, payload
                FROM job_queue
                WHERE id = $1
                  AND entity_type = 'research'
                  AND entity_id = $2
+                 AND workspace_id = $3
                  AND status = 'in-progress'
+                 AND attempts = $4
                FOR UPDATE`,
-              [jobId, event.entityId],
+              [job.id, job.entityId, job.workspaceId, job.attempts],
             )
             if (ownership.length !== 1) {
               throw ownershipLost('append-event')
             }
+            const persistedScope = persistedResearchScope(
+              ownership[0]?.['payload'],
+            )
+            const persistedEventPayload = validateAppendEventPayload(
+              event,
+              persistedScope.sourceVersionIds,
+              job,
+            )
             await transaction.unsafe(
               `INSERT INTO event_journal
                  (id, workspace_id, entity_type, entity_id, event_type, payload, created_at)
                VALUES ($1, $2, 'research', $3, $4, $5::jsonb, to_timestamp($6 / 1000.0))`,
               [
                 event.id,
-                event.workspaceId,
-                event.entityId,
+                job.workspaceId,
+                job.entityId,
                 event.eventType,
-                JSON.stringify(event.payload),
+                JSON.stringify(persistedEventPayload),
                 Number(event.createdAt),
               ],
             )
@@ -370,11 +671,17 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
         catch: (error) =>
           error instanceof ResearchJobOwnershipLostError
             ? error
-            : new QueryError({
-                operation: 'appendInProgressResearchEvent',
-                entity: 'ResearchExecution',
-                message: 'Research event append failed',
-              }),
+            : error instanceof ResearchAggregateMismatchError
+              ? new ValidationError({
+                  field: error.field,
+                  reason: 'research-event-contract-mismatch',
+                  message: 'Research event contract is inconsistent',
+                })
+              : new QueryError({
+                  operation: 'appendInProgressResearchEvent',
+                  entity: 'ResearchExecution',
+                  message: 'Research event append failed',
+                }),
       })
     })
 
@@ -384,15 +691,122 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
       yield* Effect.tryPromise({
         try: () =>
           sql.transaction(async (transaction) => {
+            validateOwnedEvent(input.job, input.runId, input.event, 'complete')
+            validateCompletionAggregate(input)
+            const sourceScope = completionSourceScope(input)
+            const ownershipRows = await transaction.unsafe(
+              `SELECT jq.payload, rt.project_id
+               FROM job_queue jq
+               JOIN research_runs rr ON rr.id = jq.entity_id
+               JOIN research_threads rt ON rt.id = rr.thread_id
+               WHERE jq.id = $1
+                 AND jq.entity_type = 'research'
+                 AND jq.entity_id = $2
+                 AND jq.workspace_id = $3
+                 AND jq.status = 'in-progress'
+                 AND jq.attempts = $4
+                 AND rr.status = 'in-progress'
+               FOR UPDATE OF jq, rr`,
+              [
+                input.job.id,
+                input.runId,
+                input.job.workspaceId,
+                input.job.attempts,
+              ],
+            )
+            if (ownershipRows.length !== 1) {
+              throw ownershipLost('complete')
+            }
+            const persistedEventPayload = validateCompletedEventPayload(
+              input.event,
+              input.citations.length,
+              input.job,
+            )
+            const persistedPayload = normalizePersistedPayload(
+              ownershipRows[0]?.['payload'],
+            )
+            const persistedProjectId = ownershipRows[0]?.['project_id']
+            if (
+              persistedProjectId !== sourceScope.projectId
+              || persistedPayload === undefined
+              || persistedPayload['projectId'] !== sourceScope.projectId
+              || !sameIds(
+                sourceScope.sourceVersionIds,
+                persistedPayload['sourceVersionIds'],
+              )
+            ) {
+              throw new ResearchAggregateMismatchError('job.payload')
+            }
+            const authorizedRows = await transaction.unsafe(
+              `SELECT COUNT(DISTINCT sv.id)::int AS count
+               FROM source_versions sv
+               JOIN sources s ON s.id = sv.source_id
+               JOIN projects p ON p.id = s.project_id
+               WHERE p.id = $1
+                 AND p.workspace_id = $2
+                 AND sv.id = ANY($3::uuid[])`,
+              [
+                sourceScope.projectId,
+                input.job.workspaceId,
+                sourceScope.sourceVersionIds,
+              ],
+            )
+            if (Number(authorizedRows[0]?.['count']) !== sourceScope.sourceVersionIds.length) {
+              throw new ResearchScopeMismatchError('research-source-scope-mismatch')
+            }
+            const validationEventRows = await transaction.unsafe(
+              `SELECT payload
+               FROM event_journal
+               WHERE workspace_id = $1
+                 AND entity_type = 'research'
+                 AND entity_id = $2
+                 AND event_type = 'citations-validated'
+               ORDER BY cursor DESC
+               LIMIT 1`,
+              [input.job.workspaceId, input.runId],
+            )
+            if (validationEventRows.length !== 1) {
+              throw new ResearchAggregateMismatchError(
+                'event.citations-validated',
+              )
+            }
+            const validatedCitationPayload = normalizePersistedPayload(
+              validationEventRows[0]?.['payload'],
+            )
+            if (
+              validatedCitationPayload === undefined
+              || !hasExactKeys(
+                validatedCitationPayload,
+                ['jobId', 'attempt', 'citationCount'],
+              )
+              || validatedCitationPayload['jobId'] !== input.job.id
+              || validatedCitationPayload['attempt'] !== input.job.attempts
+              || validatedCitationPayload['citationCount'] !== input.citations.length
+              || !boundedInteger(
+                validatedCitationPayload['citationCount'],
+                MAX_RESEARCH_CITATION_COUNT,
+              )
+            ) {
+              throw new ResearchAggregateMismatchError(
+                'event.citations-validated.payload',
+              )
+            }
             const jobRows = await transaction.unsafe(
               `UPDATE job_queue
                SET status = 'completed', updated_at = NOW()
                WHERE id = $1
                  AND entity_type = 'research'
                  AND entity_id = $2
+                 AND workspace_id = $3
                  AND status = 'in-progress'
+                 AND attempts = $4
                RETURNING id`,
-              [input.jobId, input.runId],
+              [
+                input.job.id,
+                input.runId,
+                input.job.workspaceId,
+                input.job.attempts,
+              ],
             )
             if (jobRows.length !== 1) {
               throw ownershipLost('complete')
@@ -407,35 +821,41 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
             if (runRows.length !== 1) {
               throw new Error('research-run-completion-transition-conflict')
             }
-            await transaction.unsafe(
+            const resultRows = await transaction.unsafe(
               `INSERT INTO research_run_results (run_id, answer, citations)
                VALUES ($1, $2, $3::jsonb)
-               ON CONFLICT (run_id) DO NOTHING`,
+               RETURNING run_id`,
               [input.runId, input.answer.answer, JSON.stringify(input.answer.citations)],
             )
+            if (resultRows.length !== 1) {
+              throw new Error('research-result-insert-conflict')
+            }
             for (const citation of input.citations) {
-              await transaction.unsafe(
+              const citationRows = await transaction.unsafe(
                 `INSERT INTO citations (id, run_id, source_version_id, locator, status, created_at)
                  VALUES ($1, $2, $3, $4, 'validated', to_timestamp($5 / 1000.0))
-                 ON CONFLICT (id) DO NOTHING`,
+                 RETURNING id`,
                 [
                   citation.id,
-                  citation.runId,
+                  input.runId,
                   citation.sourceVersionId,
                   citation.locator,
                   Number(citation.createdAt),
                 ],
               )
+              if (citationRows.length !== 1) {
+                throw new Error('research-citation-insert-conflict')
+              }
             }
             await transaction.unsafe(
               `INSERT INTO event_journal (id, workspace_id, entity_type, entity_id, event_type, payload, created_at)
                VALUES ($1, $2, 'research', $3, $4, $5::jsonb, to_timestamp($6 / 1000.0))`,
               [
                 input.event.id,
-                input.event.workspaceId,
-                input.event.entityId,
+                input.job.workspaceId,
+                input.runId,
                 input.event.eventType,
-                JSON.stringify(input.event.payload),
+                JSON.stringify(persistedEventPayload),
                 Number(input.event.createdAt),
               ],
             )
@@ -443,6 +863,17 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
         catch: (error) =>
           error instanceof ResearchJobOwnershipLostError
             ? error
+            : error instanceof ResearchScopeMismatchError
+              ? new AuthorizationError({
+                  detail: 'research-source-scope-mismatch',
+                  message: 'One or more source versions are outside the research job scope',
+                })
+            : error instanceof ResearchAggregateMismatchError
+              ? new ValidationError({
+                  field: error.field,
+                  reason: 'research-aggregate-mismatch',
+                  message: 'Research completion aggregate is inconsistent',
+                })
             : new QueryError({
                 operation: 'completeResearch',
                 entity: 'ResearchExecution',
@@ -455,15 +886,47 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
       yield* Effect.tryPromise({
         try: () =>
           sql.transaction(async (transaction) => {
+            validateOwnedEvent(input.job, input.runId, input.event, 'fail')
+            const ownershipRows = await transaction.unsafe(
+              `SELECT id
+               FROM job_queue
+               WHERE id = $1
+                 AND entity_type = 'research'
+                 AND entity_id = $2
+                 AND workspace_id = $3
+                 AND status = 'in-progress'
+                 AND attempts = $4
+               FOR UPDATE`,
+              [
+                input.job.id,
+                input.runId,
+                input.job.workspaceId,
+                input.job.attempts,
+              ],
+            )
+            if (ownershipRows.length !== 1) {
+              throw ownershipLost('fail')
+            }
+            const persistedEventPayload = validateFailedEventPayload(
+              input.event,
+              input.job,
+            )
             const jobRows = await transaction.unsafe(
               `UPDATE job_queue
                SET status = 'failed', updated_at = NOW()
                WHERE id = $1
                  AND entity_type = 'research'
                  AND entity_id = $2
+                 AND workspace_id = $3
                  AND status = 'in-progress'
+                 AND attempts = $4
                RETURNING id`,
-              [input.jobId, input.runId],
+              [
+                input.job.id,
+                input.runId,
+                input.job.workspaceId,
+                input.job.attempts,
+              ],
             )
             if (jobRows.length !== 1) {
               throw ownershipLost('fail')
@@ -483,10 +946,10 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
                VALUES ($1, $2, 'research', $3, $4, $5::jsonb, to_timestamp($6 / 1000.0))`,
               [
                 input.event.id,
-                input.event.workspaceId,
-                input.event.entityId,
+                input.job.workspaceId,
+                input.runId,
                 input.event.eventType,
-                JSON.stringify(input.event.payload),
+                JSON.stringify(persistedEventPayload),
                 Number(input.event.createdAt),
               ],
             )
@@ -494,11 +957,17 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
         catch: (error) =>
           error instanceof ResearchJobOwnershipLostError
             ? error
-            : new QueryError({
-                operation: 'failResearch',
-                entity: 'ResearchExecution',
-                message: 'Atomic research failure persistence failed',
-              }),
+            : error instanceof ResearchAggregateMismatchError
+              ? new ValidationError({
+                  field: error.field,
+                  reason: 'research-event-contract-mismatch',
+                  message: 'Research failure event contract is inconsistent',
+                })
+              : new QueryError({
+                  operation: 'failResearch',
+                  entity: 'ResearchExecution',
+                  message: 'Atomic research failure persistence failed',
+                }),
       })
     })
 
@@ -506,7 +975,7 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
       register,
       recoverStale,
       claimNext,
-      appendEvent,
+      renewLease,
       appendInProgressEvent,
       complete,
       fail,
@@ -514,4 +983,4 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
   }),
 }) {}
 
-export type ResearchExecutionError = PersistenceError | AuthorizationError
+export type ResearchExecutionError = PersistenceError | AuthorizationError | ValidationError

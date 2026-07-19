@@ -68,7 +68,11 @@ Use one note per meaningful work session. Record chronology, validation, and han
 
 <!-- AGENT-START:session-changed-paths -->
 - docs/architecture.md — edited: added §4.2 dependency direction rules + forbidden imports, §4.3 public/internal contract ownership, §4.4 Fred pinning/lockfile/dev-override policy, §6.5 migration ownership/ordering/rollback.
-- docs/local-development.md — new: local service table (PG/pgvector, artifacts, API, worker, web, DuckDB worker child), env/secrets policy, safe volumes, log/event sanitization, platform fallbacks, reproduction blockers.
+- docs/local-development.md — created the local service table, env/secrets
+  policy, safe volumes, sanitization, platform fallbacks, and reproduction
+  blockers. Its selected-at-the-time DuckDB worker-child entry was later
+  superseded by DEC-0003/DEC-0005; the current document specifies the isolated
+  Phase-04 sidecar and Bun-only maintained host.
 - docs/repository-contract.md — new: root command inventory, CI gate matrix (PR/nightly/pre-release), Phase 1 handoff (exact initial files + deferrals + excluded infra).
 - README.md — filled (was empty): bootstrap quick-start, planned layout, canonical-doc index, core invariants.
 - docs/implementation-plan.md — edited: cross-reference to repository/local-stack contracts.

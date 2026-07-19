@@ -8,7 +8,7 @@ status: accepted
 decided_on: '2026-07-17'
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 supersedes: []
 superseded_by: []
 related_notes:
@@ -35,7 +35,13 @@ tags:
 
 - Use DuckDB for deterministic analytical execution and Parquet for normalized columnar artifacts.
 - Keep datasets as first-class cataloged versions with schemas, profiles, input lineage, and query-result artifacts.
-- Use the official `@duckdb/node-api` line behind a scoped Effect service; choose in-process versus isolated worker topology only after the Phase 00 spike.
+- Run DuckDB behind an isolated Phase-04 container/sidecar and a scoped typed
+  Effect client. The sidecar may use the runtime required by its selected
+  adapter, pinned inside the image; Bun remains the sole maintained host
+  runtime.
+- Phase-04 refinement selects the exact image, authenticated protocol, mounts,
+  health checks, resource limits, cancellation, and restart contract. The
+  current Compose stack provisions PostgreSQL only.
 - Expose bounded validated query tools to Fred rather than raw DuckDB access.
 
 ## Alternatives Considered
@@ -51,7 +57,8 @@ tags:
 
 ## Consequences
 
-- DuckDB topology is spike-gated but the service boundary is stable.
+- The containerized service boundary is stable; its implementation remains
+  gated by Phase-04 refinement and validation.
 - Exact query artifacts are part of citation provenance.
 - No agent receives unrestricted SQL or filesystem capabilities.
 
@@ -67,4 +74,7 @@ tags:
 
 <!-- AGENT-START:decision-change-log -->
 - 2026-07-17 - Accepted during greenfield architecture planning; implementation remains gated by the linked phase and spikes.
+- 2026-07-19 - Reconciled the Phase-00 child-process evidence with the
+  Bun-only maintained-host decision: Phase 04 will implement an isolated
+  DuckDB sidecar rather than a host child process.
 <!-- AGENT-END:decision-change-log -->

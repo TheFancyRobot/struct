@@ -3,6 +3,14 @@ import { Effect, ConfigProvider, Layer, Exit } from 'effect'
 import {
   artifactStorageRootConfig,
   databaseUrlConfig,
+  deriveIngestionJobHeartbeatIntervalMs,
+  deriveSourceTextReindexHeartbeatIntervalMs,
+  MAX_INGESTION_JOB_HEARTBEAT_MS,
+  MAX_RESEARCH_JOB_HEARTBEAT_MS,
+  MAX_SOURCE_TEXT_REINDEX_HEARTBEAT_MS,
+  MIN_RESEARCH_JOB_STALE_MARGIN_MS,
+  ResearchJobTimingConfigurationError,
+  validateResearchJobTiming,
   workerJobStaleMsConfig,
   workerMetricsPortConfig,
   workerPollIntervalMsConfig,
@@ -83,5 +91,68 @@ describe('Worker ingestion config', () => {
     )
 
     expect(Exit.isFailure(result)).toBe(true)
+  })
+
+  it('derives an ingestion heartbeat inside both the poll and stale windows', () => {
+    expect(deriveIngestionJobHeartbeatIntervalMs({
+      pollIntervalMs: 1_000,
+      staleMs: 300_000,
+    })).toBe(1_000)
+    expect(deriveIngestionJobHeartbeatIntervalMs({
+      pollIntervalMs: 60_000,
+      staleMs: 300_000,
+    })).toBe(MAX_INGESTION_JOB_HEARTBEAT_MS)
+    expect(deriveIngestionJobHeartbeatIntervalMs({
+      pollIntervalMs: 60_000,
+      staleMs: 15_000,
+    })).toBe(5_000)
+  })
+
+  it('derives a bounded source-text reindex heartbeat', () => {
+    expect(deriveSourceTextReindexHeartbeatIntervalMs({
+      pollIntervalMs: 1_000,
+      staleMs: 300_000,
+    })).toBe(1_000)
+    expect(deriveSourceTextReindexHeartbeatIntervalMs({
+      pollIntervalMs: 60_000,
+      staleMs: 300_000,
+    })).toBe(MAX_SOURCE_TEXT_REINDEX_HEARTBEAT_MS)
+    expect(deriveSourceTextReindexHeartbeatIntervalMs({
+      pollIntervalMs: 60_000,
+      staleMs: 15_000,
+    })).toBe(5_000)
+  })
+
+  it('accepts the exact safe research lease boundary and derives a bounded heartbeat', async () => {
+    const researchMaxElapsedMs = 60_000
+    const pollIntervalMs = 1_000
+    const staleMs = researchMaxElapsedMs + MIN_RESEARCH_JOB_STALE_MARGIN_MS
+
+    const timing = await Effect.runPromise(validateResearchJobTiming({
+      pollIntervalMs,
+      staleMs,
+      researchMaxElapsedMs,
+    }))
+
+    expect(timing.minimumStaleMs).toBe(staleMs)
+    expect(timing.heartbeatIntervalMs).toBe(MAX_RESEARCH_JOB_HEARTBEAT_MS)
+  })
+
+  it('rejects a stale threshold that only equals or approaches the Fred deadline', async () => {
+    const researchMaxElapsedMs = 60_000
+    const pollIntervalMs = 20_000
+    const error = await Effect.runPromise(validateResearchJobTiming({
+      pollIntervalMs,
+      staleMs: researchMaxElapsedMs + (pollIntervalMs * 2) - 1,
+      researchMaxElapsedMs,
+    }).pipe(Effect.flip))
+
+    expect(error).toBeInstanceOf(ResearchJobTimingConfigurationError)
+    expect(error.minimumStaleMs).toBe(
+      researchMaxElapsedMs + (pollIntervalMs * 2),
+    )
+    expect(error.message).toContain(
+      'WORKER_JOB_STALE_MS must be at least RESEARCH_MAX_ELAPSED_MS',
+    )
   })
 })

@@ -56,7 +56,7 @@ git diff --check
 rg -n "trust boundary|workspace|symlink|traversal|prompt injection|ATTACH|INSTALL|LOAD|secret|quota|cancel|audit|retention" docs/security-model.md
 ```
 
-Then manually cross-check `docs/security-model.md`, `docs/architecture.md`, DEC-0009, STEP-00-03's chosen topology, and the refined step artifacts for contradictions. Phase 0 does not run the future `bun test packages/ingestion packages/data-engine` commands; record those in the test matrix for the implementing phases.
+Then manually cross-check `docs/security-model.md`, `docs/architecture.md`, DEC-0009, STEP-00-03's selected-at-the-time topology and hardening evidence, the DEC-0003/DEC-0005 Phase-04 sidecar supersession, and the refined step artifacts for contradictions. Phase 0 does not run the future `bun test packages/ingestion packages/data-engine` commands; record those in the test matrix for the implementing phases.
 
 ### Edge, Recovery, Privacy, and Performance Review
 

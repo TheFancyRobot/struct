@@ -93,10 +93,16 @@ describeIf('single text source ingestion real DB integration', () => {
     const workerResult = await Effect.runPromise(processOneIngestionJob({
       now: () => BigInt(Date.now()),
       randomSourceVersionId: () => sourceVersionId,
-      staleBeforeMs: Date.now() - 300000,
+      staleAfterMs: 300_000,
+      heartbeatIntervalMs: 1_000,
       jobs: {
-        recoverStaleIngestionJobs: (staleBeforeMs) => JobQueueRepo.recoverStaleIngestionJobs(staleBeforeMs).pipe(Effect.provide(jobLayer)),
+        recoverStaleIngestionJobs: (staleAfterMs) =>
+          JobQueueRepo.recoverStaleIngestionJobs(staleAfterMs).pipe(
+            Effect.provide(jobLayer),
+          ),
         claimNextIngestionJob: () => JobQueueRepo.claimNextIngestionJob().pipe(Effect.provide(jobLayer)),
+        renewLease: (job) =>
+          JobQueueRepo.renewLease(job).pipe(Effect.provide(jobLayer)),
         appendInProgressEvent: (job, event) =>
           JobQueueRepo.appendInProgressEvent(job, event).pipe(Effect.provide(jobLayer)),
         markCompleted: (job, event) =>
@@ -165,7 +171,7 @@ describeIf('single text source ingestion real DB integration', () => {
         entityType: 'ingestion',
         entityId: sourceId,
         status: 'pending',
-        payload: { test: 'stale-attempt-fencing' },
+        payload: { test: 'stale-attempt-fencing', byteLength: 12 },
         attempts: 0,
         maxAttempts: 3,
         createdAt: 1n,
@@ -176,8 +182,14 @@ describeIf('single text source ingestion real DB integration', () => {
       JobQueueRepo.claimNextIngestionJob().pipe(Effect.provide(jobLayer)),
     )
     if (Option.isNone(first)) throw new Error('first ingestion attempt was not claimed')
+    await sql.unsafe(
+      `UPDATE job_queue
+       SET updated_at = NOW() - INTERVAL '10 minutes'
+       WHERE id = $1`,
+      [staleJobId],
+    )
     await Effect.runPromise(
-      JobQueueRepo.recoverStaleIngestionJobs(Date.now() + 60_000).pipe(
+      JobQueueRepo.recoverStaleIngestionJobs(300_000).pipe(
         Effect.provide(jobLayer),
       ),
     )
@@ -186,13 +198,44 @@ describeIf('single text source ingestion real DB integration', () => {
     )
     if (Option.isNone(second)) throw new Error('second ingestion attempt was not claimed')
 
-    const event = (id: string, eventType: string) => ({
+    const manifestRef =
+      'artifact://sha256/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+    const contentHash =
+      'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+    const event = (
+      id: string,
+      eventType: string,
+      job: typeof second.value,
+    ) => ({
       id: EventJournalId.make(id),
       workspaceId,
       entityType: 'ingestion',
       entityId: sourceId,
       eventType,
-      payload: { attempt: 1 },
+      payload: eventType === 'file-processed'
+        ? {
+            jobId: job.id,
+            attempt: job.attempts,
+            sourceVersionId: '950e8400-e29b-41d4-a716-446655440037',
+            manifestRef,
+            contentHash,
+            byteLength: 12,
+          }
+        : eventType === 'ingestion-completed'
+          ? {
+              jobId: job.id,
+              attempt: job.attempts,
+              sourceVersionId: '950e8400-e29b-41d4-a716-446655440037',
+              manifestRef,
+              contentHash,
+            }
+          : {
+              jobId: job.id,
+              attempt: job.attempts,
+              errorTag: 'IngestionFailure',
+              message: 'Ingestion failed',
+              retryable: true,
+            },
       cursor: 0n,
       createdAt: 2n,
     })
@@ -200,8 +243,8 @@ describeIf('single text source ingestion real DB integration', () => {
       id: SourceVersionId.make('950e8400-e29b-41d4-a716-446655440037'),
       sourceId,
       version: 99,
-      artifactRef: 'artifact://sha256/attempt-fenced',
-      contentHash: 'sha256:attempt-fenced',
+      artifactRef: manifestRef,
+      contentHash,
       createdAt: 2n,
     }
     const staleCreate = await Effect.runPromiseExit(
@@ -220,19 +263,23 @@ describeIf('single text source ingestion real DB integration', () => {
     const staleEffects = [
       JobQueueRepo.appendInProgressEvent(
         first.value,
-        event('950e8400-e29b-41d4-a716-446655440031', 'file-processed'),
+        event('950e8400-e29b-41d4-a716-446655440031', 'file-processed', first.value),
       ),
       JobQueueRepo.markCompleted(
         first.value,
-        event('950e8400-e29b-41d4-a716-446655440032', 'ingestion-completed'),
+        event('950e8400-e29b-41d4-a716-446655440032', 'ingestion-completed', first.value),
       ),
       JobQueueRepo.markPending(
         first.value,
-        event('950e8400-e29b-41d4-a716-446655440033', 'ingestion-failed'),
+        event('950e8400-e29b-41d4-a716-446655440033', 'ingestion-failed', first.value),
       ),
       JobQueueRepo.markFailed(
-        first.value,
-        event('950e8400-e29b-41d4-a716-446655440034', 'ingestion-failed'),
+        { ...first.value, attempts: first.value.maxAttempts },
+        event(
+          '950e8400-e29b-41d4-a716-446655440034',
+          'ingestion-failed',
+          { ...first.value, attempts: first.value.maxAttempts },
+        ),
       ),
     ]
     for (const effect of staleEffects) {
@@ -246,13 +293,13 @@ describeIf('single text source ingestion real DB integration', () => {
     await Effect.runPromise(
       JobQueueRepo.appendInProgressEvent(
         second.value,
-        event('950e8400-e29b-41d4-a716-446655440035', 'file-processed'),
+        event('950e8400-e29b-41d4-a716-446655440035', 'file-processed', second.value),
       ).pipe(Effect.provide(jobLayer)),
     )
     await Effect.runPromise(
       JobQueueRepo.markCompleted(
         second.value,
-        event('950e8400-e29b-41d4-a716-446655440036', 'ingestion-completed'),
+        event('950e8400-e29b-41d4-a716-446655440036', 'ingestion-completed', second.value),
       ).pipe(Effect.provide(jobLayer)),
     )
 

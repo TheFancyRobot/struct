@@ -17,7 +17,7 @@ All commands run from the repository root via the Bun workspace scripts that STE
 | `bun run typecheck` | `tsc --noEmit` across the workspace via `tsconfig.base.json` | root scripts | STEP-01-01 |
 | `bun run lint` | ESLint + import-boundary check (`dependency-cruiser`/`eslint-plugin-import`) | root scripts | STEP-01-01 |
 | `bun run lint:imports` | Enforce package dependency directions and forbid cross-app/deep-path imports | root scripts | STEP-01-01 |
-| `bun run test` / `bun test` | Unit tests across packages | root scripts | STEP-01-01 |
+| `bun run test` | Serial unit and integration tests across the maintained `apps/*` and `packages/*` workspaces | root script (scoped to `./apps ./packages`) | STEP-01-01 |
 | `bun run test:integration` | Integration tests (apps/api, apps/worker, persistence, data-engine) | root scripts | Phase 01+ |
 | `bun run test:e2e` | Browser/end-to-end tests for visible UI states | root scripts | Phase 01+ |
 | `bun run migrations:up` | Apply pending migrations (sole executor: `apps/api`) | `apps/api` | STEP-01-01 |
@@ -60,7 +60,7 @@ Three gate tiers. Each check names its owner. Gate-tier *thresholds* (pass/fail 
 | --- | --- | --- |
 | `bun run test:integration` | apps + persistence | API, worker, persistence, data-engine integration |
 | recovery / cancellation replay | `apps/worker` | restart-safe scenarios from STEP-00-02 (two-process resume, exit `86`→`0`, duplicate side-effect rate `0`) |
-| DuckDB topology regression | `packages/data-engine` | `worker` topology wins; `direct` (crashContained=null) cannot win (STEP-00-03) |
+| DuckDB topology regression | `packages/data-engine` | Phase-04 sidecar crash cannot terminate the Bun worker; in-process `direct` remains rejected. Until the sidecar exists, verify current Compose contains PostgreSQL only and treat STEP-00-03 child-process results as historical evidence. |
 | `bun run corpus:smoke` | `packages/evaluation` | small synthetic corpus subset (full corpus deferred) |
 | injection-resistance smoke | `packages/data-engine` + security | DuckDB `read_json_auto('/etc/passwd')` DENIED; `ATTACH`/`INSTALL` DENIED (STEP-00-03) |
 | docs build | docs | full docs site builds |
@@ -98,7 +98,9 @@ Applications (minimal surfaces for the walking skeleton):
 
 - `apps/web/package.json` — SolidJS + Vite 8 + Solid Router + Tailwind CSS + DaisyUI (DEC-0014, DEC-0013), typed client, SSE consumption; no direct DB or orchestration.
 - `apps/api/package.json` — Effect HTTP boundary, auth, typed query/command, SSE, sole migration executor.
-- `apps/worker/package.json` — durable ingestion, research execution, DuckDB worker-child supervisor, recovery.
+- `apps/worker/package.json` — durable ingestion, research execution, typed
+  data-engine client orchestration, recovery. It does not load or supervise a
+  host-native DuckDB runtime.
 
 Packages (only the minimal set the walking skeleton needs):
 
@@ -112,7 +114,10 @@ Packages (only the minimal set the walking skeleton needs):
 
 - `packages/retrieval`, `research-engine`, and `fred-workflows` were scaffolded by STEP-01-04 and now own the deterministic text-search, walking-slice research, and Fred orchestration boundaries.
 - `packages/document-processing`, `data-engine`, `evaluation`, and `shared-ui` — scaffolded when their owning phase needs them; not empty stubs.
-- `packages/data-engine` DuckDB worker child — Phase 04 owns production data-plane code; STEP-00-03 owns the spike contract.
+- `packages/data-engine` typed DuckDB sidecar client/policy plus the isolated
+  sidecar service — Phase 04 owns production data-plane code and the Compose
+  addition. The current `docker-compose.yml` still provisions PostgreSQL only.
+  STEP-00-03 remains historical spike evidence, not the production topology.
 - `packages/evaluation` corpus generator + CI gate implementation — Phase 04 / Phase 09; STEP-00-06 owns the spec.
 - Production S3 artifact adapter — Phase 09; the dev FS adapter is sufficient until then.
 - Gate-tier thresholds and adversarial fixture matrix — STEP-00-06 (downstream).

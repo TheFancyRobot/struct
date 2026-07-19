@@ -11,7 +11,11 @@
   1. Canonical tree, package responsibilities, dependency directions, forbidden cycles, and public/internal contract ownership — `architecture.md` §4.1–§4.3.
   2. Root command inventory (install/dev/build/typecheck/lint/unit/integration/e2e/migrations/corpus-smoke/benchmarks) — `repository-contract.md` §1.
   3. Fred pinning, lockfile ownership, dev-only local override excluded from releases — `architecture.md` §4.4.
-  4. Local service table (PostgreSQL/pgvector, artifact storage, API, worker, web, DuckDB worker child) with owner/port/volume/health/startup/shutdown/reset — `local-development.md` §1–§2.
+  4. Local service table with owner/port/volume/health/startup/shutdown/reset —
+     `local-development.md` §1–§2. This outcome originally included the
+     selected-at-the-time DuckDB child-process candidate; DEC-0003/DEC-0005
+     later superseded it with the isolated Phase-04 sidecar now documented
+     there.
   5. Environment/secrets/example-file policy, safe volumes/temp roots, log/event sanitization — `local-development.md` §3.
   6. Migration ownership/ordering/forward-rollback + sole executor — `architecture.md` §6.5.
   7. CI gate matrix (PR/nightly/pre-release incl. security/recovery/evaluation/docs/perf) — `repository-contract.md` §2.

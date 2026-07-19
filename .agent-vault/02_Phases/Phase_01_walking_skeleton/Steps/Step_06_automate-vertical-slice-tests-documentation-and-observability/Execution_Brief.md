@@ -172,10 +172,12 @@ This step ensures the walking slice passes the PR gate:
   `bun src/corpus-smoke.ts`, `bun src/corpus-eval.ts`, and
   `bun src/benchmarks/run.ts`.
 - Quickstart prerequisites list Bun 1.3.13 and Docker for maintained host
-  development; Node is not a host prerequisite. An explicitly isolated DuckDB
-  or other native-dependency process/container may carry the runtime required
-  by its adapter, but that exception stays inside the documented boundary and
-  does not establish a second workspace toolchain.
+  development; Node is not a host prerequisite. An explicitly isolated
+  native-dependency container/service image may carry the runtime required by
+  its adapter, pinned inside that image, without establishing a second
+  workspace toolchain. Phase 04's planned DuckDB sidecar is the accepted
+  instance; DuckDB must not run as a host child process or load its native
+  adapter into a maintained host application.
 - CI and completion evidence use the native Bun equivalents above, including
   serial execution for PostgreSQL-backed suites where shared database state
   requires it.

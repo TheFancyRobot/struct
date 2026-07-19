@@ -8,20 +8,27 @@ phase: '[[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]'
 status: completed
 owner: step-01-03-recovery2-implementor
 created: '2026-07-17'
-updated: '2026-07-18'
+updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_01_walking_skeleton/Steps/Step_02_define-core-domain-schemas-and-persistence-migrations|STEP-01-02 Define Core Domain Schemas and Persistence Migrations]]'
 related_sessions:
   - '[[05_Sessions/2026-07-18-165219-implement-single-text-source-ingestion-and-artifact-storage-step-01-03-implementor|SESSION-2026-07-18-165219 step-01-03-implementor session for Implement Single Text Source Ingestion and Artifact Storage]]'
   - '[[05_Sessions/2026-07-18-193554-implement-single-text-source-ingestion-and-artifact-storage-step-01-03-review-remediation|SESSION-2026-07-18-193554 step-01-03-review-remediation session for Implement Single Text Source Ingestion and Artifact Storage]]'
-related_bugs: []
+  - '[[05_Sessions/2026-07-19-020940-implement-single-text-source-ingestion-and-artifact-storage-ingestion-transition-remediator|SESSION-2026-07-19-020940 ingestion-transition-remediator session for Implement Single Text Source Ingestion and Artifact Storage]]'
+  - '[[05_Sessions/2026-07-19-021959-implement-single-text-source-ingestion-and-artifact-storage-source-registration-remediator|SESSION-2026-07-19-021959 source-registration-remediator session for Implement Single Text Source Ingestion and Artifact Storage]]'
+  - '[[05_Sessions/2026-07-19-031251-implement-single-text-source-ingestion-and-artifact-storage-ingestion-retryability-remediator|SESSION-2026-07-19-031251 ingestion-retryability-remediator session for Implement Single Text Source Ingestion and Artifact Storage]]'
+  - '[[05_Sessions/2026-07-19-032516-implement-single-text-source-ingestion-and-artifact-storage-step-01-04-registration-payload-leak-remediation|SESSION-2026-07-19-032516 step-01-04-registration-payload-leak-remediation session for Implement Single Text Source Ingestion and Artifact Storage]]'
+related_bugs:
+  - '[[03_Bugs/BUG-0002_sourceversion-ingestion-attempt-accepts-forged-aggregate-scope|BUG-0002 SourceVersion ingestion attempt accepts forged aggregate scope]]'
+  - '[[03_Bugs/BUG-0003_source-registration-persists-unauthorized-mismatched-aggregate-scope|BUG-0003 Source registration persists unauthorized mismatched aggregate scope]]'
+  - '[[03_Bugs/BUG-0009_source-registration-persists-extra-sensitive-payload-fields|BUG-0009 Source registration persists extra sensitive payload fields]]'
 tags:
   - agent-vault
   - step
-context_id: SESSION-2026-07-18-193554
-active_session_id: 05_Sessions/2026-07-18-193554-implement-single-text-source-ingestion-and-artifact-storage-step-01-03-review-remediation
-context_status: completed
-context_summary: Completed all four STEP-01-03 lead-review remediations with focused, root, PostgreSQL, migration, and spike validation; awaiting read-only re-review before STEP-01-04.
+context_id: SESSION-2026-07-19-032516
+active_session_id: 05_Sessions/2026-07-19-032516-implement-single-text-source-ingestion-and-artifact-storage-step-01-04-registration-payload-leak-remediation
+context_status: active
+context_summary: Advance [[02_Phases/Phase_01_walking_skeleton/Steps/Step_03_implement-single-text-source-ingestion-and-artifact-storage|STEP-01-03 Implement Single Text Source Ingestion and Artifact Storage]].
 ---
 
 # Step 03 - Implement Single Text Source Ingestion and Artifact Storage
@@ -73,9 +80,15 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 <!-- AGENT-START:step-session-history -->
 - 2026-07-18 - [[05_Sessions/2026-07-18-165219-implement-single-text-source-ingestion-and-artifact-storage-step-01-03-implementor|SESSION-2026-07-18-165219 step-01-03-implementor session for Implement Single Text Source Ingestion and Artifact Storage]] - Completed STEP-01-03 implementation and validation.
 - 2026-07-18 - [[05_Sessions/2026-07-18-193554-implement-single-text-source-ingestion-and-artifact-storage-step-01-03-review-remediation|SESSION-2026-07-18-193554 step-01-03-review-remediation session for Implement Single Text Source Ingestion and Artifact Storage]] - Session created.
+- 2026-07-19 - [[05_Sessions/2026-07-19-020940-implement-single-text-source-ingestion-and-artifact-storage-ingestion-transition-remediator|SESSION-2026-07-19-020940 ingestion-transition-remediator session for Implement Single Text Source Ingestion and Artifact Storage]] - Session created.
+- 2026-07-19 - [[05_Sessions/2026-07-19-021959-implement-single-text-source-ingestion-and-artifact-storage-source-registration-remediator|SESSION-2026-07-19-021959 source-registration-remediator session for Implement Single Text Source Ingestion and Artifact Storage]] - Session created.
+- 2026-07-19 - [[05_Sessions/2026-07-19-031251-implement-single-text-source-ingestion-and-artifact-storage-ingestion-retryability-remediator|SESSION-2026-07-19-031251 ingestion-retryability-remediator session for Implement Single Text Source Ingestion and Artifact Storage]] - Session created.
+- 2026-07-19 - [[05_Sessions/2026-07-19-032516-implement-single-text-source-ingestion-and-artifact-storage-step-01-04-registration-payload-leak-remediation|SESSION-2026-07-19-032516 step-01-04-registration-payload-leak-remediation session for Implement Single Text Source Ingestion and Artifact Storage]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes
 
 - [[07_Templates/Note_Contracts|Note Contracts]]
 - [[07_Templates/Phase_Template|Phase Template]]
+- Bug: [[03_Bugs/BUG-0006_job-transitions-persist-unvalidated-cross-domain-journal-payloads|BUG-0006 Job transitions persist unvalidated cross-domain journal payloads]]
+- Session: [[05_Sessions/2026-07-19-031251-implement-single-text-source-ingestion-and-artifact-storage-ingestion-retryability-remediator|SESSION-2026-07-19-031251 ingestion retryability remediator]]

@@ -102,7 +102,7 @@ export class SourceTextReindexRepo extends Effect.Service<SourceTextReindexRepo>
       })
 
       const recoverStale = Effect.fn('SourceTextReindexRepo.recoverStale')(
-        function* (staleBeforeMs: number) {
+        function* (staleAfterMs: number) {
           yield* Effect.tryPromise({
             try: () =>
               sql.transaction(async (transaction) => {
@@ -112,9 +112,9 @@ export class SourceTextReindexRepo extends Effect.Service<SourceTextReindexRepo>
                        last_error_code = 'stale-lease',
                        updated_at = NOW()
                    WHERE status = 'in-progress'
-                     AND updated_at < to_timestamp($1 / 1000.0)
+                     AND updated_at < NOW() - ($1 * INTERVAL '1 millisecond')
                      AND attempts < max_attempts`,
-                  [staleBeforeMs],
+                  [staleAfterMs],
                 )
                 await transaction.unsafe(
                   `UPDATE source_text_reindex_jobs
@@ -122,9 +122,9 @@ export class SourceTextReindexRepo extends Effect.Service<SourceTextReindexRepo>
                        last_error_code = 'stale-lease-exhausted',
                        updated_at = NOW()
                    WHERE status = 'in-progress'
-                     AND updated_at < to_timestamp($1 / 1000.0)
+                     AND updated_at < NOW() - ($1 * INTERVAL '1 millisecond')
                      AND attempts >= max_attempts`,
-                  [staleBeforeMs],
+                  [staleAfterMs],
                 )
               }),
             catch: () =>
@@ -134,6 +134,44 @@ export class SourceTextReindexRepo extends Effect.Service<SourceTextReindexRepo>
                 message: 'Stale source text reindex recovery failed',
               }),
           })
+        },
+      )
+
+      const renewLease = Effect.fn('SourceTextReindexRepo.renewLease')(
+        function* (job: SourceTextReindexJob) {
+          const rows = yield* Effect.tryPromise({
+            try: () =>
+              sql.unsafe(
+                `UPDATE source_text_reindex_jobs
+                 SET updated_at = NOW()
+                 WHERE source_version_id = $1
+                   AND workspace_id = $2
+                   AND project_id = $3
+                   AND status = 'in-progress'
+                   AND attempts = $4
+                 RETURNING source_version_id`,
+                [
+                  job.sourceVersionId,
+                  job.workspaceId,
+                  job.projectId,
+                  job.attempts,
+                ],
+              ),
+            catch: () =>
+              new QueryError({
+                operation: 'renewSourceTextReindexLease',
+                entity: 'SourceTextReindexJob',
+                message: 'Source text reindex lease renewal failed',
+              }),
+          })
+          if (rows.length !== 1) {
+            return yield* new SourceTextReindexOwnershipLostError({
+              sourceVersionId: job.sourceVersionId,
+              attempt: job.attempts,
+              transition: 'renew-lease',
+              message: 'Source text reindex attempt no longer owns the in-progress lease',
+            })
+          }
         },
       )
 
@@ -150,10 +188,18 @@ export class SourceTextReindexRepo extends Effect.Service<SourceTextReindexRepo>
                      last_error_code = $2,
                      updated_at = NOW()
                  WHERE source_version_id = $1
+                   AND workspace_id = $4
+                   AND project_id = $5
                    AND status = 'in-progress'
                    AND attempts = $3
                  RETURNING source_version_id`,
-                [job.sourceVersionId, errorCode, job.attempts],
+                [
+                  job.sourceVersionId,
+                  errorCode,
+                  job.attempts,
+                  job.workspaceId,
+                  job.projectId,
+                ],
               ),
             catch: () =>
               new QueryError({
@@ -173,7 +219,7 @@ export class SourceTextReindexRepo extends Effect.Service<SourceTextReindexRepo>
         },
       )
 
-      return { claimNext, recoverStale, recordFailure }
+      return { claimNext, recoverStale, renewLease, recordFailure }
     }),
   },
 ) {}

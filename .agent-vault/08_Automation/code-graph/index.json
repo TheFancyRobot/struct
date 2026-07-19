@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-19T00:32:50.407Z",
+  "generatedAt": "2026-07-19T03:30:28.586Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -238,8 +238,8 @@
         }
       ],
       "exports": [],
-      "hash": "e1bfe1397fca5e49cf89710ecdbdf007490bb940bdb2e1e22367498840dc8012",
-      "mtimeMs": 1784358150064.6353,
+      "hash": "3cf89091584c9c3df2953167b6cc328b32c193481ffe85f90f34a53750f12cc7",
+      "mtimeMs": 1784423125629.1985,
       "size": 2266,
       "generated": false,
       "vendor": false,
@@ -304,67 +304,67 @@
         {
           "name": "ValidationError",
           "kind": "const",
-          "line": 17,
+          "line": 21,
           "exported": true,
-          "endLine": 17
+          "endLine": 21
         },
         {
           "name": "AuthorizationError",
           "kind": "const",
-          "line": 17,
+          "line": 21,
           "exported": true,
-          "endLine": 17
+          "endLine": 21
         },
         {
           "name": "RegisterTextSourceInput",
           "kind": "interface",
-          "line": 19,
+          "line": 23,
           "exported": true,
-          "endLine": 19
+          "endLine": 23
         },
         {
           "name": "RegisterTextSourceResult",
           "kind": "interface",
-          "line": 27,
+          "line": 31,
           "exported": true,
-          "endLine": 27
+          "endLine": 31
         },
         {
           "name": "RegisterTextSourceDeps",
           "kind": "interface",
-          "line": 33,
+          "line": 37,
           "exported": true,
-          "endLine": 33
+          "endLine": 37
         },
         {
           "name": "isSafeUploadName",
           "kind": "function",
-          "line": 56,
+          "line": 60,
           "exported": false,
-          "endLine": 56,
+          "endLine": 60,
           "signature": "(name: string)"
         },
         {
           "name": "isSupportedTextUpload",
           "kind": "function",
-          "line": 65,
+          "line": 69,
           "exported": false,
-          "endLine": 65,
+          "endLine": 69,
           "signature": "(name: string, mediaType: string)"
         },
         {
           "name": "mapUnknown",
           "kind": "const",
-          "line": 70,
+          "line": 74,
           "exported": false,
-          "endLine": 70
+          "endLine": 74
         },
         {
           "name": "registerTextSource",
           "kind": "const",
-          "line": 75,
+          "line": 79,
           "exported": true,
-          "endLine": 75
+          "endLine": 79
         }
       ],
       "imports": [
@@ -377,19 +377,18 @@
           "kind": "static"
         },
         {
-          "source": "ArtifactStoreShape, StagedArtifactRef",
+          "source": "ArtifactStoreShape",
           "specifier": "@struct/source-storage",
           "imported": [
-            "ArtifactStoreShape",
-            "StagedArtifactRef"
+            "ArtifactStoreShape"
           ],
           "kind": "type"
         }
       ],
       "exports": [],
-      "hash": "9f5b45ff89d399c20edece4a0945da0b2373712c1c0721d5332b504c2e81a643",
-      "mtimeMs": 1784406441265.9531,
-      "size": 5045,
+      "hash": "6b7079ff247f6bf17f5794d8bb8928ed7aa66a9b8113df5d7ead0eac2e6c10e5",
+      "mtimeMs": 1784431491107.1516,
+      "size": 5195,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -481,22 +480,103 @@
           "line": 34,
           "exported": true,
           "endLine": 34
+        },
+        {
+          "name": "MIN_RESEARCH_JOB_STALE_MARGIN_MS",
+          "kind": "const",
+          "line": 45,
+          "exported": true,
+          "endLine": 45
+        },
+        {
+          "name": "MAX_RESEARCH_JOB_HEARTBEAT_MS",
+          "kind": "const",
+          "line": 46,
+          "exported": true,
+          "endLine": 46
+        },
+        {
+          "name": "MAX_INGESTION_JOB_HEARTBEAT_MS",
+          "kind": "const",
+          "line": 47,
+          "exported": true,
+          "endLine": 47
+        },
+        {
+          "name": "MAX_SOURCE_TEXT_REINDEX_HEARTBEAT_MS",
+          "kind": "const",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "IngestionJobTiming",
+          "kind": "interface",
+          "line": 50,
+          "exported": true,
+          "endLine": 50
+        },
+        {
+          "name": "deriveIngestionJobHeartbeatIntervalMs",
+          "kind": "function",
+          "line": 59,
+          "exported": true,
+          "endLine": 59,
+          "doc": "Keep at least three renewal opportunities inside one stale window, never\nrenew less frequently than the poll cadence, and cap steady-state DB load."
+        },
+        {
+          "name": "deriveSourceTextReindexHeartbeatIntervalMs",
+          "kind": "function",
+          "line": 73,
+          "exported": true,
+          "endLine": 73,
+          "doc": ""
+        },
+        {
+          "name": "ResearchJobTiming",
+          "kind": "interface",
+          "line": 86,
+          "exported": true,
+          "endLine": 86
+        },
+        {
+          "name": "ValidatedResearchJobTiming",
+          "kind": "interface",
+          "line": 92,
+          "exported": true,
+          "endLine": 92
+        },
+        {
+          "name": "ResearchJobTimingConfigurationError",
+          "kind": "class",
+          "line": 97,
+          "exported": true,
+          "endLine": 97
+        },
+        {
+          "name": "validateResearchJobTiming",
+          "kind": "const",
+          "line": 109,
+          "exported": true,
+          "endLine": 109
         }
       ],
       "imports": [
         {
-          "source": "Config",
+          "source": "Config, Effect, Schema",
           "specifier": "effect",
           "imported": [
-            "Config"
+            "Config",
+            "Effect",
+            "Schema"
           ],
           "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "78e1342d6225f25663039dbd6949f0e3ef111afdbe3360d6176ee022fa2485ee",
-      "mtimeMs": 1784394284187.4922,
-      "size": 1253,
+      "hash": "01afb8788ca2d18471a37ac6f8f46be25b722e8f591e418852d74e9e49cde62a",
+      "mtimeMs": 1784427659523.824,
+      "size": 4260,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -508,88 +588,147 @@
         {
           "name": "WorkerIngestionResult",
           "kind": "interface",
-          "line": 17,
+          "line": 18,
           "exported": true,
-          "endLine": 17
+          "endLine": 18
         },
         {
           "name": "EventJournalType",
           "kind": "type",
-          "line": 26,
+          "line": 27,
           "exported": false,
-          "endLine": 26
+          "endLine": 27
         },
         {
           "name": "IngestionWorkerDeps",
           "kind": "interface",
-          "line": 28,
+          "line": 29,
           "exported": true,
-          "endLine": 28
+          "endLine": 29
         },
         {
           "name": "ProcessOneResult",
           "kind": "interface",
-          "line": 72,
+          "line": 75,
           "exported": true,
-          "endLine": 72
+          "endLine": 75
         },
         {
           "name": "IngestionPayload",
           "kind": "interface",
-          "line": 77,
+          "line": 80,
           "exported": false,
-          "endLine": 77
+          "endLine": 80
+        },
+        {
+          "name": "IngestionLeaseHeartbeatError",
+          "kind": "class",
+          "line": 87,
+          "exported": false,
+          "endLine": 87
+        },
+        {
+          "name": "DeclaredRetryableIngestionError",
+          "kind": "class",
+          "line": 101,
+          "exported": true,
+          "endLine": 101,
+          "doc": "Explicit escape hatch for adapters that can prove a failure is transient.\nUnknown errors fail closed as terminal; callers must not infer retryability\nfrom an arbitrary message."
+        },
+        {
+          "name": "IngestionFailureDisposition",
+          "kind": "type",
+          "line": 111,
+          "exported": true,
+          "endLine": 111
+        },
+        {
+          "name": "retryableFailureTags",
+          "kind": "const",
+          "line": 113,
+          "exported": false,
+          "endLine": 113
+        },
+        {
+          "name": "retryableIngestionFailureReasons",
+          "kind": "const",
+          "line": 122,
+          "exported": false,
+          "endLine": 122
+        },
+        {
+          "name": "taggedFailure",
+          "kind": "function",
+          "line": 128,
+          "exported": false,
+          "endLine": 128,
+          "signature": "(error: unknown): {"
+        },
+        {
+          "name": "classifyIngestionFailure",
+          "kind": "function",
+          "line": 142,
+          "exported": true,
+          "endLine": 142,
+          "doc": "Retry only failures whose type explicitly denotes transient infrastructure.\nValidation, authorization, unsupported input, path/ref, schema, hash,\nintegrity, conflict, and unknown failures are terminal by default."
         },
         {
           "name": "decodePayload",
           "kind": "function",
-          "line": 84,
+          "line": 158,
           "exported": false,
-          "endLine": 84
+          "endLine": 158
         },
         {
           "name": "sanitizedFailurePayload",
           "kind": "function",
-          "line": 120,
+          "line": 194,
           "exported": false,
-          "endLine": 120,
-          "signature": "(reason: unknown)"
+          "endLine": 194
         },
         {
           "name": "makeEvent",
           "kind": "function",
-          "line": 125,
+          "line": 209,
           "exported": false,
-          "endLine": 125
+          "endLine": 209
         },
         {
           "name": "appendOwnedEvent",
           "kind": "function",
-          "line": 143,
+          "line": 231,
           "exported": false,
-          "endLine": 143
+          "endLine": 231
         },
         {
           "name": "completeJob",
           "kind": "function",
-          "line": 152,
+          "line": 240,
           "exported": false,
-          "endLine": 152
+          "endLine": 240
         },
         {
           "name": "failJob",
           "kind": "function",
-          "line": 197,
+          "line": 284,
           "exported": false,
-          "endLine": 197,
+          "endLine": 284,
           "signature": "(deps: IngestionWorkerDeps, job: typeof JobQueue.Type, reason: unknown)"
+        },
+        {
+          "name": "isOwnershipLost",
+          "kind": "function",
+          "line": 307,
+          "exported": false,
+          "endLine": 307,
+          "signature": "(error: unknown)"
         },
         {
           "name": "processOneIngestionJob",
           "kind": "const",
-          "line": 210,
+          "line": 317,
           "exported": true,
-          "endLine": 210
+          "endLine": 317
         }
       ],
       "imports": [
@@ -634,9 +773,9 @@
         }
       ],
       "exports": [],
-      "hash": "f6e87de5c08c5958f72e10ce284d174bfb712b08a4288487d83a4318a877d0bb",
-      "mtimeMs": 1784420896432.891,
-      "size": 9367,
+      "hash": "7b7be8114ba3f89e5a82b44b9b2335b62b55f83226586e531ca5c805e54936c7",
+      "mtimeMs": 1784430642127.765,
+      "size": 12664,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -660,78 +799,93 @@
           "endLine": 21
         },
         {
+          "name": "SourceTextReindexLeaseHeartbeatError",
+          "kind": "class",
+          "line": 27,
+          "exported": false,
+          "endLine": 27
+        },
+        {
           "name": "SourceTextReindexWorkerDeps",
           "kind": "interface",
-          "line": 27,
+          "line": 36,
           "exported": true,
-          "endLine": 27
+          "endLine": 36
         },
         {
           "name": "StoredManifest",
           "kind": "interface",
-          "line": 49,
+          "line": 62,
           "exported": false,
-          "endLine": 49
+          "endLine": 62
         },
         {
           "name": "ArtifactReadError",
           "kind": "type",
-          "line": 56,
+          "line": 69,
           "exported": false,
-          "endLine": 56
+          "endLine": 69
         },
         {
           "name": "decoder",
           "kind": "const",
-          "line": 61,
+          "line": 74,
           "exported": false,
-          "endLine": 61
+          "endLine": 74
         },
         {
           "name": "artifactRef",
           "kind": "function",
-          "line": 63,
+          "line": 76,
           "exported": false,
-          "endLine": 63,
+          "endLine": 76,
           "signature": "(value: unknown)"
         },
         {
           "name": "decodeManifest",
           "kind": "function",
-          "line": 67,
+          "line": 80,
           "exported": false,
-          "endLine": 67,
+          "endLine": 80,
           "signature": "(bytes: Uint8Array, job: SourceTextReindexJob)"
         },
         {
           "name": "decodeNormalized",
           "kind": "function",
-          "line": 94,
+          "line": 107,
           "exported": false,
-          "endLine": 94,
+          "endLine": 107,
           "signature": "(bytes: Uint8Array, expectedHash: string)"
         },
         {
           "name": "failureCode",
           "kind": "function",
-          "line": 106,
+          "line": 119,
           "exported": false,
-          "endLine": 106,
+          "endLine": 119,
+          "signature": "(error: unknown)"
+        },
+        {
+          "name": "isOwnershipLost",
+          "kind": "function",
+          "line": 132,
+          "exported": false,
+          "endLine": 132,
           "signature": "(error: unknown)"
         },
         {
           "name": "processClaimed",
           "kind": "function",
-          "line": 119,
+          "line": 142,
           "exported": false,
-          "endLine": 119
+          "endLine": 142
         },
         {
           "name": "processOneSourceTextReindex",
           "kind": "const",
-          "line": 169,
+          "line": 192,
           "exported": true,
-          "endLine": 169
+          "endLine": 192
         }
       ],
       "imports": [
@@ -763,9 +917,9 @@
         }
       ],
       "exports": [],
-      "hash": "da128bd8bc51b86e3222a241af01c3d28ffc0247d78b38302a754ce55c142924",
-      "mtimeMs": 1784419587358.5972,
-      "size": 7036,
+      "hash": "933c21d17d456d4d6574d6ed9778fbb688d16c26eac38510ebc20a8a7a77e404",
+      "mtimeMs": 1784427691239.8608,
+      "size": 8700,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -789,48 +943,55 @@
           "endLine": 18
         },
         {
+          "name": "ResearchLeaseHeartbeatError",
+          "kind": "class",
+          "line": 67,
+          "exported": false,
+          "endLine": 67
+        },
+        {
           "name": "decodePayload",
           "kind": "function",
-          "line": 63,
+          "line": 76,
           "exported": false,
-          "endLine": 63
+          "endLine": 76
         },
         {
           "name": "event",
           "kind": "function",
-          "line": 98,
+          "line": 111,
           "exported": false,
-          "endLine": 98
+          "endLine": 111
         },
         {
           "name": "citationsFor",
           "kind": "function",
-          "line": 116,
+          "line": 129,
           "exported": false,
-          "endLine": 116
+          "endLine": 129
         },
         {
           "name": "safeFailureTag",
           "kind": "function",
-          "line": 131,
+          "line": 144,
           "exported": false,
-          "endLine": 131,
+          "endLine": 144,
           "signature": "(error: unknown)"
         },
         {
           "name": "isOwnershipLost",
           "kind": "function",
-          "line": 137,
+          "line": 153,
           "exported": false,
-          "endLine": 137,
+          "endLine": 153,
           "signature": "(error: unknown)"
         },
         {
           "name": "processOneResearchJob",
           "kind": "const",
-          "line": 147,
+          "line": 163,
           "exported": true,
-          "endLine": 147
+          "endLine": 163
         }
       ],
       "imports": [
@@ -854,9 +1015,9 @@
         }
       ],
       "exports": [],
-      "hash": "7db591d84f4b9ed06dc85777f340b6fae224ef9cb089ac499f5a87d3cdc0a7ee",
-      "mtimeMs": 1784417628271.2778,
-      "size": 6985,
+      "hash": "9ef2b9014ab580d0f02669aececaa2006fac3c3c117373539d6be5e52a1dcbd8",
+      "mtimeMs": 1784429785811.5386,
+      "size": 8137,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -868,9 +1029,9 @@
         {
           "name": "program",
           "kind": "const",
-          "line": 41,
+          "line": 44,
           "exported": false,
-          "endLine": 41
+          "endLine": 44
         }
       ],
       "imports": [
@@ -967,9 +1128,9 @@
         }
       ],
       "exports": [],
-      "hash": "37f5bf15235542b8a3ac0f796e65290c95007e4e05cf97f8b36b5994bae9f55f",
-      "mtimeMs": 1784420572656.6167,
-      "size": 8108,
+      "hash": "b62c1039e1a056c0613131ca88287dc5bb4e9b357601ef8c5fc9c6e240e9a10e",
+      "mtimeMs": 1784427691240.6902,
+      "size": 9210,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1227,6 +1388,41 @@
       "hash": "0011f5536e313d2e5d807ab8fc0c4e4576505a29e33cb76f79d57c580add6149",
       "mtimeMs": 1784394067214.0103,
       "size": 3051,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/logical-refs.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "MAX_STAGED_ARTIFACT_NAME_LENGTH",
+          "kind": "const",
+          "line": 1,
+          "exported": true,
+          "endLine": 1
+        },
+        {
+          "name": "canonicalStagedArtifactRef",
+          "kind": "const",
+          "line": 3,
+          "exported": false,
+          "endLine": 3
+        },
+        {
+          "name": "isCanonicalStagedArtifactRef",
+          "kind": "function",
+          "line": 14,
+          "exported": true,
+          "endLine": 14
+        }
+      ],
+      "imports": [],
+      "exports": [],
+      "hash": "46812ec16b0521c5bd4b065d65455d442a27aa21045039fd18eb7fd699f0c6a4",
+      "mtimeMs": 1784428592630.017,
+      "size": 1023,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2093,19 +2289,27 @@
           "doc": "Expected lease-loss outcome when an ingestion worker's claimed attempt no\nlonger owns the in-progress job row."
         },
         {
+          "name": "IngestionEventValidationError",
+          "kind": "class",
+          "line": 71,
+          "exported": true,
+          "endLine": 71,
+          "doc": "A caller supplied an ingestion journal event that does not match the exact\ncontract for the requested transition."
+        },
+        {
           "name": "SourceTextReindexOwnershipLostError",
           "kind": "class",
-          "line": 64,
+          "line": 82,
           "exported": true,
-          "endLine": 64,
+          "endLine": 82,
           "doc": "Expected lease-loss outcome when a source-text reindex worker's claimed\nattempt no longer owns the in-progress reindex row."
         },
         {
           "name": "PersistenceError",
           "kind": "type",
-          "line": 75,
+          "line": 93,
           "exported": true,
-          "endLine": 75,
+          "endLine": 93,
           "doc": "Union of all persistence errors."
         }
       ],
@@ -2120,9 +2324,9 @@
         }
       ],
       "exports": [],
-      "hash": "f0e379c7b83aa07ed4d61827464243fabdf6c0befdee5f7bec770ac9242549ae",
-      "mtimeMs": 1784419451255.2312,
-      "size": 2560,
+      "hash": "25679d6af46c110af35330ba529388ed642b238a4cecb4bed71e256e604ed994",
+      "mtimeMs": 1784429326790.4622,
+      "size": 3092,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2166,9 +2370,9 @@
           "kind": "reexport"
         }
       ],
-      "hash": "716e00020300e378e8ccacac501391ebb14156eaff69f944d074b50f95a83f35",
-      "mtimeMs": 1784418644529.9114,
-      "size": 2562,
+      "hash": "99469fec7583fdfec86103a786b9dd9ae51af093a1ed5bb103365967a2111eef",
+      "mtimeMs": 1784431475123.773,
+      "size": 2694,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2194,9 +2398,9 @@
       ],
       "imports": [],
       "exports": [],
-      "hash": "fd649d97df7be947d777ad63b2ccc6f5809c7143d09e069874cb3f29dd0d8cd5",
-      "mtimeMs": 1784406240478.5872,
-      "size": 1014,
+      "hash": "20e21986d8ac8502642f400f45b4f882c9aa157056d3ba1367ad274f0217414e",
+      "mtimeMs": 1784430573906.3682,
+      "size": 1251,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2628,215 +2832,215 @@
         {
           "name": "WorkspaceRepository",
           "kind": "interface",
-          "line": 44,
+          "line": 45,
           "exported": true,
-          "endLine": 44
+          "endLine": 45
         },
         {
           "name": "WorkspaceRepo",
           "kind": "class",
-          "line": 50,
+          "line": 51,
           "exported": true,
-          "endLine": 50
+          "endLine": 51
         },
         {
           "name": "makeWorkspaceRepositoryImpl",
           "kind": "function",
-          "line": 58,
+          "line": 59,
           "exported": false,
-          "endLine": 58,
+          "endLine": 59,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "ProjectRepository",
           "kind": "interface",
-          "line": 128,
+          "line": 129,
           "exported": true,
-          "endLine": 128
+          "endLine": 129
         },
         {
           "name": "ProjectRepo",
           "kind": "class",
-          "line": 134,
+          "line": 135,
           "exported": true,
-          "endLine": 134
+          "endLine": 135
         },
         {
           "name": "makeProjectRepositoryImpl",
           "kind": "function",
-          "line": 142,
+          "line": 143,
           "exported": false,
-          "endLine": 142,
+          "endLine": 143,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "SourceRepository",
           "kind": "interface",
-          "line": 212,
+          "line": 213,
           "exported": true,
-          "endLine": 212
+          "endLine": 213
         },
         {
           "name": "SourceRepo",
           "kind": "class",
-          "line": 218,
+          "line": 219,
           "exported": true,
-          "endLine": 218
+          "endLine": 219
         },
         {
           "name": "makeSourceRepositoryImpl",
           "kind": "function",
-          "line": 226,
+          "line": 227,
           "exported": false,
-          "endLine": 226,
+          "endLine": 227,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "SourceVersionRepository",
           "kind": "interface",
-          "line": 296,
+          "line": 297,
           "exported": true,
-          "endLine": 296
+          "endLine": 297
         },
         {
           "name": "SourceVersionRepo",
           "kind": "class",
-          "line": 306,
+          "line": 307,
           "exported": true,
-          "endLine": 306
+          "endLine": 307
         },
         {
           "name": "makeSourceVersionRepositoryImpl",
           "kind": "function",
-          "line": 314,
+          "line": 315,
           "exported": false,
-          "endLine": 314,
+          "endLine": 315,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "ResearchThreadRepository",
           "kind": "interface",
-          "line": 437,
+          "line": 458,
           "exported": true,
-          "endLine": 437
+          "endLine": 458
         },
         {
           "name": "ResearchThreadRepo",
           "kind": "class",
-          "line": 443,
+          "line": 464,
           "exported": true,
-          "endLine": 443
+          "endLine": 464
         },
         {
           "name": "makeResearchThreadRepositoryImpl",
           "kind": "function",
-          "line": 451,
+          "line": 472,
           "exported": false,
-          "endLine": 451,
+          "endLine": 472,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "ResearchRunRepository",
           "kind": "interface",
-          "line": 521,
+          "line": 542,
           "exported": true,
-          "endLine": 521
+          "endLine": 542
         },
         {
           "name": "ResearchRunRepo",
           "kind": "class",
-          "line": 528,
+          "line": 549,
           "exported": true,
-          "endLine": 528
+          "endLine": 549
         },
         {
           "name": "makeResearchRunRepositoryImpl",
           "kind": "function",
-          "line": 536,
+          "line": 557,
           "exported": false,
-          "endLine": 536,
+          "endLine": 557,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "CitationRepository",
           "kind": "interface",
-          "line": 629,
+          "line": 650,
           "exported": true,
-          "endLine": 629
+          "endLine": 650
         },
         {
           "name": "CitationRepo",
           "kind": "class",
-          "line": 636,
+          "line": 657,
           "exported": true,
-          "endLine": 636
+          "endLine": 657
         },
         {
           "name": "makeCitationRepositoryImpl",
           "kind": "function",
-          "line": 644,
+          "line": 665,
           "exported": false,
-          "endLine": 644,
+          "endLine": 665,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "JobQueueRepository",
           "kind": "interface",
-          "line": 737,
+          "line": 758,
           "exported": true,
-          "endLine": 737
+          "endLine": 758
         },
         {
           "name": "JobQueueRepo",
           "kind": "class",
-          "line": 748,
+          "line": 770,
           "exported": true,
-          "endLine": 748
+          "endLine": 770
         },
         {
           "name": "decodeJobRows",
           "kind": "function",
-          "line": 756,
+          "line": 778,
           "exported": false,
-          "endLine": 756,
+          "endLine": 778,
           "signature": "(rows: readonly Record<string, unknown>[], operation: string)"
         },
         {
           "name": "makeJobQueueRepositoryImpl",
           "kind": "function",
-          "line": 768,
+          "line": 790,
           "exported": false,
-          "endLine": 768,
+          "endLine": 790,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
-          "name": "EventJournalRepository",
+          "name": "EventJournalReadRepository",
           "kind": "interface",
-          "line": 983,
+          "line": 1435,
           "exported": true,
-          "endLine": 983
+          "endLine": 1435
         },
         {
-          "name": "EventJournalRepo",
+          "name": "EventJournalReader",
           "kind": "class",
-          "line": 988,
+          "line": 1439,
           "exported": true,
-          "endLine": 988
+          "endLine": 1439
         },
         {
           "name": "decodeEventRows",
           "kind": "function",
-          "line": 996,
+          "line": 1447,
           "exported": false,
-          "endLine": 996,
+          "endLine": 1447,
           "signature": "(rows: readonly Record<string, unknown>[], operation: string)"
         },
         {
-          "name": "makeEventJournalRepositoryImpl",
+          "name": "makeEventJournalReadRepositoryImpl",
           "kind": "function",
-          "line": 1008,
+          "line": 1459,
           "exported": false,
-          "endLine": 1008,
+          "endLine": 1459,
           "signature": "(sql: import('../sql-client.js')"
         }
       ],
@@ -2913,9 +3117,9 @@
         }
       ],
       "exports": [],
-      "hash": "a04834fea0b2ea8b296669ece5b55b0d8757235e6e58f971da0a0209a603d47c",
-      "mtimeMs": 1784420934511.6946,
-      "size": 44847,
+      "hash": "a5122a7d55c799bbbd3d19af57b1e2bb5c6491231015cd8c67bef71edc41f9bc",
+      "mtimeMs": 1784431449908.9634,
+      "size": 59808,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2960,32 +3164,164 @@
           "endLine": 62
         },
         {
+          "name": "ResearchAggregateMismatchError",
+          "kind": "class",
+          "line": 63,
+          "exported": false,
+          "endLine": 63
+        },
+        {
+          "name": "MAX_RESEARCH_EVIDENCE_COUNT",
+          "kind": "const",
+          "line": 69,
+          "exported": false,
+          "endLine": 69
+        },
+        {
+          "name": "MAX_RESEARCH_CITATION_COUNT",
+          "kind": "const",
+          "line": 70,
+          "exported": false,
+          "endLine": 70
+        },
+        {
+          "name": "MAX_RESEARCH_FAILURE_TAG_LENGTH",
+          "kind": "const",
+          "line": 71,
+          "exported": false,
+          "endLine": 71
+        },
+        {
+          "name": "RESEARCH_FAILURE_MESSAGE",
+          "kind": "const",
+          "line": 72,
+          "exported": false,
+          "endLine": 72
+        },
+        {
+          "name": "ResearchEventPayload",
+          "kind": "type",
+          "line": 74,
+          "exported": false,
+          "endLine": 74
+        },
+        {
+          "name": "hasExactKeys",
+          "kind": "function",
+          "line": 76,
+          "exported": false,
+          "endLine": 76
+        },
+        {
+          "name": "boundedInteger",
+          "kind": "function",
+          "line": 86,
+          "exported": false,
+          "endLine": 86,
+          "signature": "(value: unknown, maximum: number)"
+        },
+        {
+          "name": "persistedResearchScope",
+          "kind": "function",
+          "line": 93,
+          "exported": false,
+          "endLine": 93,
+          "signature": "(payload: unknown): {"
+        },
+        {
+          "name": "validateAppendEventPayload",
+          "kind": "function",
+          "line": 120,
+          "exported": false,
+          "endLine": 120
+        },
+        {
+          "name": "validateCompletedEventPayload",
+          "kind": "function",
+          "line": 172,
+          "exported": false,
+          "endLine": 172
+        },
+        {
+          "name": "validateFailedEventPayload",
+          "kind": "function",
+          "line": 192,
+          "exported": false,
+          "endLine": 192
+        },
+        {
           "name": "ownershipLost",
           "kind": "function",
-          "line": 64,
+          "line": 216,
           "exported": false,
-          "endLine": 64
+          "endLine": 216
+        },
+        {
+          "name": "sameIds",
+          "kind": "function",
+          "line": 225,
+          "exported": false,
+          "endLine": 225
+        },
+        {
+          "name": "normalizePersistedPayload",
+          "kind": "function",
+          "line": 234,
+          "exported": false,
+          "endLine": 234,
+          "signature": "(payload: unknown)"
+        },
+        {
+          "name": "completionSourceScope",
+          "kind": "function",
+          "line": 250,
+          "exported": false,
+          "endLine": 250,
+          "signature": "(input: CompleteResearchInput): {"
+        },
+        {
+          "name": "validateRegistrationAggregate",
+          "kind": "function",
+          "line": 257,
+          "exported": false,
+          "endLine": 257,
+          "signature": "(input: ResearchRegistrationInput)"
+        },
+        {
+          "name": "validateOwnedEvent",
+          "kind": "function",
+          "line": 302,
+          "exported": false,
+          "endLine": 302
+        },
+        {
+          "name": "validateCompletionAggregate",
+          "kind": "function",
+          "line": 320,
+          "exported": false,
+          "endLine": 320,
+          "signature": "(input: CompleteResearchInput)"
         },
         {
           "name": "persistenceDecodeError",
           "kind": "function",
-          "line": 73,
+          "line": 344,
           "exported": false,
-          "endLine": 73
+          "endLine": 344
         },
         {
           "name": "ResearchExecutionRepo",
           "kind": "class",
-          "line": 84,
+          "line": 355,
           "exported": true,
-          "endLine": 84
+          "endLine": 355
         },
         {
           "name": "ResearchExecutionError",
           "kind": "type",
-          "line": 517,
+          "line": 986,
           "exported": true,
-          "endLine": 517
+          "endLine": 986
         }
       ],
       "imports": [
@@ -2999,10 +3335,11 @@
           "kind": "static"
         },
         {
-          "source": "AuthorizationError",
+          "source": "AuthorizationError, ValidationError",
           "specifier": "@struct/domain",
           "imported": [
-            "AuthorizationError"
+            "AuthorizationError",
+            "ValidationError"
           ],
           "kind": "static"
         },
@@ -3021,9 +3358,9 @@
         }
       ],
       "exports": [],
-      "hash": "420c65ab96ab09f9867b719bfec957f394644299d77a6af680730849544d512d",
-      "mtimeMs": 1784417628270.9387,
-      "size": 19103,
+      "hash": "6baef6b2182297ecd89183868849c969e7be8015aabb41394f8137ebd8fee5fe",
+      "mtimeMs": 1784429871719.8093,
+      "size": 36381,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3035,30 +3372,172 @@
         {
           "name": "SourceRegistrationInput",
           "kind": "interface",
-          "line": 14,
+          "line": 19,
           "exported": true,
-          "endLine": 14
+          "endLine": 19
+        },
+        {
+          "name": "SourceRegistrationJobPayload",
+          "kind": "interface",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "SourceRegistrationEventPayload",
+          "kind": "interface",
+          "line": 34,
+          "exported": true,
+          "endLine": 34
         },
         {
           "name": "SourceRegistrationResult",
           "kind": "interface",
-          "line": 20,
+          "line": 42,
           "exported": true,
-          "endLine": 20
+          "endLine": 42
         },
         {
           "name": "SourceRegistrationRepository",
           "kind": "interface",
-          "line": 26,
+          "line": 48,
           "exported": true,
-          "endLine": 26
+          "endLine": 48
+        },
+        {
+          "name": "SourceRegistrationScopeMismatchError",
+          "kind": "class",
+          "line": 54,
+          "exported": false,
+          "endLine": 54
+        },
+        {
+          "name": "SourceRegistrationAggregateMismatchError",
+          "kind": "class",
+          "line": 55,
+          "exported": false,
+          "endLine": 55
+        },
+        {
+          "name": "uuidPattern",
+          "kind": "const",
+          "line": 61,
+          "exported": false,
+          "endLine": 61
+        },
+        {
+          "name": "inputKeys",
+          "kind": "const",
+          "line": 63,
+          "exported": false,
+          "endLine": 63
+        },
+        {
+          "name": "sourceKeys",
+          "kind": "const",
+          "line": 64,
+          "exported": false,
+          "endLine": 64
+        },
+        {
+          "name": "jobKeys",
+          "kind": "const",
+          "line": 72,
+          "exported": false,
+          "endLine": 72
+        },
+        {
+          "name": "eventKeys",
+          "kind": "const",
+          "line": 84,
+          "exported": false,
+          "endLine": 84
+        },
+        {
+          "name": "jobPayloadKeys",
+          "kind": "const",
+          "line": 94,
+          "exported": false,
+          "endLine": 94
+        },
+        {
+          "name": "eventPayloadKeys",
+          "kind": "const",
+          "line": 102,
+          "exported": false,
+          "endLine": 102
+        },
+        {
+          "name": "MAX_SOURCE_NAME_LENGTH",
+          "kind": "const",
+          "line": 109,
+          "exported": false,
+          "endLine": 109
+        },
+        {
+          "name": "MAX_SOURCE_REGISTRATION_BYTES",
+          "kind": "const",
+          "line": 110,
+          "exported": false,
+          "endLine": 110
+        },
+        {
+          "name": "MAX_SOURCE_REGISTRATION_ATTEMPTS",
+          "kind": "const",
+          "line": 111,
+          "exported": false,
+          "endLine": 111
+        },
+        {
+          "name": "ValidatedRegistrationAggregate",
+          "kind": "interface",
+          "line": 113,
+          "exported": false,
+          "endLine": 113
+        },
+        {
+          "name": "hasExactKeys",
+          "kind": "function",
+          "line": 118,
+          "exported": false,
+          "endLine": 118
+        },
+        {
+          "name": "isSafeTimestamp",
+          "kind": "function",
+          "line": 131,
+          "exported": false,
+          "endLine": 131,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "isSafeSourceName",
+          "kind": "function",
+          "line": 137,
+          "exported": false,
+          "endLine": 137,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "validateRegistrationAggregate",
+          "kind": "function",
+          "line": 151,
+          "exported": false,
+          "endLine": 151
         },
         {
           "name": "SourceRegistrationRepo",
           "kind": "class",
-          "line": 32,
+          "line": 268,
           "exported": true,
-          "endLine": 32
+          "endLine": 268
+        },
+        {
+          "name": "SourceRegistrationError",
+          "kind": "type",
+          "line": 375,
+          "exported": true,
+          "endLine": 375
         }
       ],
       "imports": [
@@ -3099,9 +3578,9 @@
         }
       ],
       "exports": [],
-      "hash": "4c66a0e53c69caf4a547eda55f7a0641dc08d43e834dd94d2bfadaf2878a84c3",
-      "mtimeMs": 1784404965580.3406,
-      "size": 3991,
+      "hash": "9bab002a4cbad6d948eeea8cb88e1e029bbcc3c9b6d04896ca10005d8a0d262a",
+      "mtimeMs": 1784431645855.1824,
+      "size": 13379,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3168,9 +3647,9 @@
         }
       ],
       "exports": [],
-      "hash": "e9d9c655d3bce53ed2761084f6634a5e4d7aa9dca71507fb4b8a80e2f45b8742",
-      "mtimeMs": 1784418595746.637,
-      "size": 6398,
+      "hash": "055a509bb6e1a919393ce7e880694c00acd3d67e271a048253462a86e41808cc",
+      "mtimeMs": 1784427659523.319,
+      "size": 8046,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3388,135 +3867,184 @@
           "endLine": 51
         },
         {
-          "name": "MATCH_START",
+          "name": "MAX_SUPPORTED_LOCATIONS",
           "kind": "const",
           "line": 52,
           "exported": false,
           "endLine": 52
         },
         {
-          "name": "MATCH_END",
+          "name": "MAX_EVIDENCE_CANDIDATES",
           "kind": "const",
           "line": 53,
           "exported": false,
           "endLine": 53
         },
         {
-          "name": "OMITTED_SOURCE",
+          "name": "MATCH_START",
           "kind": "const",
           "line": 54,
           "exported": false,
           "endLine": 54
         },
         {
+          "name": "MATCH_END",
+          "kind": "const",
+          "line": 55,
+          "exported": false,
+          "endLine": 55
+        },
+        {
+          "name": "ReindexTransactionOwnershipLost",
+          "kind": "class",
+          "line": 57,
+          "exported": false,
+          "endLine": 57
+        },
+        {
+          "name": "OMITTED_SOURCE",
+          "kind": "const",
+          "line": 66,
+          "exported": false,
+          "endLine": 66
+        },
+        {
           "name": "MatchPassage",
-          "kind": "interface",
-          "line": 56,
-          "exported": false,
-          "endLine": 56
-        },
-        {
-          "name": "MatchRange",
-          "kind": "interface",
-          "line": 61,
-          "exported": false,
-          "endLine": 61
-        },
-        {
-          "name": "SourceRange",
           "kind": "interface",
           "line": 68,
           "exported": false,
           "endLine": 68
         },
         {
+          "name": "MatchRange",
+          "kind": "interface",
+          "line": 73,
+          "exported": false,
+          "endLine": 73
+        },
+        {
+          "name": "SourceRange",
+          "kind": "interface",
+          "line": 80,
+          "exported": false,
+          "endLine": 80
+        },
+        {
+          "name": "CharacterRange",
+          "kind": "interface",
+          "line": 86,
+          "exported": false,
+          "endLine": 86
+        },
+        {
+          "name": "normalizeCharacterRange",
+          "kind": "function",
+          "line": 91,
+          "exported": false,
+          "endLine": 91
+        },
+        {
+          "name": "postgresCharacterCoordinates",
+          "kind": "function",
+          "line": 119,
+          "exported": false,
+          "endLine": 119
+        },
+        {
+          "name": "headTailCollector",
+          "kind": "function",
+          "line": 137,
+          "exported": false,
+          "endLine": 137
+        },
+        {
           "name": "fallbackExcerpt",
           "kind": "function",
-          "line": 74,
+          "line": 159,
           "exported": false,
-          "endLine": 74,
+          "endLine": 159,
           "signature": "(content: string, matchLine: number)"
         },
         {
           "name": "decodeMatchPassages",
           "kind": "function",
-          "line": 89,
+          "line": 174,
           "exported": false,
-          "endLine": 89,
+          "endLine": 174,
           "signature": "(value: unknown)"
         },
         {
           "name": "matchRanges",
           "kind": "function",
-          "line": 102,
+          "line": 189,
           "exported": false,
-          "endLine": 102
+          "endLine": 189
         },
         {
           "name": "mergeRanges",
           "kind": "function",
-          "line": 167,
+          "line": 258,
           "exported": false,
-          "endLine": 167,
+          "endLine": 258,
           "signature": "(ranges: ReadonlyArray<SourceRange>)"
         },
         {
           "name": "LocatedExcerpt",
           "kind": "interface",
-          "line": 184,
+          "line": 275,
           "exported": false,
-          "endLine": 184
+          "endLine": 275
         },
         {
           "name": "compactCandidate",
           "kind": "function",
-          "line": 190,
+          "line": 281,
           "exported": false,
-          "endLine": 190
+          "endLine": 281
         },
         {
           "name": "lineOffsets",
           "kind": "function",
-          "line": 229,
+          "line": 320,
           "exported": false,
-          "endLine": 229,
+          "endLine": 320,
           "signature": "(lines: ReadonlyArray<string>)"
         },
         {
           "name": "contiguousLocator",
           "kind": "function",
-          "line": 239,
+          "line": 330,
           "exported": false,
-          "endLine": 239
+          "endLine": 330
         },
         {
           "name": "boundedSourceWindow",
           "kind": "function",
-          "line": 272,
+          "line": 366,
           "exported": false,
-          "endLine": 272
+          "endLine": 366
         },
         {
           "name": "boundedLineWindow",
           "kind": "function",
-          "line": 294,
+          "line": 388,
           "exported": false,
-          "endLine": 294,
+          "endLine": 388,
           "signature": "(line: string, lineIndex: number, match: MatchRange)"
         },
         {
           "name": "matchedExcerptCandidates",
           "kind": "function",
-          "line": 308,
+          "line": 402,
           "exported": false,
-          "endLine": 308
+          "endLine": 402
         },
         {
           "name": "TextRetrieval",
           "kind": "class",
-          "line": 396,
+          "line": 494,
           "exported": true,
-          "endLine": 396
+          "endLine": 494
         }
       ],
       "imports": [
@@ -3531,9 +4059,9 @@
         }
       ],
       "exports": [],
-      "hash": "3b96025e0912805247474e778c8a59f7557cb2a0617aeb65a5450589fc2c9511",
-      "mtimeMs": 1784420934511.2268,
-      "size": 25697,
+      "hash": "623631f497db419e984fc623010351627847da23680be5e56776f5aa0e6d96dd",
+      "mtimeMs": 1784428668944.6372,
+      "size": 36401,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3545,228 +4073,228 @@
         {
           "name": "StorageConfigurationError",
           "kind": "const",
-          "line": 22,
+          "line": 23,
           "exported": true,
-          "endLine": 22
+          "endLine": 23
         },
         {
           "name": "StoragePathError",
           "kind": "const",
-          "line": 22,
+          "line": 23,
           "exported": true,
-          "endLine": 22
+          "endLine": 23
         },
         {
           "name": "StorageReadError",
           "kind": "const",
-          "line": 22,
+          "line": 23,
           "exported": true,
-          "endLine": 22
+          "endLine": 23
         },
         {
           "name": "StorageWriteError",
           "kind": "const",
-          "line": 22,
+          "line": 23,
           "exported": true,
-          "endLine": 22
+          "endLine": 23
         },
         {
           "name": "ArtifactRef",
-          "kind": "type",
-          "line": 24,
-          "exported": true,
-          "endLine": 24
-        },
-        {
-          "name": "StagedArtifactRef",
           "kind": "type",
           "line": 25,
           "exported": true,
           "endLine": 25
         },
         {
+          "name": "StagedArtifactRef",
+          "kind": "type",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
           "name": "ArtifactWriteOptions",
           "kind": "interface",
-          "line": 27,
+          "line": 28,
           "exported": true,
-          "endLine": 27
+          "endLine": 28
         },
         {
           "name": "ArtifactObject",
           "kind": "interface",
-          "line": 31,
+          "line": 32,
           "exported": true,
-          "endLine": 31
+          "endLine": 32
         },
         {
           "name": "StagedArtifact",
           "kind": "interface",
-          "line": 38,
+          "line": 39,
           "exported": true,
-          "endLine": 38
+          "endLine": 39
         },
         {
           "name": "StoredBytes",
           "kind": "interface",
-          "line": 43,
+          "line": 44,
           "exported": true,
-          "endLine": 43
+          "endLine": 44
         },
         {
           "name": "ArtifactStoreShape",
           "kind": "interface",
-          "line": 48,
+          "line": 49,
           "exported": true,
-          "endLine": 48
+          "endLine": 49
         },
         {
           "name": "ArtifactStore",
           "kind": "class",
-          "line": 56,
+          "line": 57,
           "exported": true,
-          "endLine": 56
+          "endLine": 57
         },
         {
           "name": "LocalArtifactStoreConfig",
           "kind": "interface",
-          "line": 61,
+          "line": 62,
           "exported": true,
-          "endLine": 61
+          "endLine": 62
         },
         {
           "name": "hashBytes",
           "kind": "const",
-          "line": 65,
+          "line": 66,
           "exported": false,
-          "endLine": 65
+          "endLine": 66
         },
         {
           "name": "sanitizeReason",
           "kind": "const",
-          "line": 68,
+          "line": 69,
           "exported": false,
-          "endLine": 68
+          "endLine": 69
         },
         {
           "name": "validateRefText",
           "kind": "const",
-          "line": 73,
+          "line": 74,
           "exported": false,
-          "endLine": 73
+          "endLine": 74
         },
         {
           "name": "ensureContained",
           "kind": "function",
-          "line": 83,
+          "line": 84,
           "exported": false,
-          "endLine": 83,
+          "endLine": 84,
           "signature": "(root: string, candidate: string, ref: string)"
         },
         {
           "name": "artifactPath",
           "kind": "function",
-          "line": 92,
+          "line": 93,
           "exported": false,
-          "endLine": 92,
+          "endLine": 93,
           "signature": "(root: string, ref: ArtifactRef)"
         },
         {
           "name": "stagedPath",
           "kind": "function",
-          "line": 104,
+          "line": 105,
           "exported": false,
-          "endLine": 104,
+          "endLine": 105,
           "signature": "(root: string, ref: StagedArtifactRef)"
         },
         {
           "name": "UnsafeStoragePath",
           "kind": "class",
-          "line": 115,
+          "line": 119,
           "exported": false,
-          "endLine": 115
+          "endLine": 119
         },
         {
           "name": "containedSegments",
           "kind": "function",
-          "line": 127,
+          "line": 131,
           "exported": false,
-          "endLine": 127,
+          "endLine": 131,
           "signature": "(root: string, target: string)"
         },
         {
           "name": "inspectContainedComponent",
           "kind": "function",
-          "line": 137,
+          "line": 141,
           "exported": false,
-          "endLine": 137
+          "endLine": 141
         },
         {
           "name": "ensureSafeDirectoryPath",
           "kind": "function",
-          "line": 156,
+          "line": 160,
           "exported": false,
-          "endLine": 156,
+          "endLine": 160,
           "signature": "(root: string, target: string)"
         },
         {
           "name": "assertSafeExistingPath",
           "kind": "function",
-          "line": 176,
+          "line": 180,
           "exported": false,
-          "endLine": 176,
+          "endLine": 180,
           "signature": "(root: string, target: string)"
         },
         {
           "name": "mapUnsafeStoragePath",
           "kind": "const",
-          "line": 193,
+          "line": 197,
           "exported": false,
-          "endLine": 193
+          "endLine": 197
         },
         {
           "name": "ensureSafeDirectory",
           "kind": "const",
-          "line": 198,
+          "line": 202,
           "exported": false,
-          "endLine": 198
+          "endLine": 202
         },
         {
           "name": "assertSafePath",
           "kind": "const",
-          "line": 204,
+          "line": 208,
           "exported": false,
-          "endLine": 204
+          "endLine": 208
         },
         {
           "name": "ensureStorageDirectory",
           "kind": "function",
-          "line": 210,
+          "line": 214,
           "exported": false,
-          "endLine": 210,
+          "endLine": 214,
           "signature": "(root: string, relativePath: string)"
         },
         {
           "name": "validateRoot",
           "kind": "function",
-          "line": 224,
+          "line": 228,
           "exported": false,
-          "endLine": 224,
+          "endLine": 228,
           "signature": "(root: string)"
         },
         {
           "name": "makeStore",
           "kind": "function",
-          "line": 247,
+          "line": 251,
           "exported": false,
-          "endLine": 247,
+          "endLine": 251,
           "signature": "(canonicalRoot: string)"
         },
         {
           "name": "LocalArtifactStore",
           "kind": "const",
-          "line": 359,
+          "line": 365,
           "exported": true,
-          "endLine": 359
+          "endLine": 365
         }
       ],
       "imports": [
@@ -3804,9 +4332,9 @@
         }
       ],
       "exports": [],
-      "hash": "d7487da91091b660c1d3328d5fc21e482c5871bc31f6613af52400799136c141",
-      "mtimeMs": 1784404976376.5203,
-      "size": 15696,
+      "hash": "39eb0826c36ad22a6a7fa1ddd6efc20d3cbbfb42b60812327a668a47c3862ea3",
+      "mtimeMs": 1784428592630.4548,
+      "size": 15922,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -5061,7 +5589,7 @@
       ],
       "exports": [],
       "hash": "45312aec1007106aac0aed15f661ffbc41905ad48694187359141a04524c7648",
-      "mtimeMs": 1784313595314.095,
+      "mtimeMs": 1784423375361.7954,
       "size": 5053,
       "generated": false,
       "vendor": false,
@@ -5196,7 +5724,7 @@
       ],
       "exports": [],
       "hash": "f5bad3f690d99e265cbf142b473c6f57602886e4236035ad6416cdb9ceb0c108",
-      "mtimeMs": 1784305218917.5618,
+      "mtimeMs": 1784423375361.5425,
       "size": 5502,
       "generated": false,
       "vendor": false,

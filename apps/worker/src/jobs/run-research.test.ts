@@ -60,13 +60,16 @@ function deps(failWorkflow = false) {
     }
   } = {
     now: () => 1700000000000n,
-    staleBeforeMs: 1699999999999,
+    staleAfterMs: 300_000,
+    heartbeatIntervalMs: 10_000,
     randomEventId: () => EventJournalId.make(crypto.randomUUID()),
     randomCitationId: () => CitationId.make(crypto.randomUUID()),
     jobs: {
       recoverStale: () => Effect.succeed([]),
       claimNext: () => Effect.succeed(Option.some(job)),
-      appendInProgressEvent: (_jobId, journalEvent) => {
+      renewLease: () => Effect.void,
+      appendInProgressEvent: (claimedJob, journalEvent) => {
+        expect(claimedJob).toBe(job)
         events.push(journalEvent.eventType)
         eventPayloads.push(journalEvent.payload)
         return Effect.void
@@ -135,6 +138,27 @@ describe('processOneResearchJob', () => {
     expect(JSON.stringify(testDeps.calls.eventPayloads)).not.toContain('Launch is July 18.')
   })
 
+  it('normalizes unsafe or oversized workflow tags before failure persistence', async () => {
+    const base = deps()
+    const testDeps: ResearchWorkerDeps = {
+      ...base,
+      workflow: {
+        run: () => Effect.fail({
+          _tag: `Unsafe tag ${'x'.repeat(80)}`,
+          secret: 'must not be journaled',
+        }),
+      },
+    }
+
+    await Effect.runPromise(processOneResearchJob(testDeps))
+
+    expect(base.calls.eventPayloads).toEqual([{
+      errorTag: 'ResearchWorkflowError',
+      message: 'Research failed',
+    }])
+    expect(JSON.stringify(base.calls.eventPayloads)).not.toContain('must not be journaled')
+  })
+
   it('durably exposes retrieval completion while synthesis is blocked and retains it on failure', async () => {
     const base = deps()
     let releaseSynthesis!: () => void
@@ -192,6 +216,91 @@ describe('processOneResearchJob', () => {
     expect(testDeps.calls.failed).toHaveLength(0)
   })
 
+  it('renews the attempt-fenced lease while a legitimate workflow remains active', async () => {
+    const base = deps()
+    let renewals = 0
+    let secondRenewal!: () => void
+    const renewedTwice = new Promise<void>((resolve) => {
+      secondRenewal = resolve
+    })
+    let releaseWorkflow!: () => void
+    const workflowGate = new Promise<void>((resolve) => {
+      releaseWorkflow = resolve
+    })
+    let workflowStarted!: () => void
+    const started = new Promise<void>((resolve) => {
+      workflowStarted = resolve
+    })
+    const testDeps: ResearchWorkerDeps = {
+      ...base,
+      heartbeatIntervalMs: 2,
+      jobs: {
+        ...base.jobs,
+        renewLease: (claimedJob) => {
+          expect(claimedJob.id).toBe(job.id)
+          expect(claimedJob.attempts).toBe(job.attempts)
+          renewals += 1
+          if (renewals === 2) secondRenewal()
+          return Effect.void
+        },
+      },
+      workflow: {
+        run: (input) =>
+          Effect.gen(function* () {
+            workflowStarted()
+            yield* Effect.promise(() => workflowGate)
+            return yield* base.workflow.run(input)
+          }),
+      },
+    }
+
+    const processing = Effect.runPromise(processOneResearchJob(testDeps))
+    await started
+    await Promise.race([
+      renewedTwice,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('second lease renewal did not run')), 250),
+      ),
+    ])
+    expect(renewals).toBeGreaterThanOrEqual(2)
+    expect(base.calls.failed).toHaveLength(0)
+
+    releaseWorkflow()
+    await expect(processing).resolves.toEqual({
+      processed: true,
+      jobId: job.id,
+    })
+    expect(base.calls.completed).toHaveLength(1)
+  })
+
+  it('interrupts work without a terminal write when heartbeat ownership is lost', async () => {
+    const base = deps()
+    const ownershipLost = new ResearchJobOwnershipLostError({
+      transition: 'renew-lease',
+      message: 'Research job no longer has in-progress ownership',
+    })
+    const testDeps: ResearchWorkerDeps = {
+      ...base,
+      heartbeatIntervalMs: 1,
+      jobs: {
+        ...base.jobs,
+        renewLease: () => Effect.fail(ownershipLost),
+      },
+      workflow: {
+        run: () => Effect.never,
+      },
+    }
+
+    await expect(
+      Effect.runPromise(processOneResearchJob(testDeps)),
+    ).resolves.toEqual({
+      processed: true,
+      jobId: job.id,
+    })
+    expect(base.calls.completed).toHaveLength(0)
+    expect(base.calls.failed).toHaveLength(0)
+  })
+
   it('rejects a late retrieval callback after terminal failure', async () => {
     const base = deps()
     let terminal = false
@@ -202,10 +311,10 @@ describe('processOneResearchJob', () => {
       ...base,
       jobs: {
         ...base.jobs,
-        appendInProgressEvent: (_jobId, journalEvent) =>
+        appendInProgressEvent: (claimedJob, journalEvent) =>
           terminal
             ? Effect.fail(new Error('research-event-ownership-lost'))
-            : base.jobs.appendInProgressEvent(job.id, journalEvent),
+            : base.jobs.appendInProgressEvent(claimedJob, journalEvent),
         fail: (input) => {
           terminal = true
           return base.jobs.fail(input)
@@ -239,10 +348,10 @@ describe('processOneResearchJob', () => {
       ...base,
       jobs: {
         ...base.jobs,
-        appendInProgressEvent: (_jobId, journalEvent) => {
+        appendInProgressEvent: (claimedJob, journalEvent) => {
           appendCount += 1
           return appendCount === 1
-            ? base.jobs.appendInProgressEvent(job.id, journalEvent)
+            ? base.jobs.appendInProgressEvent(claimedJob, journalEvent)
             : Effect.fail(ownershipLost)
         },
       },

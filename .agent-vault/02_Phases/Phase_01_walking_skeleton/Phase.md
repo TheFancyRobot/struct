@@ -7,7 +7,7 @@ phase_id: PHASE-01
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-18'
+updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Phase|PHASE-00 Architecture Spikes and Delivery Foundations]]'
 related_architecture:
@@ -20,7 +20,16 @@ related_decisions:
   - '[[04_Decisions/DEC-0006_make-source-versions-immutable-and-provenance-typed|DEC-0006 Make Source Versions Immutable and Provenance Typed]]'
   - '[[04_Decisions/DEC-0008_own-the-typed-api-and-live-research-event-stream|DEC-0008 Own the Typed API and Live Research Event Stream]]'
   - '[[04_Decisions/DEC-0015_use-per-step-branch-pr-review-and-merge-gates|DEC-0015 Use Per-Step Branch PR Review and Merge Gates]]'
-related_bugs: []
+related_bugs:
+  - '[[03_Bugs/BUG-0001_research-completion-rejects-serialized-postgresql-jsonb-payloads|BUG-0001 Research completion rejects serialized PostgreSQL JSONB payloads]]'
+  - '[[03_Bugs/BUG-0002_sourceversion-ingestion-attempt-accepts-forged-aggregate-scope|BUG-0002 SourceVersion ingestion attempt accepts forged aggregate scope]]'
+  - '[[03_Bugs/BUG-0003_source-registration-persists-unauthorized-mismatched-aggregate-scope|BUG-0003 Source registration persists unauthorized mismatched aggregate scope]]'
+  - '[[03_Bugs/BUG-0004_source-text-reindex-lacks-continuous-lease-renewal-and-database-clock-recovery|BUG-0004 Source text reindex lacks continuous lease renewal and database clock recovery]]'
+  - '[[03_Bugs/BUG-0005_canonical-duckdb-runtime-documentation-contradicts-bun-only-host-boundary|BUG-0005 Canonical DuckDB runtime documentation contradicts Bun only host boundary]]'
+  - '[[03_Bugs/BUG-0006_job-transitions-persist-unvalidated-cross-domain-journal-payloads|BUG-0006 Job transitions persist unvalidated cross-domain journal payloads]]'
+  - '[[03_Bugs/BUG-0007_event-journal-cursors-can-commit-out-of-replay-order|BUG-0007 Event journal cursors can commit out of replay order]]'
+  - '[[03_Bugs/BUG-0008_generic-eventjournal-append-bypasses-typed-transition-contracts|BUG-0008 Generic EventJournal append bypasses typed transition contracts]]'
+  - '[[03_Bugs/BUG-0009_source-registration-persists-extra-sensitive-payload-fields|BUG-0009 Source registration persists extra sensitive payload fields]]'
 tags:
   - agent-vault
   - phase
@@ -105,7 +114,15 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Related Bugs
 
 <!-- AGENT-START:phase-related-bugs -->
-- None yet.
+- [[03_Bugs/BUG-0001_research-completion-rejects-serialized-postgresql-jsonb-payloads|BUG-0001 Research completion rejects serialized PostgreSQL JSONB payloads]]
+- [[03_Bugs/BUG-0002_sourceversion-ingestion-attempt-accepts-forged-aggregate-scope|BUG-0002 SourceVersion ingestion attempt accepts forged aggregate scope]]
+- [[03_Bugs/BUG-0003_source-registration-persists-unauthorized-mismatched-aggregate-scope|BUG-0003 Source registration persists unauthorized mismatched aggregate scope]]
+- [[03_Bugs/BUG-0004_source-text-reindex-lacks-continuous-lease-renewal-and-database-clock-recovery|BUG-0004 Source text reindex lacks continuous lease renewal and database clock recovery]]
+- [[03_Bugs/BUG-0005_canonical-duckdb-runtime-documentation-contradicts-bun-only-host-boundary|BUG-0005 Canonical DuckDB runtime documentation contradicts Bun only host boundary]]
+- [[03_Bugs/BUG-0006_job-transitions-persist-unvalidated-cross-domain-journal-payloads|BUG-0006 Job transitions persist unvalidated cross-domain journal payloads]]
+- [[03_Bugs/BUG-0007_event-journal-cursors-can-commit-out-of-replay-order|BUG-0007 Event journal cursors can commit out of replay order]]
+- [[03_Bugs/BUG-0008_generic-eventjournal-append-bypasses-typed-transition-contracts|BUG-0008 Generic EventJournal append bypasses typed transition contracts]]
+- [[03_Bugs/BUG-0009_source-registration-persists-extra-sensitive-payload-fields|BUG-0009 Source registration persists extra sensitive payload fields]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps

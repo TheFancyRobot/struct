@@ -41,7 +41,7 @@ export class UniqueConstraintError extends Schema.TaggedError<UniqueConstraintEr
  */
 export class ResearchJobOwnershipLostError
   extends Schema.TaggedError<ResearchJobOwnershipLostError>()('ResearchJobOwnershipLostError', {
-    transition: Schema.Literal('append-event', 'complete', 'fail'),
+    transition: Schema.Literal('renew-lease', 'append-event', 'complete', 'fail'),
     message: Schema.String,
   }) {}
 
@@ -53,7 +53,25 @@ export class IngestionJobOwnershipLostError
   extends Schema.TaggedError<IngestionJobOwnershipLostError>()('IngestionJobOwnershipLostError', {
     jobId: Schema.String,
     attempt: Schema.Number,
-    transition: Schema.Literal('create-version', 'append-event', 'complete', 'pending', 'fail'),
+    transition: Schema.Literal(
+      'renew-lease',
+      'create-version',
+      'append-event',
+      'complete',
+      'pending',
+      'fail',
+    ),
+    message: Schema.String,
+  }) {}
+
+/**
+ * A caller supplied an ingestion journal event that does not match the exact
+ * contract for the requested transition.
+ */
+export class IngestionEventValidationError
+  extends Schema.TaggedError<IngestionEventValidationError>()('IngestionEventValidationError', {
+    transition: Schema.Literal('append-event', 'complete', 'pending', 'fail'),
+    field: Schema.String,
     message: Schema.String,
   }) {}
 
@@ -65,7 +83,7 @@ export class SourceTextReindexOwnershipLostError
   extends Schema.TaggedError<SourceTextReindexOwnershipLostError>()('SourceTextReindexOwnershipLostError', {
     sourceVersionId: Schema.String,
     attempt: Schema.Number,
-    transition: Schema.Literal('index-text', 'record-failure'),
+    transition: Schema.Literal('renew-lease', 'index-text', 'record-failure'),
     message: Schema.String,
   }) {}
 
@@ -78,4 +96,5 @@ export type PersistenceError =
   | UniqueConstraintError
   | ResearchJobOwnershipLostError
   | IngestionJobOwnershipLostError
+  | IngestionEventValidationError
   | SourceTextReindexOwnershipLostError

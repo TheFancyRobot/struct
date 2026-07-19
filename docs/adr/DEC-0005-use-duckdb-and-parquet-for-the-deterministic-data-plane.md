@@ -10,7 +10,20 @@ Structured datasets are a first-class research source, and the product must answ
 
 ## Decision
 
-Use DuckDB as the bounded, read-only execution engine for structured-data analysis and materialize compatible structured sources into Parquet where it improves performance and maintainability. Preserve lineage from normalized tables back to original files, records, and JSON pointers so exact answers remain reproducible and fully citable.
+Use DuckDB as the bounded, read-only execution engine for structured-data
+analysis and materialize compatible structured sources into Parquet where it
+improves performance and maintainability. Preserve lineage from normalized
+tables back to original files, records, and JSON pointers so exact answers
+remain reproducible and fully citable.
+
+Phase 04 will run DuckDB behind an isolated container/sidecar. The sidecar may
+use the runtime required by its selected adapter, pinned inside the image; Bun
+remains the sole maintained host runtime. The host worker communicates through
+a typed, authenticated, resource-bounded client contract and never loads the
+native adapter. Phase-04 refinement owns the exact image, protocol, mounts,
+health checks, limits, and cancellation/restart behavior. The current
+`docker-compose.yml` provisions PostgreSQL only, so this paragraph records a
+planned boundary rather than an implemented service.
 
 ## Alternatives
 
@@ -22,7 +35,8 @@ Use DuckDB as the bounded, read-only execution engine for structured-data analys
 
 - The product gets a strong deterministic data plane for counts, filters, joins, and trend analysis.
 - Ingestion must include schema-family detection, materialization, and provenance tracking.
-- Bun and DuckDB integration risks need early validation and fallback planning.
+- The sidecar image/runtime and Bun client protocol require independent
+  compatibility, security, cancellation, and crash-recovery validation.
 - Normalization adds storage and pipeline complexity, but it is necessary for trustworthy structured-data research.
 
 ## Related Phase

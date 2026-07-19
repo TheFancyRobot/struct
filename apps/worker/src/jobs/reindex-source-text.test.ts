@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'bun:test'
-import { Effect, Option } from 'effect'
+import { Effect, Exit, Option } from 'effect'
 import {
   ProjectId,
   SourceVersionId,
@@ -47,10 +47,12 @@ function deps(): SourceTextReindexWorkerDeps & {
   const indexed: unknown[] = []
   const failures: string[] = []
   return {
-    staleBeforeMs: 1_700_000_000_000,
+    staleAfterMs: 300_000,
+    heartbeatIntervalMs: 10_000,
     jobs: {
       recoverStale: () => Effect.void,
       claimNext: () => Effect.succeed(Option.some(job)),
+      renewLease: () => Effect.void,
       recordFailure: (_job, code) => {
         failures.push(code)
         return Effect.void
@@ -77,6 +79,25 @@ function deps(): SourceTextReindexWorkerDeps & {
 }
 
 describe('processOneSourceTextReindex', () => {
+  it('passes the stale duration to database-clock recovery', async () => {
+    const testDeps = deps()
+    const recoveryDurations: number[] = []
+    const controlled: SourceTextReindexWorkerDeps = {
+      ...testDeps,
+      jobs: {
+        ...testDeps.jobs,
+        recoverStale: (staleAfterMs) => {
+          recoveryDurations.push(staleAfterMs)
+          return Effect.void
+        },
+        claimNext: () => Effect.succeed(Option.none()),
+      },
+    }
+
+    await Effect.runPromise(processOneSourceTextReindex(controlled))
+    expect(recoveryDurations).toEqual([300_000])
+  })
+
   it('rebuilds an existing source version from normalized artifacts in tenant scope', async () => {
     const testDeps = deps()
 
@@ -207,5 +228,117 @@ describe('processOneSourceTextReindex', () => {
 
     const exit = await Effect.runPromiseExit(processOneSourceTextReindex(broken))
     expect(exit._tag).toBe('Failure')
+  })
+
+  it('renews continuously while claimed indexing is active', async () => {
+    const testDeps = deps()
+    let renewals = 0
+    let releaseIndex!: () => void
+    const indexGate = new Promise<void>((resolve) => {
+      releaseIndex = resolve
+    })
+    let renewedTwice!: () => void
+    const twoRenewals = new Promise<void>((resolve) => {
+      renewedTwice = resolve
+    })
+    const delayed: SourceTextReindexWorkerDeps = {
+      ...testDeps,
+      heartbeatIntervalMs: 2,
+      jobs: {
+        ...testDeps.jobs,
+        renewLease: (claimedJob) => {
+          expect(claimedJob).toEqual(job)
+          renewals += 1
+          if (renewals === 2) renewedTwice()
+          return Effect.void
+        },
+      },
+      textIndex: {
+        indexText: () => Effect.promise(() => indexGate),
+      },
+    }
+
+    const processing = Effect.runPromise(processOneSourceTextReindex(delayed))
+    await Promise.race([
+      twoRenewals,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('second reindex renewal did not run')), 250),
+      ),
+    ])
+    expect(renewals).toBeGreaterThanOrEqual(2)
+    expect(testDeps.failures).toEqual([])
+    releaseIndex()
+    await expect(processing).resolves.toEqual({ processed: true, sourceVersionId })
+  })
+
+  it('interrupts claimed work without a late terminal write when lease ownership is lost', async () => {
+    const testDeps = deps()
+    let interrupted = false
+    const stale: SourceTextReindexWorkerDeps = {
+      ...testDeps,
+      heartbeatIntervalMs: 1,
+      jobs: {
+        ...testDeps.jobs,
+        renewLease: () =>
+          Effect.fail(new SourceTextReindexOwnershipLostError({
+            sourceVersionId,
+            attempt: 1,
+            transition: 'renew-lease',
+            message: 'lease moved',
+          })),
+      },
+      textIndex: {
+        indexText: () =>
+          Effect.never.pipe(
+            Effect.onInterrupt(() =>
+              Effect.sync(() => {
+                interrupted = true
+              }),
+            ),
+          ),
+      },
+    }
+
+    await expect(
+      Effect.runPromise(processOneSourceTextReindex(stale)),
+    ).resolves.toEqual({ processed: true, sourceVersionId })
+    expect(interrupted).toBe(true)
+    expect(testDeps.failures).toEqual([])
+  })
+
+  it('keeps heartbeat infrastructure failure fatal and interrupts claimed work', async () => {
+    const testDeps = deps()
+    let interrupted = false
+    const heartbeatFailure = new QueryError({
+      operation: 'renewSourceTextReindexLease',
+      entity: 'SourceTextReindexJob',
+      message: 'database unavailable',
+    })
+    const broken: SourceTextReindexWorkerDeps = {
+      ...testDeps,
+      heartbeatIntervalMs: 1,
+      jobs: {
+        ...testDeps.jobs,
+        renewLease: () => Effect.fail(heartbeatFailure),
+      },
+      textIndex: {
+        indexText: () =>
+          Effect.never.pipe(
+            Effect.onInterrupt(() =>
+              Effect.sync(() => {
+                interrupted = true
+              }),
+            ),
+          ),
+      },
+    }
+
+    const exit = await Effect.runPromiseExit(
+      processOneSourceTextReindex(broken),
+    )
+    expect(Exit.isFailure(exit)).toBe(true)
+    expect(String(exit)).toContain('database unavailable')
+    expect(interrupted).toBe(true)
+    expect(testDeps.failures).toEqual([])
   })
 })

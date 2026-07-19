@@ -1,6 +1,7 @@
 import { Effect, Option, Schema } from 'effect'
 import {
   EventJournalId,
+  isCanonicalStagedArtifactRef,
   ProjectId,
   SourceVersionId,
   ValidationError,
@@ -28,10 +29,12 @@ type EventJournalType = typeof import('@struct/domain').EventJournal.Type
 export interface IngestionWorkerDeps {
   readonly now: () => bigint
   readonly randomSourceVersionId: () => typeof SourceVersionId.Type
-  readonly staleBeforeMs: number
+  readonly staleAfterMs: number
+  readonly heartbeatIntervalMs: number
   readonly jobs: {
-    readonly recoverStaleIngestionJobs: (staleBeforeMs: number) => Effect.Effect<{ readonly requeued: ReadonlyArray<typeof JobQueue.Type>; readonly failed: ReadonlyArray<typeof JobQueue.Type> }, unknown, never>
+    readonly recoverStaleIngestionJobs: (staleAfterMs: number) => Effect.Effect<{ readonly requeued: ReadonlyArray<typeof JobQueue.Type>; readonly failed: ReadonlyArray<typeof JobQueue.Type> }, unknown, never>
     readonly claimNextIngestionJob: () => Effect.Effect<Option.Option<typeof JobQueue.Type>, unknown, never>
+    readonly renewLease: (job: typeof JobQueue.Type) => Effect.Effect<void, PersistenceError, never>
     readonly appendInProgressEvent: (job: typeof JobQueue.Type, event: EventJournalType) => Effect.Effect<void, PersistenceError, never>
     readonly markCompleted: (job: typeof JobQueue.Type, event: EventJournalType) => Effect.Effect<void, PersistenceError, never>
     readonly markPending: (job: typeof JobQueue.Type, event: EventJournalType) => Effect.Effect<void, PersistenceError, never>
@@ -81,6 +84,77 @@ interface IngestionPayload {
   readonly projectId: import('@struct/domain').ProjectId
 }
 
+class IngestionLeaseHeartbeatError
+  extends Schema.TaggedError<IngestionLeaseHeartbeatError>()(
+    'IngestionLeaseHeartbeatError',
+    {
+      cause: Schema.Unknown,
+      message: Schema.String,
+    },
+  ) {}
+
+/**
+ * Explicit escape hatch for adapters that can prove a failure is transient.
+ * Unknown errors fail closed as terminal; callers must not infer retryability
+ * from an arbitrary message.
+ */
+export class DeclaredRetryableIngestionError
+  extends Schema.TaggedError<DeclaredRetryableIngestionError>()(
+    'DeclaredRetryableIngestionError',
+    {
+      cause: Schema.Unknown,
+      reason: Schema.String,
+      message: Schema.String,
+    },
+  ) {}
+
+export type IngestionFailureDisposition = 'retryable' | 'terminal'
+
+const retryableFailureTags = new Set([
+  'DeclaredRetryableIngestionError',
+  'JobClaimError',
+  'QueryError',
+  'RetrievalQueryError',
+  'StorageReadError',
+  'StorageWriteError',
+])
+
+const retryableIngestionFailureReasons = new Set([
+  'QueryError',
+  'StorageReadError',
+  'StorageWriteError',
+])
+
+function taggedFailure(error: unknown): {
+  readonly _tag?: unknown
+  readonly reason?: unknown
+} | undefined {
+  return typeof error === 'object' && error !== null
+    ? error as { readonly _tag?: unknown; readonly reason?: unknown }
+    : undefined
+}
+
+/**
+ * Retry only failures whose type explicitly denotes transient infrastructure.
+ * Validation, authorization, unsupported input, path/ref, schema, hash,
+ * integrity, conflict, and unknown failures are terminal by default.
+ */
+export function classifyIngestionFailure(
+  error: unknown,
+): IngestionFailureDisposition {
+  const tagged = taggedFailure(error)
+  if (typeof tagged?._tag !== 'string') return 'terminal'
+  if (retryableFailureTags.has(tagged._tag)) return 'retryable'
+  if (
+    tagged._tag === 'IngestionFailureError'
+    && typeof tagged.reason === 'string'
+    && retryableIngestionFailureReasons.has(tagged.reason)
+  ) {
+    return 'retryable'
+  }
+  return 'terminal'
+}
+
 function decodePayload(
   payload: Record<string, unknown>,
   sourceId: SourceId,
@@ -90,7 +164,7 @@ function decodePayload(
   const name = payload['name']
   const mediaType = payload['mediaType']
   const projectId = payload['projectId']
-  if (typeof stagedRef !== 'string' || !stagedRef.startsWith('staged://')) {
+  if (!isCanonicalStagedArtifactRef(stagedRef)) {
     return Effect.fail(new ValidationError({ field: 'payload.stagedRef', reason: 'invalid', message: 'Ingestion payload stagedRef is invalid' }))
   }
   if (typeof name !== 'string' || typeof mediaType !== 'string') {
@@ -117,9 +191,19 @@ function decodePayload(
   })
 }
 
-function sanitizedFailurePayload(reason: unknown): Record<string, unknown> {
-  const tag = typeof reason === 'object' && reason !== null && '_tag' in reason ? String(reason._tag) : 'IngestionFailure'
-  return { errorTag: tag, message: 'Ingestion failed' }
+function sanitizedFailurePayload(
+  reason: unknown,
+  retryable: boolean,
+): Record<string, unknown> {
+  const candidate = typeof reason === 'object'
+    && reason !== null
+    && '_tag' in reason
+    ? String(reason._tag)
+    : 'IngestionFailure'
+  const tag = /^[A-Za-z][A-Za-z0-9]{0,99}$/.test(candidate)
+    ? candidate
+    : 'IngestionFailure'
+  return { errorTag: tag, message: 'Ingestion failed', retryable }
 }
 
 function makeEvent(
@@ -134,7 +218,11 @@ function makeEvent(
     entityType: 'ingestion',
     entityId: job.entityId,
     eventType,
-    payload,
+    payload: {
+      ...payload,
+      jobId: job.id,
+      attempt: job.attempts,
+    },
     cursor: 0n,
     createdAt: deps.now(),
   }
@@ -180,8 +268,7 @@ function completeJob(
     })
     yield* appendOwnedEvent(deps, job, 'file-processed', {
       sourceVersionId: sourceVersion.id,
-      rawRef: artifactResult.rawRef,
-      normalizedRef: artifactResult.normalizedRef,
+      manifestRef: sourceVersion.artifactRef,
       contentHash: artifactResult.contentHash,
       byteLength: artifactResult.byteLength,
     })
@@ -195,9 +282,19 @@ function completeJob(
 }
 
 function failJob(deps: IngestionWorkerDeps, job: typeof JobQueue.Type, reason: unknown): Effect.Effect<void, unknown, never> {
-  const failureEvent = makeEvent(deps, job, 'ingestion-failed', sanitizedFailurePayload(reason))
+  const disposition = classifyIngestionFailure(reason)
+  const retryable = disposition === 'retryable'
+  const failureEvent = makeEvent(
+    deps,
+    job,
+    'ingestion-failed',
+    sanitizedFailurePayload(reason, retryable),
+  )
   return Effect.gen(function* () {
-    if (job.attempts < job.maxAttempts) {
+    if (
+      retryable
+      && job.attempts < job.maxAttempts
+    ) {
       yield* deps.jobs.markPending(job, failureEvent)
     } else {
       yield* deps.jobs.markFailed(job, failureEvent)
@@ -207,43 +304,72 @@ function failJob(deps: IngestionWorkerDeps, job: typeof JobQueue.Type, reason: u
   )
 }
 
+function isOwnershipLost(error: unknown): boolean {
+  return error instanceof IngestionJobOwnershipLostError
+    || (
+      typeof error === 'object'
+      && error !== null
+      && '_tag' in error
+      && error._tag === 'IngestionJobOwnershipLostError'
+    )
+}
+
 export const processOneIngestionJob = (
   deps: IngestionWorkerDeps,
 ): Effect.Effect<ProcessOneResult, unknown, never> =>
   Effect.gen(function* () {
-    yield* deps.jobs.recoverStaleIngestionJobs(deps.staleBeforeMs)
+    yield* deps.jobs.recoverStaleIngestionJobs(deps.staleAfterMs)
     const claimed = yield* deps.jobs.claimNextIngestionJob()
     if (Option.isNone(claimed)) {
       return { processed: false }
     }
 
     const job = claimed.value
-    const payloadResult = yield* Effect.either(
-      decodePayload(job.payload, job.entityId as SourceId, deps),
+    const executeClaimedJob = Effect.gen(function* () {
+      const payloadResult = yield* Effect.either(
+        decodePayload(job.payload, job.entityId as SourceId, deps),
+      )
+      if (payloadResult._tag === 'Left') {
+        yield* failJob(deps, job, payloadResult.left)
+        return
+      }
+      const completed = yield* Effect.either(
+        completeJob(deps, job, payloadResult.right),
+      )
+      if (completed._tag === 'Left') {
+        if (isOwnershipLost(completed.left)) return
+        yield* failJob(deps, job, completed.left)
+      }
+    })
+    const renewLease = Effect.gen(function* () {
+      while (true) {
+        yield* deps.jobs.renewLease(job)
+        yield* Effect.sleep(`${deps.heartbeatIntervalMs} millis`)
+      }
+    }).pipe(
+      Effect.mapError((cause) =>
+        new IngestionLeaseHeartbeatError({
+          cause,
+          message: 'Ingestion lease heartbeat failed',
+        }),
+      ),
     )
-    if (payloadResult._tag === 'Left') {
-      yield* failJob(deps, job, payloadResult.left)
-      return { processed: true, jobId: job.id }
-    }
-    const payload = Option.some(payloadResult.right)
-    if (Option.isNone(payload)) {
-      return { processed: true, jobId: job.id }
-    }
+    const executed = yield* Effect.raceFirst(
+      executeClaimedJob,
+      renewLease,
+    ).pipe(Effect.either)
 
-    const completed = yield* Effect.either(completeJob(deps, job, payload.value))
-    if (completed._tag === 'Left') {
-      if (
-        completed.left instanceof IngestionJobOwnershipLostError
-        || (
-          typeof completed.left === 'object'
-          && completed.left !== null
-          && '_tag' in completed.left
-          && completed.left._tag === 'IngestionJobOwnershipLostError'
-        )
-      ) {
+    if (executed._tag === 'Left') {
+      if (executed.left instanceof IngestionLeaseHeartbeatError) {
+        if (isOwnershipLost(executed.left.cause)) {
+          return { processed: true, jobId: job.id }
+        }
+        return yield* Effect.fail(executed.left.cause)
+      }
+      if (isOwnershipLost(executed.left)) {
         return { processed: true, jobId: job.id }
       }
-      yield* failJob(deps, job, completed.left)
+      return yield* Effect.fail(executed.left)
     }
     return { processed: true, jobId: job.id }
   })

@@ -36,7 +36,7 @@ export {
   ResearchRunRepo,
   CitationRepo,
   JobQueueRepo,
-  EventJournalRepo,
+  EventJournalReader,
   SourceRegistrationRepo,
   ResearchExecutionRepo,
   SourceTextReindexRepo,
@@ -46,6 +46,7 @@ export {
   UniqueConstraintError,
   ResearchJobOwnershipLostError,
   IngestionJobOwnershipLostError,
+  IngestionEventValidationError,
   SourceTextReindexOwnershipLostError,
   // SQL Client
   SqlClient,
@@ -76,15 +77,18 @@ export type {
   ResearchRunRepository,
   CitationRepository,
   JobQueueRepository,
-  EventJournalRepository,
+  EventJournalReadRepository,
 } from './repositories/interfaces.js'
 
 export type { PersistenceError } from './errors.js'
 
 export type {
   SourceRegistrationInput,
+  SourceRegistrationJobPayload,
+  SourceRegistrationEventPayload,
   SourceRegistrationResult,
   SourceRegistrationRepository,
+  SourceRegistrationError,
 } from './repositories/source-registration.js'
 
 export type {

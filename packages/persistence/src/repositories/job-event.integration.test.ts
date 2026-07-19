@@ -78,7 +78,7 @@ describeIf('JobQueueRepo stale ingestion recovery (PostgreSQL)', () => {
     )
 
     const failedExit = await Effect.runPromiseExit(
-      JobQueueRepo.recoverStaleIngestionJobs(Date.now()).pipe(Effect.provide(layer)),
+      JobQueueRepo.recoverStaleIngestionJobs(300_000).pipe(Effect.provide(layer)),
     )
     expect(failedExit._tag).toBe('Failure')
     const afterInjectedFailure = await sql.unsafe(
@@ -97,7 +97,7 @@ describeIf('JobQueueRepo stale ingestion recovery (PostgreSQL)', () => {
 
     await sql.unsafe(`DROP TRIGGER ${triggerName} ON event_journal`)
     const recovered = await Effect.runPromise(
-      JobQueueRepo.recoverStaleIngestionJobs(Date.now()).pipe(Effect.provide(layer)),
+      JobQueueRepo.recoverStaleIngestionJobs(300_000).pipe(Effect.provide(layer)),
     )
     expect(recovered.requeued.map((job) => String(job.id))).toEqual([requeuedJobId])
     expect(recovered.failed.map((job) => String(job.id))).toEqual([exhaustedJobId])
@@ -115,12 +115,15 @@ describeIf('JobQueueRepo stale ingestion recovery (PostgreSQL)', () => {
     expect(terminal[0]?.['status']).toBe('failed')
     expect(terminal[0]?.['event_type']).toBe('ingestion-failed')
     expect(terminal[0]?.['payload']).toEqual({
+      jobId: String(exhaustedJobId),
+      attempt: 3,
       errorTag: 'StaleIngestionJobExhausted',
       message: 'Ingestion failed',
+      retryable: true,
     })
 
     const repeated = await Effect.runPromise(
-      JobQueueRepo.recoverStaleIngestionJobs(Date.now()).pipe(Effect.provide(layer)),
+      JobQueueRepo.recoverStaleIngestionJobs(300_000).pipe(Effect.provide(layer)),
     )
     expect(repeated).toEqual({ requeued: [], failed: [] })
     const eventCount = await sql.unsafe(

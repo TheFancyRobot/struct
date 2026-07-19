@@ -16,6 +16,12 @@
 - PostgreSQL pools connect lazily, so the worker now executes `SELECT 1` before readiness and lets recovery/claim failures terminate the polling effect visibly.
 - `SourceRegistrationRepo` owns one transaction for Source creation, ingestion-job enqueue, and `ingestion-requested`; row decoding stays inside that transaction so decode failure also rolls back.
 
+### 2026-07-19 ingestion retryability remediation
+
+- Worker retryability is an explicit typed decision, not an inference from remaining attempt budget or arbitrary error text. Known transient persistence/storage/index failures and the declared retryable wrapper may requeue; validation, authorization, path/ref, unsupported input, schema/hash/integrity/conflict, and unknown failures terminal-fail immediately.
+- The sanitized `ingestion-failed` payload is exact and bounded: owned `jobId`/`attempt`, alphanumeric `errorTag`, fixed message, and boolean `retryable`. Persistence rejects retry inversion atomically.
+- Unit and real-PostgreSQL controls prove first-attempt deterministic terminal failure, budgeted transient pending, exhausted transient terminal failure, and no duplicate terminal replay events.
+
 ## Related Notes
 
 - Step: [[02_Phases/Phase_01_walking_skeleton/Steps/Step_03_implement-single-text-source-ingestion-and-artifact-storage|STEP-01-03 Implement Single Text Source Ingestion and Artifact Storage]]

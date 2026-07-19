@@ -1,5 +1,11 @@
 # Implementation Notes
 
+> **Historical implementation evidence — topology superseded:** The
+> child-process winner below records the Phase-00 result at the time.
+> DEC-0003/DEC-0005 now place DuckDB in an isolated Phase-04
+> container/sidecar, with no DuckDB child process, Node fallback, or native
+> adapter in a maintained Bun host application.
+
 - Capture durable findings learned during execution. Prefer short bullets with file paths, commands, and observed behavior.
 
 ## Related Notes
@@ -30,7 +36,9 @@
 
 ### Recommendation
 
-- **Selected Topology: `worker`** (isolated child process). `direct` rejected: native crash not containable, cooperative cancellation not hard preemption.
+- **Selected at the time: `worker`** (isolated child process). `direct`
+  rejected: native crash not containable, cooperative cancellation not hard
+  preemption. The selection remains evidence, not current production topology.
 
 - Step: [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Steps/Step_03_spike-duckdb-bun-parquet-and-isolation-topology|STEP-00-03 Spike DuckDB Bun Parquet and Isolation Topology]]
 - Phase: [[02_Phases/Phase_00_architecture_spikes_and_delivery_foundations/Phase|Phase 00 architecture spikes and delivery foundations]]

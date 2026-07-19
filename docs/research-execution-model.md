@@ -354,6 +354,11 @@ Actions:
 
 The canonical progress record is the append-only product event journal. SSE is a projection of that durable state.
 
+The persistence package exposes no generic event writer. Research events can
+only be written through the research aggregate service, which verifies the
+claimed job attempt, workspace/run identity, allowed transition and sanitized
+payload in one transaction. Generic journal access is explicitly read-only.
+
 ### 10.1 Event design
 
 Each event includes:
@@ -392,6 +397,11 @@ Minimum events:
 
 - clients subscribe by project/thread/run scope;
 - events are replayable by cursor after reconnect;
+- persisted cursor order is commit-visible order. Reconnect checkpoints may
+  safely use `WHERE cursor > checkpoint`: migration
+  `0004_event_journal_commit_order` serializes cursor allocation through a
+  transaction-held PostgreSQL advisory lock, while allowing sequence gaps when
+  an inserting transaction rolls back;
 - partial structured JSON is not treated as final object state;
 - the UI may show streaming answer text, but final claim/citation objects become authoritative only after validation.
 

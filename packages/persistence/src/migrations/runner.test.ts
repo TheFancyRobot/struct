@@ -80,6 +80,12 @@ describe('Migration Runner', () => {
       expect(fakeSql.queries.join('\n')).toMatch(
         /CREATE TRIGGER source_versions_enqueue_text_reindex/i,
       )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /CREATE TRIGGER event_journal_allocate_cursor_in_commit_order/i,
+      )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /pg_advisory_xact_lock[\s\S]*nextval/i,
+      )
     })
 
     it('skips already-applied migrations', async () => {
@@ -120,6 +126,12 @@ describe('Migration Runner', () => {
           q.includes(latestMigration?.name ?? ''),
       )
       expect(deleteQuery).toBeDefined()
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /DROP TRIGGER IF EXISTS event_journal_allocate_cursor_in_commit_order/i,
+      )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /ALTER COLUMN cursor[\s\S]*SET DEFAULT nextval/i,
+      )
     })
 
     it('does nothing when no migrations are applied', async () => {

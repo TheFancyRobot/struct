@@ -24,11 +24,24 @@ class ReindexArtifactError
     message: Schema.String,
   }) {}
 
+class SourceTextReindexLeaseHeartbeatError
+  extends Schema.TaggedError<SourceTextReindexLeaseHeartbeatError>()(
+    'SourceTextReindexLeaseHeartbeatError',
+    {
+      cause: Schema.Unknown,
+      message: Schema.String,
+    },
+  ) {}
+
 export interface SourceTextReindexWorkerDeps {
-  readonly staleBeforeMs: number
+  readonly staleAfterMs: number
+  readonly heartbeatIntervalMs: number
   readonly jobs: {
-    readonly recoverStale: (staleBeforeMs: number) => Effect.Effect<void, PersistenceError, never>
+    readonly recoverStale: (staleAfterMs: number) => Effect.Effect<void, PersistenceError, never>
     readonly claimNext: () => Effect.Effect<Option.Option<SourceTextReindexJob>, PersistenceError, never>
+    readonly renewLease: (
+      job: SourceTextReindexJob,
+    ) => Effect.Effect<void, PersistenceError, never>
     readonly recordFailure: (
       job: SourceTextReindexJob,
       errorCode: string,
@@ -116,6 +129,16 @@ function failureCode(error: unknown): string {
   return 'reindex-failed'
 }
 
+function isOwnershipLost(error: unknown): boolean {
+  return error instanceof SourceTextReindexOwnershipLostError
+    || (
+      typeof error === 'object'
+      && error !== null
+      && '_tag' in error
+      && error._tag === 'SourceTextReindexOwnershipLostError'
+    )
+}
+
 function processClaimed(
   deps: SourceTextReindexWorkerDeps,
   job: SourceTextReindexJob,
@@ -170,11 +193,11 @@ export const processOneSourceTextReindex = (
   deps: SourceTextReindexWorkerDeps,
 ): Effect.Effect<{ readonly processed: boolean; readonly sourceVersionId?: string }, unknown, never> =>
   Effect.gen(function* () {
-    yield* deps.jobs.recoverStale(deps.staleBeforeMs)
+    yield* deps.jobs.recoverStale(deps.staleAfterMs)
     const claimed = yield* deps.jobs.claimNext()
     if (Option.isNone(claimed)) return { processed: false }
     const job = claimed.value
-    yield* processClaimed(deps, job).pipe(
+    const executeClaimed = processClaimed(deps, job).pipe(
       Effect.catchTag('SourceTextReindexOwnershipLostError', () => Effect.void),
       Effect.catchTags({
         ReindexArtifactError: (error) =>
@@ -195,5 +218,33 @@ export const processOneSourceTextReindex = (
           ),
       }),
     )
+    const renewLease = Effect.gen(function* () {
+      while (true) {
+        yield* deps.jobs.renewLease(job)
+        yield* Effect.sleep(`${deps.heartbeatIntervalMs} millis`)
+      }
+    }).pipe(
+      Effect.mapError((cause) =>
+        new SourceTextReindexLeaseHeartbeatError({
+          cause,
+          message: 'Source text reindex lease heartbeat failed',
+        }),
+      ),
+    )
+    const executed = yield* Effect.raceFirst(executeClaimed, renewLease).pipe(
+      Effect.either,
+    )
+    if (executed._tag === 'Left') {
+      if (executed.left instanceof SourceTextReindexLeaseHeartbeatError) {
+        if (isOwnershipLost(executed.left.cause)) {
+          return { processed: true, sourceVersionId: job.sourceVersionId }
+        }
+        return yield* Effect.fail(executed.left.cause)
+      }
+      if (isOwnershipLost(executed.left)) {
+        return { processed: true, sourceVersionId: job.sourceVersionId }
+      }
+      return yield* Effect.fail(executed.left)
+    }
     return { processed: true, sourceVersionId: job.sourceVersionId }
   })

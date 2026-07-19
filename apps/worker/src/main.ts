@@ -29,6 +29,9 @@ import {
 import {
   artifactStorageRootConfig,
   databaseUrlConfig,
+  deriveIngestionJobHeartbeatIntervalMs,
+  deriveSourceTextReindexHeartbeatIntervalMs,
+  validateResearchJobTiming,
   workerJobStaleMsConfig,
   workerMetricsPortConfig,
   workerPollIntervalMsConfig,
@@ -45,6 +48,20 @@ const program = Effect.gen(function* () {
   const pollMs = yield* workerPollIntervalMsConfig
   const staleMs = yield* workerJobStaleMsConfig
   const fredConfig = yield* fredRuntimeConfig
+  const ingestionHeartbeatIntervalMs = deriveIngestionJobHeartbeatIntervalMs({
+    pollIntervalMs: pollMs,
+    staleMs,
+  })
+  const sourceTextReindexHeartbeatIntervalMs =
+    deriveSourceTextReindexHeartbeatIntervalMs({
+      pollIntervalMs: pollMs,
+      staleMs,
+    })
+  const researchJobTiming = yield* validateResearchJobTiming({
+    pollIntervalMs: pollMs,
+    staleMs,
+    researchMaxElapsedMs: fredConfig.maxElapsedMs,
+  })
   const storage = yield* LocalArtifactStore.make({ root: artifactRoot })
   const sql = yield* Effect.acquireRelease(
     Effect.sync(() => postgres(databaseUrl, { max: 5, idle_timeout: 5, connect_timeout: 2 })),
@@ -70,10 +87,16 @@ const program = Effect.gen(function* () {
   const poll = Effect.suspend(() => processOneIngestionJob({
     now: () => BigInt(Date.now()),
     randomSourceVersionId: () => SourceVersionId.make(crypto.randomUUID()),
-    staleBeforeMs: Date.now() - staleMs,
+    staleAfterMs: staleMs,
+    heartbeatIntervalMs: ingestionHeartbeatIntervalMs,
     jobs: {
-      recoverStaleIngestionJobs: (staleBeforeMs) => JobQueueRepo.recoverStaleIngestionJobs(staleBeforeMs).pipe(Effect.provide(jobLayer)),
+      recoverStaleIngestionJobs: (staleAfterMs) =>
+        JobQueueRepo.recoverStaleIngestionJobs(staleAfterMs).pipe(
+          Effect.provide(jobLayer),
+        ),
       claimNextIngestionJob: () => JobQueueRepo.claimNextIngestionJob().pipe(Effect.provide(jobLayer)),
+      renewLease: (job) =>
+        JobQueueRepo.renewLease(job).pipe(Effect.provide(jobLayer)),
       appendInProgressEvent: (job, event) =>
         JobQueueRepo.appendInProgressEvent(job, event).pipe(Effect.provide(jobLayer)),
       markCompleted: (job, event) =>
@@ -107,18 +130,23 @@ const program = Effect.gen(function* () {
 
   const researchPoll = Effect.suspend(() => processOneResearchJob({
     now: () => BigInt(Date.now()),
-    staleBeforeMs: Date.now() - staleMs,
+    staleAfterMs: researchJobTiming.staleMs,
+    heartbeatIntervalMs: researchJobTiming.heartbeatIntervalMs,
     randomEventId: () => EventJournalId.make(crypto.randomUUID()),
     randomCitationId: () => CitationId.make(crypto.randomUUID()),
     jobs: {
-      recoverStale: (staleBeforeMs) =>
-        ResearchExecutionRepo.recoverStale(staleBeforeMs).pipe(
+      recoverStale: (staleAfterMs) =>
+        ResearchExecutionRepo.recoverStale(staleAfterMs).pipe(
           Effect.provide(researchExecutionLayer),
         ),
       claimNext: () =>
         ResearchExecutionRepo.claimNext().pipe(Effect.provide(researchExecutionLayer)),
-      appendInProgressEvent: (jobId, event) =>
-        ResearchExecutionRepo.appendInProgressEvent(jobId, event).pipe(
+      renewLease: (job) =>
+        ResearchExecutionRepo.renewLease(job).pipe(
+          Effect.provide(researchExecutionLayer),
+        ),
+      appendInProgressEvent: (job, event) =>
+        ResearchExecutionRepo.appendInProgressEvent(job, event).pipe(
           Effect.provide(researchExecutionLayer),
         ),
       complete: (input) =>
@@ -176,14 +204,19 @@ const program = Effect.gen(function* () {
   }))
 
   const reindexPoll = Effect.suspend(() => processOneSourceTextReindex({
-    staleBeforeMs: Date.now() - staleMs,
+    staleAfterMs: staleMs,
+    heartbeatIntervalMs: sourceTextReindexHeartbeatIntervalMs,
     jobs: {
-      recoverStale: (staleBeforeMs) =>
-        SourceTextReindexRepo.recoverStale(staleBeforeMs).pipe(
+      recoverStale: (staleAfterMs) =>
+        SourceTextReindexRepo.recoverStale(staleAfterMs).pipe(
           Effect.provide(sourceTextReindexLayer),
         ),
       claimNext: () =>
         SourceTextReindexRepo.claimNext().pipe(Effect.provide(sourceTextReindexLayer)),
+      renewLease: (job) =>
+        SourceTextReindexRepo.renewLease(job).pipe(
+          Effect.provide(sourceTextReindexLayer),
+        ),
       recordFailure: (job, errorCode) =>
         SourceTextReindexRepo.recordFailure(job, errorCode).pipe(
           Effect.provide(sourceTextReindexLayer),

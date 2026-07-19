@@ -25,7 +25,7 @@ function migrationExecutor(sql: postgresTypes.Sql): SqlExecutorWithTransactions 
   }
 }
 
-describeIf('0003 existing SourceVersion upgrade (PostgreSQL)', () => {
+describeIf('existing database migration upgrades (PostgreSQL)', () => {
   let admin: postgresTypes.Sql
   let scoped: postgresTypes.Sql
 
@@ -52,6 +52,9 @@ describeIf('0003 existing SourceVersion upgrade (PostgreSQL)', () => {
     if (!scoped) return
     const executor = migrationExecutor(scoped)
     await Effect.runPromise(runMigrationsUp(executor))
+    // Remove 0004 first, then 0003 so this fixture represents the database
+    // state immediately before the SourceVersion text-index upgrade.
+    await Effect.runPromise(runMigrationsDown(executor))
     await Effect.runPromise(runMigrationsDown(executor))
 
     await scoped.unsafe(`
@@ -89,12 +92,17 @@ describeIf('0003 existing SourceVersion upgrade (PostgreSQL)', () => {
        FROM source_text_reindex_jobs
        WHERE source_version_id = '450e8400-e29b-41d4-a716-446655440003'`,
     )
-    expect(existing).toMatchObject([{
+    expect(existing).toHaveLength(1)
+    expect(existing[0]).toMatchObject({
       workspace_id: '450e8400-e29b-41d4-a716-446655440000',
       project_id: '450e8400-e29b-41d4-a716-446655440001',
+      artifact_ref:
+        'artifact://sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      content_hash:
+        'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
       status: 'pending',
       attempts: 0,
-    }])
+    })
     expect(await scoped.unsafe(
       `SELECT source_version_id FROM source_text_index
        WHERE source_version_id = '450e8400-e29b-41d4-a716-446655440003'`,
@@ -112,9 +120,21 @@ describeIf('0003 existing SourceVersion upgrade (PostgreSQL)', () => {
         'sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'
       )
     `)
-    expect(await scoped.unsafe(
-      `SELECT status FROM source_text_reindex_jobs
+    const created = await scoped.unsafe(
+      `SELECT workspace_id, project_id, artifact_ref, content_hash, status, attempts
+       FROM source_text_reindex_jobs
        WHERE source_version_id = '450e8400-e29b-41d4-a716-446655440004'`,
-    )).toMatchObject([{ status: 'pending' }])
+    )
+    expect(created).toHaveLength(1)
+    expect(created[0]).toMatchObject({
+      workspace_id: '450e8400-e29b-41d4-a716-446655440000',
+      project_id: '450e8400-e29b-41d4-a716-446655440001',
+      artifact_ref:
+        'artifact://sha256/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+      content_hash:
+        'sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
+      status: 'pending',
+      attempts: 0,
+    })
   })
 })

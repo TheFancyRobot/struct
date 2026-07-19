@@ -6,5 +6,6 @@
  */
 
 export * from './branded-ids.js'
+export * from './logical-refs.js'
 export * from './schemas.js'
 export * from './typed-errors.js'

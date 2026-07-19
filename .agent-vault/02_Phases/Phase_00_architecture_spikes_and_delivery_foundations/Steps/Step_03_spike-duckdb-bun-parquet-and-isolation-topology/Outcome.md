@@ -1,5 +1,12 @@
 # Outcome
 
+> **Historical outcome — topology superseded:** The measurements and
+> selected-at-the-time worker result below remain valid spike evidence.
+> DEC-0003 and DEC-0005 now require Phase 04 to implement an isolated DuckDB
+> container/sidecar with any adapter runtime pinned inside the image. The
+> maintained Bun host must not run the historical DuckDB child process or a
+> Node fallback.
+
 - Record the final result, validation performed, and explicit follow-up here.
 
 ## Related Notes
@@ -29,9 +36,12 @@ Totals from the recorded run in `results/benchmark.json` (`generatedAt` 2026-07-
 
 ### Recommendation
 
-- **Selected Topology: `worker`** (isolated child process, JSON-over-stdio IPC).
+- **Selected at the time: `worker`** (isolated child process, JSON-over-stdio IPC).
 - **Justification:** simplest crash-contained isolation that passes every correctness/safety gate and performs within 2x of the fastest crash-contained candidate. `direct` is faster/simpler but fails the per-topology crash-containment gate (native crash not containable; cooperative cancellation is not hard preemption).
-- **Next Steps:** Phase 04 implementation using the isolated worker-process boundary.
+- **Current Phase-04 handoff:** retain the measured protocol, hardening,
+  resource, cancellation, promotion, and recovery invariants in the isolated
+  DEC-0003/DEC-0005 sidecar; do not implement the historical host
+  worker-process or Node fallback.
 
 ### Validation Status
 

@@ -9,7 +9,8 @@
 - Added mock-provider, unit, migration, route, and real PostgreSQL integration coverage for grounded completion, exact citations, insufficient evidence, scope isolation, durable terminal state, and stale recovery.
 - Second independent-review remediation preserves positional evidence only in contiguous original-source windows, retains repeated lexeme occurrences and exact cross-line character locators, and limits omission-separated multi-range evidence to non-positional queries.
 - Exhausted stale ingestion recovery owns its sanitized terminal journal event in the same PostgreSQL transaction as the status transition, with deterministic event identity and fault-injected rollback/idempotency coverage.
-- Bun is the canonical test runtime for subsequent validation; this bounded pass did not remove existing test tooling or scripts.
+- Bun is the sole maintained-host test runtime. Root validation uses the scoped native `bun:test` command over maintained `apps` and `packages`; obsolete second-runner tooling and scripts were removed during final hardening.
+- Added reversible migration `0004_event_journal_commit_order`: a `BEFORE INSERT` trigger acquires a transaction-scoped advisory lock before allocating the owned event cursor sequence, ensuring cursor order matches commit visibility across every insert path. Deterministic two-connection PostgreSQL coverage reproduces the legacy replay loss and verifies blocking, rollback gaps, concurrent uniqueness, replay safety, explicit-cursor override, and migration round trips.
 
 ## Related Notes
 

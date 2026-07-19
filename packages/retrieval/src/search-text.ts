@@ -49,8 +49,20 @@ interface SearchRow {
 
 const MAX_EXCERPT_CHARS = 1200
 const MAX_CONTEXT_CHARS_PER_SIDE = 120
+const MAX_SUPPORTED_LOCATIONS = 24
+const MAX_EVIDENCE_CANDIDATES = 80
 const MATCH_START = '\uE000'
 const MATCH_END = '\uE001'
+
+class ReindexTransactionOwnershipLost extends Error {
+  readonly name = 'ReindexTransactionOwnershipLost'
+  readonly attempt: number
+
+  constructor(attempt: number) {
+    super('Source text reindex transaction ownership was lost')
+    this.attempt = attempt
+  }
+}
 const OMITTED_SOURCE = '\n…\n'
 
 interface MatchPassage {
@@ -71,6 +83,79 @@ interface SourceRange {
   readonly end: number
 }
 
+interface CharacterRange {
+  readonly start: number
+  readonly end: number
+}
+
+function normalizeCharacterRange(
+  content: string,
+  range: CharacterRange,
+): CharacterRange {
+  let { start, end } = range
+  if (
+    start > 0
+    && start < content.length
+    && content.charCodeAt(start) >= 0xDC00
+    && content.charCodeAt(start) <= 0xDFFF
+    && content.charCodeAt(start - 1) >= 0xD800
+    && content.charCodeAt(start - 1) <= 0xDBFF
+  ) {
+    start -= 1
+  }
+  if (
+    end > 0
+    && end < content.length
+    && content.charCodeAt(end) >= 0xDC00
+    && content.charCodeAt(end) <= 0xDFFF
+    && content.charCodeAt(end - 1) >= 0xD800
+    && content.charCodeAt(end - 1) <= 0xDBFF
+  ) {
+    end += 1
+  }
+  return { start, end }
+}
+
+function postgresCharacterCoordinates(
+  content: string,
+  range: CharacterRange,
+): { readonly start: number; readonly length: number } {
+  let position = 1
+  let length = 0
+  for (let index = 0; index < range.end;) {
+    const width = (content.codePointAt(index) ?? 0) > 0xFFFF ? 2 : 1
+    if (index < range.start) {
+      position += 1
+    } else {
+      length += 1
+    }
+    index += width
+  }
+  return { start: position, length }
+}
+
+function headTailCollector<T>(budget: number): {
+  readonly add: (value: T) => void
+  readonly values: () => ReadonlyArray<T>
+} {
+  const headBudget = Math.ceil(budget / 2)
+  const tailBudget = Math.floor(budget / 2)
+  const head: T[] = []
+  const tail: T[] = []
+  return {
+    add: (value) => {
+      if (head.length < headBudget) {
+        head.push(value)
+        return
+      }
+      if (tailBudget === 0) return
+      if (tail.length === tailBudget) tail.shift()
+      tail.push(value)
+    },
+    values: () => [...head, ...tail],
+  }
+}
+
 function fallbackExcerpt(content: string, matchLine: number): { excerpt: string; locator: string } {
   const lines = content.split('\n')
   const startLine = Math.max(0, Math.min(lines.length - 1, matchLine - 1))
@@ -88,15 +173,17 @@ function fallbackExcerpt(content: string, matchLine: number): { excerpt: string;
 
 function decodeMatchPassages(value: unknown): ReadonlyArray<MatchPassage> {
   if (!Array.isArray(value)) return []
-  return value.flatMap((item) => {
-    if (typeof item !== 'object' || item === null) return []
+  const passages = headTailCollector<MatchPassage>(MAX_SUPPORTED_LOCATIONS)
+  for (const item of value) {
+    if (typeof item !== 'object' || item === null) continue
     const record = item as Record<string, unknown>
     const lineNumber = Number(record['line_number'])
     const highlightedLine = record['highlighted_line']
-    return Number.isInteger(lineNumber) && lineNumber > 0 && typeof highlightedLine === 'string'
-      ? [{ lineNumber, highlightedLine }]
-      : []
-  })
+    if (Number.isInteger(lineNumber) && lineNumber > 0 && typeof highlightedLine === 'string') {
+      passages.add({ lineNumber, highlightedLine })
+    }
+  }
+  return [...passages.values()].sort((left, right) => left.lineNumber - right.lineNumber)
 }
 
 function matchRanges(
@@ -104,7 +191,7 @@ function matchRanges(
   passages: ReadonlyArray<MatchPassage>,
 ): ReadonlyArray<MatchRange> {
   const lines = content.split('\n')
-  const matches: MatchRange[] = []
+  const matches = headTailCollector<MatchRange>(MAX_SUPPORTED_LOCATIONS)
 
   for (const passage of passages) {
     const lineIndex = passage.lineNumber - 1
@@ -113,7 +200,9 @@ function matchRanges(
 
     let cursor = 0
     let plain = ''
-    const lineMatches: Array<{ start: number; end: number }> = []
+    const lineMatches = headTailCollector<{ start: number; end: number }>(
+      MAX_SUPPORTED_LOCATIONS,
+    )
     while (cursor < passage.highlightedLine.length) {
       const markedStart = passage.highlightedLine.indexOf(MATCH_START, cursor)
       if (markedStart === -1) {
@@ -127,7 +216,7 @@ function matchRanges(
       const start = plain.length
       plain += matchedText
       if (matchedText.length > 0) {
-        lineMatches.push({
+        lineMatches.add({
           start,
           end: plain.length,
         })
@@ -139,15 +228,17 @@ function matchRanges(
     // malformed marker output here; the caller fails closed instead of emitting offsets
     // that do not address the immutable source text.
     if (plain !== sourceLine) continue
-    matches.push(...lineMatches.map((match) => ({
-      lineIndex,
-      ...match,
-      text: sourceLine.slice(match.start, match.end),
-    })))
+    for (const match of lineMatches.values()) {
+      matches.add({
+        lineIndex,
+        ...match,
+        text: sourceLine.slice(match.start, match.end),
+      })
+    }
   }
 
   const seen = new Set<string>()
-  return matches
+  return [...matches.values()]
     .sort((left, right) =>
       left.lineIndex - right.lineIndex
       || left.start - right.start
@@ -327,7 +418,11 @@ function matchedExcerptCandidates(
   const candidates: LocatedExcerpt[] = []
   const seen = new Set<string>()
   const add = (candidate: LocatedExcerpt | undefined): void => {
-    if (candidate === undefined || candidate.excerpt.length > MAX_EXCERPT_CHARS) return
+    if (
+      candidate === undefined
+      || candidate.excerpt.length > MAX_EXCERPT_CHARS
+      || candidates.length >= MAX_EVIDENCE_CANDIDATES
+    ) return
     const key = `${candidate.locator}\u0000${candidate.excerpt}`
     if (!seen.has(key)) {
       seen.add(key)
@@ -349,25 +444,22 @@ function matchedExcerptCandidates(
     }
   }
 
-  for (const match of matches) {
-    add(boundedLineWindow(lines[match.lineIndex]!, match.lineIndex, match))
-  }
-
   if (!queryIsPositional) {
     // Distributed non-positional terms may use accurate multi-range evidence.
     // Never offer synthetic omission-separated text for phrase/proximity
     // support: removing source distance can manufacture a match.
+    const earliestByLexeme = new Map<string, MatchRange>()
     const latestByLexeme = new Map<string, MatchRange>()
     for (const match of matches) {
+      if (!earliestByLexeme.has(match.text)) earliestByLexeme.set(match.text, match)
       latestByLexeme.set(match.text, match)
-      add(compactCandidate(
-        lines,
-        [...latestByLexeme.values()].sort((left, right) =>
-          left.lineIndex - right.lineIndex
-          || left.start - right.start
-          || left.end - right.end),
-      ))
     }
+    const bySourceOrder = (left: MatchRange, right: MatchRange): number =>
+      left.lineIndex - right.lineIndex
+      || left.start - right.start
+      || left.end - right.end
+    add(compactCandidate(lines, [...earliestByLexeme.values()].sort(bySourceOrder)))
+    add(compactCandidate(lines, [...latestByLexeme.values()].sort(bySourceOrder)))
   }
 
   // Prefer local contiguous windows so a later supported phrase is cited at
@@ -383,6 +475,9 @@ function matchedExcerptCandidates(
         match.end - match.start + MAX_CONTEXT_CHARS_PER_SIDE * 2,
       ),
     ))
+  }
+  for (const match of matches) {
+    add(boundedLineWindow(lines[match.lineIndex]!, match.lineIndex, match))
   }
   // A wider contiguous fallback retains unusual but still bounded positional
   // matches without ever collapsing source distance.
@@ -405,6 +500,26 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
       const result = yield* Effect.tryPromise({
         try: () =>
           sql.transaction(async (transaction) => {
+            if (input.reindexAttempt !== undefined) {
+              const owned = await transaction.unsafe(
+                `SELECT source_version_id
+                 FROM source_text_reindex_jobs
+                 WHERE source_version_id = $1
+                   AND workspace_id = $2
+                   AND project_id = $3
+                   AND status = 'in-progress'
+                   AND attempts = $4`,
+                [
+                  input.sourceVersionId,
+                  input.workspaceId,
+                  input.projectId,
+                  input.reindexAttempt,
+                ],
+              )
+              if (owned.length !== 1) {
+                throw new ReindexTransactionOwnershipLost(input.reindexAttempt)
+              }
+            }
             const indexed = await transaction.unsafe(
               `INSERT INTO source_text_index (source_version_id, content)
                SELECT sv.id, $4
@@ -467,16 +582,31 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
                     input.reindexAttempt,
                   ],
                 )
+            if (
+              input.reindexAttempt !== undefined
+              && completed.length !== 1
+            ) {
+              // Throw before the transaction callback returns so PostgreSQL
+              // rolls back the index mutation performed by this stale attempt.
+              throw new ReindexTransactionOwnershipLost(input.reindexAttempt)
+            }
             return {
               indexed,
               completionOwned: completed.length === 1,
             }
           }),
-        catch: () =>
-          new RetrievalQueryError({
-            operation: 'indexText',
-            message: 'Normalized source text could not be indexed',
-          }),
+        catch: (cause) =>
+          cause instanceof ReindexTransactionOwnershipLost
+            ? new SourceTextReindexOwnershipLostError({
+                sourceVersionId: input.sourceVersionId,
+                attempt: cause.attempt,
+                transition: 'index-text',
+                message: 'Source text reindex attempt no longer owns the in-progress lease',
+              })
+            : new RetrievalQueryError({
+                operation: 'indexText',
+                message: 'Normalized source text could not be indexed',
+              }),
       })
       if (result.indexed.length !== 1) {
         return yield* new RetrievalQueryError({
@@ -572,6 +702,12 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
                         ORDER BY line_number
                       ) AS match_passages
                FROM (
+                 SELECT eligible_lines.*,
+                        row_number() OVER (ORDER BY line_number ASC)
+                          AS forward_location,
+                        row_number() OVER (ORDER BY line_number DESC)
+                          AS reverse_location
+                 FROM (
                  SELECT candidate_lines.*,
                         bool_or(candidate_lines.matches_query) OVER () AS has_query_match
                  FROM (
@@ -586,9 +722,12 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
                  ) candidate_lines
                  WHERE candidate_lines.matches_query
                     OR candidate_lines.matches_locator
+                 ) eligible_lines
+                 WHERE eligible_lines.matches_query
+                    OR NOT eligible_lines.has_query_match
                ) source_lines
-               WHERE source_lines.matches_query
-                  OR NOT source_lines.has_query_match
+               WHERE source_lines.forward_location <= ($6::int + 1) / 2
+                  OR source_lines.reverse_location <= $6::int / 2
              ) matched_lines ON TRUE
              WHERE p.workspace_id = $1
                AND p.id = $2
@@ -602,6 +741,7 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
                 decoded.sourceVersionIds,
                 decoded.query,
                 decoded.limit,
+                MAX_SUPPORTED_LOCATIONS,
               ],
             )
           }),
@@ -654,9 +794,142 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
                 }),
             })
             const candidateNumber = Number(supported[0]?.['candidate_number'])
-            const located = Number.isInteger(candidateNumber) && candidateNumber > 0
+            let located = Number.isInteger(candidateNumber) && candidateNumber > 0
               ? eligibleCandidates[candidateNumber - 1]
               : undefined
+            if (located === undefined && row.query_is_positional === true) {
+              const content = row.content
+              const lines = content.split('\n')
+              const offsets = lineOffsets(lines)
+              const stack: CharacterRange[] = [{
+                start: 0,
+                end: content.length,
+              }]
+              let probes = 0
+
+              while (stack.length > 0 && probes < MAX_EVIDENCE_CANDIDATES) {
+                const range = stack.pop()!
+                if (range.end - range.start <= MAX_EXCERPT_CHARS) {
+                  let start = range.start
+                  let end = range.end
+                  while (start < end && content[start] === '\n') start += 1
+                  while (end > start && content[end - 1] === '\n') end -= 1
+                  if (start < end) {
+                    located = {
+                      excerpt: content.slice(start, end),
+                      locator: contiguousLocator(lines, offsets, start, end),
+                      discontiguous: false,
+                    }
+                  }
+                  break
+                }
+
+                const rangeLength = range.end - range.start
+                const children = (rangeLength === MAX_EXCERPT_CHARS + 1
+                  ? [
+                      {
+                        start: range.start,
+                        end: range.start + MAX_EXCERPT_CHARS,
+                      },
+                      {
+                        start: range.end - MAX_EXCERPT_CHARS,
+                        end: range.end,
+                      },
+                    ]
+                  : (() => {
+                      const midpoint = range.start + Math.floor(rangeLength / 2)
+                      const overlap = Math.ceil(MAX_EXCERPT_CHARS / 2)
+                      return [
+                        {
+                          start: range.start,
+                          end: Math.min(range.end, midpoint + overlap),
+                        },
+                        {
+                          start: Math.max(range.start, midpoint - overlap),
+                          end: range.end,
+                        },
+                      ]
+                    })())
+                  .map((child) => normalizeCharacterRange(content, child))
+                  .filter((child) =>
+                    child.start > range.start || child.end < range.end)
+                const remainingBudget = MAX_EVIDENCE_CANDIDATES - probes
+                const boundedChildren = children.slice(0, remainingBudget)
+                if (boundedChildren.length === 0) break
+                const postgresRanges = boundedChildren.map((child) =>
+                  postgresCharacterCoordinates(content, child))
+
+                const matchingRanges = yield* Effect.tryPromise({
+                  try: () =>
+                    sql.unsafe(
+                      `WITH positional_ranges AS (
+                         SELECT start_pos, excerpt_length,
+                                candidate_number::int
+                         FROM unnest($1::int[], $2::int[]) WITH ORDINALITY
+                           AS ranges(start_pos, excerpt_length, candidate_number)
+                       )
+                       SELECT positional_ranges.candidate_number
+                       FROM positional_ranges
+                       JOIN source_text_index sti
+                         ON sti.source_version_id = $3
+                       JOIN source_versions sv ON sv.id = sti.source_version_id
+                       JOIN sources s ON s.id = sv.source_id
+                       JOIN projects p ON p.id = s.project_id
+                       WHERE p.workspace_id = $4
+                         AND p.id = $5
+                         AND to_tsvector(
+                           'english',
+                           substring(
+                             sti.content
+                             FROM positional_ranges.start_pos
+                             FOR positional_ranges.excerpt_length
+                           )
+                         ) @@ websearch_to_tsquery('english', $6)
+                       ORDER BY positional_ranges.candidate_number ASC`,
+                      [
+                        postgresRanges.map((range) => range.start),
+                        postgresRanges.map((range) => range.length),
+                        row.source_version_id,
+                        decoded.workspaceId,
+                        decoded.projectId,
+                        decoded.query,
+                      ],
+                    ),
+                  catch: () =>
+                    new RetrievalQueryError({
+                      operation: 'searchText.positional-support',
+                      message: 'Bounded positional evidence discovery failed',
+                    }),
+                })
+                probes += boundedChildren.length
+                const matching = new Set(
+                  matchingRanges.map((match) =>
+                    Number(match['candidate_number']) - 1),
+                )
+                for (let index = boundedChildren.length - 1; index >= 0; index -= 1) {
+                  if (matching.has(index)) stack.push(boundedChildren[index]!)
+                }
+              }
+
+              if (located !== undefined) {
+                const positionalLocated = located
+                const confirmed = yield* Effect.tryPromise({
+                  try: () =>
+                    sql.unsafe(
+                      `SELECT 1
+                       WHERE to_tsvector('english', $1)
+                         @@ websearch_to_tsquery('english', $2)`,
+                      [positionalLocated.excerpt, decoded.query],
+                    ),
+                  catch: () =>
+                    new RetrievalQueryError({
+                      operation: 'searchText.positional-support',
+                      message: 'Bounded positional evidence support could not be verified',
+                    }),
+                })
+                if (confirmed.length !== 1) located = undefined
+              }
+            }
             if (located === undefined) {
               return yield* new RetrievalQueryError({
                 operation: 'searchText.evidence-support',

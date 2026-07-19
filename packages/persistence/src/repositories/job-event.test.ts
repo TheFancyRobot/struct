@@ -2,12 +2,12 @@ import { describe, expect, it } from 'bun:test'
 import { Effect, Layer } from 'effect'
 import {
   JobQueueRepo,
-  EventJournalRepo,
+  EventJournalReader,
   SqlClientTest,
   decodeEventJournalRow,
   decodeJobQueueRow,
 } from '../index.js'
-import { EventJournalId, WorkspaceId, SourceId } from '@struct/domain'
+import { SourceId } from '@struct/domain'
 
 describe('job_queue and event_journal decoders', () => {
   it('decodes job rows and event rows from PostgreSQL wire shapes', async () => {
@@ -94,9 +94,14 @@ describe('JobQueueRepo', () => {
     })
     const layer = Layer.provide(JobQueueRepo.Default, sqlLayer)
 
-    await Effect.runPromise(JobQueueRepo.recoverStaleIngestionJobs(1700000000000).pipe(Effect.provide(layer)))
+    await Effect.runPromise(
+      JobQueueRepo.recoverStaleIngestionJobs(300_000).pipe(Effect.provide(layer)),
+    )
 
     expect(queries.join('\n')).toMatch(/status = 'in-progress'/i)
+    expect(queries.join('\n')).toMatch(
+      /NOW\(\) - \(\$1::bigint \* INTERVAL '1 millisecond'\)/i,
+    )
     expect(queries.join('\n')).toMatch(/attempts < max_attempts/i)
     expect(queries.join('\n')).toMatch(/status = 'pending'/i)
     expect(queries.join('\n')).toMatch(/attempts >= max_attempts/i)
@@ -108,36 +113,41 @@ describe('JobQueueRepo', () => {
   })
 })
 
-describe('EventJournalRepo', () => {
-  it('appends small sanitized ingestion events without source text or absolute paths', async () => {
-    const payloads: unknown[] = []
-    const sqlLayer = SqlClientTest(async (_query, params) => {
-      payloads.push(params?.[5])
+describe('EventJournalReader', () => {
+  it('exposes only ordered read access to aggregate events', async () => {
+    const queries: string[] = []
+    const sqlLayer = SqlClientTest(async (query) => {
+      queries.push(query)
       return [{
         id: '650e8400-e29b-41d4-a716-446655440011',
         workspace_id: '650e8400-e29b-41d4-a716-446655440000',
         entity_type: 'ingestion',
         entity_id: '650e8400-e29b-41d4-a716-446655440002',
         event_type: 'ingestion-requested',
-        payload: JSON.parse(String(params?.[5])),
+        payload: {
+          sourceId: '650e8400-e29b-41d4-a716-446655440002',
+        },
         cursor: '1',
         created_at: new Date('2026-01-01T00:00:00Z'),
       }]
     })
-    const layer = Layer.provide(EventJournalRepo.Default, sqlLayer)
+    const layer = Layer.provide(EventJournalReader.Default, sqlLayer)
 
-    await Effect.runPromise(EventJournalRepo.append({
-      id: EventJournalId.make('650e8400-e29b-41d4-a716-446655440011'),
-      workspaceId: WorkspaceId.make('650e8400-e29b-41d4-a716-446655440000'),
-      entityType: 'ingestion',
-      entityId: SourceId.make('650e8400-e29b-41d4-a716-446655440002'),
-      eventType: 'ingestion-requested',
-      payload: { sourceId: '650e8400-e29b-41d4-a716-446655440002', stagedRef: 'staged://650e8400-e29b-41d4-a716-446655440100/notes.txt' },
-      cursor: 0n,
-      createdAt: 0n,
-    }).pipe(Effect.provide(layer)))
+    const events = await Effect.runPromise(
+      Effect.gen(function* () {
+        const reader = yield* EventJournalReader
+        return yield* reader.findByEntity(
+          'ingestion',
+          SourceId.make('650e8400-e29b-41d4-a716-446655440002'),
+        )
+      }).pipe(Effect.provide(layer)),
+    )
 
-    expect(JSON.stringify(payloads)).not.toContain('hello world source text')
-    expect(JSON.stringify(payloads)).not.toContain('/Users/')
+    expect(events).toHaveLength(1)
+    expect(events[0]?.eventType).toBe('ingestion-requested')
+    expect(queries).toHaveLength(1)
+    expect(queries[0]).toMatch(/^SELECT \* FROM event_journal/i)
+    expect(queries[0]).toMatch(/ORDER BY cursor ASC/i)
+    expect(queries[0]).not.toMatch(/\bINSERT\b|\bUPDATE\b|\bDELETE\b/i)
   })
 })

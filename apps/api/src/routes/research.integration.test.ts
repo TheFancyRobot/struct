@@ -55,6 +55,14 @@ const repeatedCrossLineSourceId =
   SourceId.make('f50e8400-e29b-41d4-a716-446655440012')
 const repeatedCrossLineSourceVersionId =
   SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440013')
+const middlePhraseSourceId =
+  SourceId.make('f50e8400-e29b-41d4-a716-446655440014')
+const middlePhraseSourceVersionId =
+  SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440015')
+const middleCrossLineSourceId =
+  SourceId.make('f50e8400-e29b-41d4-a716-446655440016')
+const middleCrossLineSourceVersionId =
+  SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440017')
 const distantTermsContent = [
   'Prologue',
   'alpha',
@@ -81,6 +89,18 @@ const repeatedCrossLineFirst = `${'x'.repeat(1300)} alpha`
 const repeatedCrossLineSecond = `alpha ${'y'.repeat(1300)}`
 const repeatedCrossLineContent =
   `${repeatedCrossLineFirst}\n${repeatedCrossLineSecond}`
+const middlePhraseContent = [
+  ...Array.from({ length: 15 }, () => `alpha ${'x '.repeat(700)}`),
+  'alpha omega',
+  ...Array.from({ length: 15 }, () => `${'y '.repeat(700)}omega`),
+].join(' ')
+const middleCrossLineContent = Array.from({ length: 50 }, (_, index) => {
+  if (index === 24) return 'alpha'
+  if (index === 25) return 'omega'
+  return index < 24
+    ? `alpha isolated ${index} ${'x'.repeat(200)}`
+    : `omega isolated ${index} ${'y'.repeat(200)}`
+}).join('\n')
 
 async function cleanup(sql: postgresTypes.Sql): Promise<void> {
   await sql.unsafe(`DELETE FROM event_journal WHERE workspace_id = $1`, [workspaceId])
@@ -90,6 +110,8 @@ async function cleanup(sql: postgresTypes.Sql): Promise<void> {
     [projectId],
   )
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [longLineSourceId])
+  await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [middleCrossLineSourceId])
+  await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [middlePhraseSourceId])
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [repeatedCrossLineSourceId])
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [adversarialPhraseSourceId])
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [frequentPhraseSourceId])
@@ -99,6 +121,8 @@ async function cleanup(sql: postgresTypes.Sql): Promise<void> {
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [crossLineSourceId])
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [sourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [longLineSourceId])
+  await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [middleCrossLineSourceId])
+  await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [middlePhraseSourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [repeatedCrossLineSourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [adversarialPhraseSourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [frequentPhraseSourceId])
@@ -274,6 +298,37 @@ describeIf('research walking slice real DB integration', () => {
       ],
     )
     await sql.unsafe(
+      `INSERT INTO sources (id, project_id, name, kind)
+       VALUES
+         ($1, $3, 'middle-phrase.txt', 'document'),
+         ($2, $3, 'middle-cross-line.txt', 'document')`,
+      [middlePhraseSourceId, middleCrossLineSourceId, projectId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_versions (
+         id, source_id, version, artifact_ref, content_hash
+       )
+       VALUES
+         ($1, $2, 1, 'artifact://sha256/middle-phrase', 'sha256:middle-phrase'),
+         ($3, $4, 1, 'artifact://sha256/middle-cross-line', 'sha256:middle-cross-line')`,
+      [
+        middlePhraseSourceVersionId,
+        middlePhraseSourceId,
+        middleCrossLineSourceVersionId,
+        middleCrossLineSourceId,
+      ],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_text_index (source_version_id, content)
+       VALUES ($1, $2), ($3, $4)`,
+      [
+        middlePhraseSourceVersionId,
+        middlePhraseContent,
+        middleCrossLineSourceVersionId,
+        middleCrossLineContent,
+      ],
+    )
+    await sql.unsafe(
       `UPDATE source_text_reindex_jobs
        SET status = 'completed', updated_at = NOW()
        WHERE project_id = $1`,
@@ -322,18 +377,23 @@ describeIf('research walking slice real DB integration', () => {
 
     await Effect.runPromise(processOneResearchJob({
       now: () => BigInt(Date.now()),
-      staleBeforeMs: Date.now() - 300_000,
+      staleAfterMs: 300_000,
+      heartbeatIntervalMs: 10_000,
       randomEventId: () => EventJournalId.make(crypto.randomUUID()),
       randomCitationId: () => CitationId.make(crypto.randomUUID()),
       jobs: {
-        recoverStale: (staleBeforeMs) =>
-          ResearchExecutionRepo.recoverStale(staleBeforeMs).pipe(
+        recoverStale: (staleAfterMs) =>
+          ResearchExecutionRepo.recoverStale(staleAfterMs).pipe(
             Effect.provide(executionLayer),
           ),
         claimNext: () =>
           ResearchExecutionRepo.claimNext().pipe(Effect.provide(executionLayer)),
-        appendInProgressEvent: (jobId, event) =>
-          ResearchExecutionRepo.appendInProgressEvent(jobId, event).pipe(
+        renewLease: (job) =>
+          ResearchExecutionRepo.renewLease(job).pipe(
+            Effect.provide(executionLayer),
+          ),
+        appendInProgressEvent: (job, event) =>
+          ResearchExecutionRepo.appendInProgressEvent(job, event).pipe(
             Effect.provide(executionLayer),
           ),
         complete: (input) =>
@@ -527,6 +587,59 @@ describeIf('research walking slice real DB integration', () => {
       locator: 'lines:10-10',
       excerpt: 'alpha omega phrase',
     })
+  })
+
+  it('finds a sole middle phrase beyond bounded same-line marker samples', async () => {
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, SqlClientLive(sql))
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [middlePhraseSourceVersionId],
+        query: '"alpha omega"',
+        limit: 1,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+
+    const evidence = result.evidence[0]!
+    const locator = /^line:1,chars:(\d+)-(\d+)$/.exec(evidence.locator)
+    expect(locator).not.toBeNull()
+    expect(evidence.excerpt).toContain('alpha omega')
+    expect(evidence.excerpt.length).toBeLessThanOrEqual(1200)
+    expect(evidence.excerpt).toBe(
+      middlePhraseContent.slice(
+        Number(locator?.[1]) - 1,
+        Number(locator?.[2]),
+      ),
+    )
+  })
+
+  it('finds a sole middle cross-line phrase beyond bounded line samples', async () => {
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, SqlClientLive(sql))
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [middleCrossLineSourceVersionId],
+        query: '"alpha omega"',
+        limit: 1,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+
+    const evidence = result.evidence[0]!
+    expect(evidence.excerpt).toContain('alpha\nomega')
+    expect(evidence.locator).toMatch(/25/)
+    expect(evidence.locator).toMatch(/26/)
+    expect(evidence.excerpt.length).toBeLessThanOrEqual(1200)
+    await expect(
+      Effect.runPromise(validateAnswerCitations({
+        answer: evidence.excerpt,
+        citations: [{
+          sourceVersionId: evidence.sourceVersionId,
+          locator: evidence.locator,
+        }],
+      }, result.evidence)),
+    ).resolves.toMatchObject({ citations: [{ locator: evidence.locator }] })
   })
 
   it('cites the real adjacent source coordinates instead of isolated earlier lexemes', async () => {
@@ -747,13 +860,41 @@ describeIf('research walking slice real DB integration', () => {
       ResearchExecutionRepo.claimNext().pipe(Effect.provide(executionLayer)),
     )
     expect(Option.isSome(claimed)).toBe(true)
+    if (Option.isNone(claimed)) throw new Error('research lease was not claimed')
+    await sql.unsafe(
+      `UPDATE job_queue SET updated_at = NOW() - INTERVAL '299 seconds' WHERE id = $1`,
+      [jobId],
+    )
+    const stillActive = await Effect.runPromise(
+      ResearchExecutionRepo.recoverStale(300_000).pipe(
+        Effect.provide(executionLayer),
+      ),
+    )
+    expect(stillActive.map((item) => item.id)).not.toContain(jobId)
+    await Effect.runPromise(
+      ResearchExecutionRepo.renewLease(claimed.value).pipe(
+        Effect.provide(executionLayer),
+      ),
+    )
+    await sql.unsafe(
+      `UPDATE job_queue
+       SET attempts = attempts + 1
+       WHERE id = $1`,
+      [jobId],
+    )
+    const staleLeaseRenewal = await Effect.runPromiseExit(
+      ResearchExecutionRepo.renewLease(claimed.value).pipe(
+        Effect.provide(executionLayer),
+      ),
+    )
+    expect(Exit.isFailure(staleLeaseRenewal)).toBe(true)
     await sql.unsafe(
       `UPDATE job_queue SET updated_at = NOW() - INTERVAL '10 minutes' WHERE id = $1`,
       [jobId],
     )
 
     const recovered = await Effect.runPromise(
-      ResearchExecutionRepo.recoverStale(Date.now() - 300_000).pipe(
+      ResearchExecutionRepo.recoverStale(300_000).pipe(
         Effect.provide(executionLayer),
       ),
     )
@@ -762,7 +903,7 @@ describeIf('research walking slice real DB integration', () => {
     const completion = await Effect.runPromiseExit(
       ResearchExecutionRepo.complete({
         runId,
-        jobId,
+        job: claimed.value,
         answer: {
           answer: 'This must not persist.',
           citations: [{ sourceVersionId, locator: 'lines:1-1' }],
@@ -789,7 +930,7 @@ describeIf('research walking slice real DB integration', () => {
     )
     expect(Exit.isFailure(completion)).toBe(true)
     const lateRetrieval = await Effect.runPromiseExit(
-      ResearchExecutionRepo.appendInProgressEvent(jobId, {
+      ResearchExecutionRepo.appendInProgressEvent(claimed.value, {
         id: EventJournalId.make('f50e8400-e29b-41d4-a716-446655440073'),
         workspaceId,
         entityType: 'research',
@@ -860,18 +1001,23 @@ describeIf('research walking slice real DB integration', () => {
 
     const process = () => processOneResearchJob({
       now: () => BigInt(Date.now()),
-      staleBeforeMs: Date.now() - 300_000,
+      staleAfterMs: 300_000,
+      heartbeatIntervalMs: 10_000,
       randomEventId: () => EventJournalId.make(crypto.randomUUID()),
       randomCitationId: () => CitationId.make(crypto.randomUUID()),
       jobs: {
-        recoverStale: (staleBeforeMs) =>
-          ResearchExecutionRepo.recoverStale(staleBeforeMs).pipe(
+        recoverStale: (staleAfterMs) =>
+          ResearchExecutionRepo.recoverStale(staleAfterMs).pipe(
             Effect.provide(executionLayer),
           ),
         claimNext: () =>
           ResearchExecutionRepo.claimNext().pipe(Effect.provide(executionLayer)),
-        appendInProgressEvent: (jobId, researchEvent) =>
-          ResearchExecutionRepo.appendInProgressEvent(jobId, researchEvent).pipe(
+        renewLease: (job) =>
+          ResearchExecutionRepo.renewLease(job).pipe(
+            Effect.provide(executionLayer),
+          ),
+        appendInProgressEvent: (job, researchEvent) =>
+          ResearchExecutionRepo.appendInProgressEvent(job, researchEvent).pipe(
             Effect.provide(executionLayer),
           ),
         complete: (input) =>
@@ -900,7 +1046,7 @@ describeIf('research walking slice real DB integration', () => {
                 [staleJobId],
               ),
             )
-            yield* ResearchExecutionRepo.recoverStale(Date.now() - 300_000).pipe(
+            yield* ResearchExecutionRepo.recoverStale(300_000).pipe(
               Effect.provide(executionLayer),
             )
             return {
@@ -973,6 +1119,10 @@ describeIf('research walking slice real DB integration', () => {
        WHERE source_version_id = $1`,
       [sourceVersionId],
     )
+    await sql.unsafe(
+      `DELETE FROM source_text_index WHERE source_version_id = $1`,
+      [sourceVersionId],
+    )
 
     const first = await Effect.runPromise(
       SourceTextReindexRepo.claimNext().pipe(Effect.provide(reindexLayer)),
@@ -985,7 +1135,7 @@ describeIf('research walking slice real DB integration', () => {
       [sourceVersionId],
     )
     await Effect.runPromise(
-      SourceTextReindexRepo.recoverStale(Date.now() - 300_000).pipe(
+      SourceTextReindexRepo.recoverStale(300_000).pipe(
         Effect.provide(reindexLayer),
       ),
     )
@@ -1015,9 +1165,16 @@ describeIf('research walking slice real DB integration', () => {
        WHERE source_version_id = $1`,
       [sourceVersionId],
     )
+    const staleIndexRows = await sql.unsafe(
+      `SELECT content
+       FROM source_text_index
+       WHERE source_version_id = $1`,
+      [sourceVersionId],
+    )
 
     expect(Exit.isFailure(staleFailure)).toBe(true)
     expect(Exit.isFailure(staleCompletion)).toBe(true)
+    expect(staleIndexRows).toHaveLength(0)
     expect(owned).toMatchObject({
       status: 'in-progress',
       attempts: second.value.attempts,
@@ -1043,6 +1200,101 @@ describeIf('research walking slice real DB integration', () => {
       status: 'completed',
       attempts: second.value.attempts,
     })
+  })
+
+  it('rolls back index content when ownership transfers after the transaction precheck', async () => {
+    const sqlLayer = SqlClientLive(sql)
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, sqlLayer)
+    await sql.unsafe(
+      `DELETE FROM source_text_index WHERE source_version_id = $1`,
+      [sourceVersionId],
+    )
+    await sql.unsafe(
+      `UPDATE source_text_reindex_jobs
+       SET status = 'in-progress',
+           attempts = 2,
+           max_attempts = 3,
+           last_error_code = NULL,
+           updated_at = NOW()
+       WHERE source_version_id = $1`,
+      [sourceVersionId],
+    )
+
+    let injectedTransfer = false
+    const racingSqlLayer = Layer.succeed(SqlClient, {
+      unsafe: (query, params) =>
+        sql.unsafe(query, params as any[])
+          .then((rows) => rows as readonly Record<string, unknown>[]),
+      transaction: <A>(run: (executor: {
+        readonly unsafe: (
+          query: string,
+          params?: readonly unknown[],
+        ) => Promise<readonly Record<string, unknown>[]>
+      }) => Promise<A>): Promise<A> =>
+        sql.begin(async (transactionSql) =>
+          run({
+            unsafe: async (query, params) => {
+              if (
+                !injectedTransfer
+                && query.includes('INSERT INTO source_text_index')
+              ) {
+                injectedTransfer = true
+                await sql.unsafe(
+                  `UPDATE source_text_reindex_jobs
+                   SET attempts = attempts + 1,
+                       updated_at = NOW()
+                   WHERE source_version_id = $1`,
+                  [sourceVersionId],
+                )
+              }
+              return transactionSql.unsafe(query, params as any[])
+                .then((rows) => rows as readonly Record<string, unknown>[])
+            },
+          }),
+        ) as Promise<A>,
+    })
+    const racingRetrievalLayer = Layer.provide(TextRetrieval.Default, racingSqlLayer)
+
+    const staleCompletion = await Effect.runPromiseExit(
+      TextRetrieval.indexText({
+        workspaceId,
+        projectId,
+        sourceVersionId,
+        content: 'The launch date is July 18.',
+        reindexAttempt: 2,
+      }).pipe(Effect.provide(racingRetrievalLayer)),
+    )
+    const indexAfterRollback = await sql.unsafe(
+      `SELECT content
+       FROM source_text_index
+       WHERE source_version_id = $1`,
+      [sourceVersionId],
+    )
+    const [jobAfterRollback] = await sql.unsafe(
+      `SELECT status, attempts, last_error_code
+       FROM source_text_reindex_jobs
+       WHERE source_version_id = $1`,
+      [sourceVersionId],
+    )
+
+    expect(injectedTransfer).toBe(true)
+    expect(Exit.isFailure(staleCompletion)).toBe(true)
+    expect(indexAfterRollback).toHaveLength(0)
+    expect(jobAfterRollback).toMatchObject({
+      status: 'in-progress',
+      attempts: 3,
+      last_error_code: null,
+    })
+
+    await Effect.runPromise(
+      TextRetrieval.indexText({
+        workspaceId,
+        projectId,
+        sourceVersionId,
+        content: 'The launch date is July 18.',
+        reindexAttempt: 3,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
   })
 
   it('serializes ingestion indexing with a claimed reindex lease without stealing ownership', async () => {
