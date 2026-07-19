@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0.0",
+  "corpusVersion": "1.0.0",
+  "generatorVersion": "1.0.0",
+  "profile": "full",
+  "canonicalSeed": "5d4c02a1f3b8e617",
+  "runtime": "bun",
+  "prng": "sha256-seedsplit",
+  "benchmarkEnvSchemaVersion": "1.0.0",
+  "generatedRecordFiles": 25000,
+  "generatedMetadataFiles": 4,
+  "schemaFamilyFileCounts": {
+    "fam.call_log": 12000,
+    "fam.device_telemetry": 6000,
+    "fam.transaction": 4000,
+    "fam.inventory_item": 3000
+  },
+  "caseCounts": {
+    "changed-in-v2": 25,
+    "contradiction": 1,
+    "deleted-in-v2": 25,
+    "duplicate": 8,
+    "join": 4000,
+    "malformed-shape": 1,
+    "missing-field": 840,
+    "nested-record": 6000,
+    "null": 1541,
+    "numeric-extreme": 1,
+    "prompt-injection": 4,
+    "schema-drift": 1,
+    "type-conflict": 119,
+    "unicode": 1
+  },
+  "groundTruth": {
+    "exactQuestions": 8,
+    "deletedRecordIds": 25,
+    "changedRecordIds": 25,
+    "addedRecordIds": 25,
+    "securityCaseClasses": 8,
+    "recoveryBoundaries": 6
+  },
+  "hashes": {
+    "manifestSha256": "a063ea9977676b5d5a0eb791ddcb119a5be73ff91e6978b952b9d37ab1c62896",
+    "corpusSha256": "3201ecb9580cdce5db7770340b349134d50a4611880c69cb7266b91aa62ddc07",
+    "groundTruthSha256": "27fbd2f48feb252f591cb56d8c5319b7df3c6d76ed44330cdd30a50155dffc38",
+    "questionSetSha256": "1a879cb38c2e0036632df01b6012757296e7258b7dd5f9f6fa396c02c189fb52"
+  },
+  "reproducibility": {
+    "fullRunsCompared": 2,
+    "identical": true,
+    "elapsedMs": [1944, 1917],
+    "observedAllocatedStorage": "107 MiB"
+  }
+}

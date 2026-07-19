@@ -6,7 +6,9 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "corpus:smoke": "bun src/phase-02-smoke.ts",
+    "corpus:generate": "bun src/corpus-generate.ts",
+    "corpus:compare-hashes": "bun src/corpus-compare-hashes.ts",
+    "corpus:smoke": "bun src/phase-02-smoke.ts && bun src/corpus-generator-smoke.ts",
     "corpus:eval": "bun src/corpus-eval.ts",
     "directory:eval": "bun src/directory-refresh-smoke.ts",
     "bench": "bun src/benchmarks/run.ts",

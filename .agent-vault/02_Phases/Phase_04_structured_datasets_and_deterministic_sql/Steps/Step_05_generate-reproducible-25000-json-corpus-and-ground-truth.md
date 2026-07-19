@@ -5,17 +5,22 @@ contract_version: 1
 title: Generate Reproducible 25000 JSON Corpus and Ground Truth
 step_id: STEP-04-05
 phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]'
-status: planned
-owner: ''
+status: in_progress
+owner: Codex
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_04_build-deterministic-dataset-query-tools-and-citations|STEP-04-04 Build Deterministic Dataset Query Tools and Citations]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-19-222127-generate-reproducible-25000-json-corpus-and-ground-truth-codex-step-04-05-worker|SESSION-2026-07-19-222127 codex-step-04-05-worker session for Generate Reproducible 25000 JSON Corpus and Ground Truth]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-19-222127
+active_session_id: 05_Sessions/2026-07-19-222127-generate-reproducible-25000-json-corpus-and-ground-truth-codex-step-04-05-worker
+context_status: in_progress
+context_summary: Worker implementation, self-review, two full 25,000-record reproducibility runs, and all local gates are complete; root PR/review/merge close-out remains.
 ---
 
 # Step 05 - Generate Reproducible 25000 JSON Corpus and Ground Truth
@@ -60,7 +65,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-19 - [[05_Sessions/2026-07-19-222127-generate-reproducible-25000-json-corpus-and-ground-truth-codex-step-04-05-worker|SESSION-2026-07-19-222127 codex-step-04-05-worker session for Generate Reproducible 25000 JSON Corpus and Ground Truth]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes
