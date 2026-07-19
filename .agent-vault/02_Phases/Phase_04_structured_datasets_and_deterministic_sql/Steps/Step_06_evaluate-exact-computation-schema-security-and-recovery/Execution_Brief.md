@@ -2,50 +2,29 @@
 
 ## Exact Outcome
 
-- Produce the concrete contracts, artifacts, and bounded implementation/design surfaces for Exact Computation Schema Security and Recovery that this step is responsible for before any broader follow-on work begins.
+- Produce a falsifiable Phase 04 evaluation proving exact computation, schema handling, SQL/sidecar security, citation integrity, and restart recovery on the versioned 25,000-file corpus.
 
 ## Prerequisites
 
-- Re-read [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]] and confirm the step still matches the current roadmap sequence.
-- Confirm the handoff from [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_05_generate-reproducible-25000-json-corpus-and-ground-truth|STEP-04-05 Generate Reproducible 25000 JSON Corpus and Ground Truth]] before widening scope.
-- Keep deterministic work in typed Effect services, repositories, and tools; reserve Fred for agentic orchestration only.
-- Treat the listed files as planned starting points; create only the smallest set needed to land the slice.
+- STEP-04-05 is merged; regenerate and verify its corpus/ground-truth manifest before evaluation.
+- Read all Phase 04 Outcomes, DEC-0005, DEC-0009, DEC-0011, and the zero-defect gate.
 
-## Planned Starting Files
+## Deliverables
 
-- These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `packages/evaluation/src/exact-computation.ts`
-- `apps/api/test/sql-guardrails.integration.test.ts`
-- `apps/worker/test/dataset-recovery.integration.test.ts`
-- `docs/benchmarks/structured-data.md`
-
-## Required Reading
-
-- [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]
-- [[01_Architecture/Domain_Model|Domain Model]]
-- [[01_Architecture/Agent_Workflow|Agent Workflow]]
-- [[01_Architecture/System_Overview|System Overview]]
-- [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_05_generate-reproducible-25000-json-corpus-and-ground-truth|STEP-04-05 Generate Reproducible 25000 JSON Corpus and Ground Truth]]
-- `docs/product-brief.md` sections 9-12, 18-25, 26-27, and 29-31.
-
-## Concrete Deliverables
-
-- Run the exact-computation evaluation against schema drift, SQL safety, timeout, and recovery scenarios that matter for v1 dataset trustworthiness.
-- Record which failures are correctness bugs, which are guardrail bugs, and which require operational recovery behavior.
-- Capture benchmark/report artifacts that prove exact answers and citation lineage survive interruption and restart.
-
-## Smallest Bounded Checklist
-
-- First, run the exact-computation evaluation against schema drift, SQL safety, timeout, and recovery scenarios that matter for v1 dataset trustworthiness.
-- Then, record which failures are correctness bugs, which are guardrail bugs, and which require operational recovery behavior.
-- Next, capture benchmark/report artifacts that prove exact answers and citation lineage survive interruption and restart.
-- Finish by capturing the deterministic fixture, benchmark, or gate evidence that will let the validation plan judge the slice without guesswork.
+- Evaluate import/materialization, profiling, safe SQL, result snapshots, and citations end to end against independent ground truth.
+- Exercise documented schema families/drift, exact aggregates/joins/filters, limits/timeouts/cancellation, injection data, auth failures, no-egress/path isolation, and SQL bypass attempts.
+- Inject process/sidecar interruption at meaningful persistence boundaries; restart through the real lease/job recovery path and prove no duplicate snapshots, artifacts, results, citations, or events.
+- Publish a deterministic machine-readable report plus concise operations/benchmark documentation with environment, pins, seed, manifest hash, commands, counts, timings, and pass/fail reasons.
+- Record every confirmed defect as a bug, fix and re-run it before completing the phase.
 
 ## Constraints and Non-Goals
 
-- All exact answers must come from deterministic dataset tooling rather than model arithmetic or semantic guesswork.
-- Schema-family grouping, Parquet materialization, and query provenance must preserve lineage to original files and stable record identity.
-- SQL remains allowlisted, read-only, resource-bounded, and fully inspectable.
+- Do not substitute a simulated set-membership proof for real persistence/restart behavior.
+- No model judgment for exact answers and no release action.
+
+## Handoff
+
+- PHASE-05 receives a zero-known-defect, deterministic dataset tool boundary and the exact evaluation evidence needed for typed research planning.
 
 ## Related Notes
 

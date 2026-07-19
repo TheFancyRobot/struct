@@ -8,14 +8,20 @@ phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Pha
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_06_test-large-tree-refresh-failures-and-recovery|STEP-03-06 Test Large-Tree Refresh Failures and Recovery]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-19-155643-define-dataset-assets-schemas-and-versioned-catalog-codex-phase-04-refiner|SESSION-2026-07-19-155643 Codex Phase 04 refiner session for Define Dataset Assets Schemas and Versioned Catalog]]'
+  - '[[05_Sessions/2026-07-19-160148-define-dataset-assets-schemas-and-versioned-catalog-codex-phase-04-refinement|SESSION-2026-07-19-160148 Codex Phase 04 refinement session for Define Dataset Assets Schemas and Versioned Catalog]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-19-160148
+active_session_id: 05_Sessions/2026-07-19-160148-define-dataset-assets-schemas-and-versioned-catalog-codex-phase-04-refinement
+context_status: completed
+context_summary: Phase 04 refinement completed; all six steps have implementation-ready contracts. STEP-04-01 remains planned for a fresh execution session.
 ---
 
 # Step 01 - Define Dataset Assets Schemas and Versioned Catalog
@@ -49,8 +55,8 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 <!-- AGENT-START:step-agent-managed-snapshot -->
 - Status: planned
 - Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_01_define-dataset-assets-schemas-and-versioned-catalog/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_01_define-dataset-assets-schemas-and-versioned-catalog/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Last touched: 2026-07-19
+- Next action: After the Phase 04 refinement PR merges, execute the refined [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_01_define-dataset-assets-schemas-and-versioned-catalog/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_01_define-dataset-assets-schemas-and-versioned-catalog/Validation_Plan|Validation Plan]] with a fresh non-git worker.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -60,7 +66,8 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-19 - [[05_Sessions/2026-07-19-155643-define-dataset-assets-schemas-and-versioned-catalog-codex-phase-04-refiner|SESSION-2026-07-19-155643 Codex Phase 04 refiner session for Define Dataset Assets Schemas and Versioned Catalog]] - Superseded before refinement work began.
+- 2026-07-19 - [[05_Sessions/2026-07-19-160148-define-dataset-assets-schemas-and-versioned-catalog-codex-phase-04-refinement|SESSION-2026-07-19-160148 Codex Phase 04 refinement session for Define Dataset Assets Schemas and Versioned Catalog]] - Refined Phase 04 and all six step contracts.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

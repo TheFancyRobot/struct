@@ -4,7 +4,7 @@ template_version: 2
 contract_version: 1
 title: Durable Directory Ingestion and Source Refresh
 phase_id: PHASE-03
-status: in_progress
+status: completed
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
@@ -61,13 +61,13 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 ## Acceptance Criteria
 
-- [ ] A directory snapshot has a deterministic manifest and immutable relationship to every discovered source version.
-- [ ] Refresh detects additions, modifications, removals, renames where supportable, unchanged files, and unsupported entries without corrupting lineage.
-- [ ] Interrupted jobs resume after worker or process restart and do not duplicate committed artifacts or versions.
-- [ ] Filesystem traversal, symlink, permission, count, depth, byte, and archive-bomb limits fail safely with typed errors.
-- [ ] UI and APIs show honest aggregate and per-entry progress, partial failures, recovery actions, and reconnect replay.
-- [ ] Large-tree, fault-injection, migration, security, observability, and recovery tests meet documented bounds.
-- [ ] The manifest and version contracts required by Phase 04 are frozen and documented.
+- [x] A directory snapshot has a deterministic manifest and immutable relationship to every discovered source version.
+- [x] Refresh detects additions, modifications, removals, renames where supportable, unchanged files, and unsupported entries without corrupting lineage.
+- [x] Interrupted jobs resume after worker or process restart and do not duplicate committed artifacts or versions.
+- [x] Filesystem traversal, symlink, permission, count, depth, byte, and archive-bomb limits fail safely with typed errors.
+- [x] UI and APIs show honest aggregate and per-entry progress, partial failures, recovery actions, and reconnect replay.
+- [x] Large-tree, fault-injection, migration, security, observability, and recovery tests meet documented bounds.
+- [x] The manifest and version contracts required by Phase 04 are frozen and documented.
 
 ## Delivery Strategy
 
@@ -79,7 +79,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]]
-- Current phase status: in_progress
+- Current phase status: completed
 - Next phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]]
 <!-- AGENT-END:phase-linear-context -->
 
@@ -111,12 +111,12 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Steps
 
 <!-- AGENT-START:phase-steps -->
-- [ ] [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_01_define-directory-manifests-snapshots-and-refresh-semantics|STEP-03-01 Define Directory Manifests Snapshots and Refresh Semantics]]
-- [ ] [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_02_implement-sandboxed-recursive-discovery-and-hashing|STEP-03-02 Implement Sandboxed Recursive Discovery and Hashing]]
-- [ ] [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs|STEP-03-03 Build Resumable Idempotent Ingestion Jobs]]
-- [ ] [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_04_process-changed-sources-and-preserve-version-lineage|STEP-03-04 Process Changed Sources and Preserve Version Lineage]]
-- [ ] [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_05_expose-directory-status-recovery-and-controls|STEP-03-05 Expose Directory Status Recovery and Controls]]
-- [ ] [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_06_test-large-tree-refresh-failures-and-recovery|STEP-03-06 Test Large-Tree Refresh Failures and Recovery]]
+- [x] [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_01_define-directory-manifests-snapshots-and-refresh-semantics|STEP-03-01 Define Directory Manifests Snapshots and Refresh Semantics]]
+- [x] [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_02_implement-sandboxed-recursive-discovery-and-hashing|STEP-03-02 Implement Sandboxed Recursive Discovery and Hashing]]
+- [x] [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs|STEP-03-03 Build Resumable Idempotent Ingestion Jobs]]
+- [x] [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_04_process-changed-sources-and-preserve-version-lineage|STEP-03-04 Process Changed Sources and Preserve Version Lineage]]
+- [x] [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_05_expose-directory-status-recovery-and-controls|STEP-03-05 Expose Directory Status Recovery and Controls]]
+- [x] [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_06_test-large-tree-refresh-failures-and-recovery|STEP-03-06 Test Large-Tree Refresh Failures and Recovery]]
 <!-- AGENT-END:phase-steps -->
 
 ## Notes
@@ -133,3 +133,8 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - Worker recovery uses the existing PostgreSQL job journal, leases, idempotency keys, checkpoints, and persisted progress. Do not add another queue, runtime, database, or Fred executor.
 - STEP-03-05 must use the SolidJS skill and existing fine-grained state patterns. Effect-based steps must use the Effect skills and typed services/errors.
 - STEP-03-06 uses a bounded deterministic generated tree and fault injection; it must not pull the planned 25,000-file Phase 04 corpus forward.
+
+### 2026-07-19 Closeout
+
+- STEP-03-01 through STEP-03-06 are merged. Deterministic manifests and change detection, sandbox limits, immutable lineage, restart/replay recovery, API/SolidJS controls, real PostgreSQL fault injection, browser coverage, and operations/benchmark documentation satisfy the phase gate.
+- STEP-03-06 merged through PR #16 at `c9dab0d` with zero unresolved review findings.
