@@ -13,6 +13,7 @@ import {
 } from 'node:fs/promises'
 import { basename, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import {
+  isCanonicalStagedArtifactRef,
   StorageConfigurationError,
   StoragePathError,
   StorageReadError,
@@ -104,8 +105,11 @@ function artifactPath(root: string, ref: ArtifactRef): Effect.Effect<string, Sto
 function stagedPath(root: string, ref: StagedArtifactRef): Effect.Effect<string, StoragePathError, never> {
   return Effect.gen(function* () {
     yield* validateRefText(ref)
-    const match = /^staged:\/\/([0-9a-f-]{36})\/([A-Za-z0-9._-]+)$/.exec(ref)
-    if (!match) {
+    if (!isCanonicalStagedArtifactRef(ref)) {
+      return yield* new StoragePathError({ ref, reason: 'malformed-ref', message: 'Staged artifact ref is malformed' })
+    }
+    const match = /^staged:\/\/([^/]+)\/([^/]+)$/.exec(ref)
+    if (match === null) {
       return yield* new StoragePathError({ ref, reason: 'malformed-ref', message: 'Staged artifact ref is malformed' })
     }
     return yield* ensureContained(root, join(root, 'staging', match[1], match[2]), ref)
@@ -328,7 +332,9 @@ function makeStore(canonicalRoot: string): ArtifactStoreShape {
       if (name.includes('\0') || name.includes('/') || name.includes('\\') || name !== basename(name)) {
         return yield* new StoragePathError({ ref: name.includes('\0') ? '<nul>' : name, reason: 'unsafe-name', message: 'Staged artifact name is unsafe' })
       }
-      const safeName = basename(name).replace(/[^A-Za-z0-9._-]/g, '_')
+      const safeName = basename(name)
+        .replace(/[^A-Za-z0-9._-]/g, '_')
+        .toLowerCase()
       if (!safeName || safeName === '.' || safeName === '..') {
         return yield* new StoragePathError({ ref: name, reason: 'unsafe-name', message: 'Staged artifact name is unsafe' })
       }

@@ -10,7 +10,12 @@ import { Effect, Option } from 'effect'
 import type * as Domain from '@struct/domain'
 import type { PersistenceError } from '../errors.js'
 import { SqlClient } from '../sql-client.js'
-import { QueryError, EntityNotFoundError } from '../errors.js'
+import {
+  EntityNotFoundError,
+  IngestionEventValidationError,
+  IngestionJobOwnershipLostError,
+  QueryError,
+} from '../errors.js'
 import {
   decodeWorkspaceRow,
   decodeProjectRow,
@@ -291,6 +296,10 @@ function makeSourceRepositoryImpl(sql: import('../sql-client.js').SqlClientShape
 
 export interface SourceVersionRepository {
   readonly create: (version: typeof Domain.SourceVersion.Type) => Effect.Effect<typeof Domain.SourceVersion.Type, PersistenceError, never>
+  readonly createForIngestionAttempt: (
+    job: typeof Domain.JobQueue.Type,
+    version: typeof Domain.SourceVersion.Type,
+  ) => Effect.Effect<typeof Domain.SourceVersion.Type, PersistenceError, never>
   readonly findById: (id: typeof Domain.SourceVersionId.Type) => Effect.Effect<typeof Domain.SourceVersion.Type, PersistenceError, never>
   readonly findBySourceId: (sourceId: typeof Domain.SourceId.Type) => Effect.Effect<ReadonlyArray<typeof Domain.SourceVersion.Type>, PersistenceError, never>
 }
@@ -328,6 +337,79 @@ function makeSourceVersionRepositoryImpl(sql: import('../sql-client.js').SqlClie
             ),
           ) as Effect.Effect<SourceVersionType, RepoError, never>,
         ),
+      ),
+
+    createForIngestionAttempt: (job, version) =>
+      Effect.tryPromise({
+        try: () => {
+          if (
+            job.entityType !== 'ingestion'
+            || job.status !== 'in-progress'
+            || job.entityId !== version.sourceId
+          ) {
+            throw new IngestionJobOwnershipLostError({
+              jobId: job.id,
+              attempt: job.attempts,
+              transition: 'create-version',
+              message: 'Ingestion job aggregate does not match the source version',
+            })
+          }
+          return sql.transaction(async (transaction) => {
+            const ownership = await transaction.unsafe(
+              `UPDATE job_queue AS job
+               SET updated_at = NOW()
+               FROM sources AS source
+               JOIN projects AS project ON project.id = source.project_id
+               WHERE job.id = $1
+                 AND job.entity_type = 'ingestion'
+                 AND job.entity_id = $2
+                 AND job.workspace_id = $3
+                 AND job.status = 'in-progress'
+                 AND job.attempts = $4
+                 AND source.id = $2
+                 AND project.workspace_id = $3
+               RETURNING job.id`,
+              [job.id, job.entityId, job.workspaceId, job.attempts],
+            )
+            if (ownership.length !== 1) return []
+            return transaction.unsafe(
+              `INSERT INTO source_versions (id, source_id, version, artifact_ref, content_hash, created_at)
+               VALUES ($1, $2, $3, $4, $5, to_timestamp($6 / 1000.0))
+               RETURNING *`,
+              [version.id, version.sourceId, version.version, version.artifactRef, version.contentHash, Number(version.createdAt)],
+            )
+          })
+        },
+        catch: (err) =>
+          err instanceof IngestionJobOwnershipLostError
+            ? err
+            : new QueryError({
+                operation: 'createForIngestionAttempt',
+                entity: 'SourceVersion',
+                message: String(err),
+              }),
+      }).pipe(
+        Effect.flatMap((rows) => {
+          if (rows.length !== 1) {
+            return Effect.fail(new IngestionJobOwnershipLostError({
+              jobId: job.id,
+              attempt: job.attempts,
+              transition: 'create-version',
+              message: 'Ingestion job attempt no longer owns the in-progress lease',
+            }))
+          }
+          return decodeSourceVersionRow(rows[0] as unknown as SourceVersionRow).pipe(
+            Effect.mapError((err) =>
+              err instanceof DecodeError
+                ? new QueryError({
+                    operation: 'createForIngestionAttempt',
+                    entity: 'SourceVersion',
+                    message: err.message,
+                  })
+                : err,
+            ),
+          ) as Effect.Effect<SourceVersionType, RepoError, never>
+        }),
       ),
 
     findById: (id: typeof Domain.SourceVersionId.Type) =>
@@ -676,10 +758,12 @@ function makeCitationRepositoryImpl(sql: import('../sql-client.js').SqlClientSha
 export interface JobQueueRepository {
   readonly enqueue: (job: typeof Domain.JobQueue.Type) => Effect.Effect<typeof Domain.JobQueue.Type, PersistenceError, never>
   readonly claimNextIngestionJob: () => Effect.Effect<Option.Option<typeof Domain.JobQueue.Type>, PersistenceError, never>
-  readonly recoverStaleIngestionJobs: (staleBeforeMs: number) => Effect.Effect<{ readonly requeued: ReadonlyArray<typeof Domain.JobQueue.Type>; readonly failed: ReadonlyArray<typeof Domain.JobQueue.Type> }, PersistenceError, never>
-  readonly markCompleted: (id: typeof Domain.JobQueue.Type['id']) => Effect.Effect<void, PersistenceError, never>
-  readonly markPending: (id: typeof Domain.JobQueue.Type['id']) => Effect.Effect<void, PersistenceError, never>
-  readonly markFailed: (id: typeof Domain.JobQueue.Type['id']) => Effect.Effect<void, PersistenceError, never>
+  readonly recoverStaleIngestionJobs: (staleAfterMs: number) => Effect.Effect<{ readonly requeued: ReadonlyArray<typeof Domain.JobQueue.Type>; readonly failed: ReadonlyArray<typeof Domain.JobQueue.Type> }, PersistenceError, never>
+  readonly renewLease: (job: typeof Domain.JobQueue.Type) => Effect.Effect<void, PersistenceError, never>
+  readonly appendInProgressEvent: (job: typeof Domain.JobQueue.Type, event: typeof Domain.EventJournal.Type) => Effect.Effect<void, PersistenceError, never>
+  readonly markCompleted: (job: typeof Domain.JobQueue.Type, event: typeof Domain.EventJournal.Type) => Effect.Effect<void, PersistenceError, never>
+  readonly markPending: (job: typeof Domain.JobQueue.Type, event: typeof Domain.EventJournal.Type) => Effect.Effect<void, PersistenceError, never>
+  readonly markFailed: (job: typeof Domain.JobQueue.Type, event: typeof Domain.EventJournal.Type) => Effect.Effect<void, PersistenceError, never>
   readonly findById: (id: typeof Domain.JobQueue.Type['id']) => Effect.Effect<typeof Domain.JobQueue.Type, PersistenceError, never>
 }
 
@@ -704,11 +788,468 @@ function decodeJobRows(rows: readonly Record<string, unknown>[], operation: stri
 }
 
 function makeJobQueueRepositoryImpl(sql: import('../sql-client.js').SqlClientShape): JobQueueRepository {
+  type IngestionTransition = 'append-event' | 'complete' | 'pending' | 'fail'
+  type ValidatedIngestionPayload =
+    | {
+        readonly kind: 'file-processed'
+        readonly sourceVersionId: string
+        readonly manifestRef: string
+        readonly contentHash: string
+        readonly byteLength: number
+      }
+    | {
+        readonly kind: 'ingestion-completed'
+        readonly sourceVersionId: string
+        readonly manifestRef: string
+        readonly contentHash: string
+      }
+    | {
+        readonly kind: 'ingestion-failed'
+        readonly errorTag: string
+        readonly retryable: boolean
+      }
+
+  const eventKeys = [
+    'createdAt',
+    'cursor',
+    'entityId',
+    'entityType',
+    'eventType',
+    'id',
+    'payload',
+    'workspaceId',
+  ] as const
+  const artifactRefPattern = /^artifact:\/\/sha256\/[a-f0-9]{64}$/
+  const contentHashPattern = /^sha256:[a-f0-9]{64}$/
+  const uuidPattern =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+  const failureTagPattern = /^[A-Za-z][A-Za-z0-9]{0,99}$/
+
   const executeRows = (operation: string, query: string, params?: readonly unknown[]) =>
     Effect.tryPromise({
       try: () => sql.unsafe(query, params),
       catch: (err) => new QueryError({ operation, entity: 'JobQueue', message: String(err) }),
     })
+
+  const ingestionOwnershipLost = (
+    job: typeof Domain.JobQueue.Type,
+    transition: IngestionTransition,
+  ): IngestionJobOwnershipLostError =>
+    new IngestionJobOwnershipLostError({
+      jobId: job.id,
+      attempt: job.attempts,
+      transition,
+      message: 'Ingestion job attempt no longer owns the in-progress lease',
+    })
+
+  const invalidIngestionEvent = (
+    transition: IngestionTransition,
+    field: string,
+  ): IngestionEventValidationError =>
+    new IngestionEventValidationError({
+      transition,
+      field,
+      message: `Ingestion ${transition} event has an invalid ${field}`,
+    })
+
+  const hasExactKeys = (
+    value: unknown,
+    expected: ReadonlyArray<string>,
+  ): value is Record<string, unknown> => {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+    const actual = Object.keys(value).sort()
+    const sortedExpected = [...expected].sort()
+    return actual.length === sortedExpected.length
+      && actual.every((key, index) => key === sortedExpected[index])
+  }
+
+  const parseJsonObject = (value: unknown): Record<string, unknown> | undefined => {
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      return value as Record<string, unknown>
+    }
+    if (typeof value !== 'string') return undefined
+    try {
+      const parsed: unknown = JSON.parse(value)
+      return typeof parsed === 'object'
+        && parsed !== null
+        && !Array.isArray(parsed)
+        ? parsed as Record<string, unknown>
+        : undefined
+    } catch {
+      return undefined
+    }
+  }
+
+  const validateOwnedTransitionEvent = (
+    transition: IngestionTransition,
+    job: typeof Domain.JobQueue.Type,
+    event: typeof Domain.EventJournal.Type,
+  ): ValidatedIngestionPayload => {
+    if (!hasExactKeys(event, eventKeys)) {
+      throw invalidIngestionEvent(transition, 'fields')
+    }
+    if (
+      job.entityType !== 'ingestion'
+      || job.status !== 'in-progress'
+      || event.workspaceId !== job.workspaceId
+      || event.entityType !== 'ingestion'
+      || event.entityId !== job.entityId
+    ) {
+      throw ingestionOwnershipLost(job, transition)
+    }
+    if (
+      typeof event.id !== 'string'
+      || !uuidPattern.test(event.id)
+    ) {
+      throw invalidIngestionEvent(transition, 'id')
+    }
+    if (event.cursor !== 0n) {
+      throw invalidIngestionEvent(transition, 'cursor')
+    }
+    if (
+      typeof event.createdAt !== 'bigint'
+      || event.createdAt < 0n
+      || event.createdAt > BigInt(Number.MAX_SAFE_INTEGER)
+    ) {
+      throw invalidIngestionEvent(transition, 'createdAt')
+    }
+    const payload = event.payload
+    if (
+      typeof payload !== 'object'
+      || payload === null
+      || Array.isArray(payload)
+      || typeof payload['jobId'] !== 'string'
+      || !uuidPattern.test(payload['jobId'])
+      || payload['jobId'] !== job.id
+      || typeof payload['attempt'] !== 'number'
+      || !Number.isSafeInteger(payload['attempt'])
+      || payload['attempt'] < 0
+      || payload['attempt'] !== job.attempts
+    ) {
+      throw invalidIngestionEvent(transition, 'payload.ownership')
+    }
+
+    if (transition === 'append-event') {
+      if (event.eventType !== 'file-processed') {
+        throw invalidIngestionEvent(transition, 'eventType')
+      }
+      if (!hasExactKeys(payload, [
+        'attempt',
+        'jobId',
+        'sourceVersionId',
+        'manifestRef',
+        'contentHash',
+        'byteLength',
+      ])) {
+        throw invalidIngestionEvent(transition, 'payload.fields')
+      }
+      if (
+        typeof payload['sourceVersionId'] !== 'string'
+        || !uuidPattern.test(payload['sourceVersionId'])
+      ) {
+        throw invalidIngestionEvent(transition, 'payload.sourceVersionId')
+      }
+      if (
+        typeof payload['manifestRef'] !== 'string'
+        || !artifactRefPattern.test(payload['manifestRef'])
+      ) {
+        throw invalidIngestionEvent(transition, 'payload.manifestRef')
+      }
+      if (
+        typeof payload['contentHash'] !== 'string'
+        || !contentHashPattern.test(payload['contentHash'])
+      ) {
+        throw invalidIngestionEvent(transition, 'payload.contentHash')
+      }
+      if (
+        typeof payload['byteLength'] !== 'number'
+        || !Number.isSafeInteger(payload['byteLength'])
+        || payload['byteLength'] < 0
+      ) {
+        throw invalidIngestionEvent(transition, 'payload.byteLength')
+      }
+      return {
+        kind: 'file-processed',
+        sourceVersionId: payload['sourceVersionId'],
+        manifestRef: payload['manifestRef'],
+        contentHash: payload['contentHash'],
+        byteLength: payload['byteLength'],
+      }
+    }
+
+    if (transition === 'complete') {
+      if (event.eventType !== 'ingestion-completed') {
+        throw invalidIngestionEvent(transition, 'eventType')
+      }
+      if (!hasExactKeys(payload, [
+        'attempt',
+        'jobId',
+        'sourceVersionId',
+        'manifestRef',
+        'contentHash',
+      ])) {
+        throw invalidIngestionEvent(transition, 'payload.fields')
+      }
+      if (
+        typeof payload['sourceVersionId'] !== 'string'
+        || !uuidPattern.test(payload['sourceVersionId'])
+      ) {
+        throw invalidIngestionEvent(transition, 'payload.sourceVersionId')
+      }
+      if (
+        typeof payload['manifestRef'] !== 'string'
+        || !artifactRefPattern.test(payload['manifestRef'])
+      ) {
+        throw invalidIngestionEvent(transition, 'payload.manifestRef')
+      }
+      if (
+        typeof payload['contentHash'] !== 'string'
+        || !contentHashPattern.test(payload['contentHash'])
+      ) {
+        throw invalidIngestionEvent(transition, 'payload.contentHash')
+      }
+      return {
+        kind: 'ingestion-completed',
+        sourceVersionId: payload['sourceVersionId'],
+        manifestRef: payload['manifestRef'],
+        contentHash: payload['contentHash'],
+      }
+    }
+
+    if (event.eventType !== 'ingestion-failed') {
+      throw invalidIngestionEvent(transition, 'eventType')
+    }
+    if (!hasExactKeys(payload, [
+      'attempt',
+      'errorTag',
+      'jobId',
+      'message',
+      'retryable',
+    ])) {
+      throw invalidIngestionEvent(transition, 'payload.fields')
+    }
+    if (
+      typeof payload['errorTag'] !== 'string'
+      || !failureTagPattern.test(payload['errorTag'])
+    ) {
+      throw invalidIngestionEvent(transition, 'payload.errorTag')
+    }
+    if (payload['message'] !== 'Ingestion failed') {
+      throw invalidIngestionEvent(transition, 'payload.message')
+    }
+    if (typeof payload['retryable'] !== 'boolean') {
+      throw invalidIngestionEvent(transition, 'payload.retryable')
+    }
+    if (
+      (
+        transition === 'pending'
+        && (!payload['retryable'] || job.attempts >= job.maxAttempts)
+      )
+      || (
+        transition === 'fail'
+        && payload['retryable']
+        && job.attempts < job.maxAttempts
+      )
+    ) {
+      throw invalidIngestionEvent(transition, 'payload.retryable')
+    }
+    return {
+      kind: 'ingestion-failed',
+      errorTag: payload['errorTag'],
+      retryable: payload['retryable'],
+    }
+  }
+
+  const ownedTransition = (
+    operation: string,
+    transition: IngestionTransition,
+    job: typeof Domain.JobQueue.Type,
+    event: typeof Domain.EventJournal.Type,
+    nextStatus?: 'completed' | 'pending' | 'failed',
+  ): Effect.Effect<void, PersistenceError, never> =>
+    Effect.tryPromise({
+      try: () => {
+        const validated = validateOwnedTransitionEvent(transition, job, event)
+        return sql.transaction(async (transaction) => {
+          const ownership = await transaction.unsafe(
+            `SELECT job.id, job.workspace_id, job.entity_type, job.entity_id,
+                    job.attempts, job.max_attempts, job.payload
+             FROM job_queue job
+             JOIN sources source ON source.id = job.entity_id
+             JOIN projects project ON project.id = source.project_id
+             WHERE job.id = $1
+               AND job.entity_type = 'ingestion'
+               AND job.entity_id = $2
+               AND job.workspace_id = $3
+               AND project.workspace_id = $3
+               AND job.status = 'in-progress'
+               AND job.attempts = $4
+             FOR UPDATE`,
+            [job.id, job.entityId, job.workspaceId, job.attempts],
+          )
+          if (ownership.length !== 1) return false
+          const ownedJob = ownership[0]!
+          if (
+            validated.kind === 'ingestion-failed'
+            && (
+              (
+                transition === 'pending'
+                && (
+                  !validated.retryable
+                  || Number(ownedJob['attempts'])
+                    >= Number(ownedJob['max_attempts'])
+                )
+              )
+              || (
+                transition === 'fail'
+                && validated.retryable
+                && Number(ownedJob['attempts'])
+                  < Number(ownedJob['max_attempts'])
+              )
+            )
+          ) {
+            throw invalidIngestionEvent(transition, 'payload.retryable')
+          }
+
+          let authoritativePayload: Record<string, unknown>
+          if (validated.kind === 'ingestion-failed') {
+            authoritativePayload = {
+              jobId: String(ownedJob['id']),
+              attempt: Number(ownedJob['attempts']),
+              errorTag: validated.errorTag,
+              message: 'Ingestion failed',
+              retryable: validated.retryable,
+            }
+          } else {
+            const versions = await transaction.unsafe(
+              `SELECT version.id, version.artifact_ref, version.content_hash
+               FROM source_versions version
+               WHERE version.id = $1
+                 AND version.source_id = $2`,
+              [validated.sourceVersionId, job.entityId],
+            )
+            if (versions.length !== 1) {
+              throw invalidIngestionEvent(
+                transition,
+                'payload.sourceVersionId',
+              )
+            }
+            const version = versions[0]!
+            if (validated.contentHash !== version['content_hash']) {
+              throw invalidIngestionEvent(transition, 'payload.contentHash')
+            }
+            if (validated.kind === 'ingestion-completed') {
+              if (validated.manifestRef !== version['artifact_ref']) {
+                throw invalidIngestionEvent(transition, 'payload.manifestRef')
+              }
+              authoritativePayload = {
+                jobId: String(ownedJob['id']),
+                attempt: Number(ownedJob['attempts']),
+                sourceVersionId: String(version['id']),
+                manifestRef: String(version['artifact_ref']),
+                contentHash: String(version['content_hash']),
+              }
+            } else {
+              if (validated.manifestRef !== version['artifact_ref']) {
+                throw invalidIngestionEvent(
+                  transition,
+                  'payload.manifestRef',
+                )
+              }
+              const jobPayload = parseJsonObject(ownedJob['payload'])
+              if (
+                jobPayload === undefined
+                || typeof jobPayload['byteLength'] !== 'number'
+                || !Number.isSafeInteger(
+                  jobPayload['byteLength'],
+                )
+                || Number(jobPayload['byteLength']) < 0
+                || validated.byteLength !== jobPayload['byteLength']
+              ) {
+                throw invalidIngestionEvent(
+                  transition,
+                  'payload.byteLength',
+                )
+              }
+              authoritativePayload = {
+                jobId: String(ownedJob['id']),
+                attempt: Number(ownedJob['attempts']),
+                sourceVersionId: String(version['id']),
+                manifestRef: String(version['artifact_ref']),
+                normalizedRef: String(version['content_hash']).replace(
+                  'sha256:',
+                  'artifact://sha256/',
+                ),
+                contentHash: String(version['content_hash']),
+                byteLength: jobPayload['byteLength'],
+              }
+            }
+          }
+
+          const transitioned = nextStatus === undefined
+            ? await transaction.unsafe(
+                `UPDATE job_queue
+                 SET updated_at = NOW()
+                 WHERE id = $1
+                   AND entity_type = 'ingestion'
+                   AND entity_id = $2
+                   AND workspace_id = $3
+                   AND status = 'in-progress'
+                   AND attempts = $4
+                 RETURNING id`,
+                [job.id, job.entityId, job.workspaceId, job.attempts],
+              )
+            : await transaction.unsafe(
+                `UPDATE job_queue
+                 SET status = $5, updated_at = NOW()
+                 WHERE id = $1
+                   AND entity_type = 'ingestion'
+                   AND entity_id = $2
+                   AND workspace_id = $3
+                   AND status = 'in-progress'
+                   AND attempts = $4
+                 RETURNING id`,
+                [
+                  job.id,
+                  job.entityId,
+                  job.workspaceId,
+                  job.attempts,
+                  nextStatus,
+                ],
+              )
+          if (transitioned.length !== 1) return false
+          await transaction.unsafe(
+            `INSERT INTO event_journal (id, workspace_id, entity_type, entity_id, event_type, payload, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6::jsonb, to_timestamp($7 / 1000.0))`,
+            [
+              event.id,
+              ownedJob['workspace_id'],
+              ownedJob['entity_type'],
+              ownedJob['entity_id'],
+              validated.kind,
+              JSON.stringify(authoritativePayload),
+              Number(event.createdAt),
+            ],
+          )
+          return true
+        })
+      },
+      catch: (err) =>
+        err instanceof IngestionJobOwnershipLostError
+          || err instanceof IngestionEventValidationError
+          ? err
+          : new QueryError({
+              operation,
+              entity: 'JobQueue',
+              message: 'Ingestion job transition could not be persisted',
+              cause: String(err),
+            }),
+    }).pipe(
+      Effect.flatMap((owned) =>
+        owned
+          ? Effect.void
+          : Effect.fail(ingestionOwnershipLost(job, transition))),
+    )
 
   return {
     enqueue: (job) =>
@@ -742,43 +1283,136 @@ function makeJobQueueRepositoryImpl(sql: import('../sql-client.js').SqlClientSha
         Effect.map((rows) => rows.length === 0 ? Option.none() : Option.some(rows[0])),
       ),
 
-    recoverStaleIngestionJobs: (staleBeforeMs) =>
-      Effect.gen(function* () {
-        const requeuedRows = yield* executeRows(
-          'recoverStaleIngestionJobs.requeue',
-          `UPDATE job_queue
-           SET status = 'pending', updated_at = NOW()
-           WHERE entity_type = 'ingestion'
-             AND status = 'in-progress'
-             AND updated_at < to_timestamp($1 / 1000.0)
-             AND attempts < max_attempts
-           RETURNING *`,
-          [staleBeforeMs],
-        )
-        const failedRows = yield* executeRows(
-          'recoverStaleIngestionJobs.fail',
-          `UPDATE job_queue
-           SET status = 'failed', updated_at = NOW()
-           WHERE entity_type = 'ingestion'
-             AND status = 'in-progress'
-             AND updated_at < to_timestamp($1 / 1000.0)
-             AND attempts >= max_attempts
-           RETURNING *`,
-          [staleBeforeMs],
-        )
-        const requeued = yield* decodeJobRows(requeuedRows, 'recoverStaleIngestionJobs.requeue')
-        const failed = yield* decodeJobRows(failedRows, 'recoverStaleIngestionJobs.fail')
-        return { requeued, failed }
+    recoverStaleIngestionJobs: (staleAfterMs) =>
+      Effect.tryPromise({
+        try: () =>
+          sql.transaction(async (transaction) => {
+            const requeuedRows = await transaction.unsafe(
+              `UPDATE job_queue
+               SET status = 'pending', updated_at = NOW()
+               WHERE entity_type = 'ingestion'
+                 AND status = 'in-progress'
+                 AND updated_at < NOW() - ($1::bigint * INTERVAL '1 millisecond')
+                 AND attempts < max_attempts
+               RETURNING *`,
+              [staleAfterMs],
+            )
+            const failedRows = await transaction.unsafe(
+              `UPDATE job_queue
+               SET status = 'failed', updated_at = NOW()
+               WHERE entity_type = 'ingestion'
+                 AND status = 'in-progress'
+                 AND updated_at < NOW() - ($1::bigint * INTERVAL '1 millisecond')
+                 AND attempts >= max_attempts
+               RETURNING *`,
+              [staleAfterMs],
+            )
+            if (failedRows.length > 0) {
+              const terminalEvents = await transaction.unsafe(
+                `INSERT INTO event_journal (
+                   id, workspace_id, entity_type, entity_id,
+                   event_type, payload, created_at
+                 )
+                 SELECT
+                   md5(
+                     job.id::text
+                     || ':ingestion-stale-exhausted:'
+                     || job.attempts::text
+                   )::uuid,
+                   job.workspace_id,
+                   'ingestion',
+                   job.entity_id,
+                   'ingestion-failed',
+                   jsonb_build_object(
+                     'jobId', job.id::text,
+                     'attempt', job.attempts,
+                     'errorTag', 'StaleIngestionJobExhausted',
+                     'message', 'Ingestion failed',
+                     'retryable', true
+                   ),
+                   NOW()
+                 FROM job_queue job
+                 WHERE job.id = ANY($1::uuid[])
+                   AND job.entity_type = 'ingestion'
+                   AND job.status = 'failed'
+                 ON CONFLICT (id) DO NOTHING
+                 RETURNING id`,
+                [failedRows.map((row) => row['id'])],
+              )
+              if (terminalEvents.length !== failedRows.length) {
+                throw new Error('stale-ingestion-terminal-event-conflict')
+              }
+            }
+            return { requeuedRows, failedRows }
+          }),
+        catch: (err) =>
+          new QueryError({
+            operation: 'recoverStaleIngestionJobs',
+            entity: 'JobQueue',
+            message: 'Stale ingestion recovery could not be persisted atomically',
+            cause: String(err),
+          }),
+      }).pipe(
+        Effect.flatMap(({ requeuedRows, failedRows }) =>
+          Effect.gen(function* () {
+            const requeued = yield* decodeJobRows(
+              requeuedRows,
+              'recoverStaleIngestionJobs.requeue',
+            )
+            const failed = yield* decodeJobRows(
+              failedRows,
+              'recoverStaleIngestionJobs.fail',
+            )
+            return { requeued, failed }
+          })),
+      ),
+
+    renewLease: (job) =>
+      Effect.tryPromise({
+        try: async () => {
+          const rows = await sql.unsafe(
+            `UPDATE job_queue
+             SET updated_at = NOW()
+             WHERE id = $1
+               AND entity_type = 'ingestion'
+               AND entity_id = $2
+               AND workspace_id = $3
+               AND status = 'in-progress'
+               AND attempts = $4
+             RETURNING id`,
+            [job.id, job.entityId, job.workspaceId, job.attempts],
+          )
+          if (rows.length !== 1) {
+            throw new IngestionJobOwnershipLostError({
+              jobId: job.id,
+              attempt: job.attempts,
+              transition: 'renew-lease',
+              message: 'Ingestion job attempt no longer owns the in-progress lease',
+            })
+          }
+        },
+        catch: (err) =>
+          err instanceof IngestionJobOwnershipLostError
+            ? err
+            : new QueryError({
+                operation: 'renewIngestionLease',
+                entity: 'JobQueue',
+                message: 'Ingestion job lease could not be renewed',
+                cause: String(err),
+              }),
       }),
 
-    markCompleted: (id) =>
-      executeRows('markCompleted', `UPDATE job_queue SET status = 'completed', updated_at = NOW() WHERE id = $1`, [id]).pipe(Effect.asVoid),
+    appendInProgressEvent: (job, event) =>
+      ownedTransition('appendInProgressEvent', 'append-event', job, event),
 
-    markPending: (id) =>
-      executeRows('markPending', `UPDATE job_queue SET status = 'pending', updated_at = NOW() WHERE id = $1`, [id]).pipe(Effect.asVoid),
+    markCompleted: (job, event) =>
+      ownedTransition('markCompleted', 'complete', job, event, 'completed'),
 
-    markFailed: (id) =>
-      executeRows('markFailed', `UPDATE job_queue SET status = 'failed', updated_at = NOW() WHERE id = $1`, [id]).pipe(Effect.asVoid),
+    markPending: (job, event) =>
+      ownedTransition('markPending', 'pending', job, event, 'pending'),
+
+    markFailed: (job, event) =>
+      ownedTransition('markFailed', 'fail', job, event, 'failed'),
 
     findById: (id) =>
       executeRows('findById', `SELECT * FROM job_queue WHERE id = $1`, [id]).pipe(
@@ -795,19 +1429,18 @@ function makeJobQueueRepositoryImpl(sql: import('../sql-client.js').SqlClientSha
 }
 
 // =============================================================================
-// Event Journal Repository
+// Event Journal Reader
 // =============================================================================
 
-export interface EventJournalRepository {
-  readonly append: (event: typeof Domain.EventJournal.Type) => Effect.Effect<typeof Domain.EventJournal.Type, PersistenceError, never>
+export interface EventJournalReadRepository {
   readonly findByEntity: (entityType: string, entityId: typeof Domain.EventJournal.Type['entityId']) => Effect.Effect<ReadonlyArray<typeof Domain.EventJournal.Type>, PersistenceError, never>
 }
 
-export class EventJournalRepo extends Effect.Service<EventJournalRepo>()('EventJournalRepo', {
-  accessors: true,
+export class EventJournalReader extends Effect.Service<EventJournalReader>()('EventJournalReader', {
+  accessors: false,
   effect: Effect.gen(function* () {
     const sql = yield* SqlClient
-    return makeEventJournalRepositoryImpl(sql)
+    return makeEventJournalReadRepositoryImpl(sql)
   }),
 }) {}
 
@@ -823,7 +1456,7 @@ function decodeEventRows(rows: readonly Record<string, unknown>[], operation: st
   )
 }
 
-function makeEventJournalRepositoryImpl(sql: import('../sql-client.js').SqlClientShape): EventJournalRepository {
+function makeEventJournalReadRepositoryImpl(sql: import('../sql-client.js').SqlClientShape): EventJournalReadRepository {
   const executeRows = (operation: string, query: string, params?: readonly unknown[]) =>
     Effect.tryPromise({
       try: () => sql.unsafe(query, params),
@@ -831,18 +1464,6 @@ function makeEventJournalRepositoryImpl(sql: import('../sql-client.js').SqlClien
     })
 
   return {
-    append: (event) =>
-      executeRows(
-        'append',
-        `INSERT INTO event_journal (id, workspace_id, entity_type, entity_id, event_type, payload, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6::jsonb, to_timestamp($7 / 1000.0))
-         RETURNING *`,
-        [event.id, event.workspaceId, event.entityType, event.entityId, event.eventType, JSON.stringify(event.payload), Number(event.createdAt)],
-      ).pipe(
-        Effect.flatMap((rows) => decodeEventRows(rows, 'append')),
-        Effect.map((rows) => rows[0]),
-      ),
-
     findByEntity: (entityType, entityId) =>
       executeRows(
         'findByEntity',

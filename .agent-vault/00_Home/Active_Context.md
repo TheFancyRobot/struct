@@ -19,10 +19,10 @@ Keep this note short and current.
 ## Current Objective
 
 <!-- AGENT-START:current-focus -->
-_Last refreshed: 2026-07-18._
+_Last refreshed: 2026-07-19._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_01_walking_skeleton/Steps/Step_04_implement-deterministic-retrieval-and-fred-research-workflow|STEP-01-04 Implement Deterministic Retrieval and Fred Research Workflow]] - status: planned - phase: [[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]
-- Active phase: [[02_Phases/Phase_01_walking_skeleton/Phase|PHASE-01 Walking Skeleton]] - status: planned - updated: 2026-07-18
+- Current step: [[02_Phases/Phase_01_walking_skeleton/Steps/Step_04_implement-deterministic-retrieval-and-fred-research-workflow|STEP-01-04 Implement Deterministic Retrieval and Fred Research Workflow]] - status: in_progress - phase: [[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]] - owner: step-01-04-implementor
+- Active phase: [[02_Phases/Phase_01_walking_skeleton/Phase|PHASE-01 Walking Skeleton]] - status: in_progress - updated: 2026-07-19
 - Also active: 68 more additional steps.
 <!-- AGENT-END:current-focus -->
 
@@ -35,12 +35,11 @@ _Last refreshed: 2026-07-18._
 
 ## In Scope Right Now
 
-- Phase 01 walking skeleton: STEP-01-01 scaffold complete, STEP-01-02 domain schemas & migrations complete, STEP-01-03+ in planning.
+- Phase 01 walking skeleton: STEP-01-01 through STEP-01-04 are implemented; STEP-01-05 is the next planned step.
 - Keep architecture notes aligned with the code as implementation progresses.
 - Record non-trivial decisions as dedicated notes.
-- STEP-01-02 lead verification fixes completed: typed decoders, real postgres-backed repositories, typed migration errors/resource-safe CLI, and atomic migration tracking.
-- Validation completed: typecheck, lint, import boundaries, Vitest, DB integration tests, migration smoke, and build all passed.
-- Zero-defect gate follow-up completed for STEP-01-02: fixed raw Bun test build-artifact discovery, idempotent DB integration fixtures, and spike-local Effect version skew. Final root/spike gates pass.
+- STEP-01-04 provides tenant-scoped deterministic PostgreSQL retrieval, a bounded Fred workflow, exact citation validation, and atomic durable research execution.
+- STEP-01-04 review remediation is complete locally; root orchestration owns the remaining PR re-review and merge gate.
 
 ## Out Of Scope Right Now
 
@@ -73,6 +72,6 @@ _Last refreshed: 2026-07-18._
 
 ## Next Actions
 
-- Await read-only re-review/approval for STEP-01-02 Task 3.
-- After approval, begin [[02_Phases/Phase_01_walking_skeleton/Steps/Step_03_implement-single-text-source-ingestion-and-artifact-storage|STEP-01-03 Implement Single Text Source Ingestion and Artifact Storage]].
+- Complete PR review and merge for [[02_Phases/Phase_01_walking_skeleton/Steps/Step_04_implement-deterministic-retrieval-and-fred-research-workflow|STEP-01-04 Implement Deterministic Retrieval and Fred Research Workflow]].
+- After the merge gate, begin [[02_Phases/Phase_01_walking_skeleton/Steps/Step_05_stream-persisted-progress-and-render-navigable-citation|STEP-01-05 Stream Persisted Progress and Render Navigable Citation]] on its own branch.
 - Keep architecture notes aligned with the code as implementation progresses.

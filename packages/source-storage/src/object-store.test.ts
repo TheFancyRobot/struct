@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'bun:test'
 import { Effect, Exit } from 'effect'
 import { createHash } from 'node:crypto'
 import { access, mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises'
@@ -143,18 +143,37 @@ describe('LocalArtifactStore', () => {
     await expect(access(escapedObject)).rejects.toMatchObject({ code: 'ENOENT' })
   })
 
-  it('stages uploads under stable logical refs without leaking host paths', async () => {
+  it('stages mixed-case uploads under canonical lowercase refs while preserving bytes', async () => {
     const root = await tempRoot()
     const store = await Effect.runPromise(LocalArtifactStore.make({ root }))
 
     const staged = await Effect.runPromise(
-      store.stageObject('notes.md', new TextEncoder().encode('# Notes'), { mediaType: 'text/markdown' }),
+      store.stageObject('Notes.MD', new TextEncoder().encode('# Notes'), { mediaType: 'text/markdown' }),
     )
     const read = await Effect.runPromise(store.readStagedObject(staged.ref))
 
     expect(staged.ref).toMatch(/^staged:\/\/[0-9a-f-]{36}\/notes\.md$/)
     expect(staged.ref.includes(root)).toBe(false)
     expect(new TextDecoder().decode(read.bytes)).toBe('# Notes')
+  })
+
+  it('rejects a mixed-case staged-ref alias before a case-insensitive filesystem read', async () => {
+    const root = await tempRoot()
+    const store = await Effect.runPromise(LocalArtifactStore.make({ root }))
+    const staged = await Effect.runPromise(
+      store.stageObject('Notes.MD', new TextEncoder().encode('private'), {
+        mediaType: 'text/markdown',
+      }),
+    )
+    const alias = staged.ref.replace('/notes.md', '/NOTES.MD') as StagedArtifactRef
+
+    const result = await Effect.runPromiseExit(store.readStagedObject(alias))
+
+    expect(Exit.isFailure(result)).toBe(true)
+    if (Exit.isFailure(result)) {
+      expect(result.cause.toString()).toContain(StoragePathError.name)
+      expect(result.cause.toString()).toContain('Staged artifact ref is malformed')
+    }
   })
 
   it('rejects path-like staged upload names instead of sanitizing traversal input', async () => {

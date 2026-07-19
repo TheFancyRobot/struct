@@ -7,3 +7,7 @@ peer = false
 
 [install.overrides]
 # No overrides; use exact pinned versions from lockfile
+
+[test]
+# Fred workflow tests exercise bounded deadlines and need more than Bun's 5s default.
+timeout = 10000

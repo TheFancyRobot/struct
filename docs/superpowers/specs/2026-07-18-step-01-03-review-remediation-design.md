@@ -49,7 +49,7 @@ Verification will include:
 1. Focused storage, worker, API, and persistence regression tests.
 2. Worker entrypoint test against an unreachable database.
 3. Real PostgreSQL rollback integration coverage for the atomic registration command.
-4. Root frozen install, typecheck, lint, import boundaries, Vitest, raw Bun tests, and builds.
+4. Root frozen install, typecheck, lint, import boundaries, native Bun tests, and builds.
 5. Real PostgreSQL test suite and migration down/up smoke.
 6. Agent Vault refresh and integrity validation.
 

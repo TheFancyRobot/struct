@@ -304,11 +304,21 @@ Recommended defaults:
 
 Do not add Kafka, Kubernetes, a dedicated vector database, or a distributed workflow engine during the initial phases unless a measured requirement justifies it.
 
-If the current DuckDB integration available to TypeScript/Bun is not sufficiently stable, perform a focused spike comparing:
+DuckDB remains required even if its native adapter is not sufficiently stable
+inside the maintained Bun host. Phase 04 must refine the already-decided
+isolated container/sidecar boundary by selecting and validating the exact
+pinned sidecar image, internal adapter/runtime, authenticated bounded protocol,
+mounts, health checks, resource limits, cancellation, and restart behavior.
+The maintained Bun host must never load the native DuckDB adapter, run a
+DuckDB child process, or require Node as a fallback.
 
-1. Direct official Node API integration
-2. A narrow local DuckDB service
-3. A small isolated data worker
+This boundary supersedes the candidate-selection instruction recorded by the
+historical [STEP-00-03 topology spike](./spikes/duckdb-bun-parquet-and-isolation-topology.md);
+see [DEC-0003](./adr/DEC-0003-use-typescript-bun-and-effect-with-explicit-runtime-boundaries.md)
+and [DEC-0005](./adr/DEC-0005-use-duckdb-and-parquet-for-the-deterministic-data-plane.md).
+The spike's measurements remain evidence for the sidecar protocol, hardening,
+limits, cancellation, and crash-recovery design, not permission to reopen a
+host Node, direct-native, or host-worker topology.
 
 Do not replace DuckDB with LLM-based analysis merely to avoid an integration inconvenience.
 

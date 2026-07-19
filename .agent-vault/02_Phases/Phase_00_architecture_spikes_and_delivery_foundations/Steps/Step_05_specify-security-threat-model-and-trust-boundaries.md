@@ -68,7 +68,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 - Exact outcome/success: **PASS** — boundary, threat, abuse, limits, test, residual-risk, and handoff artifacts are enumerated.
 - Why it matters: **PASS** — hostile content, filesystem, SQL, authorization, secrets, and denial-of-service boundaries must be fixed before implementation.
-- Prerequisites/dependencies: **PASS** — STEP-00-04 ownership and STEP-00-03 topology evidence are named while parallel drafting remains safe.
+- Prerequisites/dependencies: **PASS** — STEP-00-04 ownership and STEP-00-03's historical topology/hardening evidence are named while parallel drafting remains safe; DEC-0003/DEC-0005 supersede the selected-at-the-time host-child topology with the pinned Phase-04 sidecar.
 - Starting files/commands/tests: **PASS** — `docs/security-model.md`, exact reading, doc checks, and future-test mapping are concrete.
 - Required reading: **PASS** — full security model plus architecture, decision, product, and adversarial evaluation sources are listed.
 - Constraints/non-goals: **PASS** — no production auth/policy/walker/executor and unsupported archive/OCR defaults are explicit.

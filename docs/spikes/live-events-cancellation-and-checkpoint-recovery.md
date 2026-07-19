@@ -128,7 +128,10 @@ The deterministic harness covers all ten required scenarios plus two explicit te
 STEP-01-05 may rely on these outputs without reopening this spike:
 
 - A stable public research event set with cursor identity and terminal semantics.
-- At-least-once replay with client dedupe by cursor/identity.
+- At-least-once replay with client dedupe by cursor/identity. Canonical
+  persistence must allocate cursors in commit-visible order; a plain
+  PostgreSQL sequence is insufficient because sequence allocation is not
+  transactional.
 - Product-owned checkpoint authority with bounded artifact references.
 - The winner rule: persisted cancel intent beats terminal completion only when recorded first.
 - `resync-required` and `forbidden` reconnect outcomes as explicit API/SSE boundary behavior.
@@ -150,7 +153,7 @@ Run from `spikes/research-durability/`:
 ```bash
 bun install --frozen-lockfile
 bun test
-bunx tsc -p tsconfig.json --noEmit
+bun --bun tsc -p tsconfig.json --noEmit
 bun run scenario:restart
 ```
 

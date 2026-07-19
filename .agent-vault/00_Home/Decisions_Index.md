@@ -31,7 +31,7 @@ Use this note as the directory for decision records in \`04_Decisions/\`.
 ## Decision Log
 
 <!-- AGENT-START:decisions-index -->
-_Last rebuilt: 2026-07-18._
+_Last rebuilt: 2026-07-19._
 
 - Notes indexed: 15
 - Status summary: accepted (15)
@@ -39,11 +39,11 @@ _Last rebuilt: 2026-07-18._
 | Id | Title | Status | Decided | Updated | Linear |
 | --- | --- | --- | --- | --- | --- |
 | DEC-0015 | [Use Per-Step Branch PR Review and Merge Gates](../04_Decisions/DEC-0015_use-per-step-branch-pr-review-and-merge-gates.md) | accepted | 2026-07-18 | 2026-07-18 | - |
+| DEC-0003 | [Use TypeScript Bun and Effect with Explicit Runtime Boundaries](../04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries.md) | accepted | 2026-07-17 | 2026-07-19 | - |
+| DEC-0005 | [Use DuckDB and Parquet for the Deterministic Data Plane](../04_Decisions/DEC-0005_use-duckdb-and-parquet-for-the-deterministic-data-plane.md) | accepted | 2026-07-17 | 2026-07-19 | - |
 | DEC-0001 | [Consume Stable Fred Packages from a Standalone Monorepo](../04_Decisions/DEC-0001_consume-stable-fred-packages-from-a-standalone-monorepo.md) | accepted | 2026-07-17 | 2026-07-17 | - |
 | DEC-0002 | [Prefer Product-Local Adapters Before Fred Core Changes](../04_Decisions/DEC-0002_prefer-product-local-adapters-before-fred-core-changes.md) | accepted | 2026-07-17 | 2026-07-17 | - |
-| DEC-0003 | [Use TypeScript Bun and Effect with Explicit Runtime Boundaries](../04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries.md) | accepted | 2026-07-17 | 2026-07-17 | - |
 | DEC-0004 | [Use PostgreSQL Full-Text Search and pgvector for Initial Retrieval](../04_Decisions/DEC-0004_use-postgresql-full-text-search-and-pgvector-for-initial-retrieval.md) | accepted | 2026-07-17 | 2026-07-17 | - |
-| DEC-0005 | [Use DuckDB and Parquet for the Deterministic Data Plane](../04_Decisions/DEC-0005_use-duckdb-and-parquet-for-the-deterministic-data-plane.md) | accepted | 2026-07-17 | 2026-07-17 | - |
 | DEC-0006 | [Make Source Versions Immutable and Provenance Typed](../04_Decisions/DEC-0006_make-source-versions-immutable-and-provenance-typed.md) | accepted | 2026-07-17 | 2026-07-17 | - |
 | DEC-0007 | [Compose a Product Job Journal with Fred Checkpoints](../04_Decisions/DEC-0007_compose-a-product-job-journal-with-fred-checkpoints.md) | accepted | 2026-07-17 | 2026-07-17 | - |
 | DEC-0008 | [Own the Typed API and Live Research Event Stream](../04_Decisions/DEC-0008_own-the-typed-api-and-live-research-event-stream.md) | accepted | 2026-07-17 | 2026-07-17 | - |

@@ -28,7 +28,7 @@ The canonical records live in `.agent-vault/04_Decisions/`; concise human-readab
 | DEC-0002 | Prefer product-local adapters before Fred core changes. | Product delivery does not depend on upstreaming application policy; only proven generic gaps become Fred candidates. |
 | DEC-0003 | Use TypeScript, Bun, and Effect with explicit runtime boundaries. | Domain services remain Effect-native with typed failures; Promise/runtime execution stays at app and adapter edges. |
 | DEC-0004 | Use PostgreSQL full-text search and pgvector for initial retrieval. | Retrieval stays behind a replaceable service while v1 avoids another distributed store. |
-| DEC-0005 | Use DuckDB and Parquet for the deterministic data plane. | Structured data remains first-class and exact; the in-process/isolated topology is Phase 0 spike-gated. |
+| DEC-0005 | Use DuckDB and Parquet for the deterministic data plane. | Structured data remains first-class and exact; Phase 04 isolates DuckDB in a container/sidecar whose adapter runtime is not a maintained-host dependency. |
 | DEC-0006 | Make source versions immutable and provenance typed. | Refresh never retargets historical research or citations. |
 | DEC-0007 | Compose a product job/event journal with Fred checkpoints. | Product durability, SSE replay, cancellation, and audit state remain distinct from workflow checkpoints. |
 | DEC-0008 | Own the typed API and live research event stream. | `fred-http` may be selectively reused, but its coarse workflow SSE is not the product progress contract. |
@@ -154,7 +154,7 @@ Each package owns one public surface and keeps the rest internal.
 | `ingestion` | ingestion plan/manifest types, source-classification contract | extractor routing internals |
 | `document-processing` | parsed artifact, section, chunk, provenance-anchor types | parser implementations |
 | `retrieval` | search request/result types, context-assembly contract | index tuning, reranker adapter internals |
-| `data-engine` | dataset catalog, SQL validation contract, query result snapshot types | DuckDB worker child, hardening internals |
+| `data-engine` | dataset catalog, SQL validation contract, typed sidecar client, query result snapshot types | DuckDB sidecar adapter/runtime and hardening internals |
 | `research-engine` | research plan, evidence-sufficiency, synthesis contract types | plan revision internals |
 | `fred-workflows` | agent/tool/graph/workflow definitions and run boundary | Fred runtime wiring, hook capture internals |
 | `evaluation` | corpus spec, benchmark harness, gate assertion contract | generator internals |
@@ -165,7 +165,10 @@ Ownership rules:
 
 - `packages/domain` is the single source of canonical Effect Schemas and identifiers. Other packages re-export or consume; they must not redefine a schema that `domain` already owns.
 - `apps/api` owns the HTTP API contract: request/response schemas and SSE event shapes. `apps/web` consumes a generated typed client, never internal handlers.
-- `apps/worker` owns the durable execution contract: job/run identity, checkpoint record, journal appender, and the DuckDB worker-child lifecycle.
+- `apps/worker` owns the durable execution contract: job/run identity,
+  checkpoint record, journal appender, and orchestration of the typed
+  data-engine client. Compose owns the planned DuckDB sidecar lifecycle;
+  `packages/data-engine` owns its protocol and policy contract.
 - Cross-package consumption of a deep path (e.g. `packages/persistence/src/sql/...`) is a contract violation even if it compiles.
 
 ### 4.4 Fred pinning, lockfile, and dev-only override policy
@@ -175,9 +178,9 @@ This concretizes DEC-0001 and the STEP-00-01 compatibility evidence.
 - **Pinned production versions** (recorded in the root lockfile; no floating ranges in release dependencies):
   - `@fancyrobot/fred@2.0.0` — workflow execution, typed agents/tools, hooks, checkpoints, eval primitives.
   - `@fancyrobot/fred-http@1.0.0` — optional Bun-only enhancer for smoke/admin surfaces only; never the product event contract (DEC-0008, DEC-0012).
-- **Toolchain baseline:** Bun `1.3.13`, Node-compatible fallback `v24.15.0`, TypeScript `7.0.2`. Versions are pinned via `engines`, `tsconfig.base.json`, and CI image tags. Any step upgrade requires an ADR update.
+- **Toolchain baseline:** Bun `1.3.13` and TypeScript `7.0.2`. Bun is the sole runtime for maintained host applications, workspace packages, scripts, and tests. Versions are pinned via `engines`, `tsconfig.base.json`, and CI image tags. An explicitly isolated native-dependency container/service image may use the runtime required by its adapter, provided that runtime remains pinned inside the documented image and does not become a second host-workspace toolchain. Phase 04's planned DuckDB sidecar is the accepted instance; DuckDB must not run as a host child process or load its native adapter into a maintained host application. Any maintained-host toolchain upgrade or new runtime exception requires an ADR update.
 - **Provider packages** are resolved through Fred's provider registry as runtime configuration, never added as domain or compile-time dependencies.
-- **Lockfile ownership:** the root `bun.lockb` is the single source of truth for resolved versions. Releases use the published npm pins; the lockfile is committed and reproduced with `bun install --frozen-lockfile`.
+- **Lockfile ownership:** the root `bun.lock` is the single source of truth for resolved versions. Releases use published registry pins; the lockfile is committed and reproduced with `bun install --frozen-lockfile`.
 - **Dev-only local override (excluded from releases):** a developer may link a local Fred checkout (planning reference commit `b964f3480c177ba3e3805cb66356c1e0f3f30cce`) through a gitignored `.env.local` / dev-script mechanism only. The local link must never be written to the committed lockfile and must be stripped before any release build. A CI check verifies the release lockfile resolves to the published pins, not a `file:` link.
 - **Boundary:** Fred owns workflow graph execution, typed workflow IO validation, hook callbacks, and coarse SSE lifecycle. Product code owns run identity, journals, checkpoint records, artifact references, auth, replay, retrieval, persistence, citation validation, SQL, and security (DEC-0012; STEP-00-01 gap register).
 
@@ -286,7 +289,10 @@ The development adapter uses the local filesystem. Production uses an S3-compati
 
 ### 6.3 DuckDB + Parquet as the structured-data engine
 
-DuckDB is used only through `packages/data-engine` for deterministic structured analysis.
+DuckDB is used only through `packages/data-engine` for deterministic structured
+analysis. Phase 04 will implement the engine in an isolated container/sidecar;
+the current Compose stack contains PostgreSQL only. The maintained Bun worker
+uses a typed authenticated client and never loads the native adapter.
 
 It is responsible for:
 
@@ -316,6 +322,11 @@ This preserves reproducibility, makes citations stable, and prevents historical 
 - **Forward:** `bun run migrations:up` (executed by `apps/api`) applies all pending migrations in order.
 - **Rollback:** `bun run migrations:down` (executed by `apps/api`) reverts exactly one migration. A migration must be reversible or explicitly marked irreversible with a recorded reason; irreversible, data-losing migrations require an ADR.
 - **Test contract:** `migrations:up && migrations:down && migrations:up` against an ephemeral PostgreSQL instance must be idempotent and leave a clean schema. This round-trip is a required CI gate (see [`docs/repository-contract.md`](./repository-contract.md)).
+- **Upgrade indexing:** the text-index migration durably queues every existing
+  `SourceVersion` from its stored manifest ref, tenant scope, and immutable
+  content hash. A worker reconstructs the index from normalized artifacts with
+  bounded retries; unavailable artifacts remain explicitly observable in
+  `source_text_reindex_jobs` and never masquerade as a completed empty index.
 - **Recovery policy:** forward-only is the production default. Rollback is permitted in dev and CI for reversible migrations only. No production rollback may be executed without a matching ADR for irreversible steps.
 - **Executor uniqueness:** a CI/static check verifies that migration-runner imports live only in `apps/api`; any migration import in `apps/worker` or `apps/web` fails the gate.
 
@@ -324,8 +335,18 @@ This preserves reproducibility, makes citations stable, and prevents historical 
 The system needs both durable progress and live UX. The contract is:
 
 - workers emit canonical domain events into an append-only **product event journal**;
+- application code cannot append arbitrary caller-controlled events: journal
+  writes are private to aggregate-specific source-registration, ingestion
+  attempt, and research attempt transitions that validate ownership, scope,
+  event type, and bounded payloads in the same transaction. The public generic
+  journal surface is read-only;
 - the API exposes SSE streams as filtered projections over that journal plus current run/job state;
 - clients can reconnect using an event cursor and replay missed events;
+- event cursors are allocated only after a transaction-scoped PostgreSQL
+  advisory lock is acquired and that lock remains held through commit or
+  rollback. Therefore a higher cursor cannot become visible before every lower
+  allocated cursor transaction has resolved; sequence gaps after rollback are
+  valid, but replay order can never move backward;
 - final objects are not considered user-visible complete until terminal validation succeeds.
 
 ### 7.1 Why a journal exists
@@ -354,6 +375,14 @@ A journal solves several problems at once:
 - `ingestion-completed`
 - `ingestion-failed`
 - `ingestion-cancelled`
+
+Exhausted stale ingestion recovery changes the job to `failed` and inserts one
+sanitized `ingestion-failed` event in the same PostgreSQL transaction. The
+event ID is deterministic for the job attempt, so restart/recovery replay is
+idempotent; an event-insert failure rolls back the status change. Every claimed
+ingestion progress or terminal payload, including stale-exhaustion recovery,
+contains its ownership-derived `jobId` and `attempt` so replay consumers can
+partition events by the exact attempt.
 
 **Research events**
 
@@ -392,14 +421,19 @@ Ingestion is a resumable workflow, not a single request.
 
 1. Accept a source registration command.
 2. Validate workspace ownership and registered root permissions.
-3. Create the logical `Source` record, stage accepted upload bytes under `ARTIFACT_STORAGE_ROOT`, enqueue an `ingestion` `job_queue` row, and append `ingestion-requested` without storing raw source text or host paths in payloads.
-4. Let workers atomically claim pending ingestion jobs with `FOR UPDATE SKIP LOCKED`; retry stale `in-progress` jobs through the existing status/attempt columns.
+3. Create the logical `Source` record, stage accepted upload bytes under `ARTIFACT_STORAGE_ROOT`, enqueue an `ingestion` `job_queue` row, and append `ingestion-requested` without storing raw source text or host paths in payloads. The atomic registration repository accepts exact allowlisted job/event payload shapes only, validates identifiers, timestamps, cursor, scalar types, and bounds before SQL, and rebuilds both persisted payloads from the authorized source/project/workspace aggregate plus the canonical staged ref. Unknown fields—including nested metadata, source bytes, secrets, and absolute paths—fail the whole transaction rather than being copied into JSONB.
+4. Let workers atomically claim pending ingestion jobs with `FOR UPDATE SKIP LOCKED`; retry stale `in-progress` jobs through the existing status/attempt columns. Every claimed-worker write is fenced by the exact incremented attempt: stale workers cannot create a `SourceVersion`, append progress, or move job state after recovery gives ownership to a newer attempt.
 5. Hash and classify files with bounded concurrency.
 6. Route by type: document extraction, structured-data staging, or direct file indexing.
 7. Build a deterministic source-version manifest after raw and normalized artifacts are written.
-8. Create immutable `SourceVersion` records only after the manifest artifact ref and normalized `sha256:<hex>` content hash exist; source-version failure state lives in `job_queue` plus `event_journal`, not in placeholder pending rows.
+8. Create immutable `SourceVersion` records only after the manifest artifact ref and normalized `sha256:<hex>` content hash exist and while the creating ingestion attempt still owns its row lock; source-version failure state lives in `job_queue` plus `event_journal`, not in placeholder pending rows.
 9. Create document chunks, dataset snapshots, embeddings, and retrieval metadata.
-10. Persist progress to checkpoints and the event journal, including sanitized `ingestion-failed` events for exhausted jobs.
+10. Persist progress to checkpoints and the event journal. Progress events lock and verify the current attempt; completion/retry/failure transitions append their corresponding terminal attempt event in the same transaction. Expected typed ownership loss is a stale-worker no-op, while infrastructure failure remains fatal to polling.
+    A persisted `file-processed` payload is rebuilt from the locked immutable
+    `SourceVersion` (`sourceVersionId`, manifest artifact ref, and content
+    hash) plus the owned job's byte length. Its normalized artifact ref is
+    derived from that content hash; raw artifact refs are not journaled because
+    the current durable model cannot independently authorize them.
 
 ### 8.2 Ingestion design rules
 
@@ -468,6 +502,13 @@ Bound every run by:
 - duplicate-action detection;
 - no-progress detection.
 
+The Fred walking-slice elapsed-time limit is end-to-end: client creation,
+provider setup, registration, workflow execution, and cleanup share one absolute
+deadline. Cleanup receives only the remaining budget; after expiry it receives
+a fixed 10 ms emergency release cap so a hanging finalizer cannot start a fresh
+workflow-sized timeout. Clients that resolve after their creation deadline are
+still released through that capped path.
+
 ### 10.3 Failure handling
 
 The architecture assumes failures are normal:
@@ -508,6 +549,14 @@ Required signal types:
 
 The first implementation slice should prove the architecture rather than chase breadth.
 
+STEP-01-04 implements the research half of this slice with:
+
+- `source_text_index`, a PostgreSQL generated-`tsvector` index keyed by immutable `SourceVersion`;
+- `packages/retrieval`, which enforces workspace/project/source-version scope and bounded lexical results; phrase/proximity candidates are revalidated only as byte-for-byte contiguous source windows, preserving original coordinates, distance, order, and repeated-lexeme multiplicity, while non-positional distributed terms may use exact multi-range locators; all selected evidence is at most 1200 characters;
+- `packages/research-engine`, which owns the fixed one-tool/one-model plan and citation sufficiency gates;
+- `packages/fred-workflows`, pinned to `@fancyrobot/fred@2.0.0`, with one search function node, one answer-synthesizer agent, and one citation-validation node;
+- `POST /research/runs` plus a durable worker job that persists answers, citations, run state, and replayable research events.
+
 Minimum end-to-end path:
 
 1. create a project;
@@ -526,7 +575,9 @@ If this slice is not working, later features are premature.
 
 These are important, but the architecture intentionally keeps them behind replaceable adapters:
 
-- direct Bun/Node DuckDB integration quality vs a narrow sidecar service;
+- the Phase-04 sidecar's exact image/runtime, private transport, health,
+  cancellation, and restart protocol (the container boundary itself is
+  decided by DEC-0003/DEC-0005);
 - embedding provider and reranker selection;
 - exact Postgres index strategies after real corpus measurements;
 - whether report generation needs a dedicated rendering/export worker path;

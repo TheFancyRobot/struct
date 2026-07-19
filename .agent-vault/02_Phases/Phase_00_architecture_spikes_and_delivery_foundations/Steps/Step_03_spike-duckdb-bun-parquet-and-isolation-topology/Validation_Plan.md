@@ -1,5 +1,10 @@
 # Validation Plan
 
+> **Historical validation plan — topology superseded:** This plan records how
+> Phase 00 compared candidates. Its Node-compatible fallback is not current
+> host permission. DEC-0003/DEC-0005 require the Phase-04 DuckDB adapter and
+> any non-Bun runtime to remain inside a pinned isolated sidecar image.
+
 ## Acceptance Checks
 
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: Direct Bun/Node DuckDB access, an isolated worker process, and a narrow local service for dataset execution and Parquet materialization.
@@ -60,5 +65,8 @@
 
 - **PASS:** one topology satisfies every correctness, isolation, cancellation, cleanup, bounded-output, and reproducibility check and meets the documented 2x performance selection rule; the fallback and downstream adapter contract are complete.
 - **FAIL:** no topology qualifies, unsafe filesystem reach remains, a crash kills the parent, cancellation cannot be bounded, outputs are not reproducible, or partial Parquet can be mistaken for complete output.
-- When no topology qualifies, stop and record a bounded blocker plus the isolated Node-compatible default; do not proceed by relaxing DEC-0009.
+- The historical plan said to record an isolated Node-compatible default when
+  no topology qualified. Current policy instead permits that runtime only
+  inside the pinned Phase-04 sidecar image; it is never a maintained-host
+  fallback. Do not proceed by relaxing DEC-0009.
 - The Outcome must include the winner/rejected-candidate rationale and the exact handoff required by STEP-00-04, STEP-00-05, and Phase 04.

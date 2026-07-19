@@ -24,7 +24,7 @@ function parseDirection(): 'up' | 'down' {
   const args = process.argv.slice(2)
   const directionIdx = args.indexOf('--direction')
   if (directionIdx === -1 || !args[directionIdx + 1]) {
-    console.error('Usage: tsx src/migrations/run.ts --direction up|down')
+    console.error('Usage: bun src/migrations/run.ts --direction up|down')
     process.exit(1)
   }
   const direction = args[directionIdx + 1]

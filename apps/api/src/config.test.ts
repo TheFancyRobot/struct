@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'bun:test'
 import { Effect, ConfigProvider, Layer, Exit } from 'effect'
 import { apiPortConfig, artifactStorageRootConfig, databaseUrlConfig, maxTextSourceBytesConfig } from './config'
 

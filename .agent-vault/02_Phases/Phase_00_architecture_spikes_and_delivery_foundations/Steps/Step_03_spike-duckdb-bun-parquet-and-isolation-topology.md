@@ -25,6 +25,13 @@ context_summary: Advance [[02_Phases/Phase_00_architecture_spikes_and_delivery_f
 
 # Step 03 - Spike DuckDB Bun Parquet and Isolation Topology
 
+> **Historical, superseded topology record:** This completed Phase-00 step
+> preserves the measurements and the child-process winner selected at the
+> time. DEC-0003 and DEC-0005 now require Phase 04 to use an isolated DuckDB
+> container/sidecar with any adapter runtime pinned inside the image. Bun is
+> the sole maintained host runtime; the host must not run a DuckDB child
+> process or load its native adapter.
+
 Use this note as a thin index for one executable step. Keep detail in companion notes so execution can load only the smallest note needed.
 
 ## Purpose
@@ -57,8 +64,8 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - Status: completed
 - Current owner: step-00-03-closure-implementor
 - Last touched: 2026-07-17
-- Outcome: Fixed per-topology crash-containment defect in src/benchmarks/run.ts (global worker-only gate let in-process direct win). winner=worker (isolated child process), simplest crash-contained isolation within 2x. 16 tests pass; tsc exit 0; benchmark regenerated.
-- Next action: Lead reviews and marks STEP-00-03 complete; STEP-00-04/05 proceed with the worker-process boundary.
+- Historical outcome: Fixed per-topology crash-containment defect in src/benchmarks/run.ts (global worker-only gate let in-process direct win). The worker child-process candidate won the at-the-time spike selection as the simplest crash-contained isolation within 2x. 16 tests pass; tsc exit 0; benchmark regenerated.
+- Current handoff: reuse the measured invariants in the DEC-0003/DEC-0005 isolated Phase-04 sidecar; do not carry forward the historical host worker-process or Node fallback.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

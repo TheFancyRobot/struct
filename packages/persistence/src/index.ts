@@ -36,12 +36,18 @@ export {
   ResearchRunRepo,
   CitationRepo,
   JobQueueRepo,
-  EventJournalRepo,
+  EventJournalReader,
   SourceRegistrationRepo,
+  ResearchExecutionRepo,
+  SourceTextReindexRepo,
   // Persistence errors
   QueryError,
   EntityNotFoundError,
   UniqueConstraintError,
+  ResearchJobOwnershipLostError,
+  IngestionJobOwnershipLostError,
+  IngestionEventValidationError,
+  SourceTextReindexOwnershipLostError,
   // SQL Client
   SqlClient,
   SqlClientLive,
@@ -71,11 +77,26 @@ export type {
   ResearchRunRepository,
   CitationRepository,
   JobQueueRepository,
-  EventJournalRepository,
+  EventJournalReadRepository,
 } from './repositories/interfaces.js'
+
+export type { PersistenceError } from './errors.js'
 
 export type {
   SourceRegistrationInput,
+  SourceRegistrationJobPayload,
+  SourceRegistrationEventPayload,
   SourceRegistrationResult,
   SourceRegistrationRepository,
+  SourceRegistrationError,
 } from './repositories/source-registration.js'
+
+export type {
+  ResearchRegistrationInput,
+  ResearchRegistrationResult,
+  CompleteResearchInput,
+  FailResearchInput,
+  ResearchExecutionError,
+} from './repositories/research-execution.js'
+
+export type { SourceTextReindexJob } from './repositories/source-text-reindex.js'

@@ -7,7 +7,7 @@
  * Tests are skipped if DATABASE_URL is not set (CI environments may not have a database).
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test'
 import { Effect, Layer } from 'effect'
 import postgres from 'postgres'
 import type postgresTypes from 'postgres'

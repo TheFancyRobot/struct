@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'bun:test'
 import { Schema } from 'effect'
 import {
   Workspace,
   Project,
   Source,
   SourceVersion,
+  ResearchAnswer,
   ResearchThread,
   ResearchRun,
   Citation,
@@ -22,7 +23,7 @@ describe('Domain Schemas', () => {
         updatedAt: 1700000000000,
       }
       const result = Schema.decodeUnknownSync(Workspace)(input)
-      expect(result.id).toBe('550e8400-e29b-41d4-a716-446655440000')
+      expect(String(result.id)).toBe('550e8400-e29b-41d4-a716-446655440000')
       expect(result.name).toBe('Test Workspace')
     })
   })
@@ -37,8 +38,8 @@ describe('Domain Schemas', () => {
         updatedAt: 1700000000000,
       }
       const result = Schema.decodeUnknownSync(Project)(input)
-      expect(result.id).toBe('550e8400-e29b-41d4-a716-446655440001')
-      expect(result.workspaceId).toBe('550e8400-e29b-41d4-a716-446655440000')
+      expect(String(result.id)).toBe('550e8400-e29b-41d4-a716-446655440001')
+      expect(String(result.workspaceId)).toBe('550e8400-e29b-41d4-a716-446655440000')
     })
   })
 
@@ -80,7 +81,7 @@ describe('Domain Schemas', () => {
         createdAt: 1700000000000,
       }
       const result = Schema.decodeUnknownSync(SourceVersion)(input)
-      expect(result.id).toBe('550e8400-e29b-41d4-a716-446655440003')
+      expect(String(result.id)).toBe('550e8400-e29b-41d4-a716-446655440003')
       expect(result.contentHash).toBe('sha256:abc123def456')
     })
 
@@ -94,6 +95,20 @@ describe('Domain Schemas', () => {
       }
       expect(() => Schema.decodeUnknownSync(SourceVersion)(input)).toThrow()
     })
+  })
+
+  describe('ResearchAnswer', () => {
+    it.each(['', ' ', '\n\t'])(
+      'rejects an empty or whitespace-only answer before completion (%j)',
+      (answer) => {
+        expect(() =>
+          Schema.decodeUnknownSync(ResearchAnswer)({
+            answer,
+            citations: [],
+          }),
+        ).toThrow()
+      },
+    )
   })
 
   describe('ResearchThread', () => {
@@ -148,7 +163,7 @@ describe('Domain Schemas', () => {
         createdAt: 1700000000000,
       }
       const result = Schema.decodeUnknownSync(Citation)(input)
-      expect(result.sourceVersionId).toBe('550e8400-e29b-41d4-a716-446655440003')
+      expect(String(result.sourceVersionId)).toBe('550e8400-e29b-41d4-a716-446655440003')
       expect(result.status).toBe('validated')
     })
   })

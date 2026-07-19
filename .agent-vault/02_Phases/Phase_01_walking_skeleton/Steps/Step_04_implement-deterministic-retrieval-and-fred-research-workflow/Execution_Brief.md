@@ -75,14 +75,9 @@
 
 **Critical**: The `@fancyrobot/fred` dependency must be pinned to exactly `2.0.0` (not `^2.0.0` or `~2.0.0`). This is a DEC-0001 requirement. Run `bun install` after creating the package.json to verify the lockfile resolves correctly.
 
-**Test timeout override**: Fred workflow tests may involve async agent execution. Add to `packages/fred-workflows/vitest.config.ts`:
-```typescript
-export default defineConfig({
-  test: {
-    testTimeout: 10000, // 10s for Fred workflow tests
-  },
-})
-```
+**Test timeout override**: Fred workflow tests use `bun:test`. Apply a bounded
+per-test timeout only to the cases that intentionally exercise asynchronous
+agent execution; do not add a second test runner or runner-specific config.
 
 ### Retrieval service scope (walking-slice minimum)
 

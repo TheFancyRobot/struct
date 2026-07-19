@@ -4,6 +4,13 @@ A **proving harness** (not a production implementation) that compares three
 DuckDB isolation topologies using **real `@duckdb/node-api` 1.5.4-r.1**
 operations and records only measured values.
 
+> **Topology superseded:** The child-process candidate remains measured
+> Phase-00 evidence, not current production guidance. DEC-0003/DEC-0005 require
+> Phase 04 to run DuckDB in an isolated container/sidecar with its adapter
+> runtime pinned inside the image. Bun is the sole maintained host runtime; do
+> not use this harness as permission for a DuckDB host child process or Node
+> fallback.
+
 ## Candidates
 
 1. **direct** — DuckDB in the controller process (`isolation: none`)

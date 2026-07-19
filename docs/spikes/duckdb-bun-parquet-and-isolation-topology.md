@@ -4,6 +4,14 @@
 > numbers below are **machine-specific evidence from a single run on this host**
 > (see `results/benchmark.json` for the raw, machine-generated bundle). They are
 > not universal performance claims.
+>
+> **SUPERSEDED TOPOLOGY NOTICE:** The child-process winner and Node-compatible
+> fallback below record what this Phase-00 harness selected at the time. They
+> are not current production guidance. DEC-0003 and DEC-0005 now require
+> Phase 04 to run DuckDB in an isolated container/sidecar whose adapter runtime
+> is pinned inside the image. Bun remains the sole maintained host runtime;
+> DuckDB must not run as a host child process or load its native adapter into a
+> maintained host application.
 
 ## What this spike actually proves
 
@@ -151,9 +159,9 @@ test/       spike.test.ts
 results/    benchmark.json   # machine-generated, the only source of numbers
 ```
 
-## Handoff to STEP-00-04 / STEP-00-05 / Phase 04
+## Historical Handoff to STEP-00-04 / STEP-00-05 / Phase 04 (Superseded)
 
-- **Chosen runtime boundary:** isolated child-process worker (DuckDB in a
+- **Selected at the time:** isolated child-process worker (DuckDB in a
   forked child process with JSON-over-stdio IPC). This is the simplest
   topology that provides honest process-level crash containment, on top of
   the proven `SET allowed_directories` → `SET enable_external_access=false`
@@ -172,10 +180,15 @@ results/    benchmark.json   # machine-generated, the only source of numbers
 - **Telemetry fields:** query/run identity, engine/runtime version, input
   snapshot/hash, limits, cancellation, output hash, truncation, failure
   category (see `results.ts` + `benchmark.json`).
-- **Node-compatible fallback:** the worker and service topologies spawn via
+- **Historical harness fallback:** the worker and service topologies spawn via
   `bun` when available and fall back to `node`; the harness contains no
-  Bun-only APIs, so a Node-compatible product-local boundary is viable if a
-  Bun candidate does not qualify in a later environment.
+  Bun-only APIs. This measured portability remains spike evidence only and
+  does not permit Node or a DuckDB child process on the maintained host.
+- **Current Phase-04 handoff:** preserve the measured hardening, limits,
+  cancellation, atomic-promotion, telemetry, and crash-recovery requirements
+  behind an isolated DuckDB container/sidecar. Its adapter runtime must be
+  pinned inside the image and accessed by the Bun worker through a typed,
+  authenticated, bounded protocol.
 - **Rejected option (recorded):** the in-process `direct` topology is faster
   and simpler but fails the crash-containment gate — a native crash is not
   containable and cooperative cancellation is not hard preemption. Do not

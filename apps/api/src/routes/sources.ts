@@ -12,7 +12,11 @@ import {
   type JobQueue,
   type EventJournal,
 } from '@struct/domain'
-import type { ArtifactStoreShape, StagedArtifactRef } from '@struct/source-storage'
+import type {
+  SourceRegistrationEventPayload,
+  SourceRegistrationJobPayload,
+} from '@struct/persistence'
+import type { ArtifactStoreShape } from '@struct/source-storage'
 
 export { ValidationError, AuthorizationError }
 
@@ -97,6 +101,7 @@ export const registerTextSource = (
     )
     const now = deps.now()
     const sourceId = deps.randomUuid()
+    const mediaType = input.mediaType as SourceRegistrationJobPayload['mediaType']
     const source: typeof Source.Type = {
       id: sourceId,
       projectId: input.projectId,
@@ -108,10 +113,11 @@ export const registerTextSource = (
     const payload = {
       stagedRef: staged.ref,
       name: input.name,
-      mediaType: input.mediaType,
+      mediaType,
       byteLength: staged.byteLength,
       sourceId,
-    } satisfies Record<string, unknown> & { stagedRef: StagedArtifactRef }
+      projectId: input.projectId,
+    } satisfies SourceRegistrationJobPayload
     const job: typeof JobQueue.Type = {
       id: deps.randomJobQueueId(),
       workspaceId: input.workspaceId,
@@ -134,9 +140,9 @@ export const registerTextSource = (
         sourceId,
         jobId: job.id,
         stagedRef: staged.ref,
-        mediaType: input.mediaType,
+        mediaType,
         byteLength: staged.byteLength,
-      },
+      } satisfies SourceRegistrationEventPayload,
       cursor: 0n,
       createdAt: now,
     }

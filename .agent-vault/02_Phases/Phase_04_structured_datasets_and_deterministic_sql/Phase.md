@@ -7,7 +7,7 @@ phase_id: PHASE-04
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|PHASE-03 Durable Directory Ingestion and Source Refresh]]'
 related_architecture:
@@ -43,7 +43,11 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 - Classify structured assets separately from documents and catalog dataset versions, files, tables, columns, inferred/logical schemas, and profiling artifacts.
 - Normalize supported JSON/JSONL/CSV inputs into reproducible Parquet artifacts without losing original-source lineage.
-- Run DuckDB behind the Phase 00 isolation boundary with scoped resources, timeouts, memory/row/byte limits, cancellation, and typed failures.
+- Refine and implement DuckDB as an isolated container/sidecar with scoped
+  mounts, no network egress, a pinned internal adapter runtime, authenticated
+  typed client access from Bun, timeouts, memory/CPU/process/row/byte limits,
+  cancellation, restart recovery, and typed failures. The current Compose
+  stack provisions PostgreSQL only.
 - Expose only validated, allowlisted, read-only SQL/query-plan tools and deterministic result artifacts to Fred.
 - Generate the seeded approximately 25,000-file JSON corpus, manifests, expected aggregates, adversarial cases, and ground truth.
 - Evaluate exact computation, schema drift, provenance, SQL security, performance, cancellation, and crash recovery.
@@ -65,6 +69,10 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - [ ] Exact fixture questions return validated deterministic results equal to ground truth.
 - [ ] Only catalog-issued table/view identifiers and a read-only SQL subset are executable; forbidden syntax and paths are rejected before DuckDB execution.
 - [ ] Query budgets, cancellation, worker crashes, malformed inputs, and restart recovery produce typed, observable, non-corrupting outcomes.
+- [ ] The DuckDB sidecar is present in Compose, runs without a host Node
+  requirement, exposes only its private authenticated bounded protocol, mounts
+  only approved roots, has no network egress or Docker socket, and passes
+  container crash/restart recovery tests.
 - [ ] Dataset result citations resolve to query text/hash, engine/config version, input versions, result artifact, and relevant cells/rows.
 - [ ] The reproducible approximately 25,000-file corpus is generated from a committed seed/spec and passes exact-computation and recovery gates.
 - [ ] Fred receives bounded summaries or artifact references, never uncontrolled raw tables or per-file model calls.

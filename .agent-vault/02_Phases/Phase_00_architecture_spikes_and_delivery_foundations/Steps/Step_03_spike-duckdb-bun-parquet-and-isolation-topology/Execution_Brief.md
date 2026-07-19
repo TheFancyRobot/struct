@@ -1,5 +1,12 @@
 # Execution Brief
 
+> **Historical execution brief — topology superseded:** This records the
+> Phase-00 experiment and its selected-at-the-time child-process result.
+> DEC-0003 and DEC-0005 now require an isolated Phase-04 DuckDB
+> container/sidecar. Any adapter runtime is pinned inside that image; Bun
+> remains the sole maintained host runtime, with no DuckDB host child process
+> or host-loaded native adapter.
+
 ## Exact Outcome
 
 - Produce the concrete contracts, artifacts, and bounded implementation/design surfaces for DuckDB Bun Parquet and Isolation Topology that this step is responsible for before any broader follow-on work begins.
@@ -62,8 +69,10 @@
 - No fabricated "security scores (70-100)" or "isolation (60-100%)" — not measured; removed.
 
 ### Recommendation
-- **Selected Topology: `worker`** (isolated child process). `direct` rejected: native crash not containable.
-- **Next Steps:** Phase 04 implementation using the isolated worker-process boundary.
+- **Selected at the time: `worker`** (isolated child process). `direct` rejected: native crash not containable.
+- **Current Phase-04 handoff:** preserve the measured invariants behind the
+  isolated DEC-0003/DEC-0005 sidecar; do not implement the historical host
+  worker-process boundary or Node fallback.
 
 
 
@@ -90,7 +99,11 @@ For every candidate record correctness and hashes, startup/import/materializatio
 
 Select the simplest candidate that returns 100% correct deterministic results; denies arbitrary filesystem/network/extension/process reach; supports bounded output and cooperative cancellation; contains a native crash without killing the parent control process; leaves no accepted partial Parquet artifact; and performs within 2x the fastest candidate that also passes every safety/correctness gate on the recorded machine.
 
-If no Bun candidate qualifies, default to an isolated Node-compatible product-local boundary and record whether DEC-0003 or DEC-0005 needs revision. Unsafe filesystem reach or a crash that kills the parent is a blocker.
+The historical spike plan allowed an isolated Node-compatible candidate when
+no Bun candidate qualified. That rule is superseded for maintained-host
+execution: an adapter runtime may now exist only inside the pinned isolated
+service image defined by DEC-0003/DEC-0005. Unsafe filesystem reach or a crash
+that kills the control plane remains a blocker.
 
 ### Commands and Handoff
 
@@ -106,4 +119,7 @@ bunx tsc -p tsconfig.json --noEmit
 bun run benchmark -- --seed phase-00 --json results.json
 ```
 
-Hand off the chosen process/runtime boundary, staged/temp roots, resource/cancel/output limits or calibration owners, Parquet atomic-write rule, artifact-reference rule, telemetry fields, and Node-compatible fallback.
+Hand off the measured staged/temp roots, resource/cancel/output limits or
+calibration owners, Parquet atomic-write rule, artifact-reference rule, and
+telemetry fields to the isolated Phase-04 sidecar. The historical
+Node-compatible host fallback is evidence only and must not be implemented.

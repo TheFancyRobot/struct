@@ -37,6 +37,7 @@ export interface IngestTextSourceResult {
   readonly manifestRef: ArtifactRef
   readonly contentHash: `sha256:${string}`
   readonly byteLength: number
+  readonly normalizedText: string
 }
 
 const textDecoder = new TextDecoder('utf-8', { fatal: true })
@@ -99,5 +100,6 @@ export const ingestTextSource = (input: IngestTextSourceInput) =>
       manifestRef: manifestObject.ref,
       contentHash: normalized.contentHash,
       byteLength: staged.byteLength,
+      normalizedText: textDecoder.decode(normalized.bytes),
     }
   })

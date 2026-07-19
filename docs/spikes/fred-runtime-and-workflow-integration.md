@@ -100,18 +100,16 @@ Run from `spikes/fred-runtime/`:
 
 ```bash
 bun --version
-node --version
-npm view @fancyrobot/fred version
-npm view @fancyrobot/fred-http version
+bun pm view @fancyrobot/fred version
+bun pm view @fancyrobot/fred-http version
 bun install --frozen-lockfile
 bun test
-bunx tsc -p tsconfig.json --noEmit
+bun --bun tsc -p tsconfig.json --noEmit
 ```
 
 Observed result:
 
 - Bun `1.3.13`
-- Node `v24.15.0`
 - `@fancyrobot/fred` `2.0.0`
 - `@fancyrobot/fred-http` `1.0.0`
 - frozen install: no changes

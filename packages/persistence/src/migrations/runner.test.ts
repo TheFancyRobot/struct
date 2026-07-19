@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'bun:test'
 import { Effect } from 'effect'
 import { runMigrationsUp, runMigrationsDown, type SqlExecutorWithTransactions } from './runner'
 import { migrations } from './manifest'
@@ -74,6 +74,18 @@ describe('Migration Runner', () => {
         )
         expect(insertQuery).toBeDefined()
       }
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /INSERT INTO source_text_reindex_jobs[\s\S]*FROM source_versions/i,
+      )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /CREATE TRIGGER source_versions_enqueue_text_reindex/i,
+      )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /CREATE TRIGGER event_journal_allocate_cursor_in_commit_order/i,
+      )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /pg_advisory_xact_lock[\s\S]*nextval/i,
+      )
     })
 
     it('skips already-applied migrations', async () => {
@@ -107,10 +119,19 @@ describe('Migration Runner', () => {
       await Effect.runPromise(runMigrationsDown(fakeSql))
 
       // Should have deleted the last migration record
+      const latestMigration = migrations[migrations.length - 1]
       const deleteQuery = fakeSql.queries.find(
-        (q) => q.startsWith('DELETE FROM _migrations WHERE name') && q.includes('0002_init_tables'),
+        (q) =>
+          q.startsWith('DELETE FROM _migrations WHERE name') &&
+          q.includes(latestMigration?.name ?? ''),
       )
       expect(deleteQuery).toBeDefined()
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /DROP TRIGGER IF EXISTS event_journal_allocate_cursor_in_commit_order/i,
+      )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /ALTER COLUMN cursor[\s\S]*SET DEFAULT nextval/i,
+      )
     })
 
     it('does nothing when no migrations are applied', async () => {

@@ -20,6 +20,7 @@ STEP-01-03 is implemented and validated.
 - Migration smoke passed: `migrations:down` reverted the last migration successfully and `migrations:up` applied all migrations successfully.
 - Spike gates passed: research-durability 17 tests, fred-runtime 8 tests, duckdb-topology 16 tests, each after spike-local typecheck.
 - Review-remediation RED/GREEN proof: four focused tests and one real-DB rollback test failed against the reviewed implementation, then passed after the fixes. Final root raw Bun result is 127 pass / 13 skip / 0 fail; final real-DB result is 16 files / 95 tests / 0 skipped.
+- 2026-07-19 retryability remediation: exhaustive typed classification and a serial real-PostgreSQL worker matrix now prove deterministic first-attempt terminal failure, transient requeue only with budget, exhausted transient terminal failure, bounded disposition-bearing failure events, and no duplicate terminal replay writes. The settled combined worker/API/persistence gate passed 60 tests / 562 assertions.
 
 ## Follow-Up
 

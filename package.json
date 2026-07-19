@@ -6,17 +6,16 @@
     "packages/*"
   ],
   "engines": {
-    "bun": "1.3.13",
-    "node": "v24.15.0"
+    "bun": "1.3.13"
   },
   "scripts": {
-    "dev": "concurrently -n web,api,worker \"bun run --filter @struct/web dev\" \"bun run --filter @struct/api dev\" \"bun run --filter @struct/worker dev\"",
+    "dev": "bun run --parallel --filter './apps/*' dev",
     "dev:stop": "lsof -t -i:3000 -i:3001 -i:3002 | xargs kill 2>/dev/null; docker compose down",
     "build": "bun run --filter @struct/web build && bun run --filter @struct/api build && bun run --filter @struct/worker build",
-    "typecheck": "tsc --noEmit --project tsconfig.base.json && tsc --noEmit --project apps/web/tsconfig.json && tsc --noEmit --project apps/api/tsconfig.json && tsc --noEmit --project apps/worker/tsconfig.json && tsc --noEmit --project packages/domain/tsconfig.json && tsc --noEmit --project packages/persistence/tsconfig.json && tsc --noEmit --project packages/source-storage/tsconfig.json && tsc --noEmit --project packages/ingestion/tsconfig.json && tsc --noEmit --project packages/observability/tsconfig.json",
-    "lint": "eslint .",
-    "lint:imports": "dependency-cruiser --config dependency-cruiser.config.mjs apps packages && bun run scripts/boundary-check.ts apps packages",
-    "test": "vitest run",
+    "typecheck": "bun --bun tsc --noEmit --project tsconfig.base.json && bun --bun tsc --noEmit --project apps/web/tsconfig.json && bun --bun tsc --noEmit --project apps/api/tsconfig.json && bun --bun tsc --noEmit --project apps/worker/tsconfig.json && bun --bun tsc --noEmit --project packages/domain/tsconfig.json && bun --bun tsc --noEmit --project packages/persistence/tsconfig.json && bun --bun tsc --noEmit --project packages/source-storage/tsconfig.json && bun --bun tsc --noEmit --project packages/ingestion/tsconfig.json && bun --bun tsc --noEmit --project packages/retrieval/tsconfig.json && bun --bun tsc --noEmit --project packages/research-engine/tsconfig.json && bun --bun tsc --noEmit --project packages/fred-workflows/tsconfig.json && bun --bun tsc --noEmit --project packages/observability/tsconfig.json",
+    "lint": "bun --bun eslint .",
+    "lint:imports": "bun --bun dependency-cruiser --config dependency-cruiser.config.mjs apps packages && bun run scripts/boundary-check.ts apps packages",
+    "test": "bun test --max-concurrency 1 ./apps ./packages",
     "test:integration": "bun run test:integration --help",
     "test:e2e": "bun run test:e2e --help",
     "migrations:up": "bun run --filter @struct/api migrations:up",
@@ -29,19 +28,16 @@
     "docs:lint": "echo 'docs lint placeholder'"
   },
   "devDependencies": {
-    "typescript": "7.0.2",
-    "eslint": "10.7.0",
-    "@eslint/js": "10.0.1",
-    "@babel/eslint-parser": "8.0.1",
     "@babel/core": "7.29.7",
-    "@babel/preset-typescript": "7.29.7",
+    "@babel/eslint-parser": "7.29.7",
     "@babel/plugin-syntax-jsx": "7.29.7",
-    "dependency-cruiser": "18.1.0",
+    "@babel/preset-typescript": "7.29.7",
+    "@eslint/js": "9.39.2",
     "@swc/core": "1.15.43",
-    "concurrently": "10.0.3",
-    "tsx": "4.23.1",
-    "vitest": "4.1.10",
+    "@types/bun": "^1.3.0",
     "@types/node": "24.0.0",
-    "@types/bun": "^1.3.0"
+    "dependency-cruiser": "18.1.0",
+    "eslint": "9.39.2",
+    "typescript": "7.0.2"
   }
 }

@@ -34,6 +34,13 @@ tags:
 
 # step-00-03-implementor session for Spike DuckDB Bun Parquet and Isolation Topology
 
+> **Historical session — topology superseded:** This session preserves the
+> measured Phase-00 result and the child-process winner selected at the time.
+> DEC-0003/DEC-0005 now require an isolated Phase-04 DuckDB sidecar with any
+> adapter runtime pinned inside the image. Bun remains the sole maintained
+> host runtime; the historical DuckDB child process and Node fallback are not
+> current implementation guidance.
+
 Use one note per meaningful work session. Record chronology, validation, and handoff state, but promote durable conclusions into phase, architecture, bug, or decision notes. See [[07_Templates/Note_Contracts|Note Contracts]].
 
 ## Objective
@@ -109,7 +116,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - [x] Fixed per-topology crash-containment gate in src/benchmarks/run.ts.
 - [x] Regenerated results/benchmark.json; updated README + docs/spikes from actual output.
 - [x] Replaced fabricated vault STEP-00-03 claims with measured results.
-- [ ] (lead) Review and mark STEP-00-03 complete; proceed to STEP-00-04/05 with the worker-process boundary.
+- [x] Historical lead review completed. The later DEC-0003/DEC-0005 decision
+  supersedes the worker-process handoff with an isolated Phase-04 sidecar.
 <!-- AGENT-END:session-follow-up-work -->
 
 ## Completion Summary
@@ -120,6 +128,12 @@ Use one note per meaningful work session. Record chronology, validation, and han
 
 **Validation:** frozen install OK; `tsc --noEmit` exit 0 (TS 7.0.2); `bun test` 16 pass / 0 fail; benchmark regenerated.
 
-**Winner:** `worker` (isolated child process), simplest crash-contained isolation within 2x. `direct` rejected (native crash not containable). Limitation: OS/container isolation not exercised.
+**Winner selected at the time:** `worker` (isolated child process), simplest
+crash-contained isolation within 2x. `direct` rejected (native crash not
+containable). Limitation: OS/container isolation was not exercised by this
+spike.
 
-**Remains:** Lead to review and mark STEP-00-03 complete; STEP-00-04/05 proceed with the worker-process boundary. Handoff is clean.
+**Current handoff:** Preserve the measured hardening, limits, cancellation,
+atomic-promotion, telemetry, and recovery evidence in the isolated
+DEC-0003/DEC-0005 Phase-04 sidecar. Do not implement the historical host
+worker-process or Node fallback.
