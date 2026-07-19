@@ -94,12 +94,6 @@ function validateAggregate(
       chunk.locator.charStart,
       chunk.locator.charEnd,
     )
-    const byteStart = encoder.encode(
-      input.document.normalizedText.slice(0, chunk.locator.charStart),
-    ).byteLength
-    const byteEnd = encoder.encode(
-      input.document.normalizedText.slice(0, chunk.locator.charEnd),
-    ).byteLength
     if (
       chunk.documentId !== input.document.id
       || chunk.sourceVersionId !== input.document.sourceVersionId
@@ -119,7 +113,26 @@ function validateAggregate(
         && chunk.locator.charStart < previousChunk.locator.charEnd
       )
       || chunk.text !== sourceSlice
-      || chunk.locator.byteStart !== byteStart
+    ) {
+      return invalid(
+        `chunks[${ordinal}]`,
+        'aggregate-mismatch',
+        'Chunks must be contiguous in ordinal identity and round-trip their document locators',
+      )
+    }
+    const byteStart = previousChunk === undefined
+      ? encoder.encode(
+        input.document.normalizedText.slice(0, chunk.locator.charStart),
+      ).byteLength
+      : previousChunk.locator.byteEnd + encoder.encode(
+        input.document.normalizedText.slice(
+          previousChunk.locator.charEnd,
+          chunk.locator.charStart,
+        ),
+      ).byteLength
+    const byteEnd = byteStart + encoder.encode(sourceSlice).byteLength
+    if (
+      chunk.locator.byteStart !== byteStart
       || chunk.locator.byteEnd !== byteEnd
     ) {
       return invalid(

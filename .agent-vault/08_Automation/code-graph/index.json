@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-19T08:41:36.664Z",
+  "generatedAt": "2026-07-19T08:50:07.783Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -1750,23 +1750,23 @@
         {
           "name": "ChunkGroup",
           "kind": "interface",
-          "line": 53,
+          "line": 65,
           "exported": false,
-          "endLine": 53
+          "endLine": 65
         },
         {
           "name": "splitFragment",
           "kind": "function",
-          "line": 58,
+          "line": 70,
           "exported": false,
-          "endLine": 58
+          "endLine": 70
         },
         {
           "name": "chunkDocument",
           "kind": "const",
-          "line": 102,
+          "line": 114,
           "exported": true,
-          "endLine": 102
+          "endLine": 114
         }
       ],
       "imports": [
@@ -1798,9 +1798,9 @@
         }
       ],
       "exports": [],
-      "hash": "404a87db156a0b1435bc990dba1371f3ff9d4ebc4ed6dfb8c3eb321528e31b48",
-      "mtimeMs": 1784450379005.619,
-      "size": 6085,
+      "hash": "0680881217f998562258fb46cdfa161f013e57c5009716ca43b53cf1c151a89e",
+      "mtimeMs": 1784450919578.988,
+      "size": 6428,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -4495,44 +4495,44 @@
         {
           "name": "sameDocument",
           "kind": "function",
-          "line": 136,
+          "line": 149,
           "exported": false,
-          "endLine": 136
+          "endLine": 149
         },
         {
           "name": "sameChunk",
           "kind": "function",
-          "line": 155,
+          "line": 168,
           "exported": false,
-          "endLine": 155
+          "endLine": 168
         },
         {
           "name": "decodeChunk",
           "kind": "function",
-          "line": 180,
+          "line": 193,
           "exported": false,
-          "endLine": 180
+          "endLine": 193
         },
         {
           "name": "DocumentChunkRepo",
           "kind": "class",
-          "line": 216,
+          "line": 229,
           "exported": true,
-          "endLine": 216
+          "endLine": 229
         },
         {
           "name": "DocumentChunkRepoError",
           "kind": "type",
-          "line": 421,
+          "line": 434,
           "exported": true,
-          "endLine": 421
+          "endLine": 434
         },
         {
           "name": "DocumentLocator",
           "kind": "const",
-          "line": 426,
+          "line": 439,
           "exported": true,
-          "endLine": 426
+          "endLine": 439
         }
       ],
       "imports": [
@@ -4555,9 +4555,9 @@
         }
       ],
       "exports": [],
-      "hash": "74872f3eb8e9fd4c9b3d4b60e9daab38bf49c35cb35f8594de7779c9efd71288",
-      "mtimeMs": 1784450392708.7598,
-      "size": 15500,
+      "hash": "2e6b8811aa98ca844f124c878914ad868f7d7ae9faef0715d0517547b35ee507",
+      "mtimeMs": 1784450919579.4333,
+      "size": 15902,
       "generated": false,
       "vendor": false,
       "parser": "regex"

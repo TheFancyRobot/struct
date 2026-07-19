@@ -53,30 +53,51 @@ const document: Document = {
   id: documentId,
   sourceVersionId,
   format: 'text',
-  normalizedText: 'First café',
+  normalizedText: 'First café\n\nSecond',
   contentHash: 'sha256:document',
   parserVersion: 'text-v1',
   createdAt: 1n,
 }
-const chunks: ReadonlyArray<DocumentChunk> = [{
-  id: chunkId,
-  documentId,
-  sourceVersionId,
-  chunkingVersion: 'fragments-v1',
-  ordinal: 0,
-  text: 'First café',
-  textHash: hashDocumentChunkText('First café'),
-  locator: {
-    page: null,
-    section: null,
-    paragraph: 1,
-    charStart: 0,
-    charEnd: 10,
-    byteStart: 0,
-    byteEnd: 11,
+const chunks: ReadonlyArray<DocumentChunk> = [
+  {
+    id: chunkId,
+    documentId,
+    sourceVersionId,
+    chunkingVersion: 'fragments-v1',
+    ordinal: 0,
+    text: 'First café',
+    textHash: hashDocumentChunkText('First café'),
+    locator: {
+      page: null,
+      section: null,
+      paragraph: 1,
+      charStart: 0,
+      charEnd: 10,
+      byteStart: 0,
+      byteEnd: 11,
+    },
+    createdAt: 1n,
   },
-  createdAt: 1n,
-}]
+  {
+    id: makeDocumentChunkId(documentId, 'fragments-v1', 1),
+    documentId,
+    sourceVersionId,
+    chunkingVersion: 'fragments-v1',
+    ordinal: 1,
+    text: 'Second',
+    textHash: hashDocumentChunkText('Second'),
+    locator: {
+      page: null,
+      section: null,
+      paragraph: 2,
+      charStart: 12,
+      charEnd: 18,
+      byteStart: 13,
+      byteEnd: 19,
+    },
+    createdAt: 1n,
+  },
+]
 
 describeIf('DocumentChunkRepo immutable storage (PostgreSQL)', () => {
   let sql: postgresTypes.Sql
@@ -170,7 +191,7 @@ describeIf('DocumentChunkRepo immutable storage (PostgreSQL)', () => {
     expect(await sql.unsafe(
       `SELECT id FROM document_chunks WHERE source_version_id = $1`,
       [sourceVersionId],
-    )).toHaveLength(1)
+    )).toHaveLength(2)
   })
 
   it('rejects a conflicting rebuild and preserves the original rows', async () => {

@@ -52,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
+- Status: completed
 - Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_02_implement-versioned-document-chunks-and-index-migrations/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_02_implement-versioned-document-chunks-and-index-migrations/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Last touched: 2026-07-19
+- Next action: Continue to [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_03_implement-keyword-vector-and-hybrid-retrieval|STEP-02-03 Implement Keyword, Vector, and Hybrid Retrieval]] using the completed typed document-chunk boundary.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

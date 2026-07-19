@@ -18,6 +18,10 @@
   byte ranges.
 - Deterministic chunk identity and text hashes are shared domain functions;
   persistence recomputes and verifies both before any SQL write.
+- Codex review identified quadratic UTF-8 prefix rescans in parser-fragment and
+  repository validation. Both now advance byte offsets from the previous
+  validated boundary, keeping validation linear in document size; real
+  multi-chunk PostgreSQL coverage exercises multibyte text and inter-chunk gaps.
 - Final PostgreSQL-backed suite after review remediation: 369 passed, 0
   failed, 2,104 assertions across 61 files.
 

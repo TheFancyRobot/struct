@@ -58,6 +58,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Updated historical migration tests whose latest-migration assumptions changed when `0005` was added.
 - Root pre-PR review found and remediated two uncovered chunker edge defects: exclusive-end adjacent fragments were incorrectly rejected as overlapping, and a one-character boundary inside a UTF-16 surrogate pair could fail to advance. Added regressions for both cases.
 - Root reran the full PostgreSQL-backed repository suite after remediation: 368 passed, 0 failed, 2,096 assertions across 61 files; browser E2E included. Typecheck, zero-warning lint, import boundaries, production builds, docs links, history-aware secrets scan, Compose config, and `git diff --check` passed.
+- Codex exact-head review on `a018b23` found quadratic UTF-8 prefix rescans in fragment and repository locator validation plus a stale generated step snapshot. Validation now advances byte offsets linearly from the previous boundary, the PostgreSQL fixture covers multiple chunks with multibyte text and gaps, and the snapshot is completed/current.
+- Post-remediation exact-head gates: 369 PostgreSQL-backed tests passed, 0 failed, 2,104 assertions across 61 files; focused 12/12; browser E2E, typecheck, zero-warning lint, import boundaries, builds, docs, secrets, Compose, diff check, and Vault doctor passed.
 
 ## Findings
 

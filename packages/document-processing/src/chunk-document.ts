@@ -30,16 +30,28 @@ function validateFragment(
   previous: DocumentFragment | undefined,
 ): Effect.Effect<void, DocumentChunkingError> {
   const text = document.text.slice(fragment.charStart, fragment.charEnd)
-  const byteStart = encoder.encode(document.text.slice(0, fragment.charStart)).byteLength
-  const byteEnd = encoder.encode(document.text.slice(0, fragment.charEnd)).byteLength
   if (
     fragment.charStart < 0
     || fragment.charEnd <= fragment.charStart
     || fragment.charEnd > document.text.length
-    || fragment.byteStart !== byteStart
-    || fragment.byteEnd !== byteEnd
     || fragment.text !== text
     || (previous !== undefined && fragment.charStart < previous.charEnd)
+  ) {
+    return Effect.fail(new DocumentChunkingError({
+      reason: 'invalid-locator',
+      fragment: index,
+      message: 'Normalized fragment locators must be ordered and round-trip exactly',
+    }))
+  }
+  const byteStart = previous === undefined
+    ? encoder.encode(document.text.slice(0, fragment.charStart)).byteLength
+    : previous.byteEnd + encoder.encode(
+      document.text.slice(previous.charEnd, fragment.charStart),
+    ).byteLength
+  const byteEnd = byteStart + encoder.encode(text).byteLength
+  if (
+    fragment.byteStart !== byteStart
+    || fragment.byteEnd !== byteEnd
   ) {
     return Effect.fail(new DocumentChunkingError({
       reason: 'invalid-locator',
