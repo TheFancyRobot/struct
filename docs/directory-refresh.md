@@ -1,8 +1,8 @@
 # Directory manifests and refresh
 
-Directory ingestion starts with a deterministic, immutable inventory. Filesystem
-discovery, persistence, extraction, and UI behavior are deliberately outside
-this contract and build on it in later Phase 03 steps.
+Directory ingestion starts with sandboxed discovery and a deterministic,
+immutable inventory. Persistence, extraction, and UI behavior remain outside
+this boundary and build on it in later Phase 03 steps.
 
 ## Identity and scope
 
@@ -18,8 +18,30 @@ this contract and build on it in later Phase 03 steps.
   control characters, at most 4,096 UTF-8 bytes total, and at most 255 UTF-8
   bytes per segment. Host paths never cross this domain boundary.
 
-The later discovery worker remains responsible for resolving symlinks and
-proving that each canonical path stays beneath the registered root.
+`DirectoryDiscovery` resolves only canonical paths beneath the registered root.
+It rejects a symlink root, never follows entry symlinks, verifies real paths
+before traversal, and opens files with no-follow semantics before hashing. The
+opened descriptor's device/inode identity must match the current contained
+canonical path before any bytes are accepted, including when an ancestor
+directory is replaced during discovery.
+
+## Discovery and hashing boundary
+
+- `DirectoryDiscovery` is an Effect service with a runtime-injected filesystem
+  adapter. The Bun layer uses sorted UTF-8 path enumeration and streams files
+  through a SHA-256 hasher in fixed-size chunks.
+- Depth, inspected-entry count, per-file bytes, and aggregate hashed bytes are
+  explicit non-negative limits. Exhaustion is a typed terminal failure.
+- `.git` and `node_modules` are ignored by default. Callers may provide a
+  deterministic name allow/ignore policy without changing containment rules.
+- Unsupported files remain ordered manifest entries with no content hash.
+  Symlinks, permission denial, disappearing files, and inspection/read failures
+  are ordered typed outcomes and are excluded from the partial manifest.
+- Entry IDs are deterministic from snapshot identity plus canonical relative
+  path, so retrying the same snapshot cannot perturb the manifest.
+- Consumers must inspect all outcomes before treating an absent manifest path
+  as removed. A partial manifest with entry failures is observable progress,
+  not permission to commit a refresh.
 
 ## Entry and digest contract
 
@@ -66,8 +88,7 @@ manifests, entries, and source versions are immutable after creation.
 
 ## Downstream boundary
 
-STEP-03-02 may discover and validate filesystem entries, but it must emit these
-contracts without widening registered roots. Later job and persistence steps may
-checkpoint and commit them, but they must preserve canonical ordering, digest
-identity, workspace/project scope, removed-entry history, and source-version
-lineage.
+STEP-03-02 emits these contracts without widening registered roots. Later job
+and persistence steps may checkpoint and commit them only after handling every
+typed discovery outcome; they must preserve canonical ordering, digest identity,
+workspace/project scope, removed-entry history, and source-version lineage.
