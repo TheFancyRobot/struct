@@ -22,7 +22,9 @@ export interface TextSourceClassification {
 
 const DEFAULT_MAX_TEXT_SOURCE_BYTES = 1_048_576
 
-function extensionFor(name: string): TextSourceClassification['extension'] | null {
+export function supportedTextSourceExtensionFor(
+  name: string,
+): TextSourceClassification['extension'] | null {
   const lower = name.toLowerCase()
   if (lower.endsWith('.txt')) return '.txt'
   if (lower.endsWith('.md')) return '.md'
@@ -47,7 +49,7 @@ export const classifyTextSource = (
       })
     }
 
-    const extension = extensionFor(input.name)
+    const extension = supportedTextSourceExtensionFor(input.name)
     if (!extension) {
       return yield* new UnsupportedSourceTypeError({
         name: input.name,
