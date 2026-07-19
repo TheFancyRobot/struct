@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { Effect } from 'effect'
 import postgres from 'postgres'
 import type postgresTypes from 'postgres'
+import { migrations } from './manifest.js'
 import {
   runMigrationsDown,
   runMigrationsUp,
@@ -158,15 +159,10 @@ describeIf('document chunk migration (PostgreSQL)', () => {
 
   it('rolls back derived rows without deleting immutable source versions', async () => {
     const executor = migrationExecutor(scoped)
-    // Revert materialization, dataset catalog, directory controls, lineage, ingestion, and
-    // retrieval before reverting the document chunk migration this test owns.
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
+    // Revert every later migration before reverting 0005, which this test owns.
+    for (let number = migrations.length; number >= 5; number -= 1) {
+      await Effect.runPromise(runMigrationsDown(executor))
+    }
 
     expect(await scoped.unsafe(
       `SELECT id FROM source_versions

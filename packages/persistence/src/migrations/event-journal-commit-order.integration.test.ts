@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { Effect } from 'effect'
 import postgres from 'postgres'
 import type postgresTypes from 'postgres'
+import { migrations } from './manifest'
 import {
   runMigrationsDown,
   runMigrationsUp,
@@ -181,15 +182,10 @@ describeIf('event_journal commit-ordered cursor allocation (PostgreSQL)', () => 
 
   it('deterministically reproduces the legacy late-lower-cursor replay loss', async () => {
     const executor = migrationExecutor(migrationSql)
-    // Remove 0011 through 0005 first, then 0004 to restore the legacy allocator.
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
+    // Remove every migration through 0004 to restore the legacy allocator.
+    for (let number = migrations.length; number >= 4; number -= 1) {
+      await Effect.runPromise(runMigrationsDown(executor))
+    }
 
     const eventA = crypto.randomUUID()
     const eventB = crypto.randomUUID()
@@ -317,15 +313,10 @@ describeIf('event_journal commit-ordered cursor allocation (PostgreSQL)', () => 
 
   it('round-trips the migration and restores commit-order allocation', async () => {
     const executor = migrationExecutor(migrationSql)
-    // Remove 0011 through 0005 first, then 0004; up restores all in order.
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
-    await Effect.runPromise(runMigrationsDown(executor))
+    // Remove every migration through 0004; up restores all in order.
+    for (let number = migrations.length; number >= 4; number -= 1) {
+      await Effect.runPromise(runMigrationsDown(executor))
+    }
 
     const afterDown = await observer.unsafe(
       `SELECT

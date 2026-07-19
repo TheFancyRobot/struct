@@ -5,7 +5,7 @@
  * This is the boot boundary: Config.* resolves at app startup.
  */
 
-import { Config } from 'effect'
+import { Config, Redacted } from 'effect'
 
 const positive = (name: string) => ({
   message: `${name} must be positive`,
@@ -19,6 +19,14 @@ export const apiPortConfig = Config.number('API_PORT').pipe(
 
 /** Database connection URL (required, no default). */
 export const databaseUrlConfig = Config.string('DATABASE_URL')
+
+/** Single-user API bearer credential used until user/session auth lands. */
+export const apiAuthTokenConfig = Config.redacted('API_AUTH_TOKEN').pipe(
+  Config.validate({
+    message: 'API_AUTH_TOKEN must contain at least 16 characters',
+    validation: (value) => Redacted.value(value).length >= 16,
+  }),
+)
 
 /** Local filesystem artifact root for upload staging. */
 export const artifactStorageRootConfig = Config.string('ARTIFACT_STORAGE_ROOT').pipe(

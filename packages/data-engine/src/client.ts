@@ -78,6 +78,12 @@ function reason(cause: unknown): string {
 
 class ArtifactLimitExceeded extends Error {}
 
+function sha256Json(value: unknown): string {
+  return `sha256:${new Bun.CryptoHasher('sha256')
+    .update(`${JSON.stringify(value)}\n`)
+    .digest('hex')}`
+}
+
 function timeoutError(message: string): DataEngineTransportError {
   return new DataEngineTransportError({ reason: 'timeout', message })
 }
@@ -421,6 +427,32 @@ export function makeDataEngineClient(
       ) {
         return yield* new DataEngineProtocolError({
           message: 'Data-engine query response has inconsistent result shape',
+        })
+      }
+      const artifactHash = sha256Json({
+        columns: decoded.result.columns,
+        rows: decoded.result.rows,
+        rowCount: decoded.result.rowCount,
+        truncated: decoded.result.truncated,
+      })
+      const resultHash = sha256Json({
+        engineVersion: decoded.result.engineVersion,
+        engineConfigHash: decoded.result.engineConfigHash,
+        canonicalSql: decoded.result.canonicalSql,
+        snapshots: decoded.result.snapshots,
+        schemaHash: decoded.result.schemaHash,
+        resultArtifactHash: decoded.result.resultArtifactHash,
+        columns: decoded.result.columns,
+        rows: decoded.result.rows,
+        rowCount: decoded.result.rowCount,
+        truncated: decoded.result.truncated,
+      })
+      if (
+        decoded.result.resultArtifactHash !== artifactHash
+        || decoded.result.resultHash !== resultHash
+      ) {
+        return yield* new DataEngineProtocolError({
+          message: 'Data-engine query response failed result hash validation',
         })
       }
       return decoded.result

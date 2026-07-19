@@ -66,4 +66,9 @@ export const migrations: readonly Migration[] = [
     upPath: new URL('./0011_dataset_materializations.sql', import.meta.url).pathname,
     downPath: new URL('./0011_dataset_materializations.down.sql', import.meta.url).pathname,
   },
+  {
+    name: '0012_dataset_query_evidence',
+    upPath: new URL('./0012_dataset_query_evidence.sql', import.meta.url).pathname,
+    downPath: new URL('./0012_dataset_query_evidence.down.sql', import.meta.url).pathname,
+  },
 ] as const

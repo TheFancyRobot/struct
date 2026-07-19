@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@struct/domain": "workspace:*",
+    "@struct/data-engine": "workspace:*",
     "@struct/observability": "workspace:*",
     "@struct/persistence": "workspace:*",
     "@struct/research-engine": "workspace:*",

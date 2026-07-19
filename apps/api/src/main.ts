@@ -4,11 +4,17 @@
  * Runtime entry point — Effect.runPromise at the application boundary.
  */
 
-import { Cause, Effect, Layer, Option, Runtime, Schema } from 'effect'
+import { timingSafeEqual } from 'node:crypto'
+import { Cause, Effect, Layer, Option, Redacted, Runtime, Schema } from 'effect'
 import postgres from 'postgres'
+import {
+  DatasetQueryAuthenticationError,
+  DatasetQueryAuthorizationError,
+} from '@struct/data-engine'
 import {
   ProjectRepo,
   DirectoryControlRepo,
+  DatasetQueryEvidenceRepo,
   EntityNotFoundError,
   ResearchExecutionRepo,
   ResearchProjectionRepo,
@@ -43,6 +49,7 @@ import {
 } from '@struct/observability'
 import {
   apiPortConfig,
+  apiAuthTokenConfig,
   artifactStorageRootConfig,
   databaseUrlConfig,
   maxTextSourceBytesConfig,
@@ -65,6 +72,11 @@ import {
   parseEventCursor,
   researchEventsResponse,
 } from './routes/research-events'
+import {
+  datasetQueryReadRoute,
+  listDatasetQueryHistory,
+  reopenDatasetCitation,
+} from './routes/dataset-queries'
 
 interface RegisterRequestBody {
   readonly workspaceId?: unknown
@@ -86,6 +98,13 @@ function jsonResponse(body: unknown, status = 200): Response {
     status,
     headers: { 'Content-Type': 'application/json' },
   })
+}
+
+function credentialMatches(expected: string, actual: string): boolean {
+  const expectedBytes = Buffer.from(expected)
+  const actualBytes = Buffer.from(actual)
+  return expectedBytes.length === actualBytes.length
+    && timingSafeEqual(expectedBytes, actualBytes)
 }
 
 function parseBody(body: RegisterRequestBody): Effect.Effect<{
@@ -161,6 +180,7 @@ function researchFailureResponse(cause: Cause.Cause<unknown>): Response {
 const server = Effect.gen(function* () {
   const port = yield* apiPortConfig
   const databaseUrl = yield* databaseUrlConfig
+  const apiAuthToken = Redacted.value(yield* apiAuthTokenConfig)
   const artifactRoot = yield* artifactStorageRootConfig
   const maxBytes = yield* maxTextSourceBytesConfig
   const storage = yield* LocalArtifactStore.make({ root: artifactRoot })
@@ -176,6 +196,10 @@ const server = Effect.gen(function* () {
   const projectionLayer = Layer.provide(ResearchProjectionRepo.Default, sqlLayer)
   const directoryControlLayer = Layer.provide(
     DirectoryControlRepo.Default,
+    sqlLayer,
+  )
+  const datasetQueryEvidenceLayer = Layer.provide(
+    DatasetQueryEvidenceRepo.Default,
     sqlLayer,
   )
   const effectRuntime = yield* Effect.runtime<never>()
@@ -672,6 +696,43 @@ const server = Effect.gen(function* () {
       const citationRoute =
         /^\/api\/projects\/([^/]+)\/research\/([^/]+)\/citation\/([^/]+)$/
           .exec(url.pathname)
+
+      const datasetQueryResponse = await Runtime.runPromise(effectRuntime)(
+        datasetQueryReadRoute(req, {
+          authorize: (credential, workspaceId, projectId) =>
+            Effect.gen(function* () {
+              if (!credentialMatches(apiAuthToken, credential)) {
+                return yield* new DatasetQueryAuthenticationError({
+                  message: 'API bearer credential is invalid',
+                })
+              }
+              const project = yield* ProjectRepo.findById(projectId).pipe(
+                Effect.provide(projectLayer),
+                Effect.mapError(() =>
+                  new DatasetQueryAuthorizationError({
+                    message: 'Dataset query scope is not authorized',
+                  })),
+              )
+              if (project.workspaceId !== workspaceId) {
+                return yield* new DatasetQueryAuthorizationError({
+                  message: 'Dataset query scope is not authorized',
+                })
+              }
+            }),
+          list: (workspaceId, projectId, limit) =>
+            listDatasetQueryHistory(workspaceId, projectId, limit).pipe(
+              Effect.provide(datasetQueryEvidenceLayer),
+            ),
+          reopen: (workspaceId, projectId, citationId) =>
+            reopenDatasetCitation(
+              workspaceId,
+              projectId,
+              citationId,
+            ).pipe(Effect.provide(datasetQueryEvidenceLayer)),
+        }),
+      )
+      if (datasetQueryResponse !== undefined) return datasetQueryResponse
+
       if (citationRoute !== null && req.method === 'GET') {
         const identifiers = Effect.try({
           try: () => ({

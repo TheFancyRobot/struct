@@ -177,12 +177,15 @@ export type QueryValue = Schema.Schema.Type<typeof QueryValue>
 
 export const QueryResult = Schema.Struct({
   protocolVersion: Schema.Literal(DATA_ENGINE_PROTOCOL_VERSION),
+  engineVersion: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(128)),
+  engineConfigHash: Sha256Digest,
   workspaceId: WorkspaceId,
   projectId: ProjectId,
   canonicalSql: SqlText,
   snapshots: Schema.Array(QuerySnapshotBinding),
   schemaHash: Sha256Digest,
   resultHash: Sha256Digest,
+  resultArtifactHash: Sha256Digest,
   columns: Schema.Array(QueryColumn),
   rows: Schema.Array(Schema.Array(QueryValue)),
   rowCount: NonNegativeInteger,
