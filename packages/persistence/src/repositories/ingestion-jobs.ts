@@ -552,6 +552,25 @@ export class DirectoryIngestionJobRepo
                      WHERE id = $1`,
                     [jobId, queueStatus],
                   )
+                  if (transition === 'complete') {
+                    await transaction.unsafe(
+                      `INSERT INTO event_journal (
+                         id, workspace_id, entity_type, entity_id,
+                         event_type, payload
+                       )
+                       VALUES (
+                         md5($1::uuid::text || ':directory-completed')::uuid,
+                         $2, 'directory-ingestion', $1,
+                         'directory-completed',
+                         jsonb_build_object(
+                           'jobId', $1::uuid::text,
+                           'status', 'completed'
+                         )
+                       )
+                       ON CONFLICT (id) DO NOTHING`,
+                      [jobId, workspaceId],
+                    )
+                  }
                   return [{ status: next }]
                 }),
               catch: (error) =>

@@ -268,6 +268,15 @@ describeIf('DirectoryIngestionJobRepo (PostgreSQL)', () => {
     expect(await run(
       DirectoryIngestionJobRepo.transition(jobId, workspaceId, 'complete'),
     )).toBe('completed')
+    const completedEvents = await sql.unsafe(
+      `SELECT COUNT(*)::int AS count
+       FROM event_journal
+       WHERE entity_type = 'directory-ingestion'
+         AND entity_id = $1
+         AND event_type = 'directory-completed'`,
+      [jobId],
+    )
+    expect(completedEvents[0]?.['count']).toBe(1)
   })
 
   it('exhausts the retry budget and validates cancellation and terminal transitions', async () => {

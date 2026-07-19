@@ -5,17 +5,22 @@ contract_version: 1
 title: Expose Directory Status Recovery and Controls
 step_id: STEP-03-05
 phase: '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]]'
-status: planned
-owner: ''
+status: in_progress
+owner: Codex
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_04_process-changed-sources-and-preserve-version-lineage|STEP-03-04 Process Changed Sources and Preserve Version Lineage]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-19-143611-expose-directory-status-recovery-and-controls-codex-step-03-05-worker|SESSION-2026-07-19-143611 Codex STEP-03-05 worker session for Expose Directory Status Recovery and Controls]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-19-143611
+active_session_id: 05_Sessions/2026-07-19-143611-expose-directory-status-recovery-and-controls-codex-step-03-05-worker
+context_status: in_progress
+context_summary: Implementation and root validation are complete; dedicated PR review and merge remain before STEP-03-05 is complete.
 ---
 
 # Step 05 - Expose Directory Status Recovery and Controls
@@ -60,7 +65,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-19 - [[05_Sessions/2026-07-19-143611-expose-directory-status-recovery-and-controls-codex-step-03-05-worker|SESSION-2026-07-19-143611 Codex STEP-03-05 worker session for Expose Directory Status Recovery and Controls]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes
