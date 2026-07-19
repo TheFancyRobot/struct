@@ -47,7 +47,7 @@ Package dependency flows downward only; no app imports another app; `domain` is 
 ```bash
 bun install --frozen-lockfile   # pinned dependencies (Bun 1.3.13, TS 7.0.2)
 cp .env.example .env           # then fill in real values (DATABASE_URL, FRED_* provider keys)
-docker compose up -d postgres  # PostgreSQL 16 + pgvector (or use a local Postgres install)
+docker compose up -d --wait    # PostgreSQL, data engine, and loopback gateway
 bun run dev                     # starts web (3000), api (3001), worker (3002) in parallel
 ```
 

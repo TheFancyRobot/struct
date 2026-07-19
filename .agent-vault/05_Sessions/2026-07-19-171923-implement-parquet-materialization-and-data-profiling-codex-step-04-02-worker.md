@@ -70,6 +70,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Codex exact-decimal remediation: decimal validation now accepts exponent notation only when lexical precision/scale analysis proves the value is exactly representable as `DECIMAL(38,10)`. Live coverage verifies `1.25e-2` profiles as `0.0125`; existing over-scale rejection remains green.
 - Codex schema-ingress remediation: materialization responses must match requested profile column count, ordinals, and names before any artifact I/O; enqueue verifies `sourceFormats` count against persisted snapshot sources before creating the unique queue/mapping rows. Focused and aggregate suites, static gates, docs, secrets, Compose, diff, and vault checks passed.
 - Codex documentation remediation: the destructive local reset recipe now starts the complete Compose stack with health waiting before migrations and host apps, matching the implemented PostgreSQL → data-engine → worker startup contract.
+- Codex quickstart documentation remediation: README and setup instructions now start the complete healthy Compose stack (`docker compose up -d --wait`) so PostgreSQL, the data engine, and loopback gateway are available before migrations and host apps.
 
 ## Findings
 

@@ -9,7 +9,7 @@
 
 1. `bun install --frozen-lockfile`
 2. Copy `.env.example` to `.env` and adjust only what your machine needs.
-3. `docker compose up -d postgres`
+3. `docker compose up -d --wait`
 4. `bun run migrations:up`
 5. `bun run dev`
 
