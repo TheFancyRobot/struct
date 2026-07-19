@@ -86,6 +86,12 @@ describe('Migration Runner', () => {
       expect(fakeSql.queries.join('\n')).toMatch(
         /pg_advisory_xact_lock[\s\S]*nextval/i,
       )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /CREATE TABLE documents[\s\S]*CREATE TABLE document_chunks/i,
+      )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /CREATE INDEX idx_document_chunks_search_vector[\s\S]*USING GIN/i,
+      )
     })
 
     it('skips already-applied migrations', async () => {
@@ -127,10 +133,10 @@ describe('Migration Runner', () => {
       )
       expect(deleteQuery).toBeDefined()
       expect(fakeSql.queries.join('\n')).toMatch(
-        /DROP TRIGGER IF EXISTS event_journal_allocate_cursor_in_commit_order/i,
+        /DROP TABLE IF EXISTS document_chunks[\s\S]*DROP TABLE IF EXISTS documents/i,
       )
       expect(fakeSql.queries.join('\n')).toMatch(
-        /ALTER COLUMN cursor[\s\S]*SET DEFAULT nextval/i,
+        /DROP INDEX IF EXISTS uq_source_versions_source_id_id/i,
       )
     })
 

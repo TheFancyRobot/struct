@@ -41,6 +41,7 @@ export {
   ResearchExecutionRepo,
   ResearchProjectionRepo,
   SourceTextReindexRepo,
+  DocumentChunkRepo,
   // Persistence errors
   QueryError,
   EntityNotFoundError,
@@ -48,6 +49,7 @@ export {
   ResearchJobOwnershipLostError,
   IngestionJobOwnershipLostError,
   IngestionEventValidationError,
+  DocumentChunkValidationError,
   SourceTextReindexOwnershipLostError,
   // SQL Client
   SqlClient,

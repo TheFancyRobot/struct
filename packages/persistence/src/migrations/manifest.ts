@@ -31,4 +31,9 @@ export const migrations: readonly Migration[] = [
     upPath: new URL('./0004_event_journal_commit_order.sql', import.meta.url).pathname,
     downPath: new URL('./0004_event_journal_commit_order.down.sql', import.meta.url).pathname,
   },
+  {
+    name: '0005_document_chunks',
+    upPath: new URL('./0005_document_chunks.sql', import.meta.url).pathname,
+    downPath: new URL('./0005_document_chunks.down.sql', import.meta.url).pathname,
+  },
 ] as const

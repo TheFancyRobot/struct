@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-19T07:21:21.548Z",
+  "generatedAt": "2026-07-19T08:41:36.664Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -574,7 +574,7 @@
       ],
       "exports": [],
       "hash": "ff88ae25d8cec0de36d1351c919903edda1f386668c7dbc489a3cf3e01af0d2a",
-      "mtimeMs": 1784445173805.4937,
+      "mtimeMs": 1784448731015.3618,
       "size": 4972,
       "generated": false,
       "vendor": false,
@@ -1445,7 +1445,7 @@
       ],
       "exports": [],
       "hash": "1492a7e7e8e3467f2a259ab53995e42ae788a010bf07f455659896746f215a59",
-      "mtimeMs": 1784443499802.3347,
+      "mtimeMs": 1784448731015.9385,
       "size": 8749,
       "generated": false,
       "vendor": false,
@@ -1695,6 +1695,117 @@
       "parser": "regex"
     },
     {
+      "path": "packages/document-processing/src/chunk-document.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DOCUMENT_CHUNKING_VERSION",
+          "kind": "const",
+          "line": 12,
+          "exported": true,
+          "endLine": 12
+        },
+        {
+          "name": "DEFAULT_DOCUMENT_CHUNK_MAX_CHARACTERS",
+          "kind": "const",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "DomainDocument",
+          "kind": "type",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "DomainDocumentChunk",
+          "kind": "type",
+          "line": 16,
+          "exported": false,
+          "endLine": 16
+        },
+        {
+          "name": "ChunkDocumentInput",
+          "kind": "interface",
+          "line": 18,
+          "exported": true,
+          "endLine": 18
+        },
+        {
+          "name": "encoder",
+          "kind": "const",
+          "line": 24,
+          "exported": false,
+          "endLine": 24
+        },
+        {
+          "name": "validateFragment",
+          "kind": "function",
+          "line": 26,
+          "exported": false,
+          "endLine": 26
+        },
+        {
+          "name": "ChunkGroup",
+          "kind": "interface",
+          "line": 53,
+          "exported": false,
+          "endLine": 53
+        },
+        {
+          "name": "splitFragment",
+          "kind": "function",
+          "line": 58,
+          "exported": false,
+          "endLine": 58
+        },
+        {
+          "name": "chunkDocument",
+          "kind": "const",
+          "line": 102,
+          "exported": true,
+          "endLine": 102
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DocumentChunkingError",
+          "specifier": "./errors.js",
+          "imported": [
+            "DocumentChunkingError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "404a87db156a0b1435bc990dba1371f3ff9d4ebc4ed6dfb8c3eb321528e31b48",
+      "mtimeMs": 1784450379005.619,
+      "size": 6085,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/document-processing/src/errors.ts",
       "language": "TypeScript",
       "symbols": [
@@ -1704,6 +1815,13 @@
           "line": 3,
           "exported": true,
           "endLine": 3
+        },
+        {
+          "name": "DocumentChunkingError",
+          "kind": "class",
+          "line": 8,
+          "exported": true,
+          "endLine": 8
         }
       ],
       "imports": [
@@ -1717,9 +1835,9 @@
         }
       ],
       "exports": [],
-      "hash": "31f3af8bfc7ba75e9d795e42dfe17434c5a78cf402d86033e858d6a10e61c1b9",
-      "mtimeMs": 1784443474920.9514,
-      "size": 212,
+      "hash": "78d76018345cfc14ce870cb93d17fcff9ce741b9b86a47dcffcfc44b960cf87f",
+      "mtimeMs": 1784449150810.3218,
+      "size": 532,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1745,30 +1863,30 @@
         {
           "name": "normalize",
           "kind": "const",
-          "line": 10,
+          "line": 11,
           "exported": true,
-          "endLine": 10
+          "endLine": 11
         },
         {
           "name": "normalizeDocument",
           "kind": "const",
-          "line": 12,
+          "line": 13,
           "exported": true,
-          "endLine": 12
+          "endLine": 13
         },
         {
           "name": "normalizeSourceDocument",
           "kind": "const",
-          "line": 51,
+          "line": 53,
           "exported": true,
-          "endLine": 51
+          "endLine": 53
         }
       ],
       "imports": [],
       "exports": [],
-      "hash": "bec33e924ea7fb9936dbdadeba56be87f7b3a253b7949e157d7b3ab31e4c6578",
-      "mtimeMs": 1784444780588.7527,
-      "size": 2636,
+      "hash": "abdcb80a5e4599c5101eab39525cc1bdf3b0fbb37343e58ebe8ad6b0c9717b64",
+      "mtimeMs": 1784448731017.1394,
+      "size": 2772,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1801,44 +1919,44 @@
         {
           "name": "ignoredTags",
           "kind": "const",
-          "line": 9,
+          "line": 14,
           "exported": false,
-          "endLine": 9
+          "endLine": 14
         },
         {
           "name": "HtmlNode",
           "kind": "interface",
-          "line": 11,
+          "line": 16,
           "exported": false,
-          "endLine": 11
+          "endLine": 16
         },
         {
           "name": "assertSupportedDepth",
           "kind": "const",
-          "line": 12,
+          "line": 17,
           "exported": false,
-          "endLine": 12
+          "endLine": 17
         },
         {
           "name": "nodeText",
           "kind": "const",
-          "line": 15,
+          "line": 20,
           "exported": false,
-          "endLine": 15
+          "endLine": 20
         },
         {
           "name": "containsBlock",
           "kind": "const",
-          "line": 23,
+          "line": 28,
           "exported": false,
-          "endLine": 23
+          "endLine": 28
         },
         {
           "name": "parseHtml",
           "kind": "const",
-          "line": 31,
+          "line": 36,
           "exported": true,
-          "endLine": 31
+          "endLine": 36
         }
       ],
       "imports": [
@@ -1876,9 +1994,9 @@
         }
       ],
       "exports": [],
-      "hash": "b6e6524e375d7852b811cba5ebd8f2a761716cb84b5f00889f78e821db3e7d2f",
-      "mtimeMs": 1784444780589.3892,
-      "size": 2697,
+      "hash": "1ae4df482acc46c940bce366c8ac38ce6e68b4ed1378d88590ce883344870be6",
+      "mtimeMs": 1784448731017.5103,
+      "size": 3293,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1911,9 +2029,9 @@
         {
           "name": "parseMarkdown",
           "kind": "const",
-          "line": 65,
+          "line": 85,
           "exported": true,
-          "endLine": 65
+          "endLine": 85
         }
       ],
       "imports": [
@@ -1944,9 +2062,9 @@
         }
       ],
       "exports": [],
-      "hash": "6d9318e1aee7825b27bec4fdc8b91ae771bddd23e1dbea6aba7a2abe2d218bc4",
-      "mtimeMs": 1784445606847.417,
-      "size": 2130,
+      "hash": "fc33eb92eddfb868a42fec1492eec9960d32a65b31a6ef2f4e3c5ae8147e53f7",
+      "mtimeMs": 1784448731017.703,
+      "size": 2744,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1970,67 +2088,95 @@
           "endLine": 6
         },
         {
-          "name": "isOcrHeavyPdf",
+          "name": "MAX_PDF_TEXT_ITEMS",
+          "kind": "const",
+          "line": 7,
+          "exported": false,
+          "endLine": 7
+        },
+        {
+          "name": "MIN_USEFUL_PAGE_CHARACTERS",
           "kind": "const",
           "line": 8,
-          "exported": true,
+          "exported": false,
           "endLine": 8
+        },
+        {
+          "name": "isOcrHeavyPdf",
+          "kind": "const",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
         },
         {
           "name": "PdfTextItem",
           "kind": "interface",
-          "line": 13,
+          "line": 19,
           "exported": true,
-          "endLine": 13
+          "endLine": 19
+        },
+        {
+          "name": "PdfTextContentChunk",
+          "kind": "interface",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
         },
         {
           "name": "PdfPage",
           "kind": "interface",
-          "line": 19,
+          "line": 28,
           "exported": false,
-          "endLine": 19
+          "endLine": 28
         },
         {
           "name": "PdfDocument",
           "kind": "interface",
-          "line": 20,
+          "line": 31,
           "exported": false,
-          "endLine": 20
+          "endLine": 31
         },
         {
           "name": "PdfLoadingTask",
           "kind": "interface",
-          "line": 21,
+          "line": 32,
           "exported": false,
-          "endLine": 21
+          "endLine": 32
         },
         {
           "name": "PdfJs",
           "kind": "interface",
-          "line": 22,
+          "line": 33,
           "exported": false,
-          "endLine": 22
+          "endLine": 33
         },
         {
           "name": "PdfLine",
           "kind": "interface",
-          "line": 24,
+          "line": 35,
           "exported": false,
-          "endLine": 24
+          "endLine": 35
+        },
+        {
+          "name": "readBoundedPdfTextItems",
+          "kind": "const",
+          "line": 41,
+          "exported": true,
+          "endLine": 41
         },
         {
           "name": "extractPdfPageParagraphs",
           "kind": "const",
-          "line": 30,
+          "line": 70,
           "exported": true,
-          "endLine": 30
+          "endLine": 70
         },
         {
           "name": "parsePdf",
           "kind": "const",
-          "line": 82,
+          "line": 122,
           "exported": true,
-          "endLine": 82
+          "endLine": 122
         }
       ],
       "imports": [
@@ -2065,9 +2211,9 @@
         }
       ],
       "exports": [],
-      "hash": "ccea5eae17171de3dbb90bedf964f1ca92e493f5c2ca31e9b1c06f91b462abb0",
-      "mtimeMs": 1784445606847.966,
-      "size": 4932,
+      "hash": "110ac1d0875742b369f6a96e4db0d1aa13fe5e8c45d0d9a9d5b30d68049bb6d4",
+      "mtimeMs": 1784448731018.0461,
+      "size": 6202,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2119,9 +2265,9 @@
         }
       ],
       "exports": [],
-      "hash": "7911f622855f4a7f9d7648ee2b0e6cc990592382ffd99e6dd5c5ed4341cf7e46",
-      "mtimeMs": 1784444780590.3586,
-      "size": 724,
+      "hash": "5f787a0a9d7e63d64e8f5868628dea0f6a5bc9f6092a336c71c3ff4b36e421cf",
+      "mtimeMs": 1784448731018.1768,
+      "size": 733,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2162,7 +2308,7 @@
       "imports": [],
       "exports": [],
       "hash": "8679e0ac213cf60b8b40c31c4569bfe72b34df305d89f5525d6c13fc9216b12f",
-      "mtimeMs": 1784443474920.5618,
+      "mtimeMs": 1784448731018.2744,
       "size": 575,
       "generated": false,
       "vendor": false,
@@ -2236,144 +2382,172 @@
           "endLine": 25
         },
         {
-          "name": "ResearchThreadId",
+          "name": "DocumentId",
           "kind": "const",
           "line": 28,
           "exported": true,
           "endLine": 28
         },
         {
-          "name": "ResearchThreadId",
+          "name": "DocumentId",
           "kind": "type",
           "line": 29,
           "exported": true,
           "endLine": 29
         },
         {
-          "name": "ResearchRunId",
+          "name": "DocumentChunkId",
           "kind": "const",
           "line": 32,
           "exported": true,
           "endLine": 32
         },
         {
-          "name": "ResearchRunId",
+          "name": "DocumentChunkId",
           "kind": "type",
           "line": 33,
           "exported": true,
           "endLine": 33
         },
         {
-          "name": "CitationId",
+          "name": "ResearchThreadId",
           "kind": "const",
           "line": 36,
           "exported": true,
           "endLine": 36
         },
         {
-          "name": "CitationId",
+          "name": "ResearchThreadId",
           "kind": "type",
           "line": 37,
           "exported": true,
           "endLine": 37
         },
         {
-          "name": "FindingId",
+          "name": "ResearchRunId",
           "kind": "const",
           "line": 40,
           "exported": true,
           "endLine": 40
         },
         {
-          "name": "FindingId",
+          "name": "ResearchRunId",
           "kind": "type",
           "line": 41,
           "exported": true,
           "endLine": 41
         },
         {
-          "name": "ReportId",
+          "name": "CitationId",
           "kind": "const",
           "line": 44,
           "exported": true,
           "endLine": 44
         },
         {
-          "name": "ReportId",
+          "name": "CitationId",
           "kind": "type",
           "line": 45,
           "exported": true,
           "endLine": 45
         },
         {
-          "name": "DatasetId",
+          "name": "FindingId",
           "kind": "const",
           "line": 48,
           "exported": true,
           "endLine": 48
         },
         {
-          "name": "DatasetId",
+          "name": "FindingId",
           "kind": "type",
           "line": 49,
           "exported": true,
           "endLine": 49
         },
         {
-          "name": "DatasetSnapshotId",
+          "name": "ReportId",
           "kind": "const",
           "line": 52,
           "exported": true,
           "endLine": 52
         },
         {
-          "name": "DatasetSnapshotId",
+          "name": "ReportId",
           "kind": "type",
           "line": 53,
           "exported": true,
           "endLine": 53
         },
         {
-          "name": "QueryResultSnapshotId",
+          "name": "DatasetId",
           "kind": "const",
           "line": 56,
           "exported": true,
           "endLine": 56
         },
         {
-          "name": "QueryResultSnapshotId",
+          "name": "DatasetId",
           "kind": "type",
           "line": 57,
           "exported": true,
           "endLine": 57
         },
         {
-          "name": "EventJournalId",
+          "name": "DatasetSnapshotId",
           "kind": "const",
           "line": 60,
           "exported": true,
           "endLine": 60
         },
         {
-          "name": "EventJournalId",
+          "name": "DatasetSnapshotId",
           "kind": "type",
           "line": 61,
           "exported": true,
           "endLine": 61
         },
         {
-          "name": "JobQueueId",
+          "name": "QueryResultSnapshotId",
           "kind": "const",
           "line": 64,
           "exported": true,
           "endLine": 64
         },
         {
-          "name": "JobQueueId",
+          "name": "QueryResultSnapshotId",
           "kind": "type",
           "line": 65,
           "exported": true,
           "endLine": 65
+        },
+        {
+          "name": "EventJournalId",
+          "kind": "const",
+          "line": 68,
+          "exported": true,
+          "endLine": 68
+        },
+        {
+          "name": "EventJournalId",
+          "kind": "type",
+          "line": 69,
+          "exported": true,
+          "endLine": 69
+        },
+        {
+          "name": "JobQueueId",
+          "kind": "const",
+          "line": 72,
+          "exported": true,
+          "endLine": 72
+        },
+        {
+          "name": "JobQueueId",
+          "kind": "type",
+          "line": 73,
+          "exported": true,
+          "endLine": 73
         }
       ],
       "imports": [
@@ -2387,9 +2561,124 @@
         }
       ],
       "exports": [],
-      "hash": "0011f5536e313d2e5d807ab8fc0c4e4576505a29e33cb76f79d57c580add6149",
-      "mtimeMs": 1784394067214.0103,
-      "size": 3051,
+      "hash": "ee811150701bdac13243ba5f561752771641be94016af265e15c5ec93e69adda",
+      "mtimeMs": 1784449150809.4075,
+      "size": 3508,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/document.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DocumentFormat",
+          "kind": "const",
+          "line": 8,
+          "exported": true,
+          "endLine": 8
+        },
+        {
+          "name": "DocumentFormat",
+          "kind": "type",
+          "line": 9,
+          "exported": true,
+          "endLine": 9
+        },
+        {
+          "name": "NonNegativeInteger",
+          "kind": "const",
+          "line": 11,
+          "exported": false,
+          "endLine": 11
+        },
+        {
+          "name": "PositiveInteger",
+          "kind": "const",
+          "line": 12,
+          "exported": false,
+          "endLine": 12
+        },
+        {
+          "name": "NonEmptyString",
+          "kind": "const",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        },
+        {
+          "name": "DocumentLocator",
+          "kind": "const",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "DocumentLocator",
+          "kind": "type",
+          "line": 33,
+          "exported": true,
+          "endLine": 33
+        },
+        {
+          "name": "makeDocumentChunkId",
+          "kind": "function",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        },
+        {
+          "name": "hashDocumentChunkText",
+          "kind": "function",
+          "line": 51,
+          "exported": true,
+          "endLine": 51,
+          "signature": "(text: string)"
+        },
+        {
+          "name": "Document",
+          "kind": "const",
+          "line": 55,
+          "exported": true,
+          "endLine": 55
+        },
+        {
+          "name": "Document",
+          "kind": "type",
+          "line": 64,
+          "exported": true,
+          "endLine": 64
+        },
+        {
+          "name": "DocumentChunk",
+          "kind": "const",
+          "line": 66,
+          "exported": true,
+          "endLine": 66
+        },
+        {
+          "name": "DocumentChunk",
+          "kind": "type",
+          "line": 77,
+          "exported": true,
+          "endLine": 77
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "a8f4e1344cc2548707ebc16371605a243acfaf5321d521e97a7164783a8cc059",
+      "mtimeMs": 1784450379005.2048,
+      "size": 2574,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2775,7 +3064,7 @@
       "imports": [],
       "exports": [],
       "hash": "5655f3c4b2007ec54a6e91ecc85ca4fcb13977aafaea43b374f2a3ad09fe8214",
-      "mtimeMs": 1784445173804.7395,
+      "mtimeMs": 1784448731018.6309,
       "size": 944,
       "generated": false,
       "vendor": false,
@@ -3277,7 +3566,7 @@
       ],
       "exports": [],
       "hash": "cd39c00e0648d52474341cb1b8197523e4da702216467a0106eb7ea1ef469867",
-      "mtimeMs": 1784443499800.781,
+      "mtimeMs": 1784448731018.928,
       "size": 3572,
       "generated": false,
       "vendor": false,
@@ -3337,32 +3626,39 @@
           "endLine": 47
         },
         {
+          "name": "MAX_MANIFEST_FRAGMENTS",
+          "kind": "const",
+          "line": 48,
+          "exported": false,
+          "endLine": 48
+        },
+        {
           "name": "hashBytes",
           "kind": "const",
-          "line": 49,
+          "line": 50,
           "exported": false,
-          "endLine": 49
+          "endLine": 50
         },
         {
           "name": "normalizeTextBytes",
           "kind": "const",
-          "line": 52,
+          "line": 53,
           "exported": true,
-          "endLine": 52
+          "endLine": 53
         },
         {
           "name": "manifestBytes",
           "kind": "const",
-          "line": 64,
+          "line": 65,
           "exported": false,
-          "endLine": 64
+          "endLine": 65
         },
         {
           "name": "ingestTextSource",
           "kind": "const",
-          "line": 67,
+          "line": 68,
           "exported": true,
-          "endLine": 67
+          "endLine": 68
         }
       ],
       "imports": [
@@ -3422,9 +3718,9 @@
         }
       ],
       "exports": [],
-      "hash": "25919df9ca71be1be21244d84cdc08b49a5f1d56be2f2c605be72f3ff330593d",
-      "mtimeMs": 1784443546560.1177,
-      "size": 5074,
+      "hash": "b8d6444970a6fceb15ef53247179894b3b5927d802e8b5dffccd8480afd950ff",
+      "mtimeMs": 1784448731019.458,
+      "size": 5378,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3606,27 +3902,35 @@
           "doc": "Expected lease-loss outcome when an ingestion worker's claimed attempt no\nlonger owns the in-progress job row."
         },
         {
+          "name": "DocumentChunkValidationError",
+          "kind": "class",
+          "line": 72,
+          "exported": true,
+          "endLine": 72,
+          "doc": "A normalized document/chunk aggregate is inconsistent or conflicts with an\nimmutable aggregate already persisted for the same source version."
+        },
+        {
           "name": "IngestionEventValidationError",
           "kind": "class",
-          "line": 71,
+          "line": 83,
           "exported": true,
-          "endLine": 71,
+          "endLine": 83,
           "doc": "A caller supplied an ingestion journal event that does not match the exact\ncontract for the requested transition."
         },
         {
           "name": "SourceTextReindexOwnershipLostError",
           "kind": "class",
-          "line": 82,
+          "line": 94,
           "exported": true,
-          "endLine": 82,
+          "endLine": 94,
           "doc": "Expected lease-loss outcome when a source-text reindex worker's claimed\nattempt no longer owns the in-progress reindex row."
         },
         {
           "name": "PersistenceError",
           "kind": "type",
-          "line": 93,
+          "line": 105,
           "exported": true,
-          "endLine": 93,
+          "endLine": 105,
           "doc": "Union of all persistence errors."
         }
       ],
@@ -3641,9 +3945,9 @@
         }
       ],
       "exports": [],
-      "hash": "25679d6af46c110af35330ba529388ed642b238a4cecb4bed71e256e604ed994",
-      "mtimeMs": 1784433778776.7422,
-      "size": 3092,
+      "hash": "e7faed5c840e8dffb085fe3c2421858f758a7709b9fdb9d3d33324682722569b",
+      "mtimeMs": 1784449217087.0623,
+      "size": 3584,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3687,9 +3991,9 @@
           "kind": "reexport"
         }
       ],
-      "hash": "980ee47adb76cde8e225f574898d2f2f2bbd4e73eebf2644a0ff4d408c1da514",
-      "mtimeMs": 1784435777326.2122,
-      "size": 2842,
+      "hash": "fc6bd12162e931e80dcfb9eda57e19cb2008cbc739896c06595b4060db609a53",
+      "mtimeMs": 1784449293179.9482,
+      "size": 2895,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3715,9 +4019,9 @@
       ],
       "imports": [],
       "exports": [],
-      "hash": "20e21986d8ac8502642f400f45b4f882c9aa157056d3ba1367ad274f0217414e",
-      "mtimeMs": 1784433778777.5269,
-      "size": 1251,
+      "hash": "acd33af44179dc02bcce046fa17d892640c5ed6a15f541a79f545f8e49c309d9",
+      "mtimeMs": 1784449217086.8447,
+      "size": 1455,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -4138,6 +4442,122 @@
       "hash": "86ecd07e3004d5f77f4bd06b348bc17e74317ba25302a310fe426f6123d8a565",
       "mtimeMs": 1784394800243.224,
       "size": 12876,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/repositories/document-chunks.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "StoreDocumentChunksInput",
+          "kind": "interface",
+          "line": 23,
+          "exported": true,
+          "endLine": 23
+        },
+        {
+          "name": "FindDocumentChunksInput",
+          "kind": "interface",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
+          "name": "DocumentChunkRow",
+          "kind": "const",
+          "line": 38,
+          "exported": false,
+          "endLine": 38
+        },
+        {
+          "name": "encoder",
+          "kind": "const",
+          "line": 58,
+          "exported": false,
+          "endLine": 58
+        },
+        {
+          "name": "invalid",
+          "kind": "function",
+          "line": 60,
+          "exported": false,
+          "endLine": 60
+        },
+        {
+          "name": "validateAggregate",
+          "kind": "function",
+          "line": 68,
+          "exported": false,
+          "endLine": 68
+        },
+        {
+          "name": "sameDocument",
+          "kind": "function",
+          "line": 136,
+          "exported": false,
+          "endLine": 136
+        },
+        {
+          "name": "sameChunk",
+          "kind": "function",
+          "line": 155,
+          "exported": false,
+          "endLine": 155
+        },
+        {
+          "name": "decodeChunk",
+          "kind": "function",
+          "line": 180,
+          "exported": false,
+          "endLine": 180
+        },
+        {
+          "name": "DocumentChunkRepo",
+          "kind": "class",
+          "line": 216,
+          "exported": true,
+          "endLine": 216
+        },
+        {
+          "name": "DocumentChunkRepoError",
+          "kind": "type",
+          "line": 421,
+          "exported": true,
+          "endLine": 421
+        },
+        {
+          "name": "DocumentLocator",
+          "kind": "const",
+          "line": 426,
+          "exported": true,
+          "endLine": 426
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlClient",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "74872f3eb8e9fd4c9b3d4b60e9daab38bf49c35cb35f8594de7779c9efd71288",
+      "mtimeMs": 1784450392708.7598,
+      "size": 15500,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -4971,7 +5391,7 @@
       ],
       "exports": [],
       "hash": "506ed085a508a6fafadb5e4355f4f4278755418ba172124ae07c909a06754589",
-      "mtimeMs": 1784445173805.756,
+      "mtimeMs": 1784448731019.8623,
       "size": 13492,
       "generated": false,
       "vendor": false,

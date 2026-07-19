@@ -3,6 +3,7 @@
  */
 
 export * from './decode.js'
+export * from './document-chunks.js'
 export * from '../errors.js'
 export * from '../sql-client.js'
 export * from './interfaces.js'
