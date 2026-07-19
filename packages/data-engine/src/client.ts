@@ -49,6 +49,7 @@ export interface DataEngineClientShape {
     DataEngineTransportError | DataEngineProtocolError | DataEngineOperationError
   >
   readonly readArtifact: (
+    token: MaterializeResult['artifactToken'],
     digest: string,
     maxBytes: number,
     timeoutMs: number,
@@ -63,6 +64,46 @@ function reason(cause: unknown): string {
 }
 
 class ArtifactLimitExceeded extends Error {}
+
+function readJsonBody(
+  response: Response,
+  timeoutMs: number,
+): Effect.Effect<
+  unknown,
+  DataEngineTransportError | DataEngineProtocolError
+> {
+  return Effect.tryPromise({
+    try: async (signal) => {
+      const cancel = () => {
+        void response.body?.cancel().catch(() => undefined)
+      }
+      signal.addEventListener('abort', cancel, { once: true })
+      try {
+        return await response.json()
+      } finally {
+        signal.removeEventListener('abort', cancel)
+      }
+    },
+    catch: (cause) =>
+      cause instanceof SyntaxError
+        ? new DataEngineProtocolError({
+            message: 'Data-engine response was not JSON',
+          })
+        : new DataEngineTransportError({
+            reason: reason(cause),
+            message: 'Data-engine response body could not be read',
+          }),
+  }).pipe(
+    Effect.timeoutFail({
+      duration: timeoutMs,
+      onTimeout: () =>
+        new DataEngineTransportError({
+          reason: 'timeout',
+          message: 'Data-engine response body timed out',
+        }),
+    }),
+  )
+}
 
 export function makeDataEngineClient(
   config: DataEngineClientConfig,
@@ -84,7 +125,10 @@ export function makeDataEngineClient(
               'content-type': 'application/json',
             },
             body: JSON.stringify(encoded),
-            signal,
+            signal: AbortSignal.any([
+              signal,
+              AbortSignal.timeout(request.limits.timeoutMs),
+            ]),
           }),
         catch: (cause) =>
           new DataEngineTransportError({
@@ -101,13 +145,7 @@ export function makeDataEngineClient(
             }),
         }),
       )
-      const body = yield* Effect.tryPromise({
-        try: () => response.json(),
-        catch: () =>
-          new DataEngineProtocolError({
-            message: 'Data-engine response was not JSON',
-          }),
-      })
+      const body = yield* readJsonBody(response, request.limits.timeoutMs)
       const decoded = yield* Schema.decodeUnknown(MaterializeResponse)(body).pipe(
         Effect.mapError(() =>
           new DataEngineProtocolError({
@@ -122,7 +160,17 @@ export function makeDataEngineClient(
     },
   )
   const readArtifact = Effect.fn('DataEngineClient.readArtifact')(
-    function* (digest: string, maxBytes: number, timeoutMs: number) {
+    function* (
+      token: MaterializeResult['artifactToken'],
+      digest: string,
+      maxBytes: number,
+      timeoutMs: number,
+    ) {
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(token)) {
+        return yield* new DataEngineProtocolError({
+          message: 'Data-engine artifact token is invalid',
+        })
+      }
       if (!/^[a-f0-9]{64}$/.test(digest)) {
         return yield* new DataEngineProtocolError({
           message: 'Data-engine artifact digest is invalid',
@@ -140,7 +188,7 @@ export function makeDataEngineClient(
       }
       const response = yield* Effect.tryPromise({
         try: (signal) =>
-          fetcher(`${config.baseUrl}/v1/artifacts/${digest}`, {
+          fetcher(`${config.baseUrl}/v1/artifacts/${token}/${digest}`, {
             headers: { authorization: `Bearer ${config.credential}` },
             signal: AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]),
           }),
@@ -160,15 +208,16 @@ export function makeDataEngineClient(
         }),
       )
       if (!response.ok) {
-        const failure = yield* Effect.promise(async () => {
+        const failureBody = yield* readJsonBody(response, timeoutMs)
+        const failure = (() => {
           try {
             return Schema.decodeUnknownSync(MaterializeFailure)(
-              await response.json(),
+              failureBody,
             )
           } catch {
             return undefined
           }
-        })
+        })()
         return yield* new DataEngineOperationError({
           code: failure?.error.code
             ?? (response.status === 404 ? 'not-found' : 'engine'),

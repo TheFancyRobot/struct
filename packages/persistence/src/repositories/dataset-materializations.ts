@@ -531,6 +531,7 @@ export class DatasetMaterializationRepo
                    AND job.status = 'in-progress'
                    AND materialization.job_id = job.id
                    AND materialization.lease_token = $4
+                   AND materialization.lease_expires_at >= clock_timestamp()
                  RETURNING job.status`,
                 [
                   job.jobId,

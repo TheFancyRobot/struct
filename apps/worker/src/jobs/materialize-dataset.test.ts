@@ -114,6 +114,7 @@ describe('processOneDatasetMaterialization', () => {
         return Effect.succeed({
           protocolVersion: '1',
           snapshotId,
+          artifactToken: '00000000-0000-4000-8000-000000000001',
           parquetDigest,
           parquetByteLength: parquetBytes.byteLength,
           profileHash: Sha256Digest.make(`sha256:${profileDigest}`),

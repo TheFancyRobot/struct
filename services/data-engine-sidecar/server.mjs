@@ -1,5 +1,5 @@
 /* global Buffer, URL, clearInterval, clearTimeout, process, setInterval, setTimeout */
-import { createHash, timingSafeEqual } from 'node:crypto'
+import { createHash, randomUUID, timingSafeEqual } from 'node:crypto'
 import { createReadStream, createWriteStream } from 'node:fs'
 import {
   mkdir,
@@ -537,28 +537,14 @@ async function materialize(request, httpRequest) {
       throw new RequestFailure('resource-limit', 'Parquet output exceeds configured limit')
     }
     const parquetDigest = await hashFile(temporary, ensureActive)
-    const destination = join(OUTPUT_ROOT, parquetDigest)
-    let existingMetadata
-    try {
-      existingMetadata = await stat(destination)
-    } catch (error) {
-      if (error?.code !== 'ENOENT') throw error
-    }
-    if (existingMetadata === undefined) {
-      await rename(temporary, destination)
-    } else {
-      const matches = existingMetadata.isFile()
-        && existingMetadata.size === outputMetadata.size
-        && await hashFile(destination, ensureActive) === parquetDigest
-      if (!matches) {
-        throw new RequestFailure('engine', 'Parquet artifact digest collision')
-      }
-      await rm(temporary, { force: true })
-    }
+    const artifactToken = randomUUID()
+    const destination = join(OUTPUT_ROOT, `${artifactToken}-${parquetDigest}`)
+    await rename(temporary, destination)
     const profileHash = `sha256:${createHash('sha256').update(`${JSON.stringify(profile)}\n`).digest('hex')}`
     return {
       protocolVersion: PROTOCOL_VERSION,
       snapshotId: request.snapshotId,
+      artifactToken,
       parquetDigest,
       parquetByteLength: outputMetadata.size,
       profileHash,
@@ -588,9 +574,9 @@ const server = createServer(async (request, response) => {
   if (url.pathname === '/healthz') {
     return json(response, 200, { ok: true, protocolVersion: PROTOCOL_VERSION })
   }
-  const artifactMatch = /^\/v1\/artifacts\/([a-f0-9]{64})$/.exec(url.pathname)
+  const artifactMatch = /^\/v1\/artifacts\/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\/([a-f0-9]{64})$/.exec(url.pathname)
   if (request.method === 'GET' && artifactMatch !== null) {
-    const path = join(OUTPUT_ROOT, artifactMatch[1])
+    const path = join(OUTPUT_ROOT, `${artifactMatch[1]}-${artifactMatch[2]}`)
     let artifact
     try {
       artifact = await open(path, 'r')

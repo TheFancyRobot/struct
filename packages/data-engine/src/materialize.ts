@@ -89,6 +89,7 @@ export const materializeDataset = Effect.fn('materializeDataset')(
     )
     const result = yield* client.materialize(request)
     const parquetBytes = yield* client.readArtifact(
+      result.artifactToken,
       result.parquetDigest,
       input.limits.maxOutputBytes,
       input.limits.timeoutMs,

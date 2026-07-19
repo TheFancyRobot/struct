@@ -10,6 +10,10 @@ export const DATA_ENGINE_PROTOCOL_VERSION = '1' as const
 const PositiveInteger = Schema.Number.pipe(Schema.int(), Schema.positive())
 const NonNegativeInteger = Schema.Number.pipe(Schema.int(), Schema.nonNegative())
 const ArtifactDigest = Schema.String.pipe(Schema.pattern(/^[a-f0-9]{64}$/))
+export const ArtifactToken = Schema.String.pipe(Schema.pattern(
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+))
+export type ArtifactToken = Schema.Schema.Type<typeof ArtifactToken>
 
 export const DataEngineInput = Schema.Struct({
   ordinal: NonNegativeInteger,
@@ -62,6 +66,7 @@ export type DatasetProfile = Schema.Schema.Type<typeof DatasetProfile>
 export const MaterializeResult = Schema.Struct({
   protocolVersion: Schema.Literal(DATA_ENGINE_PROTOCOL_VERSION),
   snapshotId: DatasetSnapshotId,
+  artifactToken: ArtifactToken,
   parquetDigest: ArtifactDigest,
   parquetByteLength: PositiveInteger,
   profileHash: Sha256Digest,

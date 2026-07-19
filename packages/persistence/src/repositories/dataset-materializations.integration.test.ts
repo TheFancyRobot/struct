@@ -205,6 +205,16 @@ describeIf('DatasetMaterializationRepo (PostgreSQL)', () => {
     expect(String(expiredCompletion)).toContain(
       'DatasetMaterializationOwnershipLostError',
     )
+    const expiredFailure = await Effect.runPromiseExit(
+      DatasetMaterializationRepo.recordFailure(
+        retry.value,
+        true,
+        'engine',
+      ).pipe(Effect.provide(layer)),
+    )
+    expect(String(expiredFailure)).toContain(
+      'DatasetMaterializationOwnershipLostError',
+    )
     expect(await Effect.runPromise(
       DatasetMaterializationRepo.recoverExpired().pipe(Effect.provide(layer)),
     )).toBe(1)

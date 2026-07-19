@@ -9,6 +9,7 @@ import {
 
 const snapshotId = DatasetSnapshotId.make('550e8400-e29b-41d4-a716-446655440003')
 const digest = 'a'.repeat(64)
+const artifactToken = '00000000-0000-4000-8000-000000000001'
 const request: MaterializeRequest = {
   protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
   operation: 'materialize',
@@ -44,6 +45,7 @@ describe('DataEngineClient', () => {
         result: {
           protocolVersion: '1',
           snapshotId,
+          artifactToken,
           parquetDigest: digest,
           parquetByteLength: 10,
           profileHash: `sha256:${'b'.repeat(64)}`,
@@ -91,7 +93,9 @@ describe('DataEngineClient', () => {
     }, async () => new Response(new Uint8Array(20), {
       headers: { 'content-length': '20' },
     }))
-    const exit = await Effect.runPromiseExit(client.readArtifact(digest, 10, 1_000))
+    const exit = await Effect.runPromiseExit(
+      client.readArtifact(artifactToken, digest, 10, 1_000),
+    )
     expect(exit._tag).toBe('Failure')
     expect(String(exit)).toContain('resource-limit')
   })
@@ -103,7 +107,9 @@ describe('DataEngineClient', () => {
     }, async () => new Response(new Uint8Array(20), {
       headers: { 'content-length': '10' },
     }))
-    const exit = await Effect.runPromiseExit(client.readArtifact(digest, 10, 1_000))
+    const exit = await Effect.runPromiseExit(
+      client.readArtifact(artifactToken, digest, 10, 1_000),
+    )
     expect(exit._tag).toBe('Failure')
     expect(String(exit)).toContain('resource-limit')
   })
@@ -121,9 +127,32 @@ describe('DataEngineClient', () => {
       headers: { 'content-length': '10' },
     }))
     const exit = await Effect.runPromiseExit(
-      client.readArtifact(digest, 10, 10),
+      client.readArtifact(artifactToken, digest, 10, 10),
     )
     expect(exit._tag).toBe('Failure')
+    expect(String(exit)).toContain('timed out')
+  })
+
+  it('times out a stalled materialization response body as transport failure', async () => {
+    const body = new ReadableStream<Uint8Array>({
+      start() {
+        // Deliberately never produce or close the body.
+      },
+    })
+    const client = makeDataEngineClient({
+      baseUrl: 'http://data-engine',
+      credential: 'test-credential-value',
+    }, async () => new Response(body, {
+      headers: { 'content-type': 'application/json' },
+    }))
+    const exit = await Effect.runPromiseExit(
+      client.materialize({
+        ...request,
+        limits: { ...request.limits, timeoutMs: 10 },
+      }),
+    )
+    expect(exit._tag).toBe('Failure')
+    expect(String(exit)).toContain('DataEngineTransportError')
     expect(String(exit)).toContain('timed out')
   })
 })

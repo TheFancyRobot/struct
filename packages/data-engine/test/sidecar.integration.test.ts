@@ -165,12 +165,17 @@ suite('data-engine sidecar', () => {
       throw new Error('sidecar did not return a materialization result')
     }
     const first = firstResponse.json.result as {
+      readonly artifactToken: string
       readonly parquetDigest: string
       readonly parquetByteLength: number
       readonly profile: unknown
     }
-    const replay = replayResponse.json.result
-    expect(replay).toEqual(first)
+    const replay = replayResponse.json.result as typeof first
+    expect(replay.artifactToken).not.toBe(first.artifactToken)
+    expect({
+      ...replay,
+      artifactToken: first.artifactToken,
+    }).toEqual(first)
     expect(first.profile).toEqual({
       rowCount: 2,
       columns: [
@@ -209,15 +214,20 @@ suite('data-engine sidecar', () => {
       ],
     })
     const firstArtifact = await hostRequest({
-      path: `/v1/artifacts/${first.parquetDigest}`,
+      path: `/v1/artifacts/${first.artifactToken}/${first.parquetDigest}`,
       credential: token,
     })
     const replayArtifact = await hostRequest({
-      path: `/v1/artifacts/${first.parquetDigest}`,
+      path: `/v1/artifacts/${replay.artifactToken}/${replay.parquetDigest}`,
       credential: token,
     })
-    expect(replayArtifact.status).toBe(404)
-    expect(replayArtifact.json).toEqual({
+    expect(replayArtifact).toEqual(firstArtifact)
+    const consumedArtifact = await hostRequest({
+      path: `/v1/artifacts/${first.artifactToken}/${first.parquetDigest}`,
+      credential: token,
+    })
+    expect(consumedArtifact.status).toBe(404)
+    expect(consumedArtifact.json).toEqual({
       ok: false,
       error: {
         code: 'not-found',
