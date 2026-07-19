@@ -69,6 +69,10 @@ function isUnitInterval(value: number): boolean {
   return Number.isFinite(value) && value >= 0 && value <= 1
 }
 
+/**
+ * Measures deterministic retrieval recall, locator fidelity, and provenance
+ * isolation against a fixed fixture.
+ */
 export function evaluateDocumentRetrieval(
   cases: ReadonlyArray<RetrievalEvaluationCase>,
   thresholds: RetrievalEvaluationThresholds,

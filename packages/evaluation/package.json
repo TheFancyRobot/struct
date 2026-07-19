@@ -8,7 +8,6 @@
   "scripts": {
     "corpus:smoke": "bun src/phase-02-smoke.ts",
     "corpus:eval": "bun src/corpus-eval.ts",
-    "document:eval": "bun src/phase-02-smoke.ts",
     "bench": "bun src/benchmarks/run.ts",
     "typecheck": "bun --bun tsc --noEmit --project tsconfig.json",
     "test": "bun test --max-concurrency 1 --pass-with-no-tests ."

@@ -23,6 +23,9 @@ export interface Phase02EvaluationReport {
   readonly passed: boolean
 }
 
+/**
+ * Produces the complete deterministic Phase 02 evaluation report.
+ */
 export const runPhase02Evaluation = Effect.fn(
   'Evaluation.runPhase02Evaluation',
 )(function* (): Effect.fn.Return<Phase02EvaluationReport> {

@@ -85,7 +85,13 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `packages/evaluation/src/run-phase-02-evaluation.ts`
 - `packages/evaluation/test/phase-02-evaluation.test.ts`
 - `packages/fred-workflows/src/graphs/document-research.ts`
-- Agent Vault STEP-02-06 session, step, implementation, and outcome notes.
+- `.agent-vault/00_Home/Active_Context.md`
+- `.agent-vault/01_Architecture/Code_Graph.md`
+- `.agent-vault/02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance.md`
+- `.agent-vault/02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance/Implementation_Notes.md`
+- `.agent-vault/02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance/Outcome.md`
+- `.agent-vault/05_Sessions/2026-07-19-111348-evaluate-retrieval-provenance-and-injection-resistance-step-02-06-worker.md`
+- `.agent-vault/08_Automation/code-graph/index.json`
 <!-- AGENT-END:session-changed-paths -->
 
 ## Validation Run
@@ -100,6 +106,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Durable Phase 02 report: lexical recall 1.0, semantic recall 1.0, hybrid recall 1.0, locator fidelity 1.0, zero source-version/stale leaks, zero injection escalations, zero model calls.
 <!-- AGENT-END:session-validation-run -->
 - Final database-backed repository validation: 382 passed, 0 failed, 1,870 assertions across 61 files.
+- Post-review remediation validation: 384 passed, 0 failed, 1,875 assertions across 61 files; focused evaluation 8 passed, 0 failed, 27 assertions; smoke, typecheck, lint, import boundaries, builds, docs, secrets, and vault doctor all clean.
 
 ## Bugs Encountered
 

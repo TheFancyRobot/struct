@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-19T11:27:22.464Z",
+  "generatedAt": "2026-07-19T11:37:35.168Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -3310,16 +3310,17 @@
         {
           "name": "evaluateDocumentRetrieval",
           "kind": "function",
-          "line": 72,
+          "line": 76,
           "exported": true,
-          "endLine": 72
+          "endLine": 76,
+          "doc": "Measures deterministic retrieval recall, locator fidelity, and provenance\nisolation against a fixed fixture."
         }
       ],
       "imports": [],
       "exports": [],
-      "hash": "e58a0f6c8c61d21cfd765fda3bfb8338baa2e336a4928a585194c5ecb0f93316",
-      "mtimeMs": 1784460138639.607,
-      "size": 6902,
+      "hash": "d1481f340dcd5dd706e4b349ab2d28b0e68a48270ac977d5d30cf0e009fae098",
+      "mtimeMs": 1784461008867.5425,
+      "size": 7025,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3629,7 +3630,7 @@
           "endLine": 24
         },
         {
-          "name": "failedWithTag",
+          "name": "failedWith",
           "kind": "function",
           "line": 35,
           "exported": false,
@@ -3638,9 +3639,9 @@
         {
           "name": "evaluatePromptInjection",
           "kind": "const",
-          "line": 42,
+          "line": 51,
           "exported": true,
-          "endLine": 42
+          "endLine": 51
         }
       ],
       "imports": [
@@ -3671,9 +3672,9 @@
         }
       ],
       "exports": [],
-      "hash": "822018f28acb03919aa47c02dff4c7a1a10f4302071e6ff0d030329117c2fa61",
-      "mtimeMs": 1784459858028.6448,
-      "size": 3146,
+      "hash": "7887098c190aea984ecaab36b6dcac14a98c815ad511a80134e387cc7a9ba273",
+      "mtimeMs": 1784461008867.1316,
+      "size": 3576,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3692,9 +3693,9 @@
         {
           "name": "runPhase02Evaluation",
           "kind": "const",
-          "line": 26,
+          "line": 29,
           "exported": true,
-          "endLine": 26
+          "endLine": 29
         }
       ],
       "imports": [
@@ -3724,9 +3725,9 @@
         }
       ],
       "exports": [],
-      "hash": "0f156aa8a2d727eb8db0c3b6e1eb439f0eebaf6061ede5f6103c310f62907e3d",
-      "mtimeMs": 1784459925899.444,
-      "size": 1636,
+      "hash": "75599130ee438837b7e0feeaaece1fe2a82f21e5b00c379334b6cd216707b87d",
+      "mtimeMs": 1784461008867.8462,
+      "size": 1711,
       "generated": false,
       "vendor": false,
       "parser": "regex"

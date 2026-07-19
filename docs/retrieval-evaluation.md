@@ -8,7 +8,7 @@ a model.
 Run it with Bun:
 
 ```sh
-bun run --filter @struct/evaluation document:eval
+bun run corpus:smoke
 bun test packages/evaluation apps/api/test/document-research.integration.test.ts
 ```
 

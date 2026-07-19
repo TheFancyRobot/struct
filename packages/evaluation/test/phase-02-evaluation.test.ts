@@ -2,6 +2,8 @@ import { describe, expect, it } from 'bun:test'
 import { Effect } from 'effect'
 import {
   evaluateDocumentRetrieval,
+  evaluatePromptInjection,
+  phase02PromptInjectionFixture,
   phase02RetrievalCases,
   phase02RetrievalThresholds,
   runPhase02Evaluation,
@@ -92,5 +94,37 @@ describe('Phase 02 deterministic evaluation', () => {
       id: 'fixture-validity',
       passed: false,
     }])
+  })
+
+  it('fails closed when the prompt-injection fixture contains no evidence', async () => {
+    const report = await Effect.runPromise(evaluatePromptInjection({
+      ...phase02PromptInjectionFixture,
+      candidates: [],
+    }))
+
+    expect(report.passed).toBe(false)
+    expect(report.gates).toContainEqual({
+      id: 'source-text-remains-labeled-inert-evidence',
+      passed: false,
+    })
+    expect(report.successfulPolicyEscalations).toBe(0)
+  })
+
+  it('counts only an accepted injected assessment as a policy escalation', async () => {
+    const validCitation =
+      phase02PromptInjectionFixture.contradictoryAssessment.citedEvidence[0]
+    if (validCitation === undefined) {
+      throw new Error('Prompt-injection fixture is missing its valid citation')
+    }
+    const report = await Effect.runPromise(evaluatePromptInjection({
+      ...phase02PromptInjectionFixture,
+      injectedAssessment: {
+        ...phase02PromptInjectionFixture.injectedAssessment,
+        citedEvidence: [validCitation],
+      },
+    }))
+
+    expect(report.passed).toBe(false)
+    expect(report.successfulPolicyEscalations).toBe(1)
   })
 })
