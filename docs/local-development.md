@@ -87,13 +87,13 @@ Reset is a destructive local-only operation. It must never be wired to a product
 | `API_PORT` | `apps/api` | HTTP port | `3001` |
 | `WEB_PORT` | `apps/web` | Vite 8 dev port | `3000` |
 | `WORKER_METRICS_PORT` | `apps/worker` | optional metrics/health port | `3002` |
-| `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` | `apps/api`, `apps/worker`, `packages/fred-workflows` | optional OTLP HTTP trace collector; stdout tracing is the local fallback | `http://localhost:4318/v1/traces` |
+| `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` | `apps/api`, `apps/worker`, `packages/workflows` | optional OTLP HTTP trace collector; stdout tracing is the local fallback | `http://localhost:4318/v1/traces` |
 | `WORKER_POLL_INTERVAL_MS` | `apps/worker` | ingestion job polling interval | `1000` |
 | `WORKER_JOB_STALE_MS` | `apps/worker` | in-progress job stale recovery threshold; research requires at least `RESEARCH_MAX_ELAPSED_MS + max(30000, 2 * WORKER_POLL_INTERVAL_MS)` | `300000` |
-| `FRED_*` / provider keys | `apps/worker`, `packages/fred-workflows` | model provider config via Fred registry | (secret) |
-| `FRED_PROVIDER_PACKAGE` | `packages/fred-workflows` | installed Fred provider package loaded for research jobs | required for research execution |
-| `FRED_MODEL` | `packages/fred-workflows` | provider model identifier for the answer synthesizer | required for research execution |
-| `RESEARCH_MAX_ELAPSED_MS` | `packages/fred-workflows` | elapsed-time budget for one walking-slice run | `60000` |
+| `FRED_*` / provider keys | `apps/worker`, `packages/workflows` | model provider config via Fred registry | (secret) |
+| `FRED_PROVIDER_PACKAGE` | `packages/workflows` | installed Fred provider package loaded for research jobs | required for research execution |
+| `FRED_MODEL` | `packages/workflows` | provider model identifier for the answer synthesizer | required for research execution |
+| `RESEARCH_MAX_ELAPSED_MS` | `packages/workflows` | elapsed-time budget for one walking-slice run | `60000` |
 
 Research jobs renew their attempt-fenced lease at most every 10 seconds while
 Fred is active. Stale recovery compares `updated_at` to PostgreSQL `NOW()`, so

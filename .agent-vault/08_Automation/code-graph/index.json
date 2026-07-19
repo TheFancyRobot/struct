@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-19T13:50:12.833Z",
+  "generatedAt": "2026-07-19T23:47:12.131Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -29,34 +29,42 @@
           "endLine": 21
         },
         {
-          "name": "artifactStorageRootConfig",
+          "name": "apiAuthTokenConfig",
           "kind": "const",
           "line": 24,
           "exported": true,
           "endLine": 24
         },
         {
+          "name": "artifactStorageRootConfig",
+          "kind": "const",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
           "name": "maxTextSourceBytesConfig",
           "kind": "const",
-          "line": 29,
+          "line": 37,
           "exported": true,
-          "endLine": 29
+          "endLine": 37
         }
       ],
       "imports": [
         {
-          "source": "Config",
+          "source": "Config, Redacted",
           "specifier": "effect",
           "imported": [
-            "Config"
+            "Config",
+            "Redacted"
           ],
           "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "19a8c4d1ea186b3a0f7aff8b154aad3cc30d65e722b53488cf9000469432ece5",
-      "mtimeMs": 1784394275372.731,
-      "size": 1057,
+      "hash": "27255bbd7b2856d74a7813049195bb6961c66a6410963b659739846341d70c72",
+      "mtimeMs": 1784499619862.157,
+      "size": 1377,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -68,66 +76,83 @@
         {
           "name": "RegisterRequestBody",
           "kind": "interface",
-          "line": 54,
+          "line": 81,
           "exported": false,
-          "endLine": 54
+          "endLine": 81
         },
         {
           "name": "ResearchRequestBody",
           "kind": "interface",
-          "line": 62,
+          "line": 89,
           "exported": false,
-          "endLine": 62
+          "endLine": 89
         },
         {
           "name": "jsonResponse",
           "kind": "function",
-          "line": 69,
+          "line": 96,
           "exported": false,
-          "endLine": 69,
+          "endLine": 96,
           "signature": "(body: unknown, status = 200)"
+        },
+        {
+          "name": "credentialMatches",
+          "kind": "function",
+          "line": 103,
+          "exported": false,
+          "endLine": 103,
+          "signature": "(expected: string, actual: string)"
         },
         {
           "name": "parseBody",
           "kind": "function",
-          "line": 76,
+          "line": 110,
           "exported": false,
-          "endLine": 76,
+          "endLine": 110,
           "signature": "(body: RegisterRequestBody): Effect.Effect<{"
         },
         {
           "name": "parseResearchBody",
           "kind": "function",
-          "line": 100,
+          "line": 134,
           "exported": false,
-          "endLine": 100,
+          "endLine": 134,
           "signature": "(body: ResearchRequestBody): Effect.Effect<{"
         },
         {
           "name": "researchFailureResponse",
           "kind": "function",
-          "line": 135,
+          "line": 169,
           "exported": false,
-          "endLine": 135,
+          "endLine": 169,
           "signature": "(cause: Cause.Cause<unknown>)"
         },
         {
           "name": "server",
           "kind": "const",
-          "line": 146,
+          "line": 180,
           "exported": false,
-          "endLine": 146
+          "endLine": 180
         }
       ],
       "imports": [
         {
-          "source": "Cause, Effect, Layer, Option, Runtime, Schema",
+          "source": "timingSafeEqual",
+          "specifier": "node:crypto",
+          "imported": [
+            "timingSafeEqual"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Cause, Effect, Layer, Option, Redacted, Runtime, Schema",
           "specifier": "effect",
           "imported": [
             "Cause",
             "Effect",
             "Layer",
             "Option",
+            "Redacted",
             "Runtime",
             "Schema"
           ],
@@ -175,9 +200,9 @@
         }
       ],
       "exports": [],
-      "hash": "dcfdb9718dacdf008091146d4bbe206d1b1fded4319ad56506b06d0755a780be",
-      "mtimeMs": 1784442089971.162,
-      "size": 17242,
+      "hash": "ece559e5b2c1b7ee9b6b03e77bbf292fc9d293f97dafe5bb254e66904f392e73",
+      "mtimeMs": 1784499619862.4875,
+      "size": 29670,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -368,6 +393,335 @@
       "hash": "21a9453f9830e9afbdc5f354de97919e75ae8c05dc8398778f0c1d00e01f46dc",
       "mtimeMs": 1784459569498.2078,
       "size": 13398,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/api/src/routes/dataset-queries.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DatasetQueryHistoryLimit",
+          "kind": "const",
+          "line": 21,
+          "exported": false,
+          "endLine": 21
+        },
+        {
+          "name": "runDatasetQuery",
+          "kind": "const",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
+          "name": "reopenDatasetCitation",
+          "kind": "const",
+          "line": 42,
+          "exported": true,
+          "endLine": 42
+        },
+        {
+          "name": "listDatasetQueryHistory",
+          "kind": "const",
+          "line": 58,
+          "exported": true,
+          "endLine": 58
+        },
+        {
+          "name": "mapStoreError",
+          "kind": "function",
+          "line": 76,
+          "exported": false,
+          "endLine": 76
+        },
+        {
+          "name": "datasetQueryEvidenceStoreLayer",
+          "kind": "const",
+          "line": 84,
+          "exported": true,
+          "endLine": 84
+        },
+        {
+          "name": "json",
+          "kind": "function",
+          "line": 95,
+          "exported": false,
+          "endLine": 95,
+          "signature": "(body: unknown, status = 200)"
+        },
+        {
+          "name": "failureTag",
+          "kind": "function",
+          "line": 102,
+          "exported": false,
+          "endLine": 102,
+          "signature": "(cause: Cause.Cause<unknown>): {"
+        },
+        {
+          "name": "bearerCredential",
+          "kind": "function",
+          "line": 116,
+          "exported": false,
+          "endLine": 116,
+          "signature": "(request: Request)"
+        },
+        {
+          "name": "datasetQueryHistoryResponse",
+          "kind": "const",
+          "line": 130,
+          "exported": true,
+          "endLine": 130
+        },
+        {
+          "name": "datasetCitationResponse",
+          "kind": "const",
+          "line": 181,
+          "exported": true,
+          "endLine": 181
+        },
+        {
+          "name": "DatasetQueryReadRouteDependencies",
+          "kind": "interface",
+          "line": 230,
+          "exported": true,
+          "endLine": 230
+        },
+        {
+          "name": "datasetQueryReadRoute",
+          "kind": "const",
+          "line": 254,
+          "exported": true,
+          "endLine": 254
+        }
+      ],
+      "imports": [
+        {
+          "source": "Cause, Effect, Layer, Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Cause",
+            "Effect",
+            "Layer",
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/data-engine",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/persistence",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "59f0ba4651493aa9f72ecd625bbac030485597aa638b547f8a02b8224eccea4e",
+      "mtimeMs": 1784499619862.9329,
+      "size": 9101,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/api/src/routes/directories.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "RegisterDirectoryInput",
+          "kind": "interface",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "RegisterDirectoryDeps",
+          "kind": "interface",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "registerDirectory",
+          "kind": "function",
+          "line": 44,
+          "exported": true,
+          "endLine": 44
+        },
+        {
+          "name": "decodeDirectoryRegistrationScope",
+          "kind": "function",
+          "line": 72,
+          "exported": true,
+          "endLine": 72
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DirectoryControlRepositoryError",
+          "specifier": "@struct/persistence",
+          "imported": [
+            "DirectoryControlRepositoryError"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "b327899b4ba32341650dde84bd0b0439d4553e17ac0cd0311a1504e4536147db",
+      "mtimeMs": 1784473831668.805,
+      "size": 2929,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/api/src/routes/directory-events.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "MAX_EVENT_BATCH",
+          "kind": "const",
+          "line": 12,
+          "exported": false,
+          "endLine": 12
+        },
+        {
+          "name": "HEARTBEAT_INTERVAL_MS",
+          "kind": "const",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        },
+        {
+          "name": "DirectoryEventDeps",
+          "kind": "interface",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "DirectoryEventStreamRuntime",
+          "kind": "interface",
+          "line": 38,
+          "exported": true,
+          "endLine": 38
+        },
+        {
+          "name": "liveRuntime",
+          "kind": "const",
+          "line": 43,
+          "exported": false,
+          "endLine": 43
+        },
+        {
+          "name": "encodeDirectorySseEvent",
+          "kind": "function",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "loadDirectoryEvents",
+          "kind": "const",
+          "line": 54,
+          "exported": true,
+          "endLine": 54
+        },
+        {
+          "name": "DirectoryEventProjectionError",
+          "kind": "class",
+          "line": 92,
+          "exported": true,
+          "endLine": 92
+        },
+        {
+          "name": "directoryEventsResponse",
+          "kind": "function",
+          "line": 101,
+          "exported": true,
+          "endLine": 101
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "ae60c79286fadc6bd7fcfff8f36129f08c918c194ba1a2f5fa681be5bee862c2",
+      "mtimeMs": 1784473831668.9993,
+      "size": 4665,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/api/src/routes/ingestion-jobs.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DirectoryJobScope",
+          "kind": "interface",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "DirectoryJobRouteDeps",
+          "kind": "interface",
+          "line": 23,
+          "exported": true,
+          "endLine": 23
+        },
+        {
+          "name": "getDirectoryJobStatus",
+          "kind": "const",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "controlDirectoryJob",
+          "kind": "function",
+          "line": 53,
+          "exported": true,
+          "endLine": 53
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Option",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "b17992e34ae7271c5c486f0f7b01dc0ba6ac732ecfdfb085ae9d38783e7966b7",
+      "mtimeMs": 1784473831669.4395,
+      "size": 2256,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -625,6 +979,58 @@
       "parser": "regex"
     },
     {
+      "path": "apps/web/src/api/directories.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "responseJson",
+          "kind": "function",
+          "line": 7,
+          "exported": false,
+          "endLine": 7,
+          "signature": "(response: Response)"
+        },
+        {
+          "name": "registerDirectory",
+          "kind": "function",
+          "line": 14,
+          "exported": true,
+          "endLine": 14
+        },
+        {
+          "name": "fetchDirectoryStatus",
+          "kind": "function",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "commandDirectory",
+          "kind": "function",
+          "line": 43,
+          "exported": true,
+          "endLine": 43
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "28569c67d33a40ff8ac88a3a82f797e1c819c98cd3cc0d5367bcbf12469e73e9",
+      "mtimeMs": 1784473831669.6047,
+      "size": 2167,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "apps/web/src/api/research.ts",
       "language": "TypeScript",
       "symbols": [
@@ -690,9 +1096,9 @@
           "kind": "default"
         }
       ],
-      "hash": "c14322e4dcfa1620b542660273931767fe7b2ebb49585c62dcdbb3163846e5bb",
-      "mtimeMs": 1784435777323.734,
-      "size": 3734,
+      "hash": "74166ec7250cb21bfc494133805e9f23fa6b577df1dc679f50f7ff9091b3b5af",
+      "mtimeMs": 1784494369350.94,
+      "size": 3894,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -738,6 +1144,210 @@
       "hash": "f594b4bb11fd235ee0f880bd3aa0e361787a2118fe0955524f12a38dbe8cc431",
       "mtimeMs": 1784459569498.6582,
       "size": 3215,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/web/src/components/DirectoryBrowser.tsx",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DirectoryBrowserProps",
+          "kind": "interface",
+          "line": 6,
+          "exported": true,
+          "endLine": 6
+        },
+        {
+          "name": "DirectoryBrowser",
+          "kind": "const",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        }
+      ],
+      "imports": [
+        {
+          "source": "For, Show, type Component",
+          "specifier": "solid-js",
+          "imported": [
+            "For",
+            "Show",
+            "typeComponent"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DirectoryStatusProjection",
+          "specifier": "@struct/domain",
+          "imported": [
+            "DirectoryStatusProjection"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "30718e02fe8079492140888d2b5bd9a5846255d704638b569129a22b56c16864",
+      "mtimeMs": 1784473831669.7466,
+      "size": 1597,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/web/src/components/DirectoryControlPanel.tsx",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "eventTypes",
+          "kind": "const",
+          "line": 25,
+          "exported": false,
+          "endLine": 25
+        },
+        {
+          "name": "DirectoryControlPanelProps",
+          "kind": "interface",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        },
+        {
+          "name": "DirectoryProgressState",
+          "kind": "interface",
+          "line": 42,
+          "exported": true,
+          "endLine": 42
+        },
+        {
+          "name": "createDirectoryProgressState",
+          "kind": "function",
+          "line": 49,
+          "exported": true,
+          "endLine": 49
+        },
+        {
+          "name": "DirectoryControlPanel",
+          "kind": "const",
+          "line": 69,
+          "exported": true,
+          "endLine": 69
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "commandDirectory",
+          "specifier": "../api/directories",
+          "imported": [
+            "commandDirectory"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "useSSE",
+          "specifier": "../hooks/useSSE",
+          "imported": [
+            "useSSE"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DirectoryBrowser",
+          "specifier": "./DirectoryBrowser",
+          "imported": [
+            "DirectoryBrowser"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "IngestionJobStatus",
+          "specifier": "./IngestionJobStatus",
+          "imported": [
+            "IngestionJobStatus"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SourceControls",
+          "specifier": "./SourceControls",
+          "imported": [
+            "SourceControls"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "22dd66a92fdddf40b88e2d9905e8a2d7a4d35dddba50e42892b6af6b6408f133",
+      "mtimeMs": 1784473831669.8586,
+      "size": 3725,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/web/src/components/IngestionJobStatus.tsx",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DirectoryViewState",
+          "kind": "type",
+          "line": 9,
+          "exported": true,
+          "endLine": 9
+        },
+        {
+          "name": "DirectoryViewStateInput",
+          "kind": "interface",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "directoryViewState",
+          "kind": "function",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "IngestionJobStatusProps",
+          "kind": "interface",
+          "line": 61,
+          "exported": true,
+          "endLine": 61
+        },
+        {
+          "name": "IngestionJobStatus",
+          "kind": "const",
+          "line": 63,
+          "exported": true,
+          "endLine": 63
+        }
+      ],
+      "imports": [
+        {
+          "source": "Show, type Component",
+          "specifier": "solid-js",
+          "imported": [
+            "Show",
+            "typeComponent"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "d181545da99946fc9d85e906048a257bc14b12bc41573a5661c8445f7a23fb10",
+      "mtimeMs": 1784473831669.9534,
+      "size": 2659,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -832,6 +1442,58 @@
       "hash": "7ded5d18de54aeaec45af4b59ac5f56dee5bff7d6251a7021c1e773d2adc9e8a",
       "mtimeMs": 1784459569498.836,
       "size": 5461,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/web/src/components/SourceControls.tsx",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "commands",
+          "kind": "const",
+          "line": 9,
+          "exported": false,
+          "endLine": 9
+        },
+        {
+          "name": "availableDirectoryControls",
+          "kind": "function",
+          "line": 16,
+          "exported": true,
+          "endLine": 16
+        },
+        {
+          "name": "SourceControlsProps",
+          "kind": "interface",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
+          "name": "SourceControls",
+          "kind": "const",
+          "line": 38,
+          "exported": true,
+          "endLine": 38
+        }
+      ],
+      "imports": [
+        {
+          "source": "For, type Component",
+          "specifier": "solid-js",
+          "imported": [
+            "For",
+            "typeComponent"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "ebb9c89d0bc20d709473d0ed0becd47bf9897b274dd6a2f840f80e8d04d8ef72",
+      "mtimeMs": 1784473831670.046,
+      "size": 1665,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1348,6 +2010,106 @@
       "parser": "regex"
     },
     {
+      "path": "apps/worker/src/jobs/materialize-dataset.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DatasetMaterializationCatalogError",
+          "kind": "class",
+          "line": 20,
+          "exported": true,
+          "endLine": 20
+        },
+        {
+          "name": "DatasetMaterializationLeaseHeartbeatError",
+          "kind": "class",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
+          "name": "DatasetMaterializationWorkerDeps",
+          "kind": "interface",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
+          "name": "tagged",
+          "kind": "function",
+          "line": 68,
+          "exported": false,
+          "endLine": 68,
+          "signature": "(error: unknown)"
+        },
+        {
+          "name": "retryable",
+          "kind": "function",
+          "line": 77,
+          "exported": false,
+          "endLine": 77,
+          "signature": "(error: unknown)"
+        },
+        {
+          "name": "errorCode",
+          "kind": "function",
+          "line": 92,
+          "exported": false,
+          "endLine": 92,
+          "signature": "(error: unknown)"
+        },
+        {
+          "name": "ownershipLost",
+          "kind": "function",
+          "line": 102,
+          "exported": false,
+          "endLine": 102,
+          "signature": "(error: unknown)"
+        },
+        {
+          "name": "processClaimed",
+          "kind": "const",
+          "line": 106,
+          "exported": false,
+          "endLine": 106
+        },
+        {
+          "name": "processOneDatasetMaterialization",
+          "kind": "const",
+          "line": 152,
+          "exported": true,
+          "endLine": 152
+        }
+      ],
+      "imports": [
+        {
+          "source": "type ArtifactStoreShape",
+          "specifier": "@struct/source-storage",
+          "imported": [
+            "typeArtifactStoreShape"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect, Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "c30f2a866c1a8fafa015372b01d1ec281d1a6161e37a613814ad69331bf2ef97",
+      "mtimeMs": 1784496880034.3704,
+      "size": 6925,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "apps/worker/src/jobs/refresh-directory.ts",
       "language": "TypeScript",
       "symbols": [
@@ -1371,7 +2133,7 @@
       ],
       "exports": [],
       "hash": "3d7e6ccc6072153ed43e1547235918bbec1d377f4e70d697cff04477597e4616",
-      "mtimeMs": 1784468642724.2117,
+      "mtimeMs": 1784470343846.8486,
       "size": 371,
       "generated": false,
       "vendor": false,
@@ -1626,9 +2388,9 @@
         {
           "name": "program",
           "kind": "const",
-          "line": 50,
+          "line": 54,
           "exported": false,
-          "endLine": 50
+          "endLine": 54
         }
       ],
       "imports": [
@@ -1647,6 +2409,14 @@
           "specifier": "postgres",
           "imported": [
             "postgres"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DataEngineClient",
+          "specifier": "@struct/data-engine",
+          "imported": [
+            "DataEngineClient"
           ],
           "kind": "static"
         },
@@ -1717,6 +2487,14 @@
           "kind": "static"
         },
         {
+          "source": "processOneDatasetMaterialization",
+          "specifier": "./jobs/materialize-dataset",
+          "imported": [
+            "processOneDatasetMaterialization"
+          ],
+          "kind": "static"
+        },
+        {
           "source": "runWorkerPollLoops",
           "specifier": "./polling",
           "imported": [
@@ -1726,9 +2504,9 @@
         }
       ],
       "exports": [],
-      "hash": "66125df9085b1509d8941677a7da8068f2c9fd546c2a37458f50251a353a1d1b",
-      "mtimeMs": 1784442089973.1924,
-      "size": 11297,
+      "hash": "08daab8d70177911714acfaa31814d0863b8d6fec075f9e294176898e8e96c60",
+      "mtimeMs": 1784504695471.5906,
+      "size": 13834,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1757,9 +2535,832 @@
         }
       ],
       "exports": [],
-      "hash": "72861682ff6ff54245b76dfbea85c7f39da16b2372ddde66aa39f0a049c5319c",
-      "mtimeMs": 1784433778770.0542,
-      "size": 929,
+      "hash": "2d97ce77c995f56feb1ea6f2ceebfe257d2a46910098030b43e249238120dfa2",
+      "mtimeMs": 1784493727972.0654,
+      "size": 1413,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/data-engine/src/client.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DataEngineConfigurationError",
+          "kind": "class",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "DataEngineTransportError",
+          "kind": "class",
+          "line": 19,
+          "exported": true,
+          "endLine": 19
+        },
+        {
+          "name": "DataEngineProtocolError",
+          "kind": "class",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "DataEngineOperationError",
+          "kind": "class",
+          "line": 31,
+          "exported": true,
+          "endLine": 31
+        },
+        {
+          "name": "DataEngineClientConfig",
+          "kind": "interface",
+          "line": 37,
+          "exported": true,
+          "endLine": 37
+        },
+        {
+          "name": "DataEngineFetch",
+          "kind": "type",
+          "line": 42,
+          "exported": true,
+          "endLine": 42
+        },
+        {
+          "name": "DataEngineMaterializationClientShape",
+          "kind": "interface",
+          "line": 47,
+          "exported": true,
+          "endLine": 47
+        },
+        {
+          "name": "DataEngineClientShape",
+          "kind": "interface",
+          "line": 65,
+          "exported": true,
+          "endLine": 65
+        },
+        {
+          "name": "reason",
+          "kind": "function",
+          "line": 75,
+          "exported": false,
+          "endLine": 75,
+          "signature": "(cause: unknown)"
+        },
+        {
+          "name": "ArtifactLimitExceeded",
+          "kind": "class",
+          "line": 79,
+          "exported": false,
+          "endLine": 79
+        },
+        {
+          "name": "sha256Json",
+          "kind": "function",
+          "line": 81,
+          "exported": false,
+          "endLine": 81,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "timeoutError",
+          "kind": "function",
+          "line": 87,
+          "exported": false,
+          "endLine": 87,
+          "signature": "(message: string)"
+        },
+        {
+          "name": "remainingBudget",
+          "kind": "function",
+          "line": 91,
+          "exported": false,
+          "endLine": 91
+        },
+        {
+          "name": "readJsonBody",
+          "kind": "function",
+          "line": 101,
+          "exported": false,
+          "endLine": 101
+        },
+        {
+          "name": "makeDataEngineClient",
+          "kind": "function",
+          "line": 141,
+          "exported": true,
+          "endLine": 141
+        },
+        {
+          "name": "DataEngineClient",
+          "kind": "class",
+          "line": 464,
+          "exported": true,
+          "endLine": 464
+        }
+      ],
+      "imports": [
+        {
+          "source": "Config, Effect, Redacted, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Config",
+            "Effect",
+            "Redacted",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "a1bf38cbda9e4820027389af6f4d598b0c761d2076d9e9011abb6b0a11299652",
+      "mtimeMs": 1784499619863.6208,
+      "size": 16010,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/data-engine/src/materialize.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "MaterializationLimits",
+          "kind": "interface",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "MaterializeDatasetInput",
+          "kind": "interface",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "MaterializedDataset",
+          "kind": "interface",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        },
+        {
+          "name": "MaterializeDatasetDependencies",
+          "kind": "interface",
+          "line": 41,
+          "exported": true,
+          "endLine": 41
+        },
+        {
+          "name": "encoder",
+          "kind": "const",
+          "line": 46,
+          "exported": false,
+          "endLine": 46
+        },
+        {
+          "name": "canonicalProfile",
+          "kind": "function",
+          "line": 48,
+          "exported": false,
+          "endLine": 48,
+          "signature": "(profile: DatasetProfile)"
+        },
+        {
+          "name": "materializeDataset",
+          "kind": "const",
+          "line": 52,
+          "exported": true,
+          "endLine": 52
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "1babfba04ad99f1a19ccd55f645873384343991db92a87b479874ad3035dbf7e",
+      "mtimeMs": 1784496880035.8274,
+      "size": 4938,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/data-engine/src/protocol.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DATA_ENGINE_PROTOCOL_VERSION",
+          "kind": "const",
+          "line": 11,
+          "exported": true,
+          "endLine": 11
+        },
+        {
+          "name": "PositiveInteger",
+          "kind": "const",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        },
+        {
+          "name": "NonNegativeInteger",
+          "kind": "const",
+          "line": 14,
+          "exported": false,
+          "endLine": 14
+        },
+        {
+          "name": "ArtifactDigest",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "ArtifactToken",
+          "kind": "const",
+          "line": 16,
+          "exported": true,
+          "endLine": 16
+        },
+        {
+          "name": "ArtifactToken",
+          "kind": "type",
+          "line": 19,
+          "exported": true,
+          "endLine": 19
+        },
+        {
+          "name": "DataEngineInput",
+          "kind": "const",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "DataEngineInput",
+          "kind": "type",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "MaterializeRequest",
+          "kind": "const",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "MaterializeRequest",
+          "kind": "type",
+          "line": 51,
+          "exported": true,
+          "endLine": 51
+        },
+        {
+          "name": "ColumnProfile",
+          "kind": "const",
+          "line": 53,
+          "exported": true,
+          "endLine": 53
+        },
+        {
+          "name": "ColumnProfile",
+          "kind": "type",
+          "line": 61,
+          "exported": true,
+          "endLine": 61
+        },
+        {
+          "name": "DatasetProfile",
+          "kind": "const",
+          "line": 63,
+          "exported": true,
+          "endLine": 63
+        },
+        {
+          "name": "DatasetProfile",
+          "kind": "type",
+          "line": 67,
+          "exported": true,
+          "endLine": 67
+        },
+        {
+          "name": "MaterializeResult",
+          "kind": "const",
+          "line": 69,
+          "exported": true,
+          "endLine": 69
+        },
+        {
+          "name": "MaterializeResult",
+          "kind": "type",
+          "line": 78,
+          "exported": true,
+          "endLine": 78
+        },
+        {
+          "name": "MaterializeSuccess",
+          "kind": "const",
+          "line": 80,
+          "exported": true,
+          "endLine": 80
+        },
+        {
+          "name": "DataEngineErrorCode",
+          "kind": "const",
+          "line": 85,
+          "exported": true,
+          "endLine": 85
+        },
+        {
+          "name": "DataEngineErrorCode",
+          "kind": "type",
+          "line": 99,
+          "exported": true,
+          "endLine": 99
+        },
+        {
+          "name": "MaterializeFailure",
+          "kind": "const",
+          "line": 101,
+          "exported": true,
+          "endLine": 101
+        },
+        {
+          "name": "MaterializeResponse",
+          "kind": "const",
+          "line": 109,
+          "exported": true,
+          "endLine": 109
+        },
+        {
+          "name": "MaterializeResponse",
+          "kind": "type",
+          "line": 113,
+          "exported": true,
+          "endLine": 113
+        },
+        {
+          "name": "SqlAlias",
+          "kind": "const",
+          "line": 115,
+          "exported": false,
+          "endLine": 115
+        },
+        {
+          "name": "SqlText",
+          "kind": "const",
+          "line": 118,
+          "exported": false,
+          "endLine": 118
+        },
+        {
+          "name": "QuerySnapshotBinding",
+          "kind": "const",
+          "line": 120,
+          "exported": true,
+          "endLine": 120
+        },
+        {
+          "name": "QuerySnapshotBinding",
+          "kind": "type",
+          "line": 127,
+          "exported": true,
+          "endLine": 127
+        },
+        {
+          "name": "QueryRequest",
+          "kind": "const",
+          "line": 130,
+          "exported": true,
+          "endLine": 130
+        },
+        {
+          "name": "QueryRequest",
+          "kind": "type",
+          "line": 162,
+          "exported": true,
+          "endLine": 162
+        },
+        {
+          "name": "QueryColumn",
+          "kind": "const",
+          "line": 164,
+          "exported": true,
+          "endLine": 164
+        },
+        {
+          "name": "QueryColumn",
+          "kind": "type",
+          "line": 169,
+          "exported": true,
+          "endLine": 169
+        },
+        {
+          "name": "QueryValue",
+          "kind": "const",
+          "line": 171,
+          "exported": true,
+          "endLine": 171
+        },
+        {
+          "name": "QueryValue",
+          "kind": "type",
+          "line": 176,
+          "exported": true,
+          "endLine": 176
+        },
+        {
+          "name": "QueryResult",
+          "kind": "const",
+          "line": 178,
+          "exported": true,
+          "endLine": 178
+        },
+        {
+          "name": "QueryResult",
+          "kind": "type",
+          "line": 195,
+          "exported": true,
+          "endLine": 195
+        },
+        {
+          "name": "QuerySuccess",
+          "kind": "const",
+          "line": 197,
+          "exported": true,
+          "endLine": 197
+        },
+        {
+          "name": "QueryFailure",
+          "kind": "const",
+          "line": 202,
+          "exported": true,
+          "endLine": 202
+        },
+        {
+          "name": "QueryResponse",
+          "kind": "const",
+          "line": 210,
+          "exported": true,
+          "endLine": 210
+        },
+        {
+          "name": "QueryResponse",
+          "kind": "type",
+          "line": 211,
+          "exported": true,
+          "endLine": 211
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "a648ffca7a7c10146103cb9fb70248fd6189449f01b0ac554235ea71483e6523",
+      "mtimeMs": 1784499619863.9429,
+      "size": 6462,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/data-engine/src/query-service.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "Credential",
+          "kind": "const",
+          "line": 21,
+          "exported": false,
+          "endLine": 21
+        },
+        {
+          "name": "QueryAlias",
+          "kind": "const",
+          "line": 25,
+          "exported": false,
+          "endLine": 25
+        },
+        {
+          "name": "PositiveInteger",
+          "kind": "const",
+          "line": 28,
+          "exported": false,
+          "endLine": 28
+        },
+        {
+          "name": "CredentialInput",
+          "kind": "const",
+          "line": 30,
+          "exported": false,
+          "endLine": 30
+        },
+        {
+          "name": "ScopedDatasetQuery",
+          "kind": "const",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
+          "name": "ScopedDatasetQuery",
+          "kind": "type",
+          "line": 58,
+          "exported": true,
+          "endLine": 58
+        },
+        {
+          "name": "DatasetQueryAuthenticationError",
+          "kind": "class",
+          "line": 60,
+          "exported": true,
+          "endLine": 60
+        },
+        {
+          "name": "DatasetQueryAuthorizationError",
+          "kind": "class",
+          "line": 66,
+          "exported": true,
+          "endLine": 66
+        },
+        {
+          "name": "DatasetQueryCatalogError",
+          "kind": "class",
+          "line": 72,
+          "exported": true,
+          "endLine": 72
+        },
+        {
+          "name": "DatasetQueryRequestError",
+          "kind": "class",
+          "line": 78,
+          "exported": true,
+          "endLine": 78
+        },
+        {
+          "name": "DatasetQueryPrincipal",
+          "kind": "interface",
+          "line": 84,
+          "exported": true,
+          "endLine": 84
+        },
+        {
+          "name": "DatasetQueryAuthorizationShape",
+          "kind": "interface",
+          "line": 88,
+          "exported": true,
+          "endLine": 88
+        },
+        {
+          "name": "DatasetQueryAuthorization",
+          "kind": "class",
+          "line": 99,
+          "exported": true,
+          "endLine": 99
+        },
+        {
+          "name": "DatasetQueryCatalogShape",
+          "kind": "interface",
+          "line": 106,
+          "exported": true,
+          "endLine": 106
+        },
+        {
+          "name": "DatasetQueryCatalog",
+          "kind": "class",
+          "line": 117,
+          "exported": true,
+          "endLine": 117
+        },
+        {
+          "name": "ReadOnlySqlServiceShape",
+          "kind": "interface",
+          "line": 124,
+          "exported": true,
+          "endLine": 124
+        },
+        {
+          "name": "DatasetQueryClientShape",
+          "kind": "interface",
+          "line": 139,
+          "exported": false,
+          "endLine": 139
+        },
+        {
+          "name": "makeReadOnlySqlService",
+          "kind": "function",
+          "line": 150,
+          "exported": true,
+          "endLine": 150
+        },
+        {
+          "name": "ReadOnlySqlService",
+          "kind": "class",
+          "line": 212,
+          "exported": true,
+          "endLine": 212
+        }
+      ],
+      "imports": [
+        {
+          "source": "Context, Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Context",
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "7c228e388269c599bc419e5b1cfd59b939d44aa135ee1db7883bd841f519ed4d",
+      "mtimeMs": 1784496880036.9966,
+      "size": 6952,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/data-engine/src/query-tools.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonNegativeInteger",
+          "kind": "const",
+          "line": 16,
+          "exported": false,
+          "endLine": 16
+        },
+        {
+          "name": "DatasetCitationRequest",
+          "kind": "const",
+          "line": 18,
+          "exported": true,
+          "endLine": 18
+        },
+        {
+          "name": "DatasetCitationRequest",
+          "kind": "type",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
+          "name": "DeterministicDatasetQueryInput",
+          "kind": "const",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        },
+        {
+          "name": "DeterministicDatasetQueryInput",
+          "kind": "type",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "DeterministicDatasetQueryOutput",
+          "kind": "const",
+          "line": 42,
+          "exported": true,
+          "endLine": 42
+        },
+        {
+          "name": "DeterministicDatasetQueryOutput",
+          "kind": "type",
+          "line": 49,
+          "exported": true,
+          "endLine": 49
+        },
+        {
+          "name": "DatasetQueryToolRequestError",
+          "kind": "class",
+          "line": 52,
+          "exported": true,
+          "endLine": 52
+        },
+        {
+          "name": "DatasetQueryToolPersistenceError",
+          "kind": "class",
+          "line": 58,
+          "exported": true,
+          "endLine": 58
+        },
+        {
+          "name": "DatasetQueryEvidenceStoreShape",
+          "kind": "interface",
+          "line": 64,
+          "exported": true,
+          "endLine": 64
+        },
+        {
+          "name": "DatasetQueryEvidenceStore",
+          "kind": "class",
+          "line": 77,
+          "exported": true,
+          "endLine": 77
+        },
+        {
+          "name": "DatasetQueryIdentityShape",
+          "kind": "interface",
+          "line": 84,
+          "exported": true,
+          "endLine": 84
+        },
+        {
+          "name": "DatasetQueryIdentity",
+          "kind": "class",
+          "line": 90,
+          "exported": true,
+          "endLine": 90
+        },
+        {
+          "name": "stableRequestPayload",
+          "kind": "function",
+          "line": 97,
+          "exported": false,
+          "endLine": 97
+        },
+        {
+          "name": "digest",
+          "kind": "const",
+          "line": 119,
+          "exported": false,
+          "endLine": 119
+        },
+        {
+          "name": "makeDeterministicDatasetQueryService",
+          "kind": "function",
+          "line": 129,
+          "exported": true,
+          "endLine": 129
+        },
+        {
+          "name": "DeterministicDatasetQueryExecute",
+          "kind": "type",
+          "line": 280,
+          "exported": true,
+          "endLine": 280
+        },
+        {
+          "name": "DeterministicDatasetQueryService",
+          "kind": "class",
+          "line": 283,
+          "exported": true,
+          "endLine": 283
+        }
+      ],
+      "imports": [
+        {
+          "source": "Context, Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Context",
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "./protocol.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "./query-service.js",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "2e8d8d9cedda26ef53b0581961fee64e54ec969acb708370d95c8edc05129a4f",
+      "mtimeMs": 1784499619864.365,
+      "size": 11129,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2620,46 +4221,74 @@
           "endLine": 73
         },
         {
-          "name": "QueryResultSnapshotId",
+          "name": "DatasetSchemaFamilyId",
           "kind": "const",
           "line": 76,
           "exported": true,
           "endLine": 76
         },
         {
+          "name": "DatasetSchemaFamilyId",
+          "kind": "type",
+          "line": 79,
+          "exported": true,
+          "endLine": 79
+        },
+        {
+          "name": "QueryResultSnapshotId",
+          "kind": "const",
+          "line": 83,
+          "exported": true,
+          "endLine": 83
+        },
+        {
           "name": "QueryResultSnapshotId",
           "kind": "type",
-          "line": 77,
-          "exported": true,
-          "endLine": 77
-        },
-        {
-          "name": "EventJournalId",
-          "kind": "const",
-          "line": 80,
-          "exported": true,
-          "endLine": 80
-        },
-        {
-          "name": "EventJournalId",
-          "kind": "type",
-          "line": 81,
-          "exported": true,
-          "endLine": 81
-        },
-        {
-          "name": "JobQueueId",
-          "kind": "const",
           "line": 84,
           "exported": true,
           "endLine": 84
         },
         {
+          "name": "DatasetCitationId",
+          "kind": "const",
+          "line": 87,
+          "exported": true,
+          "endLine": 87
+        },
+        {
+          "name": "DatasetCitationId",
+          "kind": "type",
+          "line": 88,
+          "exported": true,
+          "endLine": 88
+        },
+        {
+          "name": "EventJournalId",
+          "kind": "const",
+          "line": 91,
+          "exported": true,
+          "endLine": 91
+        },
+        {
+          "name": "EventJournalId",
+          "kind": "type",
+          "line": 92,
+          "exported": true,
+          "endLine": 92
+        },
+        {
+          "name": "JobQueueId",
+          "kind": "const",
+          "line": 95,
+          "exported": true,
+          "endLine": 95
+        },
+        {
           "name": "JobQueueId",
           "kind": "type",
-          "line": 85,
+          "line": 96,
           "exported": true,
-          "endLine": 85
+          "endLine": 96
         }
       ],
       "imports": [
@@ -2673,9 +4302,440 @@
         }
       ],
       "exports": [],
-      "hash": "9dd1d46880e6da09a906b9be2ac67449c8b8269c20a819d4e69b231136dcc132",
-      "mtimeMs": 1784463905700.7373,
-      "size": 4243,
+      "hash": "41fc7e81a4ccfc102243611627bc8f6c7f4f73bc9400c5bda96b1e3dc3d457e2",
+      "mtimeMs": 1784499619864.7275,
+      "size": 4751,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/dataset-catalog.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonEmptyString",
+          "kind": "const",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        },
+        {
+          "name": "NonNegativeInteger",
+          "kind": "const",
+          "line": 14,
+          "exported": false,
+          "endLine": 14
+        },
+        {
+          "name": "PositiveInteger",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "DatasetLifecycleStatus",
+          "kind": "const",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "DatasetLifecycleStatus",
+          "kind": "type",
+          "line": 18,
+          "exported": true,
+          "endLine": 18
+        },
+        {
+          "name": "DatasetLogicalType",
+          "kind": "const",
+          "line": 20,
+          "exported": true,
+          "endLine": 20
+        },
+        {
+          "name": "DatasetLogicalType",
+          "kind": "type",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "DatasetAsset",
+          "kind": "const",
+          "line": 31,
+          "exported": true,
+          "endLine": 31
+        },
+        {
+          "name": "DatasetAsset",
+          "kind": "type",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "DatasetFieldSchema",
+          "kind": "const",
+          "line": 41,
+          "exported": true,
+          "endLine": 41
+        },
+        {
+          "name": "DatasetFieldSchema",
+          "kind": "type",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "DatasetSchemaFamily",
+          "kind": "const",
+          "line": 50,
+          "exported": true,
+          "endLine": 50
+        },
+        {
+          "name": "DatasetSchemaFamily",
+          "kind": "type",
+          "line": 72,
+          "exported": true,
+          "endLine": 72
+        },
+        {
+          "name": "DatasetSnapshotSource",
+          "kind": "const",
+          "line": 74,
+          "exported": true,
+          "endLine": 74
+        },
+        {
+          "name": "DatasetSnapshotSource",
+          "kind": "type",
+          "line": 80,
+          "exported": true,
+          "endLine": 80
+        },
+        {
+          "name": "DatasetSnapshot",
+          "kind": "const",
+          "line": 83,
+          "exported": true,
+          "endLine": 83
+        },
+        {
+          "name": "DatasetSnapshot",
+          "kind": "type",
+          "line": 114,
+          "exported": true,
+          "endLine": 114
+        }
+      ],
+      "imports": [
+        {
+          "source": "Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Sha256Digest",
+          "specifier": "./directory-manifest.js",
+          "imported": [
+            "Sha256Digest"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "caac70420a5fb57108a087b92afb8d148ad462b61c3ee1861cef910618d7283d",
+      "mtimeMs": 1784479487013.3286,
+      "size": 3893,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/dataset-query-evidence.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonNegativeInteger",
+          "kind": "const",
+          "line": 12,
+          "exported": false,
+          "endLine": 12
+        },
+        {
+          "name": "CanonicalSql",
+          "kind": "const",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        },
+        {
+          "name": "QueryValue",
+          "kind": "const",
+          "line": 14,
+          "exported": false,
+          "endLine": 14
+        },
+        {
+          "name": "ArtifactDigest",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "QuerySnapshotReference",
+          "kind": "const",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "QuerySnapshotReference",
+          "kind": "type",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "QueryResultColumn",
+          "kind": "const",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "QueryResultColumn",
+          "kind": "type",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
+          "name": "QueryResultSnapshot",
+          "kind": "const",
+          "line": 34,
+          "exported": true,
+          "endLine": 34
+        },
+        {
+          "name": "QueryResultSnapshot",
+          "kind": "type",
+          "line": 66,
+          "exported": true,
+          "endLine": 66
+        },
+        {
+          "name": "DatasetQueryHistoryItem",
+          "kind": "const",
+          "line": 69,
+          "exported": true,
+          "endLine": 69
+        },
+        {
+          "name": "DatasetQueryHistoryItem",
+          "kind": "type",
+          "line": 87,
+          "exported": true,
+          "endLine": 87
+        },
+        {
+          "name": "DatasetCitation",
+          "kind": "const",
+          "line": 90,
+          "exported": true,
+          "endLine": 90
+        },
+        {
+          "name": "DatasetCitation",
+          "kind": "type",
+          "line": 114,
+          "exported": true,
+          "endLine": 114
+        },
+        {
+          "name": "DatasetCitationEvidence",
+          "kind": "const",
+          "line": 116,
+          "exported": true,
+          "endLine": 116
+        },
+        {
+          "name": "DatasetCitationEvidence",
+          "kind": "type",
+          "line": 122,
+          "exported": true,
+          "endLine": 122
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Sha256Digest",
+          "specifier": "./directory-manifest.js",
+          "imported": [
+            "Sha256Digest"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "07954ff046ba3145e9c8bc01e6ac16e6720a4d6d091c0572a588d6c7edca1f30",
+      "mtimeMs": 1784499619864.8447,
+      "size": 4417,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/directory-controls.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonNegativeInteger",
+          "kind": "const",
+          "line": 14,
+          "exported": false,
+          "endLine": 14
+        },
+        {
+          "name": "PositiveInteger",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "DirectoryControlCommand",
+          "kind": "const",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "DirectoryControlCommand",
+          "kind": "type",
+          "line": 23,
+          "exported": true,
+          "endLine": 23
+        },
+        {
+          "name": "DirectoryProgressEventType",
+          "kind": "const",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
+          "name": "DirectoryProgressEventType",
+          "kind": "type",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        },
+        {
+          "name": "DirectoryEntryFailure",
+          "kind": "const",
+          "line": 38,
+          "exported": true,
+          "endLine": 38
+        },
+        {
+          "name": "DirectoryEntryFailure",
+          "kind": "type",
+          "line": 43,
+          "exported": true,
+          "endLine": 43
+        },
+        {
+          "name": "DirectoryProgressCounts",
+          "kind": "const",
+          "line": 46,
+          "exported": true,
+          "endLine": 46
+        },
+        {
+          "name": "DirectoryProgressCounts",
+          "kind": "type",
+          "line": 63,
+          "exported": true,
+          "endLine": 63
+        },
+        {
+          "name": "DirectoryStatusProjection",
+          "kind": "const",
+          "line": 66,
+          "exported": true,
+          "endLine": 66
+        },
+        {
+          "name": "DirectoryStatusProjection",
+          "kind": "type",
+          "line": 81,
+          "exported": true,
+          "endLine": 81
+        },
+        {
+          "name": "DirectoryProgressEvent",
+          "kind": "const",
+          "line": 84,
+          "exported": true,
+          "endLine": 84
+        },
+        {
+          "name": "DirectoryProgressEvent",
+          "kind": "type",
+          "line": 92,
+          "exported": true,
+          "endLine": 92
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DirectoryIngestionJobStatus",
+          "specifier": "./ingestion-job.js",
+          "imported": [
+            "DirectoryIngestionJobStatus"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DirectoryRelativePath",
+          "specifier": "./directory-manifest.js",
+          "imported": [
+            "DirectoryRelativePath"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "5a7da2361e69bec2797e3f1efb6da486e323b33a80be58babe481d3fe6e93e8b",
+      "mtimeMs": 1784473831671.5078,
+      "size": 2890,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3763,6 +5823,1050 @@
       "parser": "regex"
     },
     {
+      "path": "packages/evaluation/src/benchmarks/run.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "repositoryRoot",
+          "kind": "const",
+          "line": 6,
+          "exported": false,
+          "endLine": 6
+        },
+        {
+          "name": "profile",
+          "kind": "const",
+          "line": 7,
+          "exported": false,
+          "endLine": 7
+        },
+        {
+          "name": "result",
+          "kind": "const",
+          "line": 8,
+          "exported": false,
+          "endLine": 8
+        }
+      ],
+      "imports": [
+        {
+          "source": "cpus, freemem, platform, release, totalmem",
+          "specifier": "node:os",
+          "imported": [
+            "cpus",
+            "freemem",
+            "platform",
+            "release",
+            "totalmem"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "resolve",
+          "specifier": "node:path",
+          "imported": [
+            "resolve"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Config, Effect, Redacted",
+          "specifier": "effect",
+          "imported": [
+            "Config",
+            "Effect",
+            "Redacted"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "runPhase04Evaluation",
+          "specifier": "../phase-04-evaluation.js",
+          "imported": [
+            "runPhase04Evaluation"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "cfe48d26684ee746c2fdad05c356f6a69f0e5db6ce42fdf4f8eedd5f149eadc3",
+      "mtimeMs": 1784504531914.6592,
+      "size": 1814,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/evaluation/src/corpus-compare-hashes.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "manifest",
+          "kind": "const",
+          "line": 8,
+          "exported": false,
+          "endLine": 8
+        }
+      ],
+      "imports": [
+        {
+          "source": "compareCorpusManifests",
+          "specifier": "./corpus.js",
+          "imported": [
+            "compareCorpusManifests"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "a766db2c0e6ebb276671ae3a6e0fdad578b0e29bd540cc68ed05f1ac263ce443",
+      "mtimeMs": 1784501468806.5405,
+      "size": 543,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/evaluation/src/corpus-eval.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "repositoryRoot",
+          "kind": "const",
+          "line": 5,
+          "exported": false,
+          "endLine": 5
+        },
+        {
+          "name": "argument",
+          "kind": "function",
+          "line": 7,
+          "exported": false,
+          "endLine": 7,
+          "signature": "(name: string)"
+        },
+        {
+          "name": "profile",
+          "kind": "const",
+          "line": 12,
+          "exported": false,
+          "endLine": 12
+        },
+        {
+          "name": "outputRoot",
+          "kind": "const",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        },
+        {
+          "name": "reportPath",
+          "kind": "const",
+          "line": 17,
+          "exported": false,
+          "endLine": 17
+        },
+        {
+          "name": "result",
+          "kind": "const",
+          "line": 25,
+          "exported": false,
+          "endLine": 25
+        },
+        {
+          "name": "canonicalOutput",
+          "kind": "function",
+          "line": 61,
+          "exported": false,
+          "endLine": 61,
+          "signature": "(value: unknown)"
+        }
+      ],
+      "imports": [
+        {
+          "source": "resolve",
+          "specifier": "node:path",
+          "imported": [
+            "resolve"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Config, Effect, Redacted",
+          "specifier": "effect",
+          "imported": [
+            "Config",
+            "Effect",
+            "Redacted"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "runPhase04Evaluation",
+          "specifier": "./phase-04-evaluation.js",
+          "imported": [
+            "runPhase04Evaluation"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "f38209407d4c1803cdd168704bf3035c61465a01759ad459a6d74fb034af5ae1",
+      "mtimeMs": 1784504531914.7764,
+      "size": 2044,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/evaluation/src/corpus-generate.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "option",
+          "kind": "function",
+          "line": 6,
+          "exported": false,
+          "endLine": 6,
+          "signature": "(name: string)"
+        },
+        {
+          "name": "outDir",
+          "kind": "const",
+          "line": 11,
+          "exported": false,
+          "endLine": 11
+        },
+        {
+          "name": "profile",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "result",
+          "kind": "const",
+          "line": 19,
+          "exported": false,
+          "endLine": 19
+        }
+      ],
+      "imports": [],
+      "exports": [],
+      "hash": "7ecbac4c2b3b30c240bf53f117ea2a72805fc68ded6a831260cd8a4e8db46f9d",
+      "mtimeMs": 1784501468806.725,
+      "size": 1132,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/evaluation/src/corpus-generator-smoke.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "root",
+          "kind": "const",
+          "line": 9,
+          "exported": false,
+          "endLine": 9
+        }
+      ],
+      "imports": [
+        {
+          "source": "mkdtemp, rm",
+          "specifier": "node:fs/promises",
+          "imported": [
+            "mkdtemp",
+            "rm"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "aac52958381f6e86c4e47d80a7a2bed49e3037b920cc2b38ec4a1812f5198448",
+      "mtimeMs": 1784501468806.811,
+      "size": 902,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/evaluation/src/corpus.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "CORPUS_VERSION",
+          "kind": "const",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "CORPUS_GENERATOR_VERSION",
+          "kind": "const",
+          "line": 16,
+          "exported": true,
+          "endLine": 16
+        },
+        {
+          "name": "CORPUS_CANONICAL_SEED",
+          "kind": "const",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "CORPUS_FULL_FILE_COUNT",
+          "kind": "const",
+          "line": 18,
+          "exported": true,
+          "endLine": 18
+        },
+        {
+          "name": "CORPUS_SMOKE_FILE_COUNT",
+          "kind": "const",
+          "line": 19,
+          "exported": true,
+          "endLine": 19
+        },
+        {
+          "name": "markerName",
+          "kind": "const",
+          "line": 21,
+          "exported": false,
+          "endLine": 21
+        },
+        {
+          "name": "fixedGeneratedAt",
+          "kind": "const",
+          "line": 22,
+          "exported": false,
+          "endLine": 22
+        },
+        {
+          "name": "corpusPrng",
+          "kind": "const",
+          "line": 23,
+          "exported": false,
+          "endLine": 23
+        },
+        {
+          "name": "sha256Pattern",
+          "kind": "const",
+          "line": 24,
+          "exported": false,
+          "endLine": 24
+        },
+        {
+          "name": "injectionText",
+          "kind": "const",
+          "line": 25,
+          "exported": false,
+          "endLine": 25
+        },
+        {
+          "name": "CorpusProfile",
+          "kind": "type",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "CorpusFileEntry",
+          "kind": "interface",
+          "line": 30,
+          "exported": true,
+          "endLine": 30
+        },
+        {
+          "name": "CorpusSchemaFamily",
+          "kind": "interface",
+          "line": 43,
+          "exported": true,
+          "endLine": 43
+        },
+        {
+          "name": "CorpusManifest",
+          "kind": "interface",
+          "line": 58,
+          "exported": true,
+          "endLine": 58
+        },
+        {
+          "name": "CorpusGenerationResult",
+          "kind": "interface",
+          "line": 78,
+          "exported": true,
+          "endLine": 78
+        },
+        {
+          "name": "GeneratedRecord",
+          "kind": "interface",
+          "line": 84,
+          "exported": false,
+          "endLine": 84
+        },
+        {
+          "name": "CorpusQuestion",
+          "kind": "interface",
+          "line": 92,
+          "exported": false,
+          "endLine": 92
+        },
+        {
+          "name": "CorpusGroundTruth",
+          "kind": "interface",
+          "line": 100,
+          "exported": false,
+          "endLine": 100
+        },
+        {
+          "name": "GenerateCorpusOptions",
+          "kind": "interface",
+          "line": 128,
+          "exported": true,
+          "endLine": 128
+        },
+        {
+          "name": "sha256",
+          "kind": "function",
+          "line": 134,
+          "exported": false,
+          "endLine": 134,
+          "signature": "(input: string | Uint8Array)"
+        },
+        {
+          "name": "canonicalize",
+          "kind": "function",
+          "line": 138,
+          "exported": false,
+          "endLine": 138,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "canonicalJson",
+          "kind": "function",
+          "line": 150,
+          "exported": true,
+          "endLine": 150,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "deterministicNumber",
+          "kind": "function",
+          "line": 154,
+          "exported": false,
+          "endLine": 154
+        },
+        {
+          "name": "stableRecordId",
+          "kind": "function",
+          "line": 165,
+          "exported": false,
+          "endLine": 165
+        },
+        {
+          "name": "isoMonth",
+          "kind": "function",
+          "line": 172,
+          "exported": false,
+          "endLine": 172,
+          "signature": "(index: number)"
+        },
+        {
+          "name": "fullFamilyCounts",
+          "kind": "const",
+          "line": 178,
+          "exported": false,
+          "endLine": 178
+        },
+        {
+          "name": "smokeFamilyCounts",
+          "kind": "const",
+          "line": 185,
+          "exported": false,
+          "endLine": 185
+        },
+        {
+          "name": "corpusSchemaFamilies",
+          "kind": "const",
+          "line": 192,
+          "exported": true,
+          "endLine": 192
+        },
+        {
+          "name": "callLogRecord",
+          "kind": "function",
+          "line": 257,
+          "exported": false,
+          "endLine": 257,
+          "signature": "(seed: string, index: number)"
+        },
+        {
+          "name": "telemetryRecord",
+          "kind": "function",
+          "line": 316,
+          "exported": false,
+          "endLine": 316,
+          "signature": "(seed: string, index: number)"
+        },
+        {
+          "name": "transactionRecord",
+          "kind": "function",
+          "line": 344,
+          "exported": false,
+          "endLine": 344,
+          "signature": "(seed: string, index: number)"
+        },
+        {
+          "name": "inventoryRecord",
+          "kind": "function",
+          "line": 367,
+          "exported": false,
+          "endLine": 367,
+          "signature": "(seed: string, index: number)"
+        },
+        {
+          "name": "recordsFor",
+          "kind": "function",
+          "line": 393,
+          "exported": false,
+          "endLine": 393,
+          "signature": "(seed: string, profile: CorpusProfile)"
+        },
+        {
+          "name": "familySnapshotHash",
+          "kind": "function",
+          "line": 415,
+          "exported": false,
+          "endLine": 415
+        },
+        {
+          "name": "buildGroundTruth",
+          "kind": "function",
+          "line": 427,
+          "exported": false,
+          "endLine": 427
+        },
+        {
+          "name": "corpusQuestions",
+          "kind": "const",
+          "line": 608,
+          "exported": false,
+          "endLine": 608
+        },
+        {
+          "name": "caseCounts",
+          "kind": "function",
+          "line": 718,
+          "exported": false,
+          "endLine": 718,
+          "signature": "(records: ReadonlyArray<GeneratedRecord>)"
+        },
+        {
+          "name": "assertSafeOutputRoot",
+          "kind": "function",
+          "line": 732,
+          "exported": false,
+          "endLine": 732,
+          "signature": "(outDir: string)"
+        },
+        {
+          "name": "writeRecordBatch",
+          "kind": "function",
+          "line": 794,
+          "exported": false,
+          "endLine": 794
+        },
+        {
+          "name": "manifestHashInput",
+          "kind": "function",
+          "line": 828,
+          "exported": false,
+          "endLine": 828,
+          "signature": "(manifest: Omit<CorpusManifest, 'manifestSha256'>)"
+        },
+        {
+          "name": "generateCorpus",
+          "kind": "function",
+          "line": 832,
+          "exported": true,
+          "endLine": 832
+        },
+        {
+          "name": "defaultTemporaryCorpusRoot",
+          "kind": "function",
+          "line": 899,
+          "exported": true,
+          "endLine": 899,
+          "signature": "(prefix: string)"
+        },
+        {
+          "name": "Sha256",
+          "kind": "const",
+          "line": 903,
+          "exported": false,
+          "endLine": 903
+        },
+        {
+          "name": "NonNegativeInteger",
+          "kind": "const",
+          "line": 904,
+          "exported": false,
+          "endLine": 904
+        },
+        {
+          "name": "CorpusFieldSchema",
+          "kind": "const",
+          "line": 908,
+          "exported": false,
+          "endLine": 908
+        },
+        {
+          "name": "CorpusSchemaFamilySchema",
+          "kind": "const",
+          "line": 914,
+          "exported": false,
+          "endLine": 914
+        },
+        {
+          "name": "CorpusFileEntrySchema",
+          "kind": "const",
+          "line": 923,
+          "exported": false,
+          "endLine": 923
+        },
+        {
+          "name": "CorpusManifestSchema",
+          "kind": "const",
+          "line": 935,
+          "exported": false,
+          "endLine": 935
+        },
+        {
+          "name": "decodeManifest",
+          "kind": "function",
+          "line": 958,
+          "exported": false,
+          "endLine": 958,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "loadCorpusManifest",
+          "kind": "function",
+          "line": 964,
+          "exported": true,
+          "endLine": 964,
+          "signature": "(path: string)"
+        },
+        {
+          "name": "readVerifiedMetadata",
+          "kind": "function",
+          "line": 972,
+          "exported": false,
+          "endLine": 972,
+          "signature": "(path: string, label: string)"
+        },
+        {
+          "name": "listCorpusFiles",
+          "kind": "function",
+          "line": 980,
+          "exported": false,
+          "endLine": 980
+        },
+        {
+          "name": "verifyCorpus",
+          "kind": "function",
+          "line": 1006,
+          "exported": true,
+          "endLine": 1006,
+          "signature": "(manifestPath: string)"
+        },
+        {
+          "name": "compareCorpusManifests",
+          "kind": "function",
+          "line": 1094,
+          "exported": true,
+          "endLine": 1094
+        }
+      ],
+      "imports": [
+        {
+          "source": "existsSync",
+          "specifier": "node:fs",
+          "imported": [
+            "existsSync"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "homedir, tmpdir",
+          "specifier": "node:os",
+          "imported": [
+            "homedir",
+            "tmpdir"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "basename, dirname, isAbsolute, relative, resolve, sep",
+          "specifier": "node:path",
+          "imported": [
+            "basename",
+            "dirname",
+            "isAbsolute",
+            "relative",
+            "resolve",
+            "sep"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "67818cb037597bf66810414d616ad717d9d9e57b324697b0095fb5fceeb0e0b9",
+      "mtimeMs": 1784501468806.972,
+      "size": 37989,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/evaluation/src/directory-refresh-smoke.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "report",
+          "kind": "const",
+          "line": 4,
+          "exported": false,
+          "endLine": 4
+        },
+        {
+          "name": "outputPath",
+          "kind": "const",
+          "line": 5,
+          "exported": false,
+          "endLine": 5
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "evaluateDirectoryRefreshRecovery",
+          "specifier": "./directory-refresh.js",
+          "imported": [
+            "evaluateDirectoryRefreshRecovery"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "20842402dc7ca1f67925e6bd8d228f34e44677085b99ca222cc6ab4aecb597fc",
+      "mtimeMs": 1784476496228.1328,
+      "size": 449,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/evaluation/src/directory-refresh.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DIRECTORY_REFRESH_FIXTURE_SEED",
+          "kind": "const",
+          "line": 23,
+          "exported": true,
+          "endLine": 23
+        },
+        {
+          "name": "DIRECTORY_REFRESH_FILE_COUNT",
+          "kind": "const",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "DIRECTORY_REFRESH_PREPARE_CONCURRENCY",
+          "kind": "const",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "directoryRefreshFailureBoundaries",
+          "kind": "const",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "DirectoryRefreshFailureBoundary",
+          "kind": "type",
+          "line": 36,
+          "exported": true,
+          "endLine": 36
+        },
+        {
+          "name": "RecoveryResult",
+          "kind": "interface",
+          "line": 39,
+          "exported": false,
+          "endLine": 39
+        },
+        {
+          "name": "DirectoryRecoveryModelPolicy",
+          "kind": "interface",
+          "line": 56,
+          "exported": true,
+          "endLine": 56
+        },
+        {
+          "name": "DirectoryRefreshEvaluationReport",
+          "kind": "interface",
+          "line": 61,
+          "exported": true,
+          "endLine": 61
+        },
+        {
+          "name": "workspaceId",
+          "kind": "const",
+          "line": 111,
+          "exported": false,
+          "endLine": 111
+        },
+        {
+          "name": "projectId",
+          "kind": "const",
+          "line": 112,
+          "exported": false,
+          "endLine": 112
+        },
+        {
+          "name": "rootId",
+          "kind": "const",
+          "line": 113,
+          "exported": false,
+          "endLine": 113
+        },
+        {
+          "name": "initialSnapshotId",
+          "kind": "const",
+          "line": 114,
+          "exported": false,
+          "endLine": 114
+        },
+        {
+          "name": "refreshedSnapshotId",
+          "kind": "const",
+          "line": 116,
+          "exported": false,
+          "endLine": 116
+        },
+        {
+          "name": "permissionSnapshotId",
+          "kind": "const",
+          "line": 118,
+          "exported": false,
+          "endLine": 118
+        },
+        {
+          "name": "limitSnapshotId",
+          "kind": "const",
+          "line": 120,
+          "exported": false,
+          "endLine": 120
+        },
+        {
+          "name": "contentHash",
+          "kind": "function",
+          "line": 123,
+          "exported": false,
+          "endLine": 123,
+          "signature": "(index: number, generation: 'initial' | 'refreshed')"
+        },
+        {
+          "name": "manifestEntryId",
+          "kind": "function",
+          "line": 130,
+          "exported": false,
+          "endLine": 130
+        },
+        {
+          "name": "relativePath",
+          "kind": "function",
+          "line": 142,
+          "exported": false,
+          "endLine": 142,
+          "signature": "(index: number)"
+        },
+        {
+          "name": "entry",
+          "kind": "function",
+          "line": 150,
+          "exported": false,
+          "endLine": 150
+        },
+        {
+          "name": "manifest",
+          "kind": "function",
+          "line": 175,
+          "exported": false,
+          "endLine": 175
+        },
+        {
+          "name": "discoveryLayer",
+          "kind": "function",
+          "line": 190,
+          "exported": false,
+          "endLine": 190
+        },
+        {
+          "name": "discoveryInput",
+          "kind": "function",
+          "line": 198,
+          "exported": false,
+          "endLine": 198
+        },
+        {
+          "name": "oneByte",
+          "kind": "function",
+          "line": 218,
+          "exported": false,
+          "endLine": 218,
+          "signature": "()"
+        },
+        {
+          "name": "permissionRoot",
+          "kind": "const",
+          "line": 224,
+          "exported": false,
+          "endLine": 224
+        },
+        {
+          "name": "limitRoot",
+          "kind": "const",
+          "line": 247,
+          "exported": false,
+          "endLine": 247
+        },
+        {
+          "name": "limitNames",
+          "kind": "const",
+          "line": 248,
+          "exported": false,
+          "endLine": 248
+        },
+        {
+          "name": "limitFileSystem",
+          "kind": "const",
+          "line": 252,
+          "exported": false,
+          "endLine": 252
+        },
+        {
+          "name": "evaluateSafetyFixtures",
+          "kind": "const",
+          "line": 263,
+          "exported": false,
+          "endLine": 263
+        },
+        {
+          "name": "buildDirectoryRefreshFixture",
+          "kind": "function",
+          "line": 301,
+          "exported": true,
+          "endLine": 301,
+          "signature": "()"
+        },
+        {
+          "name": "safeRecoveryPolicy",
+          "kind": "const",
+          "line": 322,
+          "exported": false,
+          "endLine": 322
+        },
+        {
+          "name": "duplicateCount",
+          "kind": "function",
+          "line": 327,
+          "exported": false,
+          "endLine": 327,
+          "signature": "(writes: ReadonlyArray<string>)"
+        },
+        {
+          "name": "evaluateDirectoryRecoveryBoundary",
+          "kind": "function",
+          "line": 331,
+          "exported": true,
+          "endLine": 331
+        },
+        {
+          "name": "evaluateDirectoryRefreshRecovery",
+          "kind": "const",
+          "line": 465,
+          "exported": true,
+          "endLine": 465
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Layer, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Layer",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/ingestion",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/ingestion",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/ingestion",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/ingestion",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "2094c9b9e480955b4df9e0ce9b3e074032ba47392a086d56eead16099571046d",
+      "mtimeMs": 1784476496228.2651,
+      "size": 19679,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/evaluation/src/document-retrieval.ts",
       "language": "TypeScript",
       "symbols": [
@@ -3851,12 +6955,27 @@
       "exports": [
         {
           "name": "*",
+          "source": "./corpus.js",
+          "kind": "namespace"
+        },
+        {
+          "name": "*",
           "source": "./document-retrieval.js",
           "kind": "namespace"
         },
         {
           "name": "*",
+          "source": "./directory-refresh.js",
+          "kind": "namespace"
+        },
+        {
+          "name": "*",
           "source": "./phase-02-fixture.js",
+          "kind": "namespace"
+        },
+        {
+          "name": "*",
+          "source": "./phase-04-evaluation.js",
           "kind": "namespace"
         },
         {
@@ -3870,9 +6989,9 @@
           "kind": "namespace"
         }
       ],
-      "hash": "aba314fed9e0a8d2eb46c4288ac4bd260ec0b47622d3b70efd727a9b75558e4d",
-      "mtimeMs": 1784461248063.5398,
-      "size": 614,
+      "hash": "48ac7f876c593dbaa996abab68551772bf9e917fe2632cf765d96819e6ecc9da",
+      "mtimeMs": 1784504531914.9072,
+      "size": 722,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -4115,6 +7234,465 @@
       "parser": "regex"
     },
     {
+      "path": "packages/evaluation/src/phase-04-evaluation.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "workspaceId",
+          "kind": "const",
+          "line": 47,
+          "exported": false,
+          "endLine": 47
+        },
+        {
+          "name": "projectId",
+          "kind": "const",
+          "line": 48,
+          "exported": false,
+          "endLine": 48
+        },
+        {
+          "name": "credential",
+          "kind": "const",
+          "line": 49,
+          "exported": false,
+          "endLine": 49
+        },
+        {
+          "name": "fixedTime",
+          "kind": "const",
+          "line": 50,
+          "exported": false,
+          "endLine": 50
+        },
+        {
+          "name": "familyIds",
+          "kind": "const",
+          "line": 52,
+          "exported": false,
+          "endLine": 52
+        },
+        {
+          "name": "GroundTruthExact",
+          "kind": "interface",
+          "line": 91,
+          "exported": false,
+          "endLine": 91
+        },
+        {
+          "name": "GroundTruth",
+          "kind": "interface",
+          "line": 95,
+          "exported": false,
+          "endLine": 95
+        },
+        {
+          "name": "MaterializedFamily",
+          "kind": "interface",
+          "line": 105,
+          "exported": false,
+          "endLine": 105
+        },
+        {
+          "name": "EvaluationCase",
+          "kind": "interface",
+          "line": 125,
+          "exported": false,
+          "endLine": 125
+        },
+        {
+          "name": "Phase04EvaluationReportBody",
+          "kind": "interface",
+          "line": 141,
+          "exported": false,
+          "endLine": 141
+        },
+        {
+          "name": "Phase04EvaluationReport",
+          "kind": "interface",
+          "line": 169,
+          "exported": true,
+          "endLine": 169
+        },
+        {
+          "name": "Phase04EvaluationResult",
+          "kind": "interface",
+          "line": 173,
+          "exported": true,
+          "endLine": 173
+        },
+        {
+          "name": "Phase04EvaluationError",
+          "kind": "class",
+          "line": 184,
+          "exported": true,
+          "endLine": 184
+        },
+        {
+          "name": "sha256",
+          "kind": "function",
+          "line": 194,
+          "exported": false,
+          "endLine": 194,
+          "signature": "(value: string | Uint8Array)"
+        },
+        {
+          "name": "evidenceHash",
+          "kind": "function",
+          "line": 198,
+          "exported": false,
+          "endLine": 198,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "uuid",
+          "kind": "function",
+          "line": 202,
+          "exported": false,
+          "endLine": 202,
+          "signature": "(sequence: number)"
+        },
+        {
+          "name": "fail",
+          "kind": "function",
+          "line": 206,
+          "exported": false,
+          "endLine": 206,
+          "signature": "(category: string, caseId: string, message: string)"
+        },
+        {
+          "name": "isRecord",
+          "kind": "function",
+          "line": 210,
+          "exported": false,
+          "endLine": 210,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "isGroundTruth",
+          "kind": "function",
+          "line": 214,
+          "exported": false,
+          "endLine": 214,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "isEvaluationCase",
+          "kind": "function",
+          "line": 222,
+          "exported": false,
+          "endLine": 222,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "isEvaluationReport",
+          "kind": "function",
+          "line": 240,
+          "exported": false,
+          "endLine": 240,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "familyIdentity",
+          "kind": "function",
+          "line": 281,
+          "exported": false,
+          "endLine": 281,
+          "signature": "(familyId: string)"
+        },
+        {
+          "name": "isStringArray",
+          "kind": "function",
+          "line": 291,
+          "exported": false,
+          "endLine": 291,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "TemperatureAnswer",
+          "kind": "interface",
+          "line": 295,
+          "exported": false,
+          "endLine": 295
+        },
+        {
+          "name": "isTemperatureAnswer",
+          "kind": "function",
+          "line": 301,
+          "exported": false,
+          "endLine": 301
+        },
+        {
+          "name": "logicalType",
+          "kind": "function",
+          "line": 311,
+          "exported": false,
+          "endLine": 311
+        },
+        {
+          "name": "writeArtifact",
+          "kind": "function",
+          "line": 324,
+          "exported": false,
+          "endLine": 324
+        },
+        {
+          "name": "loadGroundTruth",
+          "kind": "function",
+          "line": 341,
+          "exported": false,
+          "endLine": 341,
+          "signature": "(root: string)"
+        },
+        {
+          "name": "materializeFamilies",
+          "kind": "function",
+          "line": 349,
+          "exported": false,
+          "endLine": 349
+        },
+        {
+          "name": "seedCatalog",
+          "kind": "function",
+          "line": 478,
+          "exported": false,
+          "endLine": 478
+        },
+        {
+          "name": "persistMaterializationsWithRecovery",
+          "kind": "function",
+          "line": 598,
+          "exported": false,
+          "endLine": 598
+        },
+        {
+          "name": "exactQueries",
+          "kind": "const",
+          "line": 800,
+          "exported": false,
+          "endLine": 800
+        },
+        {
+          "name": "valueAt",
+          "kind": "function",
+          "line": 849,
+          "exported": false,
+          "endLine": 849
+        },
+        {
+          "name": "normalizeAnswer",
+          "kind": "function",
+          "line": 860,
+          "exported": false,
+          "endLine": 860
+        },
+        {
+          "name": "answersMatch",
+          "kind": "function",
+          "line": 904,
+          "exported": false,
+          "endLine": 904,
+          "signature": "(id: string, actual: unknown, expected: unknown)"
+        },
+        {
+          "name": "runExactQueries",
+          "kind": "function",
+          "line": 927,
+          "exported": false,
+          "endLine": 927
+        },
+        {
+          "name": "runSecurityCases",
+          "kind": "function",
+          "line": 1141,
+          "exported": false,
+          "endLine": 1141
+        },
+        {
+          "name": "runCorpusSecurityCases",
+          "kind": "function",
+          "line": 1401,
+          "exported": false,
+          "endLine": 1401
+        },
+        {
+          "name": "dockerInspect",
+          "kind": "function",
+          "line": 1463,
+          "exported": false,
+          "endLine": 1463,
+          "signature": "(name: string)"
+        },
+        {
+          "name": "runContainerIsolationCases",
+          "kind": "function",
+          "line": 1483,
+          "exported": false,
+          "endLine": 1483,
+          "signature": "(): Promise<"
+        },
+        {
+          "name": "expectedDuckType",
+          "kind": "function",
+          "line": 1582,
+          "exported": false,
+          "endLine": 1582,
+          "signature": "(declaredType: string)"
+        },
+        {
+          "name": "schemaCases",
+          "kind": "function",
+          "line": 1594,
+          "exported": false,
+          "endLine": 1594
+        },
+        {
+          "name": "passesEvaluationGate",
+          "kind": "function",
+          "line": 1693,
+          "exported": false,
+          "endLine": 1693
+        },
+        {
+          "name": "negativeControlCases",
+          "kind": "function",
+          "line": 1704,
+          "exported": false,
+          "endLine": 1704
+        },
+        {
+          "name": "runPhase04Evaluation",
+          "kind": "const",
+          "line": 1742,
+          "exported": true,
+          "endLine": 1742
+        },
+        {
+          "name": "readEvaluationReport",
+          "kind": "function",
+          "line": 2008,
+          "exported": true,
+          "endLine": 2008
+        },
+        {
+          "name": "phase04EvaluationPins",
+          "kind": "const",
+          "line": 2023,
+          "exported": true,
+          "endLine": 2023
+        }
+      ],
+      "imports": [
+        {
+          "source": "mkdir, readFile",
+          "specifier": "node:fs/promises",
+          "imported": [
+            "mkdir",
+            "readFile"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "createConnection",
+          "specifier": "node:net",
+          "imported": [
+            "createConnection"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "dirname, resolve",
+          "specifier": "node:path",
+          "imported": [
+            "dirname",
+            "resolve"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect, Layer, Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Layer",
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "postgres",
+          "specifier": "postgres",
+          "imported": [
+            "postgres"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "./corpus.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "postgres",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "postgres",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/data-engine",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/data-engine",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "postgres",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/data-engine",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/data-engine",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/data-engine",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/data-engine",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "./corpus.js",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "796decc8c837dfae17ebbec24aa2c1517cb4da0a56d2078f37ee30c73aefa857",
+      "mtimeMs": 1784504531915.1326,
+      "size": 64822,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/evaluation/src/prompt-injection.ts",
       "language": "TypeScript",
       "symbols": [
@@ -4175,9 +7753,9 @@
         }
       ],
       "exports": [],
-      "hash": "7887098c190aea984ecaab36b6dcac14a98c815ad511a80134e387cc7a9ba273",
-      "mtimeMs": 1784461248063.8738,
-      "size": 3576,
+      "hash": "2557ac324971121277832a85e104f3e7ddb47b687a2a9496c747ee245aa52954",
+      "mtimeMs": 1784504695472.7366,
+      "size": 3571,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -4236,474 +7814,43 @@
       "parser": "regex"
     },
     {
-      "path": "packages/fred-workflows/src/adapters/fred-runtime.ts",
-      "language": "TypeScript",
-      "symbols": [
-        {
-          "name": "FredRuntimeConfig",
-          "kind": "interface",
-          "line": 34,
-          "exported": true,
-          "endLine": 34
-        },
-        {
-          "name": "fredRuntimeConfig",
-          "kind": "const",
-          "line": 41,
-          "exported": true,
-          "endLine": 41
-        },
-        {
-          "name": "FredClientFactory",
-          "kind": "interface",
-          "line": 54,
-          "exported": true,
-          "endLine": 54
-        },
-        {
-          "name": "DocumentResearchFailure",
-          "kind": "type",
-          "line": 67,
-          "exported": true,
-          "endLine": 67
-        },
-        {
-          "name": "documentResearchFailure",
-          "kind": "function",
-          "line": 74,
-          "exported": false,
-          "endLine": 74
-        },
-        {
-          "name": "assertActive",
-          "kind": "function",
-          "line": 103,
-          "exported": false,
-          "endLine": 103,
-          "signature": "(signal: AbortSignal)"
-        },
-        {
-          "name": "EMERGENCY_SHUTDOWN_MS",
-          "kind": "const",
-          "line": 114,
-          "exported": false,
-          "endLine": 114
-        },
-        {
-          "name": "boundedShutdown",
-          "kind": "function",
-          "line": 116,
-          "exported": false,
-          "endLine": 116
-        },
-        {
-          "name": "createFredBeforeDeadline",
-          "kind": "function",
-          "line": 135,
-          "exported": false,
-          "endLine": 135
-        },
-        {
-          "name": "shutdownWithinDeadline",
-          "kind": "function",
-          "line": 187,
-          "exported": false,
-          "endLine": 187
-        },
-        {
-          "name": "makeDefaultFactory",
-          "kind": "const",
-          "line": 203,
-          "exported": false,
-          "endLine": 203
-        },
-        {
-          "name": "preflightFredRuntime",
-          "kind": "const",
-          "line": 249,
-          "exported": true,
-          "endLine": 249
-        },
-        {
-          "name": "runFredWalkingSkeleton",
-          "kind": "const",
-          "line": 301,
-          "exported": true,
-          "endLine": 301
-        },
-        {
-          "name": "runFredDocumentResearch",
-          "kind": "const",
-          "line": 374,
-          "exported": true,
-          "endLine": 374
-        }
-      ],
-      "imports": [
-        {
-          "source": "Clock, Config, Effect, Runtime, Schema",
-          "specifier": "effect",
-          "imported": [
-            "Clock",
-            "Config",
-            "Effect",
-            "Runtime",
-            "Schema"
-          ],
-          "kind": "static"
-        },
-        {
-          "source": "tracingOtlpEndpointConfig",
-          "specifier": "@struct/observability",
-          "imported": [
-            "tracingOtlpEndpointConfig"
-          ],
-          "kind": "static"
-        },
-        {
-          "source": "",
-          "specifier": "@fancyrobot/fred",
-          "kind": "dynamic"
-        },
-        {
-          "source": "",
-          "specifier": "@fancyrobot/fred/effect",
-          "kind": "dynamic"
-        }
-      ],
-      "exports": [],
-      "hash": "1766c4210138d8844dd4f562cff068ea43a2b5c41eb1f0ff22d2957ac6361174",
-      "mtimeMs": 1784457202197.1492,
-      "size": 15049,
-      "generated": false,
-      "vendor": false,
-      "parser": "regex"
-    },
-    {
-      "path": "packages/fred-workflows/src/graphs/document-research.ts",
-      "language": "TypeScript",
-      "symbols": [
-        {
-          "name": "DOCUMENT_RESEARCH_WORKFLOW_ID",
-          "kind": "const",
-          "line": 21,
-          "exported": true,
-          "endLine": 21
-        },
-        {
-          "name": "DOCUMENT_PLANNER_AGENT_ID",
-          "kind": "const",
-          "line": 22,
-          "exported": true,
-          "endLine": 22
-        },
-        {
-          "name": "EVIDENCE_CRITIC_AGENT_ID",
-          "kind": "const",
-          "line": 23,
-          "exported": true,
-          "endLine": 23
-        },
-        {
-          "name": "DOCUMENT_SYNTHESIZER_AGENT_ID",
-          "kind": "const",
-          "line": 24,
-          "exported": true,
-          "endLine": 24
-        },
-        {
-          "name": "HYBRID_DOCUMENT_RETRIEVAL_TOOL_ID",
-          "kind": "const",
-          "line": 25,
-          "exported": true,
-          "endLine": 25
-        },
-        {
-          "name": "EVIDENCE_CRITIC_SYSTEM_MESSAGE",
-          "kind": "const",
-          "line": 27,
-          "exported": true,
-          "endLine": 27
-        },
-        {
-          "name": "DOCUMENT_SYNTHESIZER_SYSTEM_MESSAGE",
-          "kind": "const",
-          "line": 29,
-          "exported": true,
-          "endLine": 29
-        },
-        {
-          "name": "DocumentResearchGraphDependencies",
-          "kind": "interface",
-          "line": 32,
-          "exported": true,
-          "endLine": 32
-        },
-        {
-          "name": "DocumentPlannerInput",
-          "kind": "const",
-          "line": 55,
-          "exported": true,
-          "endLine": 55
-        },
-        {
-          "name": "HybridDocumentRetrievalInput",
-          "kind": "const",
-          "line": 60,
-          "exported": true,
-          "endLine": 60
-        },
-        {
-          "name": "EvidenceCriticInput",
-          "kind": "const",
-          "line": 65,
-          "exported": true,
-          "endLine": 65
-        },
-        {
-          "name": "DocumentSynthesizerInput",
-          "kind": "const",
-          "line": 72,
-          "exported": true,
-          "endLine": 72
-        },
-        {
-          "name": "documentPlannerAgent",
-          "kind": "const",
-          "line": 79,
-          "exported": true,
-          "endLine": 79
-        },
-        {
-          "name": "evidenceCriticAgent",
-          "kind": "const",
-          "line": 94,
-          "exported": true,
-          "endLine": 94
-        },
-        {
-          "name": "documentSynthesizerAgent",
-          "kind": "const",
-          "line": 108,
-          "exported": true,
-          "endLine": 108
-        },
-        {
-          "name": "assertActive",
-          "kind": "function",
-          "line": 122,
-          "exported": false,
-          "endLine": 122,
-          "signature": "(signal: AbortSignal)"
-        },
-        {
-          "name": "decodeAgentOutput",
-          "kind": "function",
-          "line": 130,
-          "exported": false,
-          "endLine": 130
-        },
-        {
-          "name": "makeHybridDocumentRetrievalTool",
-          "kind": "const",
-          "line": 153,
-          "exported": true,
-          "endLine": 153
-        },
-        {
-          "name": "makeDocumentResearchWorkflow",
-          "kind": "function",
-          "line": 194,
-          "exported": true,
-          "endLine": 194
-        }
-      ],
-      "imports": [
-        {
-          "source": "DocumentResearchContext",
-          "specifier": "@struct/retrieval",
-          "imported": [
-            "DocumentResearchContext"
-          ],
-          "kind": "static"
-        },
-        {
-          "source": "Effect, Schema",
-          "specifier": "effect",
-          "imported": [
-            "Effect",
-            "Schema"
-          ],
-          "kind": "static"
-        }
-      ],
-      "exports": [],
-      "hash": "c4fbaaa42dbd7f1824b82f45207d147dea9929321452265c40cc7a78e5b6a452",
-      "mtimeMs": 1784461248064.3308,
-      "size": 11736,
-      "generated": false,
-      "vendor": false,
-      "parser": "regex"
-    },
-    {
-      "path": "packages/fred-workflows/src/graphs/walking-skeleton.ts",
-      "language": "TypeScript",
-      "symbols": [
-        {
-          "name": "WALKING_SKELETON_WORKFLOW_ID",
-          "kind": "const",
-          "line": 11,
-          "exported": true,
-          "endLine": 11
-        },
-        {
-          "name": "ANSWER_SYNTHESIZER_AGENT_ID",
-          "kind": "const",
-          "line": 12,
-          "exported": true,
-          "endLine": 12
-        },
-        {
-          "name": "SEARCH_TEXT_TOOL_ID",
-          "kind": "const",
-          "line": 13,
-          "exported": true,
-          "endLine": 13
-        },
-        {
-          "name": "WalkingSkeletonGraphDependencies",
-          "kind": "interface",
-          "line": 15,
-          "exported": true,
-          "endLine": 15
-        },
-        {
-          "name": "AnswerSynthesizerInput",
-          "kind": "const",
-          "line": 32,
-          "exported": true,
-          "endLine": 32
-        },
-        {
-          "name": "answerSynthesizerAgent",
-          "kind": "const",
-          "line": 39,
-          "exported": true,
-          "endLine": 39
-        },
-        {
-          "name": "makeSearchTextTool",
-          "kind": "const",
-          "line": 54,
-          "exported": true,
-          "endLine": 54
-        },
-        {
-          "name": "decodeAgentAnswer",
-          "kind": "function",
-          "line": 74,
-          "exported": false,
-          "endLine": 74,
-          "signature": "(input: unknown)"
-        },
-        {
-          "name": "makeWalkingSkeletonWorkflow",
-          "kind": "function",
-          "line": 80,
-          "exported": true,
-          "endLine": 80
-        }
-      ],
-      "imports": [
-        {
-          "source": "Effect, Schema",
-          "specifier": "effect",
-          "imported": [
-            "Effect",
-            "Schema"
-          ],
-          "kind": "static"
-        },
-        {
-          "source": "ResearchAnswer, TextEvidence",
-          "specifier": "@struct/domain",
-          "imported": [
-            "ResearchAnswer",
-            "TextEvidence"
-          ],
-          "kind": "static"
-        }
-      ],
-      "exports": [],
-      "hash": "fc4c03dad0fff2abd117a37f2b8f09a6c39203f2ef99a49c6b15b5025f3dac98",
-      "mtimeMs": 1784433778775.1602,
-      "size": 5204,
-      "generated": false,
-      "vendor": false,
-      "parser": "regex"
-    },
-    {
-      "path": "packages/fred-workflows/test/fixtures/mock-provider.ts",
-      "language": "TypeScript",
-      "symbols": [
-        {
-          "name": "MockModelProvider",
-          "kind": "const",
-          "line": 5,
-          "exported": true,
-          "endLine": 5
-        }
-      ],
-      "imports": [
-        {
-          "source": "Effect, Layer",
-          "specifier": "effect",
-          "imported": [
-            "Effect",
-            "Layer"
-          ],
-          "kind": "static"
-        }
-      ],
-      "exports": [],
-      "hash": "9384a1f20f3158861ac7c30d3ee2f1ce0f6b4c2b55ebb08115050c5e9110595c",
-      "mtimeMs": 1784433778775.3633,
-      "size": 454,
-      "generated": false,
-      "vendor": false,
-      "parser": "regex"
-    },
-    {
       "path": "packages/ingestion/src/apply-refresh.ts",
       "language": "TypeScript",
       "symbols": [
         {
-          "name": "PreparedRefreshEntry",
-          "kind": "interface",
+          "name": "DIRECTORY_REFRESH_PREPARE_CONCURRENCY",
+          "kind": "const",
           "line": 19,
           "exported": true,
           "endLine": 19
         },
         {
+          "name": "PreparedRefreshEntry",
+          "kind": "interface",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
           "name": "ApplyDirectoryRefreshInput",
           "kind": "interface",
-          "line": 38,
+          "line": 40,
           "exported": true,
-          "endLine": 38
+          "endLine": 40
         },
         {
           "name": "ApplyDirectoryRefreshDeps",
           "kind": "interface",
-          "line": 46,
+          "line": 48,
           "exported": true,
-          "endLine": 46
+          "endLine": 48
         },
         {
           "name": "applyDirectoryRefresh",
           "kind": "const",
-          "line": 69,
+          "line": 71,
           "exported": true,
-          "endLine": 69
+          "endLine": 71
         }
       ],
       "imports": [
@@ -4726,9 +7873,9 @@
         }
       ],
       "exports": [],
-      "hash": "17defe1513cc43d4f3c5ef7c2bc7836334bad8ede51247fa1705059148e75eb6",
-      "mtimeMs": 1784468136675.2603,
-      "size": 3267,
+      "hash": "e2bc985d2e2f17c0c4bf8384769ca9552d558231bab93f096072cdfb8a75f1cf",
+      "mtimeMs": 1784476496228.724,
+      "size": 3457,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -4779,7 +7926,7 @@
       ],
       "exports": [],
       "hash": "d2417c0f2706f07cd59f9d6ef946f9f3fd57512eb22d79ee7d6e6769c83f7f32",
-      "mtimeMs": 1784468476835.9119,
+      "mtimeMs": 1784470343847.144,
       "size": 2018,
       "generated": false,
       "vendor": false,
@@ -5831,9 +8978,9 @@
           "kind": "reexport"
         }
       ],
-      "hash": "4737c94b21306f962cc7ff3c149387aaf62eed690b39bccc8610dc38a24991ca",
-      "mtimeMs": 1784468320230.2627,
-      "size": 3161,
+      "hash": "fdad25f8951afda843da4b1dbe745fc0e37185af59a0eb6e13964304668f9210",
+      "mtimeMs": 1784499619865.692,
+      "size": 4347,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -5859,9 +9006,9 @@
       ],
       "imports": [],
       "exports": [],
-      "hash": "f3918ceec1562274e3087f15c986b40419817c6de893e82634023119137c1c6b",
-      "mtimeMs": 1784467892516.0286,
-      "size": 2127,
+      "hash": "00940def52fb8742e4c73b0752ff91147de1f2450dc98c193c0b1ed8153e4171",
+      "mtimeMs": 1784499619866.753,
+      "size": 3000,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -5986,6 +9133,578 @@
       "hash": "3e817feba192cca29331aa8ee4fe405f9efced2b3928e8c15464897fce0fee3d",
       "mtimeMs": 1784358047796.4946,
       "size": 5147,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/repositories/dataset-catalog.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DateToNumber",
+          "kind": "const",
+          "line": 18,
+          "exported": false,
+          "endLine": 18
+        },
+        {
+          "name": "NonNegativeInteger",
+          "kind": "const",
+          "line": 22,
+          "exported": false,
+          "endLine": 22
+        },
+        {
+          "name": "PositiveInteger",
+          "kind": "const",
+          "line": 26,
+          "exported": false,
+          "endLine": 26
+        },
+        {
+          "name": "DatasetAssetRow",
+          "kind": "const",
+          "line": 31,
+          "exported": false,
+          "endLine": 31
+        },
+        {
+          "name": "DatasetSchemaFamilyRow",
+          "kind": "const",
+          "line": 39,
+          "exported": false,
+          "endLine": 39
+        },
+        {
+          "name": "DatasetFieldRow",
+          "kind": "const",
+          "line": 47,
+          "exported": false,
+          "endLine": 47
+        },
+        {
+          "name": "DatasetSnapshotRow",
+          "kind": "const",
+          "line": 62,
+          "exported": false,
+          "endLine": 62
+        },
+        {
+          "name": "DatasetSnapshotSourceRow",
+          "kind": "const",
+          "line": 73,
+          "exported": false,
+          "endLine": 73
+        },
+        {
+          "name": "DatasetCatalogScopeError",
+          "kind": "class",
+          "line": 80,
+          "exported": true,
+          "endLine": 80
+        },
+        {
+          "name": "DatasetCatalogConflictError",
+          "kind": "class",
+          "line": 87,
+          "exported": true,
+          "endLine": 87
+        },
+        {
+          "name": "DatasetCatalogDecodeError",
+          "kind": "class",
+          "line": 94,
+          "exported": true,
+          "endLine": 94
+        },
+        {
+          "name": "DatasetCatalogQueryError",
+          "kind": "class",
+          "line": 100,
+          "exported": true,
+          "endLine": 100
+        },
+        {
+          "name": "DatasetCatalogError",
+          "kind": "type",
+          "line": 106,
+          "exported": true,
+          "endLine": 106
+        },
+        {
+          "name": "CatalogWriteResult",
+          "kind": "interface",
+          "line": 112,
+          "exported": true,
+          "endLine": 112
+        },
+        {
+          "name": "queryError",
+          "kind": "function",
+          "line": 117,
+          "exported": false,
+          "endLine": 117,
+          "signature": "(operation: string)"
+        },
+        {
+          "name": "decodeError",
+          "kind": "function",
+          "line": 124,
+          "exported": false,
+          "endLine": 124
+        },
+        {
+          "name": "decodeDataset",
+          "kind": "function",
+          "line": 133,
+          "exported": false,
+          "endLine": 133,
+          "signature": "(row: unknown)"
+        },
+        {
+          "name": "decodeFamily",
+          "kind": "function",
+          "line": 147,
+          "exported": false,
+          "endLine": 147
+        },
+        {
+          "name": "decodeSnapshot",
+          "kind": "function",
+          "line": 177,
+          "exported": false,
+          "endLine": 177
+        },
+        {
+          "name": "sameDataset",
+          "kind": "function",
+          "line": 209,
+          "exported": false,
+          "endLine": 209
+        },
+        {
+          "name": "sameFamily",
+          "kind": "function",
+          "line": 221,
+          "exported": false,
+          "endLine": 221
+        },
+        {
+          "name": "sameSnapshot",
+          "kind": "function",
+          "line": 243,
+          "exported": false,
+          "endLine": 243
+        },
+        {
+          "name": "loadFamily",
+          "kind": "function",
+          "line": 267,
+          "exported": false,
+          "endLine": 267
+        },
+        {
+          "name": "loadSnapshot",
+          "kind": "function",
+          "line": 288,
+          "exported": false,
+          "endLine": 288
+        },
+        {
+          "name": "DatasetCatalogRepo",
+          "kind": "class",
+          "line": 309,
+          "exported": true,
+          "endLine": 309
+        },
+        {
+          "name": "yieldId",
+          "kind": "function",
+          "line": 685,
+          "exported": false,
+          "endLine": 685,
+          "signature": "(rows: ReadonlyArray<Record<string, unknown>>)"
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Option, ParseResult, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option",
+            "ParseResult",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlClient",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "../sql-client.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "../sql-client.js",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "41600163aa00a80e8932a9b9ed875d7cccfd0e402d936ce4ebe5a8c813d0a2f9",
+      "mtimeMs": 1784479487015.0242,
+      "size": 25570,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/repositories/dataset-materializations.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ArtifactRef",
+          "kind": "const",
+          "line": 12,
+          "exported": false,
+          "endLine": 12
+        },
+        {
+          "name": "PositiveInteger",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "QueryAlias",
+          "kind": "const",
+          "line": 19,
+          "exported": false,
+          "endLine": 19
+        },
+        {
+          "name": "ParquetDigest",
+          "kind": "const",
+          "line": 22,
+          "exported": false,
+          "endLine": 22
+        },
+        {
+          "name": "DatasetMaterializationJob",
+          "kind": "const",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "DatasetMaterializationJob",
+          "kind": "type",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        },
+        {
+          "name": "DatasetMaterialization",
+          "kind": "const",
+          "line": 38,
+          "exported": true,
+          "endLine": 38
+        },
+        {
+          "name": "DatasetMaterialization",
+          "kind": "type",
+          "line": 50,
+          "exported": true,
+          "endLine": 50
+        },
+        {
+          "name": "DatasetMaterializationEnqueueInput",
+          "kind": "const",
+          "line": 53,
+          "exported": true,
+          "endLine": 53
+        },
+        {
+          "name": "DatasetMaterializationEnqueueInput",
+          "kind": "type",
+          "line": 62,
+          "exported": true,
+          "endLine": 62
+        },
+        {
+          "name": "DatasetQuerySnapshotRequest",
+          "kind": "const",
+          "line": 65,
+          "exported": true,
+          "endLine": 65
+        },
+        {
+          "name": "DatasetQuerySnapshotRequest",
+          "kind": "type",
+          "line": 70,
+          "exported": true,
+          "endLine": 70
+        },
+        {
+          "name": "ResolvedDatasetQuerySnapshot",
+          "kind": "const",
+          "line": 73,
+          "exported": true,
+          "endLine": 73
+        },
+        {
+          "name": "ResolvedDatasetQuerySnapshot",
+          "kind": "type",
+          "line": 80,
+          "exported": true,
+          "endLine": 80
+        },
+        {
+          "name": "DatasetMaterializationPersistenceError",
+          "kind": "class",
+          "line": 83,
+          "exported": true,
+          "endLine": 83
+        },
+        {
+          "name": "DatasetMaterializationOwnershipLostError",
+          "kind": "class",
+          "line": 92,
+          "exported": true,
+          "endLine": 92
+        },
+        {
+          "name": "DatasetMaterializationScopeError",
+          "kind": "class",
+          "line": 102,
+          "exported": true,
+          "endLine": 102
+        },
+        {
+          "name": "DatasetMaterializationConflictError",
+          "kind": "class",
+          "line": 111,
+          "exported": true,
+          "endLine": 111
+        },
+        {
+          "name": "failure",
+          "kind": "function",
+          "line": 120,
+          "exported": false,
+          "endLine": 120,
+          "signature": "(operation: string)"
+        },
+        {
+          "name": "decodeJob",
+          "kind": "function",
+          "line": 127,
+          "exported": false,
+          "endLine": 127,
+          "signature": "(row: Record<string, unknown>)"
+        },
+        {
+          "name": "DatasetMaterializationRepo",
+          "kind": "class",
+          "line": 150,
+          "exported": true,
+          "endLine": 150
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlClient",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "c3f17db9b0e324483377422071c63892afaf19274e6b5d21af98f4b61c4213bb",
+      "mtimeMs": 1784496880038.3633,
+      "size": 28625,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/repositories/dataset-query-evidence.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DateToNumber",
+          "kind": "const",
+          "line": 14,
+          "exported": false,
+          "endLine": 14
+        },
+        {
+          "name": "StoredResultRow",
+          "kind": "const",
+          "line": 18,
+          "exported": false,
+          "endLine": 18
+        },
+        {
+          "name": "StoredCitationRow",
+          "kind": "const",
+          "line": 38,
+          "exported": false,
+          "endLine": 38
+        },
+        {
+          "name": "StoredHistoryRow",
+          "kind": "const",
+          "line": 55,
+          "exported": false,
+          "endLine": 55
+        },
+        {
+          "name": "DatasetQueryEvidencePersistenceError",
+          "kind": "class",
+          "line": 74,
+          "exported": true,
+          "endLine": 74
+        },
+        {
+          "name": "DatasetQueryEvidenceScopeError",
+          "kind": "class",
+          "line": 80,
+          "exported": true,
+          "endLine": 80
+        },
+        {
+          "name": "DatasetQueryEvidenceConflictError",
+          "kind": "class",
+          "line": 86,
+          "exported": true,
+          "endLine": 86
+        },
+        {
+          "name": "DatasetCitationValidationError",
+          "kind": "class",
+          "line": 92,
+          "exported": true,
+          "endLine": 92
+        },
+        {
+          "name": "DatasetQueryEvidenceError",
+          "kind": "type",
+          "line": 98,
+          "exported": true,
+          "endLine": 98
+        },
+        {
+          "name": "failure",
+          "kind": "const",
+          "line": 104,
+          "exported": false,
+          "endLine": 104
+        },
+        {
+          "name": "jsonValue",
+          "kind": "function",
+          "line": 110,
+          "exported": false,
+          "endLine": 110,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "decodeResult",
+          "kind": "function",
+          "line": 120,
+          "exported": false,
+          "endLine": 120,
+          "signature": "(row: unknown)"
+        },
+        {
+          "name": "decodeCitation",
+          "kind": "function",
+          "line": 146,
+          "exported": false,
+          "endLine": 146,
+          "signature": "(row: unknown)"
+        },
+        {
+          "name": "decodeHistory",
+          "kind": "function",
+          "line": 169,
+          "exported": false,
+          "endLine": 169,
+          "signature": "(row: unknown)"
+        },
+        {
+          "name": "sameResult",
+          "kind": "function",
+          "line": 193,
+          "exported": false,
+          "endLine": 193
+        },
+        {
+          "name": "selectResult",
+          "kind": "function",
+          "line": 210,
+          "exported": false,
+          "endLine": 210
+        },
+        {
+          "name": "DatasetQueryEvidenceRepo",
+          "kind": "class",
+          "line": 224,
+          "exported": true,
+          "endLine": 224
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, ParseResult, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "ParseResult",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlClient",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "../sql-client.js",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "b6ddb800e680e14e9eee3919c1fb9950f12edd66c70d93bf91d77493485e2647",
+      "mtimeMs": 1784499619867.4856,
+      "size": 23657,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -6287,6 +10006,174 @@
       "parser": "regex"
     },
     {
+      "path": "packages/persistence/src/repositories/directory-controls.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "IdempotencyKey",
+          "kind": "const",
+          "line": 22,
+          "exported": false,
+          "endLine": 22
+        },
+        {
+          "name": "NonNegativeInteger",
+          "kind": "const",
+          "line": 23,
+          "exported": false,
+          "endLine": 23
+        },
+        {
+          "name": "PositiveInteger",
+          "kind": "const",
+          "line": 27,
+          "exported": false,
+          "endLine": 27
+        },
+        {
+          "name": "ProjectionRow",
+          "kind": "const",
+          "line": 32,
+          "exported": false,
+          "endLine": 32
+        },
+        {
+          "name": "FailureRow",
+          "kind": "const",
+          "line": 52,
+          "exported": false,
+          "endLine": 52
+        },
+        {
+          "name": "FailureRows",
+          "kind": "const",
+          "line": 57,
+          "exported": false,
+          "endLine": 57
+        },
+        {
+          "name": "EventRow",
+          "kind": "const",
+          "line": 59,
+          "exported": false,
+          "endLine": 59
+        },
+        {
+          "name": "RegisterDirectoryInput",
+          "kind": "interface",
+          "line": 66,
+          "exported": true,
+          "endLine": 66
+        },
+        {
+          "name": "ControlDirectoryIngestionInput",
+          "kind": "interface",
+          "line": 78,
+          "exported": true,
+          "endLine": 78
+        },
+        {
+          "name": "DirectoryControlResult",
+          "kind": "interface",
+          "line": 87,
+          "exported": true,
+          "endLine": 87
+        },
+        {
+          "name": "DirectoryJournalEvent",
+          "kind": "interface",
+          "line": 92,
+          "exported": true,
+          "endLine": 92
+        },
+        {
+          "name": "DirectoryControlConflictError",
+          "kind": "class",
+          "line": 99,
+          "exported": true,
+          "endLine": 99
+        },
+        {
+          "name": "DirectoryControlRepositoryError",
+          "kind": "type",
+          "line": 108,
+          "exported": true,
+          "endLine": 108
+        },
+        {
+          "name": "queryError",
+          "kind": "function",
+          "line": 113,
+          "exported": false,
+          "endLine": 113,
+          "signature": "(operation: string, cause?: unknown)"
+        },
+        {
+          "name": "commandEventType",
+          "kind": "function",
+          "line": 122,
+          "exported": false,
+          "endLine": 122
+        },
+        {
+          "name": "decodeProjection",
+          "kind": "function",
+          "line": 133,
+          "exported": false,
+          "endLine": 133
+        },
+        {
+          "name": "projectionSql",
+          "kind": "const",
+          "line": 175,
+          "exported": false,
+          "endLine": 175
+        },
+        {
+          "name": "DirectoryControlRepo",
+          "kind": "class",
+          "line": 256,
+          "exported": true,
+          "endLine": 256
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "QueryError",
+          "specifier": "../errors.js",
+          "imported": [
+            "QueryError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlClient",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "b6bff62f243a1b8ef0c94c7c92d67bc9c356c29631893f7f5c3d46c48f4b477b",
+      "mtimeMs": 1784473831674.3438,
+      "size": 21354,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/persistence/src/repositories/document-chunks.ts",
       "language": "TypeScript",
       "symbols": [
@@ -6409,102 +10296,102 @@
         {
           "name": "TransactionExecutor",
           "kind": "interface",
-          "line": 18,
+          "line": 19,
           "exported": false,
-          "endLine": 18
+          "endLine": 19
         },
         {
           "name": "PositiveInteger",
           "kind": "const",
-          "line": 25,
+          "line": 26,
           "exported": false,
-          "endLine": 25
+          "endLine": 26
         },
         {
           "name": "ClaimedJobRow",
           "kind": "const",
-          "line": 30,
+          "line": 31,
           "exported": false,
-          "endLine": 30
+          "endLine": 31
         },
         {
           "name": "CreateDirectoryIngestionJobInput",
           "kind": "interface",
-          "line": 42,
+          "line": 43,
           "exported": true,
-          "endLine": 42
+          "endLine": 43
         },
         {
           "name": "OwnedDirectoryIngestionAttempt",
           "kind": "interface",
-          "line": 49,
+          "line": 51,
           "exported": true,
-          "endLine": 49
+          "endLine": 51
         },
         {
           "name": "DirectoryIngestionCommitResult",
           "kind": "type",
-          "line": 53,
+          "line": 55,
           "exported": true,
-          "endLine": 53
+          "endLine": 55
         },
         {
           "name": "DirectoryIngestionLeaseResult",
           "kind": "type",
-          "line": 72,
+          "line": 74,
           "exported": true,
-          "endLine": 72
+          "endLine": 74
         },
         {
           "name": "DirectoryIngestionRecovery",
           "kind": "interface",
-          "line": 79,
+          "line": 81,
           "exported": true,
-          "endLine": 79
+          "endLine": 81
         },
         {
           "name": "DirectoryIngestionRepositoryError",
           "kind": "type",
-          "line": 84,
+          "line": 86,
           "exported": true,
-          "endLine": 84
+          "endLine": 86
         },
         {
           "name": "queryError",
           "kind": "function",
-          "line": 88,
+          "line": 90,
           "exported": false,
-          "endLine": 88,
+          "endLine": 90,
           "signature": "(operation: string, cause?: unknown)"
         },
         {
           "name": "decodeStoredResult",
           "kind": "function",
-          "line": 97,
+          "line": 99,
           "exported": false,
-          "endLine": 97,
+          "endLine": 99,
           "signature": "(value: unknown)"
         },
         {
           "name": "decodeClaimedJob",
           "kind": "function",
-          "line": 102,
+          "line": 104,
           "exported": false,
-          "endLine": 102
+          "endLine": 104
         },
         {
           "name": "readStateForUpdate",
           "kind": "function",
-          "line": 122,
+          "line": 124,
           "exported": false,
-          "endLine": 122
+          "endLine": 124
         },
         {
           "name": "DirectoryIngestionJobRepo",
           "kind": "class",
-          "line": 137,
+          "line": 139,
           "exported": true,
-          "endLine": 137
+          "endLine": 139
         }
       ],
       "imports": [
@@ -6536,9 +10423,9 @@
         }
       ],
       "exports": [],
-      "hash": "7b365495bee01719123b18a25a747d3dd3eb7b869436b5f688fff8d7e641da41",
-      "mtimeMs": 1784467669980.7336,
-      "size": 25412,
+      "hash": "9f188d2aa4f4f6023bc9a4103bcb3eec10a183d630c5a23c7490cf2023f4933b",
+      "mtimeMs": 1784476496229.0818,
+      "size": 26809,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -7454,110 +11341,110 @@
         {
           "name": "RefreshResult",
           "kind": "const",
-          "line": 18,
+          "line": 20,
           "exported": false,
-          "endLine": 18
+          "endLine": 20
         },
         {
           "name": "DirectoryRefreshResult",
           "kind": "type",
-          "line": 28,
-          "exported": true,
-          "endLine": 28
-        },
-        {
-          "name": "DirectoryRefreshValidationError",
-          "kind": "class",
           "line": 30,
           "exported": true,
           "endLine": 30
         },
         {
+          "name": "DirectoryRefreshValidationError",
+          "kind": "class",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
           "name": "PreparedChunkEmbedding",
           "kind": "interface",
-          "line": 40,
+          "line": 42,
           "exported": true,
-          "endLine": 40
+          "endLine": 42
         },
         {
           "name": "PreparedDirectorySourceVersion",
           "kind": "interface",
-          "line": 46,
+          "line": 48,
           "exported": true,
-          "endLine": 46
+          "endLine": 48
         },
         {
           "name": "CommitDirectoryRefreshInput",
           "kind": "interface",
-          "line": 61,
+          "line": 63,
           "exported": true,
-          "endLine": 61
+          "endLine": 63
         },
         {
           "name": "CommitDirectoryRefreshResult",
           "kind": "type",
-          "line": 70,
+          "line": 72,
           "exported": true,
-          "endLine": 70
+          "endLine": 72
         },
         {
           "name": "TransactionExecutor",
           "kind": "interface",
-          "line": 75,
+          "line": 77,
           "exported": false,
-          "endLine": 75
+          "endLine": 77
         },
         {
           "name": "queryError",
           "kind": "function",
-          "line": 82,
+          "line": 84,
           "exported": false,
-          "endLine": 82,
+          "endLine": 84,
           "signature": "(operation: string, cause?: unknown)"
         },
         {
           "name": "validation",
           "kind": "function",
-          "line": 91,
+          "line": 93,
           "exported": false,
-          "endLine": 91
+          "endLine": 93
         },
         {
           "name": "assertInput",
           "kind": "function",
-          "line": 99,
+          "line": 101,
           "exported": false,
-          "endLine": 99,
+          "endLine": 101,
           "signature": "(input: CommitDirectoryRefreshInput)"
         },
         {
           "name": "insertManifest",
           "kind": "function",
-          "line": 226,
+          "line": 228,
           "exported": false,
-          "endLine": 226
+          "endLine": 228
         },
         {
           "name": "pgVector",
           "kind": "function",
-          "line": 269,
+          "line": 271,
           "exported": false,
-          "endLine": 269,
+          "endLine": 271,
           "signature": "(values: ReadonlyArray<number>)"
         },
         {
           "name": "insertPreparedDocument",
           "kind": "function",
-          "line": 273,
+          "line": 275,
           "exported": false,
-          "endLine": 273
+          "endLine": 275
         },
         {
           "name": "DirectorySourceVersionRepo",
           "kind": "class",
-          "line": 367,
+          "line": 369,
           "exported": true,
-          "endLine": 367
+          "endLine": 369
         }
       ],
       "imports": [
@@ -7588,9 +11475,9 @@
         }
       ],
       "exports": [],
-      "hash": "ee406cc6e08c2da775176a6e398bd1bbfd09892f8b657f044e45be704ef1785a",
-      "mtimeMs": 1784468702662.114,
-      "size": 31385,
+      "hash": "996e936ae0755775bb7477cc3c76a5a6307800d6b4828579456eabccc9d7da78",
+      "mtimeMs": 1784470343848.6458,
+      "size": 33540,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -8982,8 +12869,494 @@
       ],
       "exports": [],
       "hash": "300bc52ffc36a080f703c48a10ebfc6b8df89f1d5b7ee83742cf33e4b87649e5",
-      "mtimeMs": 1784468476836.358,
+      "mtimeMs": 1784470343848.9639,
       "size": 1850,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/workflows/src/adapters/dataset-query-tool.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DATASET_QUERY_TOOL_ID",
+          "kind": "const",
+          "line": 7,
+          "exported": true,
+          "endLine": 7
+        },
+        {
+          "name": "makeDeterministicDatasetQueryTool",
+          "kind": "const",
+          "line": 9,
+          "exported": true,
+          "endLine": 9
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/data-engine",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@fancyrobot/fred",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "17ef3333857f59b2c5c79f6671e92a1e0844263d55fd271d9f860b25b676dd4d",
+      "mtimeMs": 1784499619865.2515,
+      "size": 982,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/workflows/src/adapters/fred-runtime.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "FredRuntimeConfig",
+          "kind": "interface",
+          "line": 34,
+          "exported": true,
+          "endLine": 34
+        },
+        {
+          "name": "fredRuntimeConfig",
+          "kind": "const",
+          "line": 41,
+          "exported": true,
+          "endLine": 41
+        },
+        {
+          "name": "FredClientFactory",
+          "kind": "interface",
+          "line": 54,
+          "exported": true,
+          "endLine": 54
+        },
+        {
+          "name": "DocumentResearchFailure",
+          "kind": "type",
+          "line": 67,
+          "exported": true,
+          "endLine": 67
+        },
+        {
+          "name": "documentResearchFailure",
+          "kind": "function",
+          "line": 74,
+          "exported": false,
+          "endLine": 74
+        },
+        {
+          "name": "assertActive",
+          "kind": "function",
+          "line": 103,
+          "exported": false,
+          "endLine": 103,
+          "signature": "(signal: AbortSignal)"
+        },
+        {
+          "name": "EMERGENCY_SHUTDOWN_MS",
+          "kind": "const",
+          "line": 114,
+          "exported": false,
+          "endLine": 114
+        },
+        {
+          "name": "boundedShutdown",
+          "kind": "function",
+          "line": 116,
+          "exported": false,
+          "endLine": 116
+        },
+        {
+          "name": "createFredBeforeDeadline",
+          "kind": "function",
+          "line": 135,
+          "exported": false,
+          "endLine": 135
+        },
+        {
+          "name": "shutdownWithinDeadline",
+          "kind": "function",
+          "line": 187,
+          "exported": false,
+          "endLine": 187
+        },
+        {
+          "name": "makeDefaultFactory",
+          "kind": "const",
+          "line": 203,
+          "exported": false,
+          "endLine": 203
+        },
+        {
+          "name": "preflightFredRuntime",
+          "kind": "const",
+          "line": 249,
+          "exported": true,
+          "endLine": 249
+        },
+        {
+          "name": "runFredWalkingSkeleton",
+          "kind": "const",
+          "line": 301,
+          "exported": true,
+          "endLine": 301
+        },
+        {
+          "name": "runFredDocumentResearch",
+          "kind": "const",
+          "line": 374,
+          "exported": true,
+          "endLine": 374
+        }
+      ],
+      "imports": [
+        {
+          "source": "Clock, Config, Effect, Runtime, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Clock",
+            "Config",
+            "Effect",
+            "Runtime",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "tracingOtlpEndpointConfig",
+          "specifier": "@struct/observability",
+          "imported": [
+            "tracingOtlpEndpointConfig"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "@fancyrobot/fred",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@fancyrobot/fred/effect",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "de82e372cde7e3dee142cfd0ed5f0e85ccf89aa1ba985af2516966e9ccaf556e",
+      "mtimeMs": 1784504695471.178,
+      "size": 15044,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/workflows/src/graphs/document-research.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DOCUMENT_RESEARCH_WORKFLOW_ID",
+          "kind": "const",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "DOCUMENT_PLANNER_AGENT_ID",
+          "kind": "const",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "EVIDENCE_CRITIC_AGENT_ID",
+          "kind": "const",
+          "line": 23,
+          "exported": true,
+          "endLine": 23
+        },
+        {
+          "name": "DOCUMENT_SYNTHESIZER_AGENT_ID",
+          "kind": "const",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "HYBRID_DOCUMENT_RETRIEVAL_TOOL_ID",
+          "kind": "const",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "EVIDENCE_CRITIC_SYSTEM_MESSAGE",
+          "kind": "const",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "DOCUMENT_SYNTHESIZER_SYSTEM_MESSAGE",
+          "kind": "const",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "DocumentResearchGraphDependencies",
+          "kind": "interface",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
+          "name": "DocumentPlannerInput",
+          "kind": "const",
+          "line": 55,
+          "exported": true,
+          "endLine": 55
+        },
+        {
+          "name": "HybridDocumentRetrievalInput",
+          "kind": "const",
+          "line": 60,
+          "exported": true,
+          "endLine": 60
+        },
+        {
+          "name": "EvidenceCriticInput",
+          "kind": "const",
+          "line": 65,
+          "exported": true,
+          "endLine": 65
+        },
+        {
+          "name": "DocumentSynthesizerInput",
+          "kind": "const",
+          "line": 72,
+          "exported": true,
+          "endLine": 72
+        },
+        {
+          "name": "documentPlannerAgent",
+          "kind": "const",
+          "line": 79,
+          "exported": true,
+          "endLine": 79
+        },
+        {
+          "name": "evidenceCriticAgent",
+          "kind": "const",
+          "line": 94,
+          "exported": true,
+          "endLine": 94
+        },
+        {
+          "name": "documentSynthesizerAgent",
+          "kind": "const",
+          "line": 108,
+          "exported": true,
+          "endLine": 108
+        },
+        {
+          "name": "assertActive",
+          "kind": "function",
+          "line": 122,
+          "exported": false,
+          "endLine": 122,
+          "signature": "(signal: AbortSignal)"
+        },
+        {
+          "name": "decodeAgentOutput",
+          "kind": "function",
+          "line": 130,
+          "exported": false,
+          "endLine": 130
+        },
+        {
+          "name": "makeHybridDocumentRetrievalTool",
+          "kind": "const",
+          "line": 153,
+          "exported": true,
+          "endLine": 153
+        },
+        {
+          "name": "makeDocumentResearchWorkflow",
+          "kind": "function",
+          "line": 194,
+          "exported": true,
+          "endLine": 194
+        }
+      ],
+      "imports": [
+        {
+          "source": "DocumentResearchContext",
+          "specifier": "@struct/retrieval",
+          "imported": [
+            "DocumentResearchContext"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "c4fbaaa42dbd7f1824b82f45207d147dea9929321452265c40cc7a78e5b6a452",
+      "mtimeMs": 1784461248064.3308,
+      "size": 11736,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/workflows/src/graphs/walking-skeleton.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "WALKING_SKELETON_WORKFLOW_ID",
+          "kind": "const",
+          "line": 11,
+          "exported": true,
+          "endLine": 11
+        },
+        {
+          "name": "ANSWER_SYNTHESIZER_AGENT_ID",
+          "kind": "const",
+          "line": 12,
+          "exported": true,
+          "endLine": 12
+        },
+        {
+          "name": "SEARCH_TEXT_TOOL_ID",
+          "kind": "const",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "WalkingSkeletonGraphDependencies",
+          "kind": "interface",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "AnswerSynthesizerInput",
+          "kind": "const",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
+          "name": "answerSynthesizerAgent",
+          "kind": "const",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "makeSearchTextTool",
+          "kind": "const",
+          "line": 54,
+          "exported": true,
+          "endLine": 54
+        },
+        {
+          "name": "decodeAgentAnswer",
+          "kind": "function",
+          "line": 74,
+          "exported": false,
+          "endLine": 74,
+          "signature": "(input: unknown)"
+        },
+        {
+          "name": "makeWalkingSkeletonWorkflow",
+          "kind": "function",
+          "line": 80,
+          "exported": true,
+          "endLine": 80
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ResearchAnswer, TextEvidence",
+          "specifier": "@struct/domain",
+          "imported": [
+            "ResearchAnswer",
+            "TextEvidence"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "fc4c03dad0fff2abd117a37f2b8f09a6c39203f2ef99a49c6b15b5025f3dac98",
+      "mtimeMs": 1784433778775.1602,
+      "size": 5204,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/workflows/test/fixtures/mock-provider.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "MockModelProvider",
+          "kind": "const",
+          "line": 5,
+          "exported": true,
+          "endLine": 5
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Layer",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Layer"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "9384a1f20f3158861ac7c30d3ee2f1ce0f6b4c2b55ebb08115050c5e9110595c",
+      "mtimeMs": 1784433778775.3633,
+      "size": 454,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -9143,6 +13516,62 @@
       "hash": "2f8525b53becf0699cddbc26e05b00e72f9a6204a53af66455eadb5cc7d441ec",
       "mtimeMs": 1784442089976.3696,
       "size": 2403,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "scripts/prepare-local-storage.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "artifactRoot",
+          "kind": "const",
+          "line": 5,
+          "exported": false,
+          "endLine": 5
+        },
+        {
+          "name": "metadata",
+          "kind": "const",
+          "line": 11,
+          "exported": false,
+          "endLine": 11
+        }
+      ],
+      "imports": [
+        {
+          "source": "access, lstat, mkdir",
+          "specifier": "node:fs/promises",
+          "imported": [
+            "access",
+            "lstat",
+            "mkdir"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "constants",
+          "specifier": "node:fs",
+          "imported": [
+            "constants"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "join, resolve",
+          "specifier": "node:path",
+          "imported": [
+            "join",
+            "resolve"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "e8de45cce0fb56e51233b28848dca8b47a74b44f5c1062faa3cb2be230b3b627",
+      "mtimeMs": 1784493727976.6475,
+      "size": 553,
       "generated": false,
       "vendor": false,
       "parser": "regex"

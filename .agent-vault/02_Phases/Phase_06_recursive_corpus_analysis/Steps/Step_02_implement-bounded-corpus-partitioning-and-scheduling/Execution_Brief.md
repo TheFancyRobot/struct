@@ -15,7 +15,7 @@
 
 - These paths may not exist yet; use them as the first bounded implementation or design surface.
 - `packages/research-engine/src/partition-corpus.ts`
-- `packages/fred-workflows/src/graphs/recursive-analysis.ts`
+- `packages/workflows/src/graphs/recursive-analysis.ts`
 - `apps/worker/src/jobs/partition-analysis.ts`
 - `packages/domain/src/partition-status.ts`
 

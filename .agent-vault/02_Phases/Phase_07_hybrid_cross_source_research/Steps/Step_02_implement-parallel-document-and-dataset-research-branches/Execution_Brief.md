@@ -14,7 +14,7 @@
 ## Planned Starting Files
 
 - These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `packages/fred-workflows/src/graphs/hybrid-research.ts`
+- `packages/workflows/src/graphs/hybrid-research.ts`
 - `packages/research-engine/src/run-hybrid-branches.ts`
 - `apps/worker/src/jobs/hybrid-research.ts`
 - `packages/domain/src/branch-execution.ts`
@@ -33,7 +33,7 @@
 - Implement the narrowest typed slice for Parallel Document and Dataset Research Branches that is callable by the next step without broadening scope.
 - Define or update typed domain modules for `Branch Execution` in `packages/domain/src/branch-execution.ts`.
 - Capture the orchestration or synthesis rules in `packages/research-engine/src/run-hybrid-branches.ts` without moving deterministic work out of services/tools.
-- Keep Fred-specific graph/agent wiring isolated to `packages/fred-workflows/src/graphs/hybrid-research.ts` and typed at every boundary.
+- Keep Fred-specific graph/agent wiring isolated to `packages/workflows/src/graphs/hybrid-research.ts` and typed at every boundary.
 
 ## Smallest Bounded Checklist
 

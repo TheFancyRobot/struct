@@ -11,7 +11,7 @@
 
 - Plan unit tests for tool registration, schema validation failure, retry eligibility, and bounded recovery escalation.
 - Plan worker dispatch tests that prove one transient failure retries and one permanent failure stops immediately with the correct typed error.
-- Planned command once these packages exist: `bun test packages/domain packages/fred-workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
+- Planned command once these packages exist: `bun test packages/domain packages/workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
 - Planned app/integration coverage once the app surfaces exist: `bun test apps/worker` for the API/worker/web path touched here.
 
 ## Edge Cases

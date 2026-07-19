@@ -10,7 +10,7 @@
 ## Planned Verification
 
 - Refined gate: deterministic Fred-factory tests for decomposition, evidence sufficiency, contradiction surfacing, bounded retries/tool/model calls, cancellation/timeouts, provider failure, citation rejection, and durable progress/failure events; retain a real core-Fred walking path without provider credentials in integration coverage.
-- Planned command once these packages exist: `bun test packages/fred-workflows packages/research-engine packages/retrieval` plus the nearest package-level `bun run typecheck`.
+- Planned command once these packages exist: `bun test packages/workflows packages/research-engine packages/retrieval` plus the nearest package-level `bun run typecheck`.
 - Planned app/integration coverage once the app surfaces exist: `bun test apps/api apps/worker` for the API/worker/web path touched here.
 
 ## Edge Cases

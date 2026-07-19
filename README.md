@@ -35,7 +35,7 @@ apps/
 
 packages/
 ├── domain · persistence · source-storage · ingestion · retrieval · research-engine
-├── fred-workflows · observability  # walking-slice core; Fred pinned at 2.0.0
+├── workflows · observability       # walking-slice core; Fred pinned at 2.0.0
 ├── document-processing  # versioned normalization, parsing, and chunking
 ├── data-engine  # deterministic DuckDB sidecar client, SQL policy, and query evidence
 └── evaluation  # deterministic smoke gates and reproducible 25,000-file JSON corpus

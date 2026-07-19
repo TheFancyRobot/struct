@@ -14,7 +14,7 @@
 ## Planned Starting Files
 
 - These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `packages/fred-workflows/src/agents/research-planner.ts`
+- `packages/workflows/src/agents/research-planner.ts`
 - `packages/research-engine/src/validate-plan.ts`
 - `packages/research-engine/src/plan-revision.ts`
 - `apps/worker/src/jobs/plan-research.ts`
@@ -32,14 +32,14 @@
 
 - Produce an evidence-backed validation pass for Fred Planner with Validated Deterministic Plans, with explicit pass/fail criteria and durable output artifacts.
 - Capture the orchestration or synthesis rules in `packages/research-engine/src/validate-plan.ts`, `packages/research-engine/src/plan-revision.ts` without moving deterministic work out of services/tools.
-- Keep Fred-specific graph/agent wiring isolated to `packages/fred-workflows/src/agents/research-planner.ts` and typed at every boundary.
+- Keep Fred-specific graph/agent wiring isolated to `packages/workflows/src/agents/research-planner.ts` and typed at every boundary.
 - Constrain worker-side execution in `apps/worker/src/jobs/plan-research.ts` to one resumable, observable path for this slice.
 
 ## Smallest Bounded Checklist
 
 - First, produce an evidence-backed validation pass for Fred Planner with Validated Deterministic Plans, with explicit pass/fail criteria and durable output artifacts.
 - Then, capture the orchestration or synthesis rules in `packages/research-engine/src/validate-plan.ts`, `packages/research-engine/src/plan-revision.ts` without moving deterministic work out of services/tools.
-- Next, keep Fred-specific graph/agent wiring isolated to `packages/fred-workflows/src/agents/research-planner.ts` and typed at every boundary.
+- Next, keep Fred-specific graph/agent wiring isolated to `packages/workflows/src/agents/research-planner.ts` and typed at every boundary.
 - Finish by leaving one observable typed path—test, route, worker flow, or UI state—that proves the slice is ready for the next dependent step.
 
 ## Constraints and Non-Goals

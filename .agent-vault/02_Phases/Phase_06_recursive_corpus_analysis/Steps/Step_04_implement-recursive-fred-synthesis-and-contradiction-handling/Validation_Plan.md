@@ -4,12 +4,12 @@
 
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The narrowest typed slice for Recursive Fred Synthesis and Contradiction Handling that is callable by the next step without broadening scope.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The orchestration or synthesis rules in `packages/research-engine/src/merge-findings.ts`, `packages/research-engine/src/contradiction-detection.ts` without moving deterministic work out of services/tools.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Fred-specific graph/agent wiring isolated to `packages/fred-workflows/src/agents/corpus-analyst.ts`, `packages/fred-workflows/src/agents/evidence-critic.ts` and typed at every boundary.
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: Fred-specific graph/agent wiring isolated to `packages/workflows/src/agents/corpus-analyst.ts`, `packages/workflows/src/agents/evidence-critic.ts` and typed at every boundary.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
 
 ## Planned Verification
 
-- Planned command once these packages exist: `bun test packages/fred-workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
+- Planned command once these packages exist: `bun test packages/workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
 
 ## Edge Cases
 

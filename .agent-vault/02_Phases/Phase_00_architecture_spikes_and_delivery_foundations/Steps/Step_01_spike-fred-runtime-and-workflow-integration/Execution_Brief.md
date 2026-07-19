@@ -15,7 +15,7 @@
 - These paths may not exist yet; use them as the first bounded implementation or design surface.
 - `docs/spikes/fred-runtime-and-workflow-integration.md`
 - `docs/adr/ADR-xxxx-fred-integration-boundary.md`
-- `packages/fred-workflows/src/runtime-harness.ts`
+- `packages/workflows/src/runtime-harness.ts`
 - `packages/research-engine/src/research-run.ts`
 - `apps/worker/src/workflows/research-run.ts`
 

@@ -11,7 +11,7 @@
     6. **Deferred-risk register** (§24) — DEF-01..09 with severity, owner, due phase, and compensating control.
     7. **STEP-00-06 handoff** (§25) — each accepted abuse category → expected safe behavior → required observable evidence; plus filesystem rules, SQL rules, quotas, sanitization/privacy, audit events, unsupported defaults, and pre-release security-review ownership.
   - §26 reconciliation + change log provenance.
-- Enforcement ownership finalized for the 6 trust boundaries (repository-contract §3.4 / §3.2 obligation): auth→`apps/api`; filesystem walker→`packages/ingestion`; SQL policy executor→`packages/data-engine`; tool gates→`packages/fred-workflows`; citation/synthesis gates→`packages/research-engine`; checkpoint/journal→`apps/worker`+`packages/persistence`.
+- Enforcement ownership finalized for the 6 trust boundaries (repository-contract §3.4 / §3.2 obligation): auth→`apps/api`; filesystem walker→`packages/ingestion`; SQL policy executor→`packages/data-engine`; tool gates→`packages/workflows`; citation/synthesis gates→`packages/research-engine`; checkpoint/journal→`apps/worker`+`packages/persistence`.
 - Reconciliation: DEC-0009, DEC-0011, DEC-0006/0007/0008/0012, STEP-00-01 (Fred boundary), STEP-00-02 (events/checkpoints/cancel-winner), STEP-00-03 (selected-at-the-time host-child worker measurements + still-applicable hardening order + DENIED probes), STEP-00-04 (package boundaries/CI gates/secrets), architecture.md §3.2/§4.1/§9.1/§14, local-development.md §3/§5, and evaluation-strategy §3.4/§6.5/§8/§13/§14/§15 are all cited and consistent. DEC-0003/DEC-0005 supersede the historical host-child topology with the pinned Phase-04 container/sidecar; its security measurements remain evidence for that sidecar boundary.
 
 ## Validation Evidence
@@ -34,7 +34,7 @@
 - **Phase 02** — `apps/api` auth/authorization enforcement + cross-workspace object-level authz + rate limits + error sanitization (THR-01/02/03/04/20, ABUSE-07/11).
 - **Phase 03** — `packages/ingestion` path-safety (traversal/symlink/devices) + file size/count/parser-time budgets + archive design (DEF-01).
 - **Phase 04** — `packages/data-engine` sql-policy + DuckDB hardening + resource limits calibration (ABUSE-08/09, THR-13/14/15/21).
-- **Phase 05/06** — `packages/research-engine`/`fred-workflows` run budgets + bounded fan-out (DEF-07); ABUSE-06 injection suite across source types.
+- **Phase 05/06** — `packages/research-engine`/`workflows` run budgets + bounded fan-out (DEF-07); ABUSE-06 injection suite across source types.
 - **Phase 09** — hardening, retention/deletion policy (DEF-06), OS/container isolation review (DEF-03), and the pre-release security-review sign-off (§25) against the implemented controls.
 - DEC-0009 remains accepted; no evidence contradicts it — no decision update required.
 

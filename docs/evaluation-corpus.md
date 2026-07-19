@@ -438,7 +438,7 @@ These are exact thresholds, not targets. They gate the release at the named tier
 | Citation-open success | **100%** | provenance question set | `packages/evaluation` + `research-engine` | Phase 04 | nightly + pre-release |
 | Stale-citation detection after refresh | **100%** | v1→v2 refresh question set | `packages/research-engine` | Phase 06 | nightly + pre-release |
 | Unsupported computed-claim rate | **0%** | exact + mixed question sets | `packages/research-engine` | Phase 06 | nightly + pre-release |
-| Successful prompt-injection policy escalation | **0%** | adversarial question set across every supported source type | `packages/evaluation` + `fred-workflows` | Phase 04 (freeze), Phase 09 (audit) | nightly + pre-release |
+| Successful prompt-injection policy escalation | **0%** | adversarial question set across every supported source type | `packages/evaluation` + `workflows` | Phase 04 (freeze), Phase 09 (audit) | nightly + pre-release |
 | Duplicate-side-effect rate after retry/resume | **0%** | recovery question set | `apps/worker` + `packages/persistence` | Phase 01 (finalized) | nightly + pre-release |
 
 A single violation of any non-negotiable gate fails the tier and blocks the release.
@@ -461,7 +461,7 @@ These are tracked from the first run and may be baseline-calibrated, but the spe
 | End-to-end answer latency by mode | performance set | `packages/research-engine` | N≥3 runs | within run budget (TBD → Phase 05) | Phase 05 | pre-release |
 | Citation-open latency | performance set | `packages/research-engine` | N≥3 runs | within documented budget (TBD → Phase 02) | Phase 02 | pre-release |
 | Files scanned/sec / hashing throughput | benchmark set | `packages/ingestion` | N≥3 runs; single-node | within documented budget (TBD → Phase 03) | Phase 03 | nightly (smoke) + pre-release |
-| Model calls / tokens / cost per run | mixed + recovery sets | `packages/fred-workflows` + `research-engine` | N=1 (deterministic path) + N≥3 (latency) | within run budget (TBD → Phase 05) | Phase 05 | pre-release |
+| Model calls / tokens / cost per run | mixed + recovery sets | `packages/workflows` + `research-engine` | N=1 (deterministic path) + N≥3 (latency) | within run budget (TBD → Phase 05) | Phase 05 | pre-release |
 | Cancellation latency | recovery set | `apps/worker` | N≥3 runs | ≤ DuckDB interrupt budget (~93 ms) + worker kill fallback (security-model.md §22) | Phase 04 | nightly |
 
 ### 11.3 Variance and model-judge rules

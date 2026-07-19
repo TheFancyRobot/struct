@@ -11,7 +11,7 @@
 
 - Review the proposed graph boundary against the product brief execution model and make sure every model/tool boundary can carry an Effect Schema contract.
 - Plan a harness-level smoke test that proves one graph can be started, cancelled, and resumed without embedding product logic inside Fred core.
-- Planned command once these packages exist: `bun test packages/fred-workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
+- Planned command once these packages exist: `bun test packages/workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
 - Planned app/integration coverage once the app surfaces exist: `bun test apps/worker` for the API/worker/web path touched here.
 
 ## Edge Cases

@@ -14,7 +14,7 @@
 ## Planned Starting Files
 
 - These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `packages/fred-workflows/src/graphs/document-research.ts`
+- `packages/workflows/src/graphs/document-research.ts`
 - `packages/research-engine/src/evidence-sufficiency.ts`
 - `packages/retrieval/src/build-context.ts`
 - `apps/worker/src/jobs/document-research.ts`
@@ -34,7 +34,7 @@
 - Implement the narrowest typed slice for Document Research and Evidence Sufficiency Workflow that is callable by the next step without broadening scope.
 - Land the retrieval boundary in `packages/retrieval/src/build-context.ts` so ranking, filtering, and provenance remain inspectable and typed.
 - Capture the orchestration or synthesis rules in `packages/research-engine/src/evidence-sufficiency.ts` without moving deterministic work out of services/tools.
-- Keep Fred-specific graph/agent wiring isolated to `packages/fred-workflows/src/graphs/document-research.ts` and typed at every boundary.
+- Keep Fred-specific graph/agent wiring isolated to `packages/workflows/src/graphs/document-research.ts` and typed at every boundary.
 
 ## Smallest Bounded Checklist
 

@@ -15,7 +15,7 @@
 
 - These paths may not exist yet; use them as the first bounded implementation or design surface.
 - `packages/domain/src/custom-research-template.ts`
-- `packages/fred-workflows/src/tool-policies.ts`
+- `packages/workflows/src/tool-policies.ts`
 - `apps/web/src/components/CustomTemplateEditor.tsx`
 - `apps/api/src/routes/research-templates.ts`
 

@@ -208,7 +208,7 @@ const makeDefaultFactory = (
     assertActive(signal)
     return createFred({
       observability: {
-        resource: { serviceName: '@struct/fred-workflows' },
+        resource: { serviceName: '@struct/workflows' },
         enableConsoleFallback: true,
         ...(otlpEndpoint === undefined
           ? {}
