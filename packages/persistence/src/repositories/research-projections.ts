@@ -74,6 +74,31 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
         },
       )
 
+      const runExists = Effect.fn('ResearchProjectionRepo.runExists')(
+        function* (
+          projectId: typeof typeDomain.ProjectId.Type,
+          runId: typeof typeDomain.ResearchRunId.Type,
+        ) {
+          const rows = yield* Effect.tryPromise({
+            try: () => sql.unsafe(
+              `SELECT 1
+               FROM research_runs run
+               JOIN research_threads thread ON thread.id = run.thread_id
+               WHERE run.id = $1
+                 AND thread.project_id = $2
+               LIMIT 1`,
+              [runId, projectId],
+            ),
+            catch: () => new QueryError({
+              operation: 'runExists',
+              entity: 'ResearchProjection',
+              message: 'Research run scope could not be checked',
+            }),
+          })
+          return rows.length === 1
+        },
+      )
+
       const findCompleted = Effect.fn('ResearchProjectionRepo.findCompleted')(
         function* (runId: typeof typeDomain.ResearchRunId.Type) {
           const rows = yield* Effect.tryPromise({
@@ -206,7 +231,7 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
         },
       )
 
-      return { listEventsAfter, findCompleted, findCitation }
+      return { listEventsAfter, runExists, findCompleted, findCitation }
     }),
   },
 ) {}

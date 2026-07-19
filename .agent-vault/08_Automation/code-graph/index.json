@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-19T04:27:20.783Z",
+  "generatedAt": "2026-07-19T04:35:45.886Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -68,55 +68,55 @@
         {
           "name": "RegisterRequestBody",
           "kind": "interface",
-          "line": 45,
+          "line": 46,
           "exported": false,
-          "endLine": 45
+          "endLine": 46
         },
         {
           "name": "ResearchRequestBody",
           "kind": "interface",
-          "line": 53,
+          "line": 54,
           "exported": false,
-          "endLine": 53
+          "endLine": 54
         },
         {
           "name": "jsonResponse",
           "kind": "function",
-          "line": 60,
+          "line": 61,
           "exported": false,
-          "endLine": 60,
+          "endLine": 61,
           "signature": "(body: unknown, status = 200)"
         },
         {
           "name": "parseBody",
           "kind": "function",
-          "line": 67,
+          "line": 68,
           "exported": false,
-          "endLine": 67,
+          "endLine": 68,
           "signature": "(body: RegisterRequestBody): Effect.Effect<{"
         },
         {
           "name": "parseResearchBody",
           "kind": "function",
-          "line": 91,
+          "line": 92,
           "exported": false,
-          "endLine": 91,
+          "endLine": 92,
           "signature": "(body: ResearchRequestBody): Effect.Effect<{"
         },
         {
           "name": "researchFailureResponse",
           "kind": "function",
-          "line": 126,
+          "line": 127,
           "exported": false,
-          "endLine": 126,
+          "endLine": 127,
           "signature": "(cause: Cause.Cause<unknown>)"
         },
         {
           "name": "server",
           "kind": "const",
-          "line": 137,
+          "line": 138,
           "exported": false,
-          "endLine": 137
+          "endLine": 138
         }
       ],
       "imports": [
@@ -174,9 +174,9 @@
         }
       ],
       "exports": [],
-      "hash": "bb2bc571daad2c086383c2bfaca88f5e74ca9c571ba220fe5e75b798900ca088",
-      "mtimeMs": 1784434165928.1545,
-      "size": 12160,
+      "hash": "d180fc433559ca096c80f0625e3deae2f84dbe6bb668384785983386ac5685e4",
+      "mtimeMs": 1784435731348.9868,
+      "size": 12701,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -870,9 +870,9 @@
         }
       ],
       "exports": [],
-      "hash": "fd041e6bc7358d82e0eb2ab7dd147570d5512980ed5177e3c667fc105ecdd792",
-      "mtimeMs": 1784435204653.1523,
-      "size": 3724,
+      "hash": "8e819863ec83ba528a0d395b68c2c708900f9e0466cbc30fce4f184f0eddf58d",
+      "mtimeMs": 1784435247262.336,
+      "size": 4044,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -4070,9 +4070,9 @@
         }
       ],
       "exports": [],
-      "hash": "ab6a71603345aad47cc06a3f9be609cb1ea15305d8ab3b6176c8c7e22b519a8a",
-      "mtimeMs": 1784434522287.3071,
-      "size": 8087,
+      "hash": "9ed8848ccfcbe1867afc13d50284e745aaa6221176584a8ace705cc8963ccaec",
+      "mtimeMs": 1784435731348.0327,
+      "size": 8956,
       "generated": false,
       "vendor": false,
       "parser": "regex"

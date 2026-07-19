@@ -88,6 +88,10 @@ describeIf('ResearchProjectionRepo integration', () => {
       ResearchProjectionRepo.listEventsAfter(projectId, runId, 0n, 10)
         .pipe(Effect.provide(layer)),
     )
+    const exists = await Effect.runPromise(
+      ResearchProjectionRepo.runExists(projectId, runId)
+        .pipe(Effect.provide(layer)),
+    )
     const completed = await Effect.runPromise(
       ResearchProjectionRepo.findCompleted(runId).pipe(Effect.provide(layer)),
     )
@@ -96,6 +100,7 @@ describeIf('ResearchProjectionRepo integration', () => {
         .pipe(Effect.provide(layer)),
     )
 
+    expect(exists).toBe(true)
     expect(events.map((event) => event.eventType)).toEqual(['research-completed'])
     expect(completed).toMatchObject({
       answer: 'July 18.',
@@ -105,14 +110,21 @@ describeIf('ResearchProjectionRepo integration', () => {
   })
 
   it('does not expose a run through a different project scope', async () => {
+    const otherProjectId =
+      ProjectId.make('e70e8400-e29b-41d4-a716-446655440010')
+    const exists = await Effect.runPromise(
+      ResearchProjectionRepo.runExists(otherProjectId, runId)
+        .pipe(Effect.provide(layer)),
+    )
     const events = await Effect.runPromise(
       ResearchProjectionRepo.listEventsAfter(
-        ProjectId.make('e70e8400-e29b-41d4-a716-446655440010'),
+        otherProjectId,
         runId,
         0n,
         10,
       ).pipe(Effect.provide(layer)),
     )
+    expect(exists).toBe(false)
     expect(events).toEqual([])
   })
 })

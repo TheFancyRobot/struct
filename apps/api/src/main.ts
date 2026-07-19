@@ -8,6 +8,7 @@ import { Cause, Effect, Layer, Option, Schema } from 'effect'
 import postgres from 'postgres'
 import {
   ProjectRepo,
+  EntityNotFoundError,
   ResearchExecutionRepo,
   ResearchProjectionRepo,
   SourceRegistrationRepo,
@@ -258,6 +259,18 @@ const server = Effect.gen(function* () {
         if (exit._tag === 'Failure') {
           return jsonResponse({ error: 'ResearchRunNotFound' }, 404)
         }
+        const scopedRun = await Effect.runPromiseExit(
+          ResearchProjectionRepo.runExists(
+            exit.value.projectId,
+            exit.value.runId,
+          ).pipe(Effect.provide(projectionLayer)),
+        )
+        if (scopedRun._tag === 'Failure') {
+          return jsonResponse({ error: 'ResearchEventsUnavailable' }, 503)
+        }
+        if (!scopedRun.value) {
+          return jsonResponse({ error: 'ResearchRunNotFound' }, 404)
+        }
         return researchEventsResponse(
           exit.value.projectId,
           exit.value.runId,
@@ -315,6 +328,7 @@ const server = Effect.gen(function* () {
         if (exit._tag === 'Failure') {
           const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
           return failure instanceof NotFoundError
+            || failure instanceof EntityNotFoundError
             ? jsonResponse({ error: 'CitationNotFound' }, 404)
             : jsonResponse({ error: 'CitationUnavailable' }, 503)
         }
