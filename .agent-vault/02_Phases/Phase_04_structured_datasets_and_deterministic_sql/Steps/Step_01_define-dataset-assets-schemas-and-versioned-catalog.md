@@ -63,7 +63,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Human Notes
 
 - Keep this step narrow and explicit; planned paths may not exist yet and should be created only when execution begins.
-- Implementation complete in SESSION-2026-07-19-162624. The catalog-only slice is green and awaits root review/PR/merge; STEP-04-02 remains out of scope until this step merges.
+- Implementation completed in SESSION-2026-07-19-162624 and merged to `main` through PR #18. Its catalog contracts are the foundation for the active STEP-04-02 work.
 
 ## Session History
 

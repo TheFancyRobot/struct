@@ -31,7 +31,10 @@ const snapshotId = DatasetSnapshotId.make('730e8400-e29b-41d4-a716-446655440006'
 const jobId = JobQueueId.make('730e8400-e29b-41d4-a716-446655440007')
 const conflictingJobId = JobQueueId.make('730e8400-e29b-41d4-a716-446655440008')
 const foreignWorkspaceId = WorkspaceId.make('730e8400-e29b-41d4-a716-446655440009')
+const terminalSnapshotId = DatasetSnapshotId.make('730e8400-e29b-41d4-a716-446655440010')
+const terminalJobId = JobQueueId.make('730e8400-e29b-41d4-a716-446655440011')
 const contentHash = `sha256:${'a'.repeat(64)}`
+const terminalContentHash = `sha256:${'e'.repeat(64)}`
 
 describeIf('DatasetMaterializationRepo (PostgreSQL)', () => {
   let sql: postgresTypes.Sql
@@ -220,5 +223,79 @@ describeIf('DatasetMaterializationRepo (PostgreSQL)', () => {
     expect(Number(rows[0]?.['materializations'])).toBe(1)
     expect(Number(rows[0]?.['events'])).toBe(2)
     expect(rows[0]?.['status']).toBe('completed')
+  })
+
+  it('journals an expired final attempt before marking it failed', async () => {
+    await sql.unsafe(
+      `INSERT INTO dataset_snapshots (
+         id, dataset_id, workspace_id, project_id, version,
+         schema_family_id, previous_snapshot_id, content_hash
+       ) VALUES ($1, $2, $3, $4, 2, $5, $6, $7)`,
+      [
+        terminalSnapshotId,
+        datasetId,
+        workspaceId,
+        projectId,
+        familyId,
+        snapshotId,
+        terminalContentHash,
+      ],
+    )
+    await sql.unsafe(
+      `INSERT INTO dataset_snapshot_sources (
+         snapshot_id, dataset_id, workspace_id, project_id,
+         ordinal, source_id, source_version_id, content_hash
+       ) VALUES ($1, $2, $3, $4, 0, $5, $6, $7)`,
+      [
+        terminalSnapshotId,
+        datasetId,
+        workspaceId,
+        projectId,
+        sourceId,
+        versionId,
+        contentHash,
+      ],
+    )
+    await Effect.runPromise(
+      DatasetMaterializationRepo.enqueue({
+        jobId: terminalJobId,
+        workspaceId,
+        snapshotId: terminalSnapshotId,
+        sourceFormats: ['json'],
+        maxAttempts: 1,
+      }).pipe(Effect.provide(layer)),
+    )
+    const claimed = await Effect.runPromise(
+      DatasetMaterializationRepo.claimNext(1_000).pipe(Effect.provide(layer)),
+    )
+    expect(Option.isSome(claimed)).toBe(true)
+    await sql.unsafe(
+      `UPDATE dataset_materialization_jobs
+       SET lease_expires_at = clock_timestamp() - interval '1 second'
+       WHERE job_id = $1`,
+      [terminalJobId],
+    )
+
+    expect(await Effect.runPromise(
+      DatasetMaterializationRepo.recoverExpired().pipe(Effect.provide(layer)),
+    )).toBe(1)
+    const rows = await sql.unsafe(
+      `SELECT job.status, event.payload
+       FROM job_queue job
+       JOIN event_journal event
+         ON event.entity_type = 'dataset-materialization'
+        AND event.entity_id = $1
+        AND event.event_type = 'dataset-materialization-failed'
+       WHERE job.id = $2`,
+      [terminalSnapshotId, terminalJobId],
+    )
+    expect(rows[0]?.['status']).toBe('failed')
+    expect(rows[0]?.['payload']).toMatchObject({
+      jobId: terminalJobId,
+      attempt: 1,
+      errorCode: 'lease-expired',
+      retryable: true,
+      willRetry: false,
+    })
   })
 })

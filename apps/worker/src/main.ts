@@ -67,6 +67,11 @@ const program = Effect.gen(function* () {
       pollIntervalMs: pollMs,
       staleMs,
     })
+  const datasetMaterializationHeartbeatIntervalMs =
+    deriveSourceTextReindexHeartbeatIntervalMs({
+      pollIntervalMs: pollMs,
+      staleMs,
+    })
   const researchJobTiming = yield* validateResearchJobTiming({
     pollIntervalMs: pollMs,
     staleMs,
@@ -298,7 +303,7 @@ const program = Effect.gen(function* () {
   const datasetMaterializationPoll = Effect.suspend(() =>
     processOneDatasetMaterialization({
       leaseMs: staleMs,
-      heartbeatIntervalMs: Math.max(100, Math.floor(staleMs / 3)),
+      heartbeatIntervalMs: datasetMaterializationHeartbeatIntervalMs,
       limits: {
         maxInputBytes: 64 * 1024 * 1024,
         maxRows: 1_000_000,
@@ -352,7 +357,8 @@ const program = Effect.gen(function* () {
     poll,
     researchPoll,
     pollMs,
-    Effect.all([reindexPoll, datasetMaterializationPoll]),
+    reindexPoll,
+    datasetMaterializationPoll,
   )
 })
 

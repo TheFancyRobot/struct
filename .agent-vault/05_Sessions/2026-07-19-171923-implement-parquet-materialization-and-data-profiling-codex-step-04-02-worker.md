@@ -70,8 +70,6 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Changed Paths
 
 <!-- AGENT-START:session-changed-paths -->
-- None yet.
-<!-- AGENT-END:session-changed-paths -->
 - `packages/data-engine/`
 - `services/data-engine-sidecar/`
 - `apps/worker/src/jobs/materialize-dataset.ts`, its tests, worker wiring, and package metadata
@@ -80,22 +78,15 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `docker-compose.yml`, `.env.example`, `bun.lock`
 - `docs/local-development.md`, `docs/security-model.md`
 - STEP-04-02 implementation/outcome/session vault notes
+<!-- AGENT-END:session-changed-paths -->
 
 ## Validation Run
 
 <!-- AGENT-START:session-validation-run -->
-- Command: not run yet
-- Result: not run
-- Notes:
+- Commands: canonical default and PostgreSQL suites; focused data-engine/worker/persistence suites; real Compose sidecar integration; typecheck, lint, import boundaries, build, docs, secrets, migration down/up, Compose config, and vault doctor.
+- Result: passed.
+- Notes: 395 default tests passed (143 environment-gated skips, 1,539 assertions); 93 PostgreSQL integration tests passed (2 sidecar-only skips, 730 assertions); real Node 24.18.0 sidecar integration passed 2 tests / 18 assertions; focused data-engine/worker tests passed 11 / 24; focused materialization persistence passed 2 / 18. Dependency validation covered 130 modules and 306 dependencies; docs validated 40 Markdown files; secrets scan covered 898 paths and 908 history blobs.
 <!-- AGENT-END:session-validation-run -->
-- Default tests: 391 passed, 141 environment-gated skipped, 0 failed, 1531 assertions.
-- PostgreSQL integration: 92 passed, 1 container-only skipped, 0 failed, 720 assertions.
-- Real sidecar integration: 1 passed, 0 failed, 9 assertions; container reports Node v24.18.0.
-- Focused protocol/client/worker recovery: 5 passed, 12 assertions. Focused PostgreSQL materialization recovery: 1 passed, 8 assertions.
-- Passed `bun run lint`, `bun run typecheck`, `bun run build`, `bun run lint:imports` (130 modules, 306 dependencies), `bun run docs:lint` (40 Markdown files), `bun run secrets:scan` (895 paths), and `docker compose config --quiet`.
-- Migration `0011` passed isolated up/down and clean sequential PostgreSQL integration coverage.
-- Final root candidate: default 391 pass / 141 skip / 1,532 assertions; PostgreSQL 92 pass / 1 skip / 726 assertions; real sidecar 1 pass / 12 assertions; focused protocol/client/worker 5 pass / 13 assertions; focused materialization persistence 1 pass / 14 assertions. Typecheck, lint, import boundaries, build, docs, secrets, Compose config, Node v24.18.0 runtime, hardening inspection, and migration down/up/up passed.
-- PR #19 remediation focused validation: protocol/client/worker 6 pass / 15 assertions; typecheck and ESLint passed; rebuilt Node 24.18.0 sidecar and real container integration passed 1 / 12.
 
 ## Bugs Encountered
 

@@ -18,6 +18,10 @@ const snapshotId = DatasetSnapshotId.make('550e8400-e29b-41d4-a716-446655440003'
 
 async function fixtureInput() {
   const bytes = await Bun.file(fixturePath).bytes()
+  return storeInput(bytes)
+}
+
+async function storeInput(bytes: Uint8Array) {
   const digest = new Bun.CryptoHasher('sha256').update(bytes).digest('hex')
   const path = join(
     process.cwd(),
@@ -199,7 +203,7 @@ suite('data-engine sidecar', () => {
       path: '/v1/materialize',
       method: 'POST',
       credential: 'invalid-credential',
-      body: JSON.stringify(request),
+      body: request,
     })
     expect(unauthorized.status).toBe(401)
     expect(unauthorized.json).toEqual({
@@ -225,7 +229,80 @@ suite('data-engine sidecar', () => {
       },
     })
 
+    const boundedScan = await hostRequest({
+      path: '/v1/materialize',
+      method: 'POST',
+      credential: token,
+      body: {
+        ...request,
+        limits: { ...request.limits, maxRows: 1 },
+      },
+    })
+    expect(boundedScan.status).toBe(413)
+    expect(boundedScan.json).toEqual({
+      ok: false,
+      error: {
+        code: 'resource-limit',
+        message: 'Input rows exceed configured limit',
+      },
+    })
+
     const unauthenticatedHealth = await hostRequest({ path: '/healthz' })
     expect(unauthenticatedHealth.status).toBe(401)
+  }, 20_000)
+
+  it('rejects numeric values that would lose precision', async () => {
+    const cases = [
+      {
+        bytes: new TextEncoder().encode('[{"value":1.5}]'),
+        logicalType: 'integer' as const,
+      },
+      {
+        bytes: new TextEncoder().encode('[{"value":1.12345678901}]'),
+        logicalType: 'decimal' as const,
+      },
+    ]
+    for (const [index, candidate] of cases.entries()) {
+      const input = await storeInput(candidate.bytes)
+      const response = await hostRequest({
+        path: '/v1/materialize',
+        method: 'POST',
+        credential: token,
+        body: {
+          protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
+          operation: 'materialize',
+          snapshotId: DatasetSnapshotId.make(
+            `550e8400-e29b-41d4-a716-44665544000${index + 4}`,
+          ),
+          inputs: [{
+            ordinal: 0,
+            format: 'json',
+            artifactDigest: input.digest,
+            contentHash: Sha256Digest.make(`sha256:${input.digest}`),
+          }],
+          fields: [{
+            ordinal: 0,
+            name: 'value',
+            sourceType: 'number',
+            logicalType: candidate.logicalType,
+            nullable: false,
+          }],
+          limits: {
+            maxInputBytes: 1_024,
+            maxRows: 100,
+            maxOutputBytes: 1_000_000,
+            timeoutMs: 5_000,
+          },
+        } satisfies MaterializeRequest,
+      })
+      expect(response.status).toBe(400)
+      expect(response.json).toEqual({
+        ok: false,
+        error: {
+          code: 'invalid-input',
+          message: 'Field cannot be represented without numeric precision loss: value',
+        },
+      })
+    }
   }, 20_000)
 })

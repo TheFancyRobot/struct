@@ -3,7 +3,6 @@ import { createHash, timingSafeEqual } from 'node:crypto'
 import { createReadStream } from 'node:fs'
 import {
   mkdir,
-  readFile,
   rename,
   rm,
   stat,
@@ -165,61 +164,113 @@ function normalize(value) {
   return String(value)
 }
 
+async function hashFile(path, ensureActive = () => {}) {
+  const hasher = createHash('sha256')
+  for await (const chunk of createReadStream(path)) {
+    ensureActive()
+    hasher.update(chunk)
+  }
+  ensureActive()
+  return hasher.digest('hex')
+}
+
 async function materialize(request, httpRequest) {
-  await mkdir(OUTPUT_ROOT, { recursive: true })
-  let inputBytes = 0
-  for (const input of request.inputs) {
-    let metadata
-    try {
-      metadata = await stat(sourcePath(input))
-    } catch {
-      throw new RequestFailure('not-found', 'Input artifact was not found')
-    }
-    if (!metadata.isFile()) {
-      throw new RequestFailure('invalid-input', 'Input artifact is not a regular file')
-    }
-    inputBytes += metadata.size
-    if (inputBytes > request.limits.maxInputBytes) {
-      throw new RequestFailure('resource-limit', 'Input bytes exceed configured limit')
-    }
-    const hasher = createHash('sha256')
-    for await (const chunk of createReadStream(sourcePath(input))) {
-      hasher.update(chunk)
-    }
-    const digest = hasher.digest('hex')
-    if (digest !== input.artifactDigest) {
-      throw new RequestFailure('lineage', 'Input artifact hash does not match catalog lineage')
+  let cancelled = false
+  let instance
+  let connection
+  const temporary = join(OUTPUT_ROOT, `${request.snapshotId}.parquet.tmp`)
+  const interrupt = () => {
+    cancelled = true
+    connection?.interrupt()
+  }
+  const ensureActive = () => {
+    if (cancelled || httpRequest.aborted) {
+      throw new RequestFailure('cancelled', 'Materialization was interrupted')
     }
   }
-
-  const instance = await DuckDBInstance.create(':memory:', {
-    memory_limit: MEMORY_LIMIT,
-    threads: THREADS,
-    temp_directory: join(SCRATCH_ROOT, 'tmp'),
-    allow_community_extensions: 'false',
-    allow_unsigned_extensions: 'false',
-  })
-  const connection = await instance.connect()
-  const interrupt = () => connection.interrupt()
   httpRequest.once('aborted', interrupt)
-  const timeout = setTimeout(() => connection.interrupt(), request.limits.timeoutMs)
-  const temporary = join(OUTPUT_ROOT, `${request.snapshotId}.parquet.tmp`)
+  const timeout = setTimeout(interrupt, request.limits.timeoutMs)
   try {
+    await mkdir(OUTPUT_ROOT, { recursive: true })
+    ensureActive()
+    let inputBytes = 0
+    for (const input of request.inputs) {
+      let metadata
+      try {
+        metadata = await stat(sourcePath(input))
+      } catch (error) {
+        if (error?.code === 'ENOENT') {
+          throw new RequestFailure('not-found', 'Input artifact was not found')
+        }
+        throw error
+      }
+      ensureActive()
+      if (!metadata.isFile()) {
+        throw new RequestFailure('invalid-input', 'Input artifact is not a regular file')
+      }
+      inputBytes += metadata.size
+      if (inputBytes > request.limits.maxInputBytes) {
+        throw new RequestFailure('resource-limit', 'Input bytes exceed configured limit')
+      }
+      if (await hashFile(sourcePath(input), ensureActive) !== input.artifactDigest) {
+        throw new RequestFailure('lineage', 'Input artifact hash does not match catalog lineage')
+      }
+    }
+
+    instance = await DuckDBInstance.create(':memory:', {
+      memory_limit: MEMORY_LIMIT,
+      threads: THREADS,
+      temp_directory: join(SCRATCH_ROOT, 'tmp'),
+      allow_community_extensions: 'false',
+      allow_unsigned_extensions: 'false',
+    })
+    ensureActive()
+    connection = await instance.connect()
+    ensureActive()
     await connection.run(`SET allowed_directories=['${ARTIFACT_ROOT}','${SCRATCH_ROOT}']`)
     await connection.run('SET enable_external_access=false')
     const union = request.inputs.map((input) => `SELECT * FROM ${sourceSql(input)}`).join(' UNION ALL BY NAME ')
-    const projection = request.fields.map((field) => {
-      const name = quoteIdentifier(field.name)
-      return `CAST(${name} AS ${duckType(field.logicalType)}) AS ${name}`
-    }).join(', ')
-    await connection.run(`CREATE TABLE materialized AS SELECT ${projection} FROM (${union})`)
-    const countReader = await connection.runAndReadAll('SELECT count(*) AS row_count FROM materialized')
+    await connection.run(
+      `CREATE TABLE imported AS SELECT * FROM (${union}) LIMIT ${request.limits.maxRows + 1}`,
+    )
+    const countReader = await connection.runAndReadAll('SELECT count(*) AS row_count FROM imported')
     await countReader.readAll()
     const rowCount = Number(countReader.getRowObjectsJS()[0].row_count)
     if (rowCount === 0) throw new RequestFailure('invalid-input', 'Structured input contains no rows')
     if (rowCount > request.limits.maxRows) {
       throw new RequestFailure('resource-limit', 'Input rows exceed configured limit')
     }
+    for (const field of request.fields) {
+      if (field.logicalType !== 'integer' && field.logicalType !== 'decimal') continue
+      const name = quoteIdentifier(field.name)
+      const text = `trim(CAST(${name} AS VARCHAR))`
+      const invalid = field.logicalType === 'integer'
+        ? `${name} IS NOT NULL AND (
+             NOT regexp_full_match(${text}, '^[+-]?[0-9]+(\\.0+)?$')
+             OR TRY_CAST(${name} AS BIGINT) IS NULL
+           )`
+        : `${name} IS NOT NULL AND (
+             NOT regexp_full_match(${text}, '^[+-]?[0-9]+(\\.[0-9]+)?$')
+             OR length(regexp_replace(${text}, '[^0-9]', '', 'g')) > 38
+             OR length(split_part(${text}, '.', 2)) > 10
+             OR TRY_CAST(${name} AS DECIMAL(38,10)) IS NULL
+           )`
+      const invalidReader = await connection.runAndReadAll(
+        `SELECT count(*) AS invalid_count FROM imported WHERE ${invalid}`,
+      )
+      await invalidReader.readAll()
+      if (Number(invalidReader.getRowObjectsJS()[0].invalid_count) > 0) {
+        throw new RequestFailure(
+          'invalid-input',
+          `Field cannot be represented without numeric precision loss: ${field.name}`,
+        )
+      }
+    }
+    const projection = request.fields.map((field) => {
+      const name = quoteIdentifier(field.name)
+      return `CAST(${name} AS ${duckType(field.logicalType)}) AS ${name}`
+    }).join(', ')
+    await connection.run(`CREATE TABLE materialized AS SELECT ${projection} FROM imported`)
     const profileColumns = []
     for (const field of request.fields) {
       const name = quoteIdentifier(field.name)
@@ -260,23 +311,31 @@ async function materialize(request, httpRequest) {
     if (outputMetadata.size > request.limits.maxOutputBytes) {
       throw new RequestFailure('resource-limit', 'Parquet output exceeds configured limit')
     }
-    const output = await readFile(temporary)
-    const parquetDigest = createHash('sha256').update(output).digest('hex')
+    const parquetDigest = await hashFile(temporary, ensureActive)
     const destination = join(OUTPUT_ROOT, parquetDigest)
+    let existingMetadata
     try {
-      const existing = await readFile(destination)
-      if (!existing.equals(output)) throw new Error('digest collision')
-      await rm(temporary, { force: true })
+      existingMetadata = await stat(destination)
     } catch (error) {
-      if (error.code === 'ENOENT') await rename(temporary, destination)
-      else if (error.message === 'digest collision') throw error
+      if (error?.code !== 'ENOENT') throw error
+    }
+    if (existingMetadata === undefined) {
+      await rename(temporary, destination)
+    } else {
+      const matches = existingMetadata.isFile()
+        && existingMetadata.size === outputMetadata.size
+        && await hashFile(destination, ensureActive) === parquetDigest
+      if (!matches) {
+        throw new RequestFailure('engine', 'Parquet artifact digest collision')
+      }
+      await rm(temporary, { force: true })
     }
     const profileHash = `sha256:${createHash('sha256').update(`${JSON.stringify(profile)}\n`).digest('hex')}`
     return {
       protocolVersion: PROTOCOL_VERSION,
       snapshotId: request.snapshotId,
       parquetDigest,
-      parquetByteLength: output.byteLength,
+      parquetByteLength: outputMetadata.size,
       profileHash,
       profile,
     }
@@ -289,16 +348,18 @@ async function materialize(request, httpRequest) {
     clearTimeout(timeout)
     httpRequest.off('aborted', interrupt)
     await rm(temporary, { force: true })
-    connection.disconnectSync()
-    instance.closeSync()
+    connection?.disconnectSync()
+    instance?.closeSync()
   }
 }
 
 const server = createServer(async (request, response) => {
   const url = new URL(request.url ?? '/', 'http://data-engine')
+  if (url.pathname === '/healthz' && TOKEN.length < 16) {
+    return fail(response, 503, 'authentication', 'Service credential is not configured')
+  }
   if (!authenticated(request)) return fail(response, 401, 'authentication', 'Authentication failed')
   if (url.pathname === '/healthz') {
-    if (TOKEN.length < 16) return fail(response, 503, 'authentication', 'Service credential is not configured')
     return json(response, 200, { ok: true, protocolVersion: PROTOCOL_VERSION })
   }
   const artifactMatch = /^\/v1\/artifacts\/([a-f0-9]{64})$/.exec(url.pathname)

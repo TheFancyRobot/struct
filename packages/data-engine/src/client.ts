@@ -1,6 +1,7 @@
 import { Config, Effect, Redacted, Schema } from 'effect'
 import {
   DataEngineErrorCode,
+  MaterializeFailure,
   MaterializeRequest,
   MaterializeResponse,
   type MaterializeResult,
@@ -60,6 +61,8 @@ export interface DataEngineClientShape {
 function reason(cause: unknown): string {
   return cause instanceof Error ? cause.name : 'unknown'
 }
+
+class ArtifactLimitExceeded extends Error {}
 
 export function makeDataEngineClient(
   config: DataEngineClientConfig,
@@ -130,6 +133,11 @@ export function makeDataEngineClient(
           message: 'Data-engine artifact timeout is invalid',
         })
       }
+      if (!Number.isSafeInteger(maxBytes) || maxBytes < 1) {
+        return yield* new DataEngineProtocolError({
+          message: 'Data-engine artifact output limit is invalid',
+        })
+      }
       const response = yield* Effect.tryPromise({
         try: (signal) =>
           fetcher(`${config.baseUrl}/v1/artifacts/${digest}`, {
@@ -152,8 +160,18 @@ export function makeDataEngineClient(
         }),
       )
       if (!response.ok) {
+        const failure = yield* Effect.promise(async () => {
+          try {
+            return Schema.decodeUnknownSync(MaterializeFailure)(
+              await response.json(),
+            )
+          } catch {
+            return undefined
+          }
+        })
         return yield* new DataEngineOperationError({
-          code: response.status === 404 ? 'not-found' : 'engine',
+          code: failure?.error.code
+            ?? (response.status === 404 ? 'not-found' : 'engine'),
           message: 'Data-engine artifact download was rejected',
         })
       }
@@ -168,13 +186,50 @@ export function makeDataEngineClient(
           message: 'Data-engine artifact exceeds the configured output limit',
         })
       }
-      const bytes = new Uint8Array(yield* Effect.tryPromise({
-        try: () => response.arrayBuffer(),
+      const bytes = yield* Effect.tryPromise({
+        try: async (signal) => {
+          if (response.body === null) {
+            throw new Error('Data-engine artifact response has no body')
+          }
+          const reader = response.body.getReader()
+          const chunks: Uint8Array[] = []
+          let byteLength = 0
+          const cancel = () => {
+            void reader.cancel()
+          }
+          signal.addEventListener('abort', cancel, { once: true })
+          try {
+            while (true) {
+              const next = await reader.read()
+              if (next.done) break
+              byteLength += next.value.byteLength
+              if (byteLength > maxBytes) {
+                await reader.cancel()
+                throw new ArtifactLimitExceeded()
+              }
+              chunks.push(next.value)
+            }
+          } finally {
+            signal.removeEventListener('abort', cancel)
+          }
+          const result = new Uint8Array(byteLength)
+          let offset = 0
+          for (const chunk of chunks) {
+            result.set(chunk, offset)
+            offset += chunk.byteLength
+          }
+          return result
+        },
         catch: (cause) =>
-          new DataEngineTransportError({
-            reason: reason(cause),
-            message: 'Data-engine artifact body could not be read',
-          }),
+          cause instanceof ArtifactLimitExceeded
+            ? new DataEngineOperationError({
+                code: 'resource-limit',
+                message: 'Data-engine artifact exceeds the configured output limit',
+              })
+            : new DataEngineTransportError({
+                reason: reason(cause),
+                message: 'Data-engine artifact body could not be read',
+              }),
       }).pipe(
         Effect.timeoutFail({
           duration: timeoutMs,
@@ -184,7 +239,7 @@ export function makeDataEngineClient(
               message: 'Data-engine artifact download timed out',
             }),
         }),
-      ))
+      )
       if (bytes.byteLength !== declaredLength) {
         return yield* new DataEngineProtocolError({
           message: 'Data-engine artifact length does not match its metadata',

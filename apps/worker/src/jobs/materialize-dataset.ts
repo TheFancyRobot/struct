@@ -81,7 +81,11 @@ function retryable(error: unknown): boolean {
       || error.code === 'cancelled'
       || error.code === 'busy'
   }
-  return tagged(error) === 'StorageWriteError'
+  return [
+    'DatasetCatalogQueryError',
+    'DatasetMaterializationPersistenceError',
+    'StorageWriteError',
+  ].includes(tagged(error))
 }
 
 function errorCode(error: unknown): string {

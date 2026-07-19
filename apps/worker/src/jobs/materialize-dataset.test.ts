@@ -192,4 +192,49 @@ describe('processOneDatasetMaterialization', () => {
       Sha256Digest.make(`sha256:${profileDigest}`),
     )
   })
+
+  it('records invalid input as a terminal non-retryable failure', async () => {
+    let failure: { retryable: boolean; errorCode: string } | undefined
+    const claimed = job(1)
+    const client: DataEngineClientShape = {
+      materialize: () => Effect.fail(new DataEngineOperationError({
+        code: 'invalid-input',
+        message: 'Integer value would lose precision',
+      })),
+      readArtifact: () => Effect.die('artifact read must not run'),
+    }
+    const result = await Effect.runPromise(processOneDatasetMaterialization({
+      leaseMs: 1_000,
+      heartbeatIntervalMs: 100,
+      limits: {
+        maxInputBytes: 1_024,
+        maxRows: 100,
+        maxOutputBytes: 1_024,
+        timeoutMs: 1_000,
+      },
+      jobs: {
+        recoverExpired: () => Effect.succeed(0),
+        claimNext: () => Effect.succeed(Option.some(claimed)),
+        renewLease: () => Effect.void,
+        complete: () => Effect.die('completion must not run'),
+        recordFailure: (_job, retryable, errorCode) => Effect.sync(() => {
+          failure = { retryable, errorCode }
+        }),
+      },
+      catalog: {
+        listSnapshots: () => Effect.succeed([snapshot]),
+        getSchemaFamily: () => Effect.succeed(Option.some(family)),
+      },
+      client,
+      store: {
+        writeObject: () => Effect.die('artifact write must not run'),
+      },
+    }))
+
+    expect(result).toEqual({ processed: true, snapshotId })
+    expect(failure).toEqual({
+      retryable: false,
+      errorCode: 'invalid-input',
+    })
+  })
 })

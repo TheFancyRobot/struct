@@ -35,6 +35,10 @@ CREATE TABLE dataset_materializations (
     ON DELETE CASCADE
 );
 
+CREATE INDEX idx_dataset_materialization_jobs_lease_expiry
+  ON dataset_materialization_jobs (lease_expires_at)
+  WHERE lease_token IS NOT NULL;
+
 CREATE TRIGGER dataset_materializations_immutable
   BEFORE UPDATE ON dataset_materializations
   FOR EACH ROW EXECUTE FUNCTION reject_dataset_catalog_update();

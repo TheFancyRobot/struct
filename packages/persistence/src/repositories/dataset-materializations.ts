@@ -293,7 +293,8 @@ export class DatasetMaterializationRepo
                    AND job.entity_type = 'dataset-materialization'
                    AND job.status = 'in-progress'
                    AND materialization.lease_expires_at < clock_timestamp()
-                 RETURNING job.id`,
+                 RETURNING job.id, job.workspace_id, job.attempts,
+                           job.status, materialization.snapshot_id`,
               )
               await transaction.unsafe(
                 `UPDATE dataset_materialization_jobs materialization
@@ -304,6 +305,32 @@ export class DatasetMaterializationRepo
                    AND job.status IN ('pending', 'failed')
                    AND materialization.lease_token IS NOT NULL`,
               )
+              for (const row of rows) {
+                if (row['status'] !== 'failed') continue
+                await transaction.unsafe(
+                  `INSERT INTO event_journal (
+                     id, workspace_id, entity_type, entity_id,
+                     event_type, payload, cursor, created_at
+                   ) VALUES (
+                     gen_random_uuid(), $1, 'dataset-materialization', $2::uuid,
+                     'dataset-materialization-failed',
+                     jsonb_build_object(
+                       'jobId', $3::text,
+                       'attempt', $4::integer,
+                       'errorCode', 'lease-expired',
+                       'retryable', true,
+                       'willRetry', false
+                     ),
+                     0, clock_timestamp()
+                   )`,
+                  [
+                    row['workspace_id'],
+                    row['snapshot_id'],
+                    row['id'],
+                    row['attempts'],
+                  ],
+                )
+              }
               return rows.length
             }),
             catch: () => failure('recovery'),

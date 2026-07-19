@@ -10,11 +10,19 @@ export const runWorkerPollLoops = <
   ReindexResult = never,
   ReindexError = never,
   ReindexRequirements = never,
+  DatasetMaterializationResult = never,
+  DatasetMaterializationError = never,
+  DatasetMaterializationRequirements = never,
 >(
   ingestionPoll: Effect.Effect<IngestionResult, IngestionError, IngestionRequirements>,
   researchPoll: Effect.Effect<ResearchResult, ResearchError, ResearchRequirements>,
   pollMs: number,
   reindexPoll?: Effect.Effect<ReindexResult, ReindexError, ReindexRequirements>,
+  datasetMaterializationPoll?: Effect.Effect<
+    DatasetMaterializationResult,
+    DatasetMaterializationError,
+    DatasetMaterializationRequirements
+  >,
 ) =>
   Effect.all(
     [
@@ -22,6 +30,13 @@ export const runWorkerPollLoops = <
       researchPoll.pipe(Effect.repeat(Schedule.spaced(`${pollMs} millis`))),
       ...(reindexPoll
         ? [reindexPoll.pipe(Effect.repeat(Schedule.spaced(`${pollMs} millis`)))]
+        : []),
+      ...(datasetMaterializationPoll
+        ? [
+            datasetMaterializationPoll.pipe(
+              Effect.repeat(Schedule.spaced(`${pollMs} millis`)),
+            ),
+          ]
         : []),
     ],
     {
