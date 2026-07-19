@@ -42,14 +42,19 @@ for attempt in $(seq 1 30); do
   sleep 1
 done
 [ -n "$SOURCE_VERSION_ID" ] || { echo "Source ingestion timed out" >&2; exit 1; }
-curl -sS -X POST http://localhost:3001/api/projects/310e8400-e29b-41d4-a716-446655440001/research \
+RESEARCH_RESPONSE=$(curl -sS -X POST http://localhost:3001/api/projects/310e8400-e29b-41d4-a716-446655440001/research \
   -H 'content-type: application/json' \
-  -d "{\"workspaceId\":\"310e8400-e29b-41d4-a716-446655440000\",\"projectId\":\"310e8400-e29b-41d4-a716-446655440001\",\"sourceVersionIds\":[\"$SOURCE_VERSION_ID\"],\"question\":\"What is the launch date?\"}"
+  -d "{\"workspaceId\":\"310e8400-e29b-41d4-a716-446655440000\",\"projectId\":\"310e8400-e29b-41d4-a716-446655440001\",\"sourceVersionIds\":[\"$SOURCE_VERSION_ID\"],\"question\":\"What is the launch date?\"}")
+RUN_ID=$(RESEARCH_RESPONSE="$RESEARCH_RESPONSE" bun -e \
+  'console.log(JSON.parse(Bun.env.RESEARCH_RESPONSE).runId)')
+THREAD_ID=$(RESEARCH_RESPONSE="$RESEARCH_RESPONSE" bun -e \
+  'console.log(JSON.parse(Bun.env.RESEARCH_RESPONSE).threadId)')
+curl -N "http://localhost:3001/api/projects/310e8400-e29b-41d4-a716-446655440001/runs/$RUN_ID/events"
 ```
 
-Use the returned `runId` to stream
-`/api/projects/<projectId>/runs/<runId>/events`; the completed event supplies
-the thread and citation route rendered by the web app.
+The `research-completed` event contains citation IDs in `data.citations[].id`.
+Fetch a cited excerpt at
+`/api/projects/310e8400-e29b-41d4-a716-446655440001/research/$THREAD_ID/citation/<citationId>`.
 
 The API, worker, Fred workflow, retrieval, citation validation, and SSE replay all
 correlate on persisted workspace/project/source/run/job identities. Logs never

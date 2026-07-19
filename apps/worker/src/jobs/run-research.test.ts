@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { Effect, Exit, Option } from 'effect'
+import { Effect, Exit, Metric, Option } from 'effect'
 import {
   CitationId,
   EventJournalId,
@@ -13,6 +13,7 @@ import {
   type ResearchRun,
 } from '@struct/domain'
 import { ResearchJobOwnershipLostError } from '@struct/persistence'
+import { walkingSliceMetrics } from '@struct/observability'
 import { processOneResearchJob, type ResearchWorkerDeps } from './run-research'
 
 const workspaceId = WorkspaceId.make('e50e8400-e29b-41d4-a716-446655440000')
@@ -200,6 +201,9 @@ describe('processOneResearchJob', () => {
 
   it('terminal-fails stale in-progress research work before claiming new work', async () => {
     const base = deps()
+    const failedBefore = await Effect.runPromise(
+      Metric.value(walkingSliceMetrics['runs.failed']),
+    )
     const testDeps = {
       ...base,
       jobs: {
@@ -210,8 +214,12 @@ describe('processOneResearchJob', () => {
     }
 
     const result = await Effect.runPromise(processOneResearchJob(testDeps))
+    const failedAfter = await Effect.runPromise(
+      Metric.value(walkingSliceMetrics['runs.failed']),
+    )
 
     expect(result).toEqual({ processed: false })
+    expect(Number(failedAfter.count) - Number(failedBefore.count)).toBe(1)
     expect(testDeps.calls.events).toEqual([])
     expect(testDeps.calls.failed).toHaveLength(0)
   })

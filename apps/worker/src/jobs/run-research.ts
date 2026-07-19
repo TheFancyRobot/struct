@@ -170,7 +170,28 @@ export const processOneResearchJob = (
 ): Effect.Effect<{ readonly processed: boolean; readonly jobId?: string }, unknown, never> =>
   Effect.gen(function* () {
     const stale = yield* deps.jobs.recoverStale(deps.staleAfterMs)
-    void stale
+    yield* Effect.forEach(stale, (job) =>
+      withWalkingSliceSpan(
+        'worker-job',
+        {
+          workspaceId: job.workspaceId,
+          runId: job.entityId,
+          jobId: job.id,
+        },
+        Effect.gen(function* () {
+          yield* incrementWalkingSliceMetric('runs.failed')
+          yield* logWalkingSlice({
+            event: 'research.run.failed',
+            identity: {
+              workspaceId: job.workspaceId,
+              runId: job.entityId,
+              jobId: job.id,
+            },
+            errorTag: 'ResearchJobStaleError',
+          })
+        }),
+      ),
+    )
     const claimed = yield* deps.jobs.claimNext()
     if (Option.isNone(claimed)) return { processed: false }
     const job = claimed.value
