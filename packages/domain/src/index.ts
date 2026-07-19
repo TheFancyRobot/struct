@@ -6,9 +6,11 @@
  */
 
 export * from './branded-ids.js'
+export * from './directory-manifest.js'
 export * from './document.js'
 export * from './logical-refs.js'
 export * from './research-events.js'
 export * from './schemas.js'
+export * from './source-version.js'
 export * from './source-uploads.js'
 export * from './typed-errors.js'

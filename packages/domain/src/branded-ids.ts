@@ -24,6 +24,18 @@ export type SourceId = Schema.Schema.Type<typeof SourceId>
 export const SourceVersionId = BrandedUUID.pipe(Schema.brand('SourceVersionId'))
 export type SourceVersionId = Schema.Schema.Type<typeof SourceVersionId>
 
+/** DirectoryRootId — identity of one registered, workspace-scoped directory root. */
+export const DirectoryRootId = BrandedUUID.pipe(Schema.brand('DirectoryRootId'))
+export type DirectoryRootId = Schema.Schema.Type<typeof DirectoryRootId>
+
+/** DirectorySnapshotId — identity of one immutable directory inventory. */
+export const DirectorySnapshotId = BrandedUUID.pipe(Schema.brand('DirectorySnapshotId'))
+export type DirectorySnapshotId = Schema.Schema.Type<typeof DirectorySnapshotId>
+
+/** ManifestEntryId — identity of one immutable entry within a directory snapshot. */
+export const ManifestEntryId = BrandedUUID.pipe(Schema.brand('ManifestEntryId'))
+export type ManifestEntryId = Schema.Schema.Type<typeof ManifestEntryId>
+
 /** DocumentId — identity of normalized content for one immutable source version. */
 export const DocumentId = BrandedUUID.pipe(Schema.brand('DocumentId'))
 export type DocumentId = Schema.Schema.Type<typeof DocumentId>

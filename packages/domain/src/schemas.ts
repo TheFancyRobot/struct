@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
 import * as Ids from './branded-ids.js'
+export { SourceVersion } from './source-version.js'
 
 // --- Enums / Literals ---
 
@@ -64,15 +65,6 @@ export const Source = Schema.Struct({
   kind: SourceKind,
   createdAt: Schema.BigIntFromNumber,
   updatedAt: Schema.BigIntFromNumber,
-})
-
-export const SourceVersion = Schema.Struct({
-  id: Ids.SourceVersionId,
-  sourceId: Ids.SourceId,
-  version: Schema.Number,
-  artifactRef: Schema.String,
-  contentHash: Schema.String,
-  createdAt: Schema.BigIntFromNumber,
 })
 
 export const ResearchThread = Schema.Struct({

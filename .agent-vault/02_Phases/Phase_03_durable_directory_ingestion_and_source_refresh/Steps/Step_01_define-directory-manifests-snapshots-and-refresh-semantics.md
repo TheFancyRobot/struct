@@ -5,7 +5,7 @@ contract_version: 1
 title: Define Directory Manifests Snapshots and Refresh Semantics
 step_id: STEP-03-01
 phase: '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]]'
-status: planned
+status: completed
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
@@ -13,14 +13,15 @@ depends_on:
   - '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance|STEP-02-06 Evaluate Retrieval Provenance and Injection Resistance]]'
 related_sessions:
   - '[[05_Sessions/2026-07-19-114115-define-directory-manifests-snapshots-and-refresh-semantics-phase-03-refinement|SESSION-2026-07-19-114115 phase-03-refinement session for Define Directory Manifests Snapshots and Refresh Semantics]]'
+  - '[[05_Sessions/2026-07-19-120741-define-directory-manifests-snapshots-and-refresh-semantics-codex-step-03-01-worker|SESSION-2026-07-19-120741 Codex STEP-03-01 worker session for Define Directory Manifests Snapshots and Refresh Semantics]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
-context_id: SESSION-2026-07-19-114115
-active_session_id: 05_Sessions/2026-07-19-114115-define-directory-manifests-snapshots-and-refresh-semantics-phase-03-refinement
+context_id: SESSION-2026-07-19-120741
+active_session_id: 05_Sessions/2026-07-19-120741-define-directory-manifests-snapshots-and-refresh-semantics-codex-step-03-01-worker
 context_status: completed
-context_summary: Phase 03 refinement completed; STEP-03-01 is ready for a fresh execution worker after the refinement PR merges.
+context_summary: STEP-03-01 implemented branded directory manifest/snapshot contracts, deterministic digest and refresh semantics, immutable source-version lineage, documentation, and focused tests; all repository gates passed.
 ---
 
 # Step 01 - Define Directory Manifests Snapshots and Refresh Semantics
@@ -52,10 +53,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_01_define-directory-manifests-snapshots-and-refresh-semantics/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_01_define-directory-manifests-snapshots-and-refresh-semantics/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: completed
+- Current owner: Codex
+- Last touched: 2026-07-19
+- Next action: Root orchestrator independently validates, publishes, and merges STEP-03-01 before STEP-03-02 begins.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -66,6 +67,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 <!-- AGENT-START:step-session-history -->
 - 2026-07-19 - [[05_Sessions/2026-07-19-114115-define-directory-manifests-snapshots-and-refresh-semantics-phase-03-refinement|SESSION-2026-07-19-114115 phase-03-refinement session for Define Directory Manifests Snapshots and Refresh Semantics]] - Session created.
+- 2026-07-19 - [[05_Sessions/2026-07-19-120741-define-directory-manifests-snapshots-and-refresh-semantics-codex-step-03-01-worker|SESSION-2026-07-19-120741 Codex STEP-03-01 worker session for Define Directory Manifests Snapshots and Refresh Semantics]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes
