@@ -52,8 +52,9 @@ describeIf('existing database migration upgrades (PostgreSQL)', () => {
     if (!scoped) return
     const executor = migrationExecutor(scoped)
     await Effect.runPromise(runMigrationsUp(executor))
-    // Remove 0005 and 0004 first, then 0003 so this fixture represents the database
-    // state immediately before the SourceVersion text-index upgrade.
+    // Remove 0006, 0005, and 0004 first, then 0003 so this fixture represents
+    // the state immediately before the SourceVersion text-index upgrade.
+    await Effect.runPromise(runMigrationsDown(executor))
     await Effect.runPromise(runMigrationsDown(executor))
     await Effect.runPromise(runMigrationsDown(executor))
     await Effect.runPromise(runMigrationsDown(executor))

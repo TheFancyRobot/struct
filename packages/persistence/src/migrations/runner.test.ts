@@ -92,6 +92,15 @@ describe('Migration Runner', () => {
       expect(fakeSql.queries.join('\n')).toMatch(
         /CREATE INDEX idx_document_chunks_search_vector[\s\S]*USING GIN/i,
       )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /CREATE TABLE document_chunk_embeddings[\s\S]*vector_dims\(embedding\) = dimensions/i,
+      )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /vector_norm\(embedding\) > 0/i,
+      )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /FOREIGN KEY \([\s\S]*chunk_id[\s\S]*source_version_id[\s\S]*REFERENCES document_chunks/i,
+      )
     })
 
     it('skips already-applied migrations', async () => {
@@ -133,10 +142,7 @@ describe('Migration Runner', () => {
       )
       expect(deleteQuery).toBeDefined()
       expect(fakeSql.queries.join('\n')).toMatch(
-        /DROP TABLE IF EXISTS document_chunks[\s\S]*DROP TABLE IF EXISTS documents/i,
-      )
-      expect(fakeSql.queries.join('\n')).toMatch(
-        /DROP INDEX IF EXISTS uq_source_versions_source_id_id/i,
+        /DROP TABLE IF EXISTS document_chunk_embeddings[\s\S]*DROP CONSTRAINT IF EXISTS uq_document_chunks_embedding_lineage/i,
       )
     })
 

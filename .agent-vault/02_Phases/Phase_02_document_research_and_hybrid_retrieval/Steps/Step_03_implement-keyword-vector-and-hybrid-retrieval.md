@@ -5,17 +5,23 @@ contract_version: 1
 title: Implement Keyword Vector and Hybrid Retrieval
 step_id: STEP-02-03
 phase: '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|Phase 02 document research and hybrid retrieval]]'
-status: planned
+status: completed
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_02_implement-versioned-document-chunks-and-index-migrations|STEP-02-02 Implement Versioned Document Chunks and Index Migrations]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-19-091315-implement-keyword-vector-and-hybrid-retrieval-codex|SESSION-2026-07-19-091315 Codex session for Implement Keyword Vector and Hybrid Retrieval]]'
+  - '[[05_Sessions/2026-07-19-091354-implement-keyword-vector-and-hybrid-retrieval-codex|SESSION-2026-07-19-091354 Codex session for Implement Keyword Vector and Hybrid Retrieval]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-19-091315
+active_session_id: 05_Sessions/2026-07-19-091315-implement-keyword-vector-and-hybrid-retrieval-codex
+context_status: completed
+context_summary: Implemented and validated typed tenant-scoped keyword, vector, and deterministic hybrid chunk retrieval with exact provenance.
 ---
 
 # Step 03 - Implement Keyword Vector and Hybrid Retrieval
@@ -47,20 +53,22 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
+- Status: completed
 - Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_03_implement-keyword-vector-and-hybrid-retrieval/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_03_implement-keyword-vector-and-hybrid-retrieval/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Last touched: 2026-07-19
+- Next action: Use the completed typed hybrid-retrieval boundary in the next dependent step.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
 
 - Keep this step narrow and explicit; planned paths may not exist yet and should be created only when execution begins.
+- 2026-07-19: Implemented tenant/project/source-version-scoped keyword and pgvector retrieval with exact chunk provenance, immutable model/dimension embeddings, and transparent deterministic reciprocal-rank fusion. Full repository and real PostgreSQL validation passed.
 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-19 - [[05_Sessions/2026-07-19-091315-implement-keyword-vector-and-hybrid-retrieval-codex|SESSION-2026-07-19-091315 Codex session for Implement Keyword Vector and Hybrid Retrieval]] - Session created.
+- 2026-07-19 - [[05_Sessions/2026-07-19-091354-implement-keyword-vector-and-hybrid-retrieval-codex|SESSION-2026-07-19-091354 Codex session for Implement Keyword Vector and Hybrid Retrieval]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes
