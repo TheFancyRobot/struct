@@ -4,7 +4,7 @@ template_version: 2
 contract_version: 1
 title: Structured Datasets and Deterministic SQL
 phase_id: PHASE-04
-status: in_progress
+status: completed
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
@@ -47,8 +47,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - Refine and implement DuckDB as an isolated container/sidecar with scoped
   mounts, no network egress, a pinned internal adapter runtime, authenticated
   typed client access from Bun, timeouts, memory/CPU/process/row/byte limits,
-  cancellation, restart recovery, and typed failures. The current Compose
-  stack provisions PostgreSQL only.
+  cancellation, restart recovery, and typed failures.
 - Expose only validated, allowlisted, read-only SQL/query-plan tools and deterministic result artifacts to Fred.
 - Generate the seeded approximately 25,000-file JSON corpus, manifests, expected aggregates, adversarial cases, and ground truth.
 - Evaluate exact computation, schema drift, provenance, SQL security, performance, cancellation, and crash recovery.
@@ -65,18 +64,18 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 ## Acceptance Criteria
 
-- [ ] Datasets remain first-class structured assets with immutable versions, schema lineage, profiles, and original-file provenance.
-- [ ] Equivalent source versions produce deterministic Parquet and catalog metadata; incompatible schema drift is explicit.
-- [ ] Exact fixture questions return validated deterministic results equal to ground truth.
-- [ ] Only catalog-issued table/view identifiers and a read-only SQL subset are executable; forbidden syntax and paths are rejected before DuckDB execution.
-- [ ] Query budgets, cancellation, worker crashes, malformed inputs, and restart recovery produce typed, observable, non-corrupting outcomes.
-- [ ] The DuckDB sidecar is present in Compose, runs without a host Node
+- [x] Datasets remain first-class structured assets with immutable versions, schema lineage, profiles, and original-file provenance.
+- [x] Equivalent source versions produce deterministic Parquet and catalog metadata; incompatible schema drift is explicit.
+- [x] Exact fixture questions return validated deterministic results equal to ground truth.
+- [x] Only catalog-issued table/view identifiers and a read-only SQL subset are executable; forbidden syntax and paths are rejected before DuckDB execution.
+- [x] Query budgets, cancellation, worker crashes, malformed inputs, and restart recovery produce typed, observable, non-corrupting outcomes.
+- [x] The DuckDB sidecar is present in Compose, runs without a host Node
   requirement, exposes only its private authenticated bounded protocol, mounts
   only approved roots, has no network egress or Docker socket, and passes
   container crash/restart recovery tests.
-- [ ] Dataset result citations resolve to query text/hash, engine/config version, input versions, result artifact, and relevant cells/rows.
-- [ ] The reproducible approximately 25,000-file corpus is generated from a committed seed/spec and passes exact-computation and recovery gates.
-- [ ] Fred receives bounded summaries or artifact references, never uncontrolled raw tables or per-file model calls.
+- [x] Dataset result citations resolve to query text/hash, engine/config version, input versions, result artifact, and relevant cells/rows.
+- [x] The reproducible approximately 25,000-file corpus is generated from a committed seed/spec and passes exact-computation and recovery gates.
+- [x] Fred receives bounded summaries or artifact references, never uncontrolled raw tables or per-file model calls.
 
 ## Delivery Strategy
 
@@ -98,7 +97,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|PHASE-03 Durable Directory Ingestion and Source Refresh]]
-- Current phase status: in_progress
+- Current phase status: completed
 - Next phase: [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|PHASE-05 Typed Research Planning and Bounded Execution]]
 <!-- AGENT-END:phase-linear-context -->
 
@@ -129,12 +128,12 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Steps
 
 <!-- AGENT-START:phase-steps -->
-- [ ] [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_01_define-dataset-assets-schemas-and-versioned-catalog|STEP-04-01 Define Dataset Assets Schemas and Versioned Catalog]]
-- [ ] [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_02_implement-parquet-materialization-and-data-profiling|STEP-04-02 Implement Parquet Materialization and Data Profiling]]
-- [ ] [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_03_implement-allowlisted-read-only-sql-service|STEP-04-03 Implement Allowlisted Read-Only SQL Service]]
-- [ ] [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_04_build-deterministic-dataset-query-tools-and-citations|STEP-04-04 Build Deterministic Dataset Query Tools and Citations]]
-- [ ] [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_05_generate-reproducible-25000-json-corpus-and-ground-truth|STEP-04-05 Generate Reproducible 25000 JSON Corpus and Ground Truth]]
-- [ ] [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_06_evaluate-exact-computation-schema-security-and-recovery|STEP-04-06 Evaluate Exact Computation Schema Security and Recovery]]
+- [x] [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_01_define-dataset-assets-schemas-and-versioned-catalog|STEP-04-01 Define Dataset Assets Schemas and Versioned Catalog]]
+- [x] [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_02_implement-parquet-materialization-and-data-profiling|STEP-04-02 Implement Parquet Materialization and Data Profiling]]
+- [x] [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_03_implement-allowlisted-read-only-sql-service|STEP-04-03 Implement Allowlisted Read-Only SQL Service]]
+- [x] [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_04_build-deterministic-dataset-query-tools-and-citations|STEP-04-04 Build Deterministic Dataset Query Tools and Citations]]
+- [x] [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_05_generate-reproducible-25000-json-corpus-and-ground-truth|STEP-04-05 Generate Reproducible 25000 JSON Corpus and Ground Truth]]
+- [x] [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_06_evaluate-exact-computation-schema-security-and-recovery|STEP-04-06 Evaluate Exact Computation Schema Security and Recovery]]
 <!-- AGENT-END:phase-steps -->
 
 ## Notes
