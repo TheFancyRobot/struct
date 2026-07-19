@@ -3,7 +3,7 @@ import { Cause, Effect, Exit } from 'effect'
 import { parseHtml } from './html.js'
 import { parseMarkdown } from './markdown.js'
 import { parseText } from './text.js'
-import { extractPdfPageParagraphs, isOcrHeavyPdf, parsePdf } from './pdf.js'
+import { extractPdfPageParagraphs, isOcrHeavyPdf, parsePdf, readBoundedPdfTextItems } from './pdf.js'
 
 const encode = (text: string): Uint8Array => new TextEncoder().encode(text)
 
@@ -160,6 +160,22 @@ describe('document parsers', () => {
       { str: 'continues', hasEOL: true, height: 12, transform: [1, 0, 0, 12, 72, 706] },
       { str: 'Second paragraph', height: 12, transform: [1, 0, 0, 12, 72, 670] },
     ])).toEqual(['First line continues', 'Second paragraph'])
+  })
+
+  it('cancels streamed PDF extraction as soon as a resource limit is exceeded', async () => {
+    let cancelled = false
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue({ items: [{ str: 'first' }, { str: 'second' }] })
+      },
+      cancel() {
+        cancelled = true
+      },
+    })
+
+    await expect(readBoundedPdfTextItems(stream, { maxCharacters: 100, maxItems: 1 }))
+      .rejects.toMatchObject({ reason: 'document-too-large' })
+    expect(cancelled).toBe(true)
   })
 
   it('extracts a real embedded-text PDF through pdfjs with page provenance', async () => {

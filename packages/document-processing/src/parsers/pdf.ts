@@ -4,6 +4,7 @@ import { normalizeDocument } from '../normalize-document.js'
 
 const MAX_PDF_PAGES = 1_000
 const MAX_EXTRACTED_CHARACTERS = 5_000_000
+const MAX_PDF_TEXT_ITEMS = 100_000
 const MIN_USEFUL_PAGE_CHARACTERS = 16
 
 export const isOcrHeavyPdf = (pageText: ReadonlyArray<string>): boolean =>
@@ -21,7 +22,12 @@ export interface PdfTextItem {
   readonly height?: number
   readonly transform?: ReadonlyArray<number>
 }
-interface PdfPage { getTextContent(): Promise<{ readonly items: ReadonlyArray<PdfTextItem> }> }
+export interface PdfTextContentChunk {
+  readonly items: ReadonlyArray<PdfTextItem>
+}
+interface PdfPage {
+  streamTextContent(): ReadableStream<PdfTextContentChunk>
+}
 interface PdfDocument { readonly numPages: number; getPage(pageNumber: number): Promise<PdfPage>; destroy(): Promise<void> }
 interface PdfLoadingTask { readonly promise: Promise<PdfDocument>; destroy(): Promise<void> }
 interface PdfJs { getDocument(input: { readonly data: Uint8Array; readonly useWorkerFetch: false; readonly isEvalSupported: false; readonly standardFontDataUrl: string; readonly useSystemFonts: true }): PdfLoadingTask }
@@ -30,6 +36,35 @@ interface PdfLine {
   readonly text: string
   readonly y: number | undefined
   readonly height: number
+}
+
+export const readBoundedPdfTextItems = async (
+  stream: ReadableStream<PdfTextContentChunk>,
+  limits: { readonly maxCharacters: number; readonly maxItems: number },
+): Promise<{ readonly items: ReadonlyArray<PdfTextItem>; readonly characters: number }> => {
+  const reader = stream.getReader()
+  const items: PdfTextItem[] = []
+  let characters = 0
+  try {
+    while (true) {
+      const chunk = await reader.read()
+      if (chunk.done) break
+      for (const item of chunk.value.items) {
+        characters += item.str?.length ?? 0
+        if (characters > limits.maxCharacters || items.length >= limits.maxItems) {
+          await reader.cancel()
+          throw new DocumentProcessingError({
+            reason: 'document-too-large',
+            message: 'PDF extracted content exceeds the supported limit',
+          })
+        }
+        items.push(item)
+      }
+    }
+  } finally {
+    reader.releaseLock()
+  }
+  return { items, characters }
 }
 
 export const extractPdfPageParagraphs = (items: ReadonlyArray<PdfTextItem>): ReadonlyArray<string> => {
@@ -107,13 +142,18 @@ export const parsePdf = (bytes: Uint8Array) =>
         }
         const pages: ReadonlyArray<string>[] = []
         let extractedCharacters = 0
+        let extractedItems = 0
         for (let index = 0; index < document.numPages; index += 1) {
-          const content = await (await document.getPage(index + 1)).getTextContent()
+          const content = await readBoundedPdfTextItems(
+            (await document.getPage(index + 1)).streamTextContent(),
+            {
+              maxCharacters: MAX_EXTRACTED_CHARACTERS - extractedCharacters,
+              maxItems: MAX_PDF_TEXT_ITEMS - extractedItems,
+            },
+          )
+          extractedCharacters += content.characters
+          extractedItems += content.items.length
           const paragraphs = extractPdfPageParagraphs(content.items)
-          extractedCharacters += paragraphs.reduce((total, text) => total + text.length, 0)
-          if (extractedCharacters > MAX_EXTRACTED_CHARACTERS) {
-            throw new DocumentProcessingError({ reason: 'document-too-large', message: 'PDF extracted text exceeds the supported limit' })
-          }
           pages.push(paragraphs)
         }
         if (isOcrHeavyPdf(pages.map((paragraphs) => paragraphs.join(' ')))) {

@@ -60,6 +60,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 2026-07-19: Delayed exact-head Codex review identified nested HTML block flattening, `<pre>` whitespace collapse, and sparse repeated text bypassing OCR-heavy PDF classification. Nested blocks now traverse into distinct fragments, preformatted blocks preserve normalized line breaks and indentation, and multi-page documents containing only sparse non-empty page text are classified OCR-heavy while short single-page embedded text remains supported.
 - 2026-07-19: Exact-head Codex review found common HTML containers without recognized descendants could concatenate and shared normalization still trimmed meaningful leading `<pre>` indentation. The HTML block taxonomy now covers common structural containers, and internal normalization supports an explicit preformatted-whitespace path while still rejecting whitespace-only fragments.
 - 2026-07-19: Exact-head Codex review identified unbounded locator manifests, missing Setext heading provenance, and whitespace-only blank-line handling in plain text. Ingestion now rejects more than 10,000 locators with typed `document-too-large` before manifest projection/serialization; Markdown recognizes Setext sections; text splits paragraphs on horizontal-whitespace blank lines.
+- 2026-07-19: Exact-head Codex review identified whole-page PDF expansion before limit enforcement. PDF extraction now consumes `streamTextContent()` incrementally with document-wide 5,000,000-character and 100,000-item ceilings, cancels the reader immediately on overflow, and only materializes bounded content. Direct stream cancellation coverage added.
 
 ## Findings
 
@@ -94,6 +95,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 2026-07-19 raw-PDF/ATX remediation gate: focused ingestion and parser tests 17/17; PostgreSQL-backed suite 309/309 with 1,653 assertions; document-processing and ingestion typechecks plus zero-warning repository lint passed.
 - 2026-07-19 HTML/OCR remediation gate: focused parser and ingestion tests 18/18; PostgreSQL-backed suite 310/310 with 1,656 assertions; document-processing typecheck and zero-warning repository lint passed.
 - 2026-07-19 locator/Setext/text remediation gate: focused parser and ingestion tests 20/20; PostgreSQL-backed suite 312/312 with 1,661 assertions; document-processing and ingestion typechecks plus zero-warning repository lint passed.
+- 2026-07-19 streamed-PDF remediation gate: focused parser and ingestion tests 21/21 including direct limit cancellation; PostgreSQL-backed suite 312/312 with 1,661 assertions passed before the tested helper extraction; document-processing typecheck, zero-warning repository lint, and `git diff --check` passed.
 
 ## Bugs Encountered
 
