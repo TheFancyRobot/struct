@@ -26,7 +26,12 @@ services:
     networks:
       - data-engine
     volumes:
-      - ./.local/artifacts:/artifacts:ro
+      - type: bind
+        source: ./.local/artifacts
+        target: /artifacts
+        read_only: true
+        bind:
+          create_host_path: false
       - data-engine-scratch:/scratch:rw
     read_only: true
     tmpfs:

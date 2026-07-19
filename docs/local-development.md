@@ -41,6 +41,10 @@ Ownership rules captured by the table:
 **Startup order:** PostgreSQL → artifact directory + data-engine scratch volume →
 DuckDB sidecar → `apps/worker` → `apps/api` → `apps/web`.
 
+Run `bun run local:prepare` before the first `docker compose up`. The command
+creates and verifies the host-user-writable artifact root; Compose refuses to
+silently create it as a root-owned bind source.
+
 **Shutdown order:** reverse. Stop the sidecar after the worker and before
 PostgreSQL. The worker must finish or checkpoint
 in-flight jobs before exit; the API must drain SSE streams.
@@ -52,6 +56,7 @@ in-flight jobs before exit; the API must drain SSE streams.
 bun run dev:stop              # stop web/api/worker
 docker compose down -v        # stop and remove PG container + volume (or stop local PG)
 rm -rf ./.local               # remove host-visible pgdata and artifacts
+bun run local:prepare         # create the artifact root as the host user
 docker compose up -d postgres # start PG (or start local PG)
 bun run migrations:up         # apps/api rebuilds schema + pgvector extension
 bun run dev                   # start worker, api, web

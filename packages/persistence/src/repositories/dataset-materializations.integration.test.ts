@@ -177,6 +177,14 @@ describeIf('DatasetMaterializationRepo (PostgreSQL)', () => {
        WHERE job_id = $1`,
       [jobId],
     )
+    const expiredRenewal = await Effect.runPromiseExit(
+      DatasetMaterializationRepo.renewLease(retry.value, 1_000).pipe(
+        Effect.provide(layer),
+      ),
+    )
+    expect(String(expiredRenewal)).toContain(
+      'DatasetMaterializationOwnershipLostError',
+    )
     expect(await Effect.runPromise(
       DatasetMaterializationRepo.recoverExpired().pipe(Effect.provide(layer)),
     )).toBe(1)

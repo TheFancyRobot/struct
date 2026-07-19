@@ -268,6 +268,24 @@ suite('data-engine sidecar', () => {
       },
     })
 
+    const boundedOutput = await hostRequest({
+      path: '/v1/materialize',
+      method: 'POST',
+      credential: token,
+      body: {
+        ...request,
+        limits: { ...request.limits, maxOutputBytes: 1 },
+      },
+    })
+    expect(boundedOutput.status).toBe(413)
+    expect(boundedOutput.json).toEqual({
+      ok: false,
+      error: {
+        code: 'resource-limit',
+        message: 'Parquet output exceeds configured limit',
+      },
+    })
+
     const incomplete = await openIncompleteMaterialization()
     try {
       const concurrent = await hostRequest({
@@ -438,6 +456,21 @@ suite('data-engine sidecar', () => {
       error: {
         code: 'invalid-input',
         message: 'Structured input columns do not match the declared schema',
+      },
+    })
+
+    const malformed = await materializeValue(
+      '[{"value":1}',
+      'json',
+      'integer',
+      'd',
+    )
+    expect(malformed.status).toBe(400)
+    expect(malformed.json).toEqual({
+      ok: false,
+      error: {
+        code: 'invalid-input',
+        message: 'Structured JSON input is invalid',
       },
     })
   }, 20_000)

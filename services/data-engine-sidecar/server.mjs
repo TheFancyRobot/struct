@@ -1,4 +1,4 @@
-/* global Buffer, URL, clearTimeout, process, setTimeout */
+/* global Buffer, URL, clearInterval, clearTimeout, process, setInterval, setTimeout */
 import { createHash, timingSafeEqual } from 'node:crypto'
 import { createReadStream, createWriteStream } from 'node:fs'
 import {
@@ -275,6 +275,67 @@ async function hashFile(path, ensureActive = () => {}) {
   return hasher.digest('hex')
 }
 
+async function runStructuredImport(connection, statement) {
+  try {
+    await connection.run(statement)
+  } catch (error) {
+    if (
+      /csv|json|malformed|parse|sniff|invalid input|conversion/i
+        .test(String(error?.message))
+    ) {
+      throw new RequestFailure('invalid-input', 'Structured input could not be parsed')
+    }
+    throw error
+  }
+}
+
+async function writeParquetWithinLimit(
+  connection,
+  statement,
+  path,
+  maxBytes,
+  ensureActive,
+) {
+  let monitorFailure
+  let checking = false
+  const check = async () => {
+    if (checking || monitorFailure !== undefined) return
+    checking = true
+    try {
+      ensureActive()
+      const metadata = await stat(path)
+      if (metadata.size > maxBytes) {
+        monitorFailure = new RequestFailure(
+          'resource-limit',
+          'Parquet output exceeds configured limit',
+        )
+        connection.interrupt()
+      }
+    } catch (error) {
+      if (error?.code !== 'ENOENT') {
+        monitorFailure = error
+        connection.interrupt()
+      }
+    } finally {
+      checking = false
+    }
+  }
+  const monitor = setInterval(() => void check(), 2)
+  try {
+    await connection.run(statement)
+    await check()
+  } catch (error) {
+    if (monitorFailure !== undefined) throw monitorFailure
+    throw error
+  } finally {
+    clearInterval(monitor)
+    while (checking) {
+      await new Promise((resolve) => setTimeout(resolve, 1))
+    }
+  }
+  if (monitorFailure !== undefined) throw monitorFailure
+}
+
 async function materialize(request, httpRequest) {
   let cancelled = false
   let instance
@@ -331,10 +392,17 @@ async function materialize(request, httpRequest) {
     ensureActive()
     await connection.run(`SET allowed_directories=['${ARTIFACT_ROOT}','${SCRATCH_ROOT}']`)
     await connection.run('SET enable_external_access=false')
-    const inferredUnion = request.inputs
+    const exactInputs = []
+    for (const input of request.inputs) {
+      const prepared = await prepareExactJsonInput(input, request, ensureActive)
+      exactInputs.push(prepared)
+      if (prepared.preparedPath !== undefined) preparedPaths.push(prepared.preparedPath)
+    }
+    const inferredUnion = exactInputs
       .map((input) => `SELECT * FROM ${sourceSql(input)}`)
       .join(' UNION ALL BY NAME ')
-    await connection.run(
+    await runStructuredImport(
+      connection,
       `CREATE TABLE scanned AS SELECT * FROM (${inferredUnion}) LIMIT ${request.limits.maxRows + 1}`,
     )
     const countReader = await connection.runAndReadAll('SELECT count(*) AS row_count FROM scanned')
@@ -360,16 +428,11 @@ async function materialize(request, httpRequest) {
       )
     }
     await connection.run('DROP TABLE scanned')
-    const exactInputs = []
-    for (const input of request.inputs) {
-      const prepared = await prepareExactJsonInput(input, request, ensureActive)
-      exactInputs.push(prepared)
-      if (prepared.preparedPath !== undefined) preparedPaths.push(prepared.preparedPath)
-    }
     const exactUnion = exactInputs
       .map((input) => `SELECT * FROM ${sourceSql(input, request.fields)}`)
       .join(' UNION ALL BY NAME ')
-    await connection.run(
+    await runStructuredImport(
+      connection,
       `CREATE TABLE imported AS SELECT * FROM (${exactUnion}) LIMIT ${request.limits.maxRows + 1}`,
     )
     for (const field of request.fields) {
@@ -461,8 +524,12 @@ async function materialize(request, httpRequest) {
     }
     const profile = { rowCount, columns: profileColumns }
     await rm(temporary, { force: true })
-    await connection.run(
+    await writeParquetWithinLimit(
+      connection,
       `COPY (SELECT * FROM materialized ORDER BY ALL) TO '${temporary}' (FORMAT PARQUET, COMPRESSION ZSTD)`,
+      temporary,
+      request.limits.maxOutputBytes,
+      ensureActive,
     )
     const outputMetadata = await stat(temporary)
     if (outputMetadata.size > request.limits.maxOutputBytes) {
