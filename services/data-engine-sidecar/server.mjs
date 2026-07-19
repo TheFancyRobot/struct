@@ -542,7 +542,7 @@ function duckType(logicalType) {
   switch (logicalType) {
     case 'boolean': return 'BOOLEAN'
     case 'integer': return 'BIGINT'
-    case 'decimal': return 'DECIMAL(38,10)'
+    case 'decimal': return 'DECIMAL(38,18)'
     case 'date': return 'DATE'
     case 'timestamp': return 'TIMESTAMP'
     case 'json': return 'JSON'
@@ -765,9 +765,9 @@ async function materialize(request, httpRequest, httpResponse) {
         invalid = `${name} IS NOT NULL AND (
              NOT regexp_full_match(${text}, '^[+-]?[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?$')
              OR (${exponentText} <> '' AND TRY_CAST(${exponentText} AS INTEGER) IS NULL)
-             OR ${integerDigits} > 28
-             OR (${scale} > 10 AND ${trailingZeros} < ${scale} - 10)
-             OR TRY_CAST(${name} AS DECIMAL(38,10)) IS NULL
+             OR ${integerDigits} > 20
+             OR (${scale} > 18 AND ${trailingZeros} < ${scale} - 18)
+             OR TRY_CAST(${name} AS DECIMAL(38,18)) IS NULL
            )`
       }
       const invalidReader = await connection.runAndReadAll(
@@ -1138,6 +1138,7 @@ const server = createServer(async (request, response) => {
   }
   if (busy) return fail(response, 429, 'busy', 'Data-engine concurrency limit reached')
   busy = true
+  response.writeProcessing()
   try {
     const result = url.pathname === '/v1/query'
       ? await querySnapshots(validated, request, response)

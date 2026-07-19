@@ -61,3 +61,8 @@ schema question, one question for each of eight security truth classes, and
 one recovery question. The compact checked-in evidence is
 [`phase-04-corpus-v1.json`](../packages/evaluation/results/phase-04-corpus-v1.json);
 the 25,000 generated records remain local artifacts.
+
+STEP-04-06 consumes that exact corpus through the real materialization,
+catalog, SQL, citation, security, and recovery paths. See
+[`operations/phase-04-evaluation.md`](./operations/phase-04-evaluation.md) for
+the executable gate and report contract.
