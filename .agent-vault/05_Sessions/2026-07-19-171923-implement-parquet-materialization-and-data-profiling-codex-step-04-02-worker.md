@@ -85,9 +85,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Validation Run
 
 <!-- AGENT-START:session-validation-run -->
-- Commands: canonical default and PostgreSQL suites; focused data-engine/worker/persistence suites; real Compose sidecar integration; typecheck, lint, import boundaries, build, docs, secrets, migration down/up, Compose config, and vault doctor.
+- Commands: `bun test --timeout 30000 --max-concurrency 1 --path-ignore-patterns='**/e2e/**' ./apps ./packages`; the same command with `DATABASE_URL=postgres://struct:struct@127.0.0.1:5432/struct`; `DATA_ENGINE_INTEGRATION=1 bun test --timeout 30000 --max-concurrency 1 packages/data-engine/test/sidecar.integration.test.ts`; `bun run typecheck`; `bun run lint`; `bun run lint:imports`; `bun run build`; `bun run docs:lint`; `bun run secrets:scan`; migration down/up with the local `DATABASE_URL`; `docker compose config --quiet`; pinned-image Compose build/start; Node syntax and git diff checks; and `vault_validate doctor`.
 - Result: passed.
-- Notes: 395 default tests passed (143 environment-gated skips, 1,539 assertions); 93 PostgreSQL integration tests passed (2 sidecar-only skips, 730 assertions); real Node 24.18.0 sidecar integration passed 2 tests / 21 assertions; focused data-engine/worker tests passed 11 / 24; focused materialization persistence passed 2 / 18. Dependency validation covered 130 modules and 306 dependencies; docs validated 40 Markdown files; secrets scan covered 898 paths and 928 history blobs.
+- Notes: authoritative final scopes were 395 default tests passed (143 environment-gated skips, 1,539 assertions); 487 PostgreSQL tests passed (2 sidecar-only skips, 2,266 assertions); and real pinned Node 24.18.0 Compose sidecar integration passed 2 tests / 27 assertions. Final focused checks passed 8 data-engine/worker tests / 19 assertions and 2 materialization-persistence tests / 19 assertions. Dependency validation covered 130 modules and 306 dependencies; docs validated 40 Markdown files; the final recorded secrets scan covered 898 paths and 934 branch-history blobs.
 <!-- AGENT-END:session-validation-run -->
 
 ## Bugs Encountered
