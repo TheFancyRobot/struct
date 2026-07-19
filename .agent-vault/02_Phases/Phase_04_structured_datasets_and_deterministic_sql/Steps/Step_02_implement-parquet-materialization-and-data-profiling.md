@@ -5,7 +5,7 @@ contract_version: 1
 title: Implement Parquet Materialization and Data Profiling
 step_id: STEP-04-02
 phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]'
-status: in_progress
+status: completed
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
@@ -13,14 +13,15 @@ depends_on:
   - '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_01_define-dataset-assets-schemas-and-versioned-catalog|STEP-04-01 Define Dataset Assets Schemas and Versioned Catalog]]'
 related_sessions:
   - '[[05_Sessions/2026-07-19-171923-implement-parquet-materialization-and-data-profiling-codex-step-04-02-worker|SESSION-2026-07-19-171923 codex-step-04-02-worker session for Implement Parquet Materialization and Data Profiling]]'
-related_bugs: []
+related_bugs:
+  - '[[03_Bugs/BUG-0007_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0007 Solid theme toggle does not apply the selected theme]]'
 tags:
   - agent-vault
   - step
 context_id: SESSION-2026-07-19-171923
 active_session_id: 05_Sessions/2026-07-19-171923-implement-parquet-materialization-and-data-profiling-codex-step-04-02-worker
-context_status: in_progress
-context_summary: STEP-04-02 implementation and local gates are complete; PR #19 review remediation and merge remain before completion.
+context_status: completed
+context_summary: 'STEP-04-02 passed local validation and bot review and merged to main in PR #19 at 7357870.'
 ---
 
 # Step 02 - Implement Parquet Materialization and Data Profiling

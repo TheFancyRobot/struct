@@ -22,7 +22,8 @@ context:
     section: Context Handoff
   last_action:
     type: saved
-related_bugs: []
+related_bugs:
+  - '[[03_Bugs/BUG-0007_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0007 Solid theme toggle does not apply the selected theme]]'
 related_decisions: []
 created: '2026-07-19'
 updated: '2026-07-19'
@@ -105,7 +106,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Bugs Encountered
 
 <!-- AGENT-START:session-bugs-encountered -->
-- None.
+- [[03_Bugs/BUG-0007_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0007 Solid theme toggle does not apply the selected theme]] - Linked from bug generator.
 <!-- AGENT-END:session-bugs-encountered -->
 
 ## Decisions Made or Updated
@@ -129,3 +130,4 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - The maintained host remains Bun-only; Node and the native DuckDB adapter are pinned inside the isolated Compose sidecar.
 - The step is intentionally still `in_progress` pending root review, PR checks/automated review remediation, and merge.
 - STEP-04-02 is locally complete after worker implementation and root zero-defect review. The exact candidate passed all required code, database, container, security, documentation, migration, and vault gates. Remaining work is orchestrator-owned commit, PR review remediation, and merge.
+- PR #19 merged to `main` at merge commit `7357870` after all review findings were addressed. STEP-04-02 is complete; STEP-04-03 may proceed once the repository-wide zero-defect gate is restored.
