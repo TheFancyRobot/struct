@@ -20,9 +20,9 @@ Keep this note short and current.
 
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-19._
-- Session in progress: [[05_Sessions/2026-07-19-043816-automate-vertical-slice-tests-documentation-and-observability-step-01-06-execute|SESSION-2026-07-19-043816 STEP-01-06 execution]].
-- Current step: [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]] - status: in_progress - phase: [[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]
-- Active phase: [[02_Phases/Phase_01_walking_skeleton/Phase|PHASE-01 Walking Skeleton]] - status: in_progress - updated: 2026-07-19
+- Session in progress: none.
+- Current step: [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_01_parse-and-normalize-supported-documents|STEP-02-01 Parse and Normalize Supported Documents]] - status: planned - phase: [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|Phase 02 document research and hybrid retrieval]]
+- Active phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]] - status: planned - updated: 2026-07-19
 - Also active: 65 more additional steps.
 <!-- AGENT-END:current-focus -->
 
