@@ -6,6 +6,7 @@ import {
   DirectoryIngestionJobTransition,
   DirectoryIngestionLeaseToken,
   DirectoryIngestionResult,
+  DirectoryRootId,
   DirectorySnapshotId,
   InvalidDirectoryIngestionTransitionError,
   JobQueueId,
@@ -42,6 +43,7 @@ const ClaimedJobRow = Schema.Struct({
 export interface CreateDirectoryIngestionJobInput {
   readonly jobId: typeof JobQueueId.Type
   readonly workspaceId: typeof WorkspaceId.Type
+  readonly directoryRootId: typeof DirectoryRootId.Type
   readonly snapshotId: typeof DirectorySnapshotId.Type
   readonly maxAttempts: number
 }
@@ -178,13 +180,25 @@ export class DirectoryIngestionJobRepo
                     throw new Error('directory-ingestion-job-conflict')
                   }
                   const directoryJobs = await transaction.unsafe(
-                    `INSERT INTO directory_ingestion_jobs (job_id, snapshot_id)
-                     VALUES ($1, $2)
+                    `INSERT INTO directory_ingestion_jobs (
+                       job_id, snapshot_id, directory_root_id
+                     )
+                     SELECT $1, $2, root.id
+                     FROM directory_roots root
+                     WHERE root.id = $3
+                       AND root.workspace_id = $4
                      ON CONFLICT (job_id) DO UPDATE
                      SET job_id = directory_ingestion_jobs.job_id
                      WHERE directory_ingestion_jobs.snapshot_id = EXCLUDED.snapshot_id
+                       AND directory_ingestion_jobs.directory_root_id =
+                         EXCLUDED.directory_root_id
                      RETURNING job_id`,
-                    [input.jobId, input.snapshotId],
+                    [
+                      input.jobId,
+                      input.snapshotId,
+                      input.directoryRootId,
+                      input.workspaceId,
+                    ],
                   )
                   if (directoryJobs.length !== 1) {
                     throw new Error('directory-ingestion-snapshot-conflict')

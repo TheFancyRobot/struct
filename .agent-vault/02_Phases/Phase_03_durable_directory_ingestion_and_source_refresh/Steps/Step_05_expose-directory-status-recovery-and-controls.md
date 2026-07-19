@@ -5,7 +5,7 @@ contract_version: 1
 title: Expose Directory Status Recovery and Controls
 step_id: STEP-03-05
 phase: '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]]'
-status: in_progress
+status: completed
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
@@ -19,8 +19,8 @@ tags:
   - step
 context_id: SESSION-2026-07-19-143611
 active_session_id: 05_Sessions/2026-07-19-143611-expose-directory-status-recovery-and-controls-codex-step-03-05-worker
-context_status: in_progress
-context_summary: Implementation and validation are complete; PR review remediation is complete and merge remains pending.
+context_status: completed
+context_summary: 'Implemented, independently validated, reviewed, remediated, and merged as PR #15 at 35f19c5.'
 ---
 
 # Step 05 - Expose Directory Status Recovery and Controls

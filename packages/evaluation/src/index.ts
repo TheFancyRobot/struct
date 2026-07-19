@@ -15,6 +15,7 @@ export const walkingSkeletonCorpus: CorpusSpec = {
 }
 
 export * from './document-retrieval.js'
+export * from './directory-refresh.js'
 export * from './phase-02-fixture.js'
 export * from './prompt-injection.js'
 export * from './run-phase-02-evaluation.js'

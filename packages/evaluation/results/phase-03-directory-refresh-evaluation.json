@@ -1,0 +1,171 @@
+{
+  "fixtureId": "phase-03-directory-refresh-v1",
+  "seed": 20260719,
+  "runtime": "bun",
+  "hardwareAssumption": "hardware-independent",
+  "fixture": {
+    "initialFiles": 1000,
+    "refreshedFiles": 1000,
+    "nestedDirectories": 10,
+    "unchanged": 850,
+    "changed": 75,
+    "removed": 50,
+    "added": 50,
+    "unsupported": 25,
+    "permissionFailurePath": "restricted/denied.txt",
+    "configuredEntryLimit": 1000,
+    "configuredLimitObserved": 1001
+  },
+  "manifests": {
+    "initialDigest": "sha256:d0986d279e77df88dbe3eec2a3d006154c638b0309667a3456e671e5a5927c8a",
+    "refreshedDigest": "sha256:57a838b96c39cbf8c081c544fc6a929afce354f773253faa5f6bab432334c50c",
+    "reproducible": true
+  },
+  "progress": {
+    "processed": 975,
+    "unsupported": 25,
+    "pending": 0,
+    "exact": true
+  },
+  "resources": {
+    "preparedEntryConcurrency": 4,
+    "maximumFixtureFiles": 1000,
+    "modelCalls": 0,
+    "latencyThreshold": null
+  },
+  "safety": {
+    "permissionFailureObserved": true,
+    "permissionFailurePath": "restricted/denied.txt",
+    "configuredLimitFailureObserved": true,
+    "configuredLimitObserved": 1001
+  },
+  "recovery": [
+    {
+      "boundary": "discovery",
+      "attempts": 2,
+      "replayAttempts": 1,
+      "committedManifests": 1,
+      "committedVersions": 125,
+      "committedEvents": 1,
+      "committedCheckpoints": 1,
+      "uniqueArtifacts": 125,
+      "duplicateArtifacts": 0,
+      "duplicateManifests": 0,
+      "duplicateVersions": 0,
+      "duplicateEvents": 0,
+      "duplicateCheckpoints": 0,
+      "converged": true
+    },
+    {
+      "boundary": "hashing",
+      "attempts": 2,
+      "replayAttempts": 1,
+      "committedManifests": 1,
+      "committedVersions": 125,
+      "committedEvents": 1,
+      "committedCheckpoints": 1,
+      "uniqueArtifacts": 125,
+      "duplicateArtifacts": 0,
+      "duplicateManifests": 0,
+      "duplicateVersions": 0,
+      "duplicateEvents": 0,
+      "duplicateCheckpoints": 0,
+      "converged": true
+    },
+    {
+      "boundary": "artifact-persistence",
+      "attempts": 2,
+      "replayAttempts": 1,
+      "committedManifests": 1,
+      "committedVersions": 125,
+      "committedEvents": 1,
+      "committedCheckpoints": 1,
+      "uniqueArtifacts": 125,
+      "duplicateArtifacts": 0,
+      "duplicateManifests": 0,
+      "duplicateVersions": 0,
+      "duplicateEvents": 0,
+      "duplicateCheckpoints": 0,
+      "converged": true
+    },
+    {
+      "boundary": "version-creation",
+      "attempts": 2,
+      "replayAttempts": 1,
+      "committedManifests": 1,
+      "committedVersions": 125,
+      "committedEvents": 1,
+      "committedCheckpoints": 1,
+      "uniqueArtifacts": 125,
+      "duplicateArtifacts": 0,
+      "duplicateManifests": 0,
+      "duplicateVersions": 0,
+      "duplicateEvents": 0,
+      "duplicateCheckpoints": 0,
+      "converged": true
+    },
+    {
+      "boundary": "event-publication",
+      "attempts": 2,
+      "replayAttempts": 1,
+      "committedManifests": 1,
+      "committedVersions": 125,
+      "committedEvents": 1,
+      "committedCheckpoints": 1,
+      "uniqueArtifacts": 125,
+      "duplicateArtifacts": 0,
+      "duplicateManifests": 0,
+      "duplicateVersions": 0,
+      "duplicateEvents": 0,
+      "duplicateCheckpoints": 0,
+      "converged": true
+    },
+    {
+      "boundary": "checkpoint",
+      "attempts": 2,
+      "replayAttempts": 1,
+      "committedManifests": 1,
+      "committedVersions": 125,
+      "committedEvents": 1,
+      "committedCheckpoints": 1,
+      "uniqueArtifacts": 125,
+      "duplicateArtifacts": 0,
+      "duplicateManifests": 0,
+      "duplicateVersions": 0,
+      "duplicateEvents": 0,
+      "duplicateCheckpoints": 0,
+      "converged": true
+    }
+  ],
+  "gates": [
+    {
+      "id": "fixed-1000-file-tree",
+      "passed": true
+    },
+    {
+      "id": "manifest-diff-reproducibility",
+      "passed": true
+    },
+    {
+      "id": "portable-permission-failure-fixture",
+      "passed": true
+    },
+    {
+      "id": "configured-limit-fails-closed",
+      "passed": true
+    },
+    {
+      "id": "all-restart-boundaries-converge",
+      "passed": true
+    },
+    {
+      "id": "terminal-progress-is-exact",
+      "passed": true
+    },
+    {
+      "id": "bounded-deterministic-work",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

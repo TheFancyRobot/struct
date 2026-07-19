@@ -205,6 +205,7 @@ describeIf('DirectorySourceVersionRepo (PostgreSQL)', () => {
     await runJob(DirectoryIngestionJobRepo.create({
       jobId,
       workspaceId,
+      directoryRootId: rootId,
       snapshotId,
       maxAttempts: 3,
     }))

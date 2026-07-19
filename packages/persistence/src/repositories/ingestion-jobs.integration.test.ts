@@ -4,10 +4,13 @@ import postgres from 'postgres'
 import type postgresTypes from 'postgres'
 import {
   DirectoryIngestionEntryCommit,
+  DirectoryRootId,
   DirectorySnapshotId,
   InvalidDirectoryIngestionTransitionError,
   JobQueueId,
   ManifestEntryId,
+  ProjectId,
+  SourceId,
   WorkspaceId,
 } from '@struct/domain'
 import {
@@ -19,6 +22,19 @@ const DATABASE_URL = process.env['DATABASE_URL']
 const describeIf = DATABASE_URL ? describe : describe.skip
 const workspaceId = WorkspaceId.make('d30e8400-e29b-41d4-a716-446655440000')
 const snapshotId = DirectorySnapshotId.make('d30e8400-e29b-41d4-a716-446655440001')
+const projectId = ProjectId.make('d30e8400-e29b-41d4-a716-446655440010')
+const directorySourceId =
+  SourceId.make('d30e8400-e29b-41d4-a716-446655440011')
+const directoryRootId =
+  DirectoryRootId.make('d30e8400-e29b-41d4-a716-446655440012')
+const foreignWorkspaceId =
+  WorkspaceId.make('d30e8400-e29b-41d4-a716-446655440020')
+const foreignProjectId =
+  ProjectId.make('d30e8400-e29b-41d4-a716-446655440021')
+const foreignSourceId =
+  SourceId.make('d30e8400-e29b-41d4-a716-446655440022')
+const foreignRootId =
+  DirectoryRootId.make('d30e8400-e29b-41d4-a716-446655440023')
 
 function makeJobId(suffix: string): typeof JobQueueId.Type {
   return JobQueueId.make(`d30e8400-e29b-41d4-a716-44665544${suffix}`)
@@ -33,17 +49,68 @@ describeIf('DirectoryIngestionJobRepo (PostgreSQL)', () => {
     sql = postgres(DATABASE_URL, { max: 6, idle_timeout: 5 })
     layer = Layer.provide(DirectoryIngestionJobRepo.Default, SqlClientLive(sql))
     await sql.unsafe('DELETE FROM job_queue WHERE workspace_id = $1', [workspaceId])
-    await sql.unsafe('DELETE FROM workspaces WHERE id = $1', [workspaceId])
+    await sql.unsafe('DELETE FROM directory_roots WHERE id IN ($1, $2)', [
+      directoryRootId,
+      foreignRootId,
+    ])
+    await sql.unsafe('DELETE FROM workspaces WHERE id IN ($1, $2)', [
+      workspaceId,
+      foreignWorkspaceId,
+    ])
     await sql.unsafe(
       `INSERT INTO workspaces (id, name) VALUES ($1, 'Directory jobs')`,
       [workspaceId],
+    )
+    await sql.unsafe(
+      `INSERT INTO projects (id, workspace_id, name)
+       VALUES ($1, $2, 'Directory jobs project')`,
+      [projectId, workspaceId],
+    )
+    await sql.unsafe(
+      `INSERT INTO sources (id, project_id, name, kind)
+       VALUES ($1, $2, 'Directory jobs root', 'directory')`,
+      [directorySourceId, projectId],
+    )
+    await sql.unsafe(
+      `INSERT INTO directory_roots (
+         id, workspace_id, project_id, source_id
+       ) VALUES ($1, $2, $3, $4)`,
+      [directoryRootId, workspaceId, projectId, directorySourceId],
+    )
+    await sql.unsafe(
+      `INSERT INTO workspaces (id, name)
+       VALUES ($1, 'Foreign directory jobs')`,
+      [foreignWorkspaceId],
+    )
+    await sql.unsafe(
+      `INSERT INTO projects (id, workspace_id, name)
+       VALUES ($1, $2, 'Foreign directory jobs project')`,
+      [foreignProjectId, foreignWorkspaceId],
+    )
+    await sql.unsafe(
+      `INSERT INTO sources (id, project_id, name, kind)
+       VALUES ($1, $2, 'Foreign directory jobs root', 'directory')`,
+      [foreignSourceId, foreignProjectId],
+    )
+    await sql.unsafe(
+      `INSERT INTO directory_roots (
+         id, workspace_id, project_id, source_id
+       ) VALUES ($1, $2, $3, $4)`,
+      [foreignRootId, foreignWorkspaceId, foreignProjectId, foreignSourceId],
     )
   })
 
   afterAll(async () => {
     if (!sql) return
     await sql.unsafe('DELETE FROM job_queue WHERE workspace_id = $1', [workspaceId])
-    await sql.unsafe('DELETE FROM workspaces WHERE id = $1', [workspaceId])
+    await sql.unsafe('DELETE FROM directory_roots WHERE id IN ($1, $2)', [
+      directoryRootId,
+      foreignRootId,
+    ])
+    await sql.unsafe('DELETE FROM workspaces WHERE id IN ($1, $2)', [
+      workspaceId,
+      foreignWorkspaceId,
+    ])
     await sql.end()
   })
 
@@ -67,11 +134,31 @@ describeIf('DirectoryIngestionJobRepo (PostgreSQL)', () => {
     }
   }
 
+  it('rejects a foreign directory root and rolls back its parent queue row', async () => {
+    const jobId = makeJobId('0006')
+    const error = await run(
+      DirectoryIngestionJobRepo.create({
+        jobId,
+        workspaceId,
+        directoryRootId: foreignRootId,
+        snapshotId,
+        maxAttempts: 3,
+      }).pipe(Effect.flip),
+    )
+    expect(error._tag).toBe('QueryError')
+    const rows = await sql.unsafe(
+      'SELECT COUNT(*)::int AS count FROM job_queue WHERE id = $1',
+      [jobId],
+    )
+    expect(rows[0]?.['count']).toBe(0)
+  })
+
   it('allows only one concurrent claim', async () => {
     const jobId = makeJobId('0002')
     await run(DirectoryIngestionJobRepo.create({
       jobId,
       workspaceId,
+      directoryRootId,
       snapshotId,
       maxAttempts: 3,
     }))
@@ -109,6 +196,7 @@ describeIf('DirectoryIngestionJobRepo (PostgreSQL)', () => {
     await run(DirectoryIngestionJobRepo.create({
       jobId,
       workspaceId,
+      directoryRootId,
       snapshotId,
       maxAttempts: 3,
     }))
@@ -284,6 +372,7 @@ describeIf('DirectoryIngestionJobRepo (PostgreSQL)', () => {
     await run(DirectoryIngestionJobRepo.create({
       jobId: exhaustedJobId,
       workspaceId,
+      directoryRootId,
       snapshotId,
       maxAttempts: 1,
     }))
@@ -314,6 +403,7 @@ describeIf('DirectoryIngestionJobRepo (PostgreSQL)', () => {
     await run(DirectoryIngestionJobRepo.create({
       jobId: cancelledJobId,
       workspaceId,
+      directoryRootId,
       snapshotId,
       maxAttempts: 3,
     }))
