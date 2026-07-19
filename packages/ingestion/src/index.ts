@@ -1,5 +1,7 @@
 export * from './directory-errors.js'
 export * from './discover-directory.js'
+export * from './diff-manifest.js'
+export * from './apply-refresh.js'
 export * from './file-classifier.js'
 export * from './hash-file.js'
 export * from './ingest-text-source.js'

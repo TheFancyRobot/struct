@@ -67,6 +67,7 @@ tags:
 - `eslint.config.mjs` — ESLint 9.39.2 flat config with TS/Solid/Effect convention enforcement.
 - `dependency-cruiser.config.mjs` — SWC-based dependency analysis.
 - `scripts/boundary-check.ts` — Bun-aware import boundary checker.
+- STEP-03-04 directory refresh: pure manifest diff and orchestration in `packages/ingestion`; digest-verified immutable staging in `packages/source-storage`; fenced atomic lineage/checkpoint/index/event persistence in `packages/persistence`; one callable worker boundary in `apps/worker`.
 <!-- AGENT-END:architecture-important-paths -->
 
 ## Constraints

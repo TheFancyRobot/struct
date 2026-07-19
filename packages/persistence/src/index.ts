@@ -43,6 +43,7 @@ export {
   SourceTextReindexRepo,
   DocumentChunkRepo,
   DirectoryIngestionJobRepo,
+  DirectorySourceVersionRepo,
   // Persistence errors
   QueryError,
   EntityNotFoundError,
@@ -109,3 +110,11 @@ export type {
 } from './repositories/research-projections.js'
 
 export type { SourceTextReindexJob } from './repositories/source-text-reindex.js'
+
+export type {
+  CommitDirectoryRefreshInput,
+  CommitDirectoryRefreshResult,
+  DirectoryRefreshResult,
+  PreparedChunkEmbedding,
+  PreparedDirectorySourceVersion,
+} from './repositories/source-versions.js'
