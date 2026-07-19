@@ -6,7 +6,8 @@
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: update typed domain modules for `Ingestion Job` in `packages/domain/src/ingestion-job.ts`.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: Repository boundaries in `packages/persistence/src/repositories/ingestion-jobs.ts`, `packages/persistence/src/repositories/idempotency-keys.ts` that translate between storage records and typed domain objects.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
-- PostgreSQL integration tests cover lease expiry and reclaim, worker restart after checkpoint, duplicate delivery, concurrent claims, retry-budget exhaustion, cancellation, and invalid transitions.
+- PostgreSQL integration tests cover lease expiry and reclaim, worker restart after checkpoint, duplicate delivery, concurrent claims, retry-budget exhaustion, cancellation, invalid transitions, and a stale worker attempting to commit after a newer lease/attempt takes ownership.
+- The stale-worker test proves the lease-token/attempt predicate is checked while the owning job row is locked and that a mismatch returns the typed no-op without writing idempotency, work, checkpoint, event/outbox, or job-state records.
 - Replaying the same idempotency key yields one committed job and one checkpoint sequence.
 - Effect service/layer and typed-error patterns follow repository conventions and the Effect skills; no promise or thrown-error escape path bypasses the job state machine.
 

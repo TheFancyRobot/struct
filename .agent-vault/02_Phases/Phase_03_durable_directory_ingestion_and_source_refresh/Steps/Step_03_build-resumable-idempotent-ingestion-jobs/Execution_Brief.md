@@ -36,7 +36,7 @@
 - Add repository boundaries in `packages/persistence/src/repositories/ingestion-jobs.ts`, `packages/persistence/src/repositories/idempotency-keys.ts` that translate between storage records and typed domain objects.
 - Use `packages/ingestion/src/job-state.ts` to make discovery, classification, refresh, or job state deterministic before any model-dependent behavior is introduced.
 - Extend the existing PostgreSQL job journal with directory-refresh state, leases, attempt budgets, per-entry checkpoints, and idempotency keys; do not add another queue or database.
-- For each entry, one PostgreSQL transaction atomically commits the idempotency result, PostgreSQL work records, per-entry checkpoint, persisted event/outbox row, and job-state transition. Delivery is acknowledged only after that transaction commits.
+- For each entry, one PostgreSQL transaction locks the owning job row and verifies the current lease token and attempt before atomically committing the idempotency result, PostgreSQL work records, per-entry checkpoint, persisted event/outbox row, and job-state transition. A stale worker whose lease token or attempt no longer matches performs a deterministic typed no-op and cannot mutate any of those records. Delivery is acknowledged only after an owning transaction commits.
 - Any non-PostgreSQL effect must be staged under a stable content key and be safe to repeat before the transaction. Failure before commit remains unacknowledged; failure after commit but before acknowledgement replays to the stored idempotent result without duplicating work.
 - Model pause, resume, retry, cancel, exhausted, and terminal completion as validated transitions with typed Effect errors.
 
