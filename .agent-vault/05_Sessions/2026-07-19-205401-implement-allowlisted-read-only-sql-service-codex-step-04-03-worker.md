@@ -57,6 +57,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Kept the boundary service-only: no public HTTP endpoint was added because real user-auth middleware does not yet exist.
 - PR #21 Codex review remediation: unreadable/malformed artifact 404 responses now fall back to retryable `handoff-not-found`; generated Active Context and the STEP-04-03 Agent-Managed Snapshot now consistently reflect the active in-progress review state.
 - PR #21 CodeRabbit remediation: session managed blocks now carry authoritative changed paths and validation; SQL execution requires top-level `ORDER BY ALL`, giving a total order across every projected value before truncation and hashing while byte-identical duplicate rows remain interchangeable.
+- 2026-07-19: Addressed the existing CodeRabbit findings without requesting another review: replaced placeholder generated session summaries, required top-level `ORDER BY ALL` for deterministic total ordering, expanded live sidecar coverage to 165 assertions, and restored unique vault bug identity by renumbering the Solid theme fix from BUG-0007 to BUG-0010 while preserving the original event-journal BUG-0007. Rebuilt the bug index and confirmed Agent Vault doctor is clean.
 
 ## Findings
 

@@ -14,7 +14,7 @@ depends_on:
 related_sessions:
   - '[[05_Sessions/2026-07-19-171923-implement-parquet-materialization-and-data-profiling-codex-step-04-02-worker|SESSION-2026-07-19-171923 codex-step-04-02-worker session for Implement Parquet Materialization and Data Profiling]]'
 related_bugs:
-  - '[[03_Bugs/BUG-0007_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0007 Solid theme toggle does not apply the selected theme]]'
+  - '[[03_Bugs/BUG-0010_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0010 Solid theme toggle does not apply the selected theme]]'
 tags:
   - agent-vault
   - step
