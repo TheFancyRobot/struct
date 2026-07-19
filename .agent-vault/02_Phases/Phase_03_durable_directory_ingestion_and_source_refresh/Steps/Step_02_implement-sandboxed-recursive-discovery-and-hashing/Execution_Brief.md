@@ -34,6 +34,9 @@
 - Implement the narrowest typed slice for Sandboxed Recursive Discovery and Hashing that is callable by the next step without broadening scope.
 - Use `packages/ingestion/src/discover-directory.ts`, `packages/ingestion/src/path-safety.ts`, `packages/ingestion/src/hash-file.ts` to make discovery, classification, refresh, or job state deterministic before any model-dependent behavior is introduced.
 - Constrain worker-side execution in `apps/worker/src/jobs/scan-directory.ts` to one resumable, observable path for this slice.
+- Resolve only registered roots, emit canonical root-relative paths, reject traversal escapes, and make the symlink policy explicit and fail-closed by default.
+- Stream file hashing with Bun under configurable depth, entry-count, per-file byte, and aggregate-byte limits; do not load whole directory contents into memory.
+- Return typed per-entry discovery outcomes so unsupported files and permission failures are observable without silently widening the root.
 
 ## Smallest Bounded Checklist
 

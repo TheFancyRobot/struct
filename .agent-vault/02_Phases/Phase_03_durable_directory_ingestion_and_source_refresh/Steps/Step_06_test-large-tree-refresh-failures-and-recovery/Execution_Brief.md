@@ -34,6 +34,9 @@
 - Constrain worker-side execution in `apps/worker/test/directory-recovery.integration.test.ts` to one resumable, observable path for this slice.
 - Add deterministic evaluation or benchmark artifacts in `packages/evaluation/src/directory-refresh.ts` so this step can be judged without hand-waving.
 - Capture the durable contract or operator guidance in `docs/operations/directory-recovery.md`, `docs/benchmarks/directory-ingestion.md` rather than burying it in session-only notes.
+- Use a deterministic generated tree capped at 1,000 files for Phase 03 correctness and recovery evidence; the planned 25,000-file corpus remains Phase 04+ work.
+- Inject failures at discovery, hashing, checkpoint, artifact persistence, version creation, and event publication boundaries, then prove restart and replay convergence.
+- Record correctness and resource observations without inventing hardware-independent latency claims.
 
 ## Smallest Bounded Checklist
 

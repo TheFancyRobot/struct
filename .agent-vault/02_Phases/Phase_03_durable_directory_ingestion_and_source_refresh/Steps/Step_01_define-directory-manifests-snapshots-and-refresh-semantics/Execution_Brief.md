@@ -34,6 +34,9 @@
 - Define or update typed domain modules for `Directory Manifest`, `SourceVersion` in `packages/domain/src/directory-manifest.ts`, `packages/domain/src/source-version.ts`.
 - Use `packages/ingestion/src/refresh-plan.ts` to make discovery, classification, refresh, or job state deterministic before any model-dependent behavior is introduced.
 - Capture the durable contract or operator guidance in `docs/directory-refresh.md` rather than burying it in session-only notes.
+- Define branded directory-root/snapshot/manifest-entry identities, canonical relative paths, content identity, entry status, and deterministic refresh dispositions: `unchanged`, `added`, `modified`, `removed`, and `unsupported`.
+- Freeze stable ordering and manifest-digest rules plus the lineage invariant that snapshots and source versions are immutable; unchanged content may reuse an existing source version, while changed content must create one.
+- Keep this step contract-only: no filesystem traversal worker, UI, second queue, or new storage engine.
 
 ## Smallest Bounded Checklist
 

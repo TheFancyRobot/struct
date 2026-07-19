@@ -35,6 +35,9 @@
 - Define or update typed domain modules for `Ingestion Job` in `packages/domain/src/ingestion-job.ts`.
 - Add repository boundaries in `packages/persistence/src/repositories/ingestion-jobs.ts`, `packages/persistence/src/repositories/idempotency-keys.ts` that translate between storage records and typed domain objects.
 - Use `packages/ingestion/src/job-state.ts` to make discovery, classification, refresh, or job state deterministic before any model-dependent behavior is introduced.
+- Extend the existing PostgreSQL job journal with directory-refresh state, leases, attempt budgets, per-entry checkpoints, and idempotency keys; do not add another queue or database.
+- Persist progress before acknowledgement so a Bun worker restart resumes from the last committed checkpoint and duplicate delivery cannot duplicate committed work.
+- Model pause, resume, retry, cancel, exhausted, and terminal completion as validated transitions with typed Effect errors.
 
 ## Smallest Bounded Checklist
 

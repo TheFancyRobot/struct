@@ -6,6 +6,9 @@
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: Only the minimal API surface in `apps/api/src/routes/directories.ts`, `apps/api/src/routes/ingestion-jobs.ts` needed to exercise this step end to end.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: `apps/web/src/components/DirectoryBrowser.tsx`, `apps/web/src/components/IngestionJobStatus.tsx`, `apps/web/src/components/SourceControls.tsx` to expose only the UI states required to inspect this step’s output and failures.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
+- API tests reject cross-scope reads and commands plus invalid state transitions while preserving idempotent command retries.
+- SolidJS tests render every required state, expose honest aggregate/per-entry counts, and prove controls remain disabled or enabled according to persisted job state.
+- Reconnect tests replay from the last event cursor without duplicated progress or loss of terminal state.
 
 ## Planned Verification
 

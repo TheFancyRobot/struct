@@ -35,6 +35,9 @@
 - Add repository boundaries in `packages/persistence/src/repositories/source-versions.ts` that translate between storage records and typed domain objects.
 - Use `packages/ingestion/src/diff-manifest.ts`, `packages/ingestion/src/apply-refresh.ts` to make discovery, classification, refresh, or job state deterministic before any model-dependent behavior is introduced.
 - Constrain worker-side execution in `apps/worker/src/jobs/refresh-directory.ts` to one resumable, observable path for this slice.
+- Compute a pure manifest diff, then apply it transactionally through existing source, artifact, chunk, and retrieval services.
+- Reuse unchanged artifacts and source versions, create immutable versions only for changed or added content, and record removals in snapshot history without deleting prior provenance.
+- Keep rename handling conservative: classify only when stable identity proves it; otherwise represent removal plus addition rather than guessing.
 
 ## Smallest Bounded Checklist
 

@@ -6,6 +6,9 @@
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: update typed domain modules for `Directory Manifest`, `SourceVersion` in `packages/domain/src/directory-manifest.ts`, `packages/domain/src/source-version.ts`.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: `packages/ingestion/src/refresh-plan.ts` to make discovery, classification, refresh, or job state deterministic before any model-dependent behavior is introduced.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
+- Schema round-trip tests cover valid contracts and reject absolute or escaping paths, duplicate manifest paths, malformed digests, invalid limits, and forged workspace/project scope.
+- Deterministic tests prove input enumeration order cannot change manifest ordering, digest, or refresh classification.
+- A table-driven refresh matrix proves `unchanged`, `added`, `modified`, `removed`, and `unsupported` semantics before traversal or persistence code is added.
 
 ## Planned Verification
 

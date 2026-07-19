@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Durable Directory Ingestion and Source Refresh
 phase_id: PHASE-03
-status: planned
-owner: ''
+status: in_progress
+owner: Codex
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 depends_on:
-  - '[[02_Phases/Phase_01_walking_skeleton/Phase|PHASE-01 Walking Skeleton]]'
+  - '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]]'
 related_architecture:
   - '[[01_Architecture/System_Overview|System Overview]]'
   - '[[01_Architecture/Domain_Model|Domain Model]]'
@@ -55,7 +55,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 ## Dependencies
 
-- Depends on [[02_Phases/Phase_01_walking_skeleton/Phase|PHASE-01 Walking Skeleton]].
+- Depends on [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]].
 
 ## Acceptance Criteria
 
@@ -69,7 +69,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 ## Delivery Strategy
 
-- **Safe parallel work:** After Phase 01 contracts, this phase can run in parallel with Phase 02. Discovery/security and durable-job implementation are separate lanes until integrated by refresh tests.
+- **Execution order:** Run one step at a time after Phase 02; each step starts only after its predecessor is reviewed and merged.
 - **Gate:** The phase closes only when all acceptance criteria have reproducible evidence and the relevant docs, migrations, security checks, telemetry, and evaluations are updated.
 - **Boundary:** Post-v1 work must not be pulled forward in a way that weakens v1 completeness or its release gates.
 
@@ -77,7 +77,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]]
-- Current phase status: planned
+- Current phase status: in_progress
 - Next phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]]
 <!-- AGENT-END:phase-linear-context -->
 
@@ -120,3 +120,12 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - Product requirements: authoritative repository document `docs/product-brief.md`.
 - Human-readable roadmap: `docs/roadmap.md`; concise index: `docs/implementation-plan.md`.
 - Assumption policy: reversible uncertainties use the documented default until spike evidence requires a decision update; no hidden architectural assumption is carried only in chat.
+
+### 2026-07-19 Refinement
+
+- Phase 03 begins only after merged Phase 02 and reuses the existing Bun, Effect, PostgreSQL, artifact-storage, job-journal, SSE, and SolidJS boundaries.
+- Keep directory access product-local and deterministic: registered roots, canonical relative paths, explicit symlink policy, bounded traversal, streaming hashes, typed errors, and no model-dependent discovery.
+- Each refresh creates an immutable snapshot/manifest; unchanged content reuses existing artifacts and versions, changed content creates new versions, and removed entries remain historical rather than being deleted.
+- Worker recovery uses the existing PostgreSQL job journal, leases, idempotency keys, checkpoints, and persisted progress. Do not add another queue, runtime, database, or Fred executor.
+- STEP-03-05 must use the SolidJS skill and existing fine-grained state patterns. Effect-based steps must use the Effect skills and typed services/errors.
+- STEP-03-06 uses a bounded deterministic generated tree and fault injection; it must not pull the planned 25,000-file Phase 04 corpus forward.
