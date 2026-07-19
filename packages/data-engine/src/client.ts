@@ -259,7 +259,7 @@ export function makeDataEngineClient(
           : undefined
         return yield* new DataEngineOperationError({
           code: failure?.error.code
-            ?? (response.status === 404 ? 'not-found' : 'engine'),
+            ?? (response.status === 404 ? 'handoff-not-found' : 'engine'),
           message: 'Data-engine artifact download was rejected',
         })
       }

@@ -382,7 +382,7 @@ describe('DataEngineClient', () => {
     )
     expect(exit._tag).toBe('Failure')
     expect(String(exit)).toContain('DataEngineOperationError')
-    expect(String(exit)).toContain('not-found')
+    expect(String(exit)).toContain('handoff-not-found')
     expect(String(exit)).not.toContain('DataEngineProtocolError')
   })
 })

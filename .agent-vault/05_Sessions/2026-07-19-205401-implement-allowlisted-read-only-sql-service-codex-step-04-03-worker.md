@@ -55,6 +55,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Confirmed STEP-04-02 is merged and began target-rooted implementation.
 - Root self-review remediation completed: shared client deadline budgets, safe artifact failure classification, volatile/sampling SQL rejection, projection-sensitive schema hashing, decoded result-shape invariants, Bun-side auth/catalog orchestration, and scoped materialization resolution.
 - Kept the boundary service-only: no public HTTP endpoint was added because real user-auth middleware does not yet exist.
+- PR #21 Codex review remediation: unreadable/malformed artifact 404 responses now fall back to retryable `handoff-not-found`; generated Active Context and the STEP-04-03 Agent-Managed Snapshot now consistently reflect the active in-progress review state.
 
 ## Findings
 

@@ -29,8 +29,8 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 <!-- AGENT-START:bugs-index -->
 _Last rebuilt: 2026-07-19._
 
-- Notes indexed: 9
-- Status summary: fixed (9)
+- Notes indexed: 10
+- Status summary: fixed (10)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -41,6 +41,7 @@ _Last rebuilt: 2026-07-19._
 | BUG-0005 | [Canonical DuckDB runtime documentation contradicts Bun only host boundary](../03_Bugs/BUG-0005_canonical-duckdb-runtime-documentation-contradicts-bun-only-host-boundary.md) | fixed | sev-3 | 2026-07-19 | 2026-07-19 | - |
 | BUG-0006 | [Job transitions persist unvalidated cross-domain journal payloads](../03_Bugs/BUG-0006_job-transitions-persist-unvalidated-cross-domain-journal-payloads.md) | fixed | sev-3 | 2026-07-19 | 2026-07-19 | - |
 | BUG-0007 | [Event journal cursors can commit out of replay order](../03_Bugs/BUG-0007_event-journal-cursors-can-commit-out-of-replay-order.md) | fixed | sev-3 | 2026-07-19 | 2026-07-19 | - |
+| BUG-0007 | [Solid theme toggle does not apply the selected theme](../03_Bugs/BUG-0007_solid-theme-toggle-does-not-apply-the-selected-theme.md) | fixed | sev-3 | 2026-07-19 | 2026-07-19 | - |
 | BUG-0008 | [Generic EventJournal append bypasses typed transition contracts](../03_Bugs/BUG-0008_generic-eventjournal-append-bypasses-typed-transition-contracts.md) | fixed | sev-3 | 2026-07-19 | 2026-07-19 | - |
 | BUG-0009 | [Source registration persists extra sensitive payload fields](../03_Bugs/BUG-0009_source-registration-persists-extra-sensitive-payload-fields.md) | fixed | sev-3 | 2026-07-19 | 2026-07-19 | - |
 <!-- AGENT-END:bugs-index -->
