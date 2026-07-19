@@ -1,8 +1,14 @@
 import { Effect } from 'effect'
-import type { EventJournal, JobQueue, Source } from '@struct/domain'
+import type {
+  EventJournal,
+  JobQueue,
+  Source,
+  SourceUploadMediaType,
+} from '@struct/domain'
 import {
   AuthorizationError,
   isCanonicalStagedArtifactRef,
+  isSupportedSourceUpload,
   ValidationError,
 } from '@struct/domain'
 import { QueryError, type PersistenceError } from '../errors.js'
@@ -22,14 +28,7 @@ export interface SourceRegistrationInput {
   readonly event: typeof EventJournal.Type
 }
 
-export type SourceRegistrationMediaType =
-  | 'text/plain'
-  | 'text/markdown'
-  | 'text/html'
-  | 'application/pdf'
-  | 'application/json'
-  | 'text/css'
-  | 'application/javascript'
+export type SourceRegistrationMediaType = SourceUploadMediaType
 
 export interface SourceRegistrationJobPayload {
   readonly stagedRef: `staged://${string}/${string}`
@@ -52,25 +51,6 @@ export interface SourceRegistrationResult {
   readonly source: typeof Source.Type
   readonly job: typeof JobQueue.Type
   readonly event: typeof EventJournal.Type
-}
-
-function isSupportedRegistrationUpload(
-  name: unknown,
-  mediaType: unknown,
-): mediaType is SourceRegistrationMediaType {
-  if (typeof name !== 'string' || typeof mediaType !== 'string') return false
-  const lower = name.toLowerCase()
-  return (lower.endsWith('.txt') && mediaType === 'text/plain')
-    || (lower.endsWith('.md') && mediaType === 'text/markdown')
-    || ((lower.endsWith('.html') || lower.endsWith('.htm')) && mediaType === 'text/html')
-    || (lower.endsWith('.pdf') && mediaType === 'application/pdf')
-    || (lower.endsWith('.json') && mediaType === 'application/json')
-    || (lower.endsWith('.css') && mediaType === 'text/css')
-    || ((lower.endsWith('.js') || lower.endsWith('.jsx')) && mediaType === 'application/javascript')
-    || (
-      ['.ts', '.tsx', '.py', '.go', '.rs'].some((extension) => lower.endsWith(extension))
-      && mediaType === 'text/plain'
-    )
 }
 
 export interface SourceRegistrationRepository {
@@ -242,7 +222,7 @@ function validateRegistrationAggregate(
     [jobPayload['name'] === input.source.name, 'job.payload.name'],
     [isCanonicalStagedArtifactRef(stagedRef), 'job.payload.stagedRef'],
     [
-      isSupportedRegistrationUpload(jobPayload['name'], mediaType),
+      isSupportedSourceUpload(jobPayload['name'], mediaType),
       'job.payload.mediaType',
     ],
     [

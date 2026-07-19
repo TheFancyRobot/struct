@@ -5,6 +5,7 @@ import {
   EventJournalId,
   ValidationError,
   AuthorizationError,
+  isSupportedSourceUpload,
   type ProjectId,
   type WorkspaceId,
   type Source,
@@ -66,21 +67,6 @@ function isSafeUploadName(name: string): boolean {
     && name !== '..'
 }
 
-function isSupportedTextUpload(name: string, mediaType: string): boolean {
-  const lower = name.toLowerCase()
-  return (lower.endsWith('.txt') && mediaType === 'text/plain')
-    || (lower.endsWith('.md') && mediaType === 'text/markdown')
-    || ((lower.endsWith('.html') || lower.endsWith('.htm')) && mediaType === 'text/html')
-    || (lower.endsWith('.pdf') && mediaType === 'application/pdf')
-    || (lower.endsWith('.json') && mediaType === 'application/json')
-    || (lower.endsWith('.css') && mediaType === 'text/css')
-    || ((lower.endsWith('.js') || lower.endsWith('.jsx')) && mediaType === 'application/javascript')
-    || (
-      ['.ts', '.tsx', '.py', '.go', '.rs'].some((extension) => lower.endsWith(extension))
-      && mediaType === 'text/plain'
-    )
-}
-
 const mapUnknown = (operation: string) => (cause: unknown): ValidationError => {
   const tag = typeof cause === 'object' && cause !== null && '_tag' in cause ? String(cause._tag) : 'failed'
   return new ValidationError({ field: operation, reason: tag, message: `${operation} failed` })
@@ -97,7 +83,7 @@ export const registerTextSource = (
     if (!isSafeUploadName(input.name)) {
       return yield* new ValidationError({ field: 'name', reason: 'unsafe-name', message: 'Text source name must be a simple file name' })
     }
-    if (!isSupportedTextUpload(input.name, input.mediaType)) {
+    if (!isSupportedSourceUpload(input.name, input.mediaType)) {
       return yield* new ValidationError({ field: 'mediaType', reason: 'unsupported-source-type', message: 'Source extension and media type are not supported' })
     }
 
