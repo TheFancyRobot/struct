@@ -5,6 +5,7 @@ export interface UnnormalizedFragment {
   readonly page?: number | null
   readonly section?: string | null
   readonly paragraph?: number | null
+  readonly preserveWhitespace?: boolean
 }
 
 export const normalize = (text: string): string => text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/^\uFEFF/, '')
@@ -26,8 +27,9 @@ export const normalizeDocument = (
     readonly byteEnd: number
   }> = []
   for (const fragment of fragments) {
-    const text = normalize(fragment.text).trim()
-    if (!text) continue
+    const normalizedText = normalize(fragment.text)
+    const text = fragment.preserveWhitespace ? normalizedText : normalizedText.trim()
+    if (!text.trim()) continue
     const separator = normalizedFragments.length === 0 ? '' : '\n\n'
     charOffset += separator.length
     byteOffset += encoder.encode(separator).byteLength

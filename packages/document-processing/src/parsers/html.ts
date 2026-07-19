@@ -5,7 +5,12 @@ import { normalizeDocument } from '../normalize-document.js'
 
 const decoder = new TextDecoder('utf-8', { fatal: true })
 const MAX_HTML_DEPTH = 256
-const blockTags = new Set(['p', 'li', 'pre', 'blockquote', 'td', 'th', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
+const blockTags = new Set([
+  'address', 'article', 'aside', 'blockquote', 'dd', 'div', 'dl', 'dt',
+  'figcaption', 'figure', 'footer', 'form', 'header', 'li', 'main', 'nav',
+  'ol', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
+  'thead', 'tr', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+])
 const ignoredTags = new Set(['script', 'style', 'noscript'])
 
 interface HtmlNode { readonly nodeName?: string; readonly tagName?: string; readonly value?: string; readonly childNodes?: ReadonlyArray<HtmlNode> }
@@ -32,7 +37,7 @@ export const parseHtml = (bytes: Uint8Array) =>
   Effect.try({
     try: () => {
       const document = parse(decoder.decode(bytes)) as HtmlNode
-      const fragments: Array<{ text: string; section: string | null; paragraph: number }> = []
+      const fragments: Array<{ text: string; section: string | null; paragraph: number; preserveWhitespace?: boolean }> = []
       let section: string | null = null
       let paragraph = 0
       const visit = (node: HtmlNode, depth = 0): void => {
@@ -45,10 +50,10 @@ export const parseHtml = (bytes: Uint8Array) =>
             return
           }
           const text = tag === 'pre'
-            ? nodeText(node, depth).replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim()
+            ? nodeText(node, depth).replace(/\r\n/g, '\n').replace(/\r/g, '\n')
             : nodeText(node, depth).replace(/\s+/g, ' ').trim()
           if (/^h[1-6]$/.test(tag)) section = text || null
-          if (text) fragments.push({ text, section, paragraph: ++paragraph })
+          if (text.trim()) fragments.push({ text, section, paragraph: ++paragraph, preserveWhitespace: tag === 'pre' })
           return
         }
         if ((tag || node.value !== undefined) && !containsBlock(node, depth)) {

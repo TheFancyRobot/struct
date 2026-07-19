@@ -102,12 +102,13 @@ describe('document parsers', () => {
 
   it('preserves nested HTML block boundaries and preformatted whitespace', async () => {
     const document = await Effect.runPromise(parseHtml(encode(
-      '<blockquote><p>Alpha</p><p>Beta</p></blockquote><pre>if ok:\n  run()</pre>',
+      '<div>Top</div><section><blockquote><p>Alpha</p><p>Beta</p></blockquote></section><pre>  if ok:\n    run()</pre>',
     )))
     expect(document.fragments).toMatchObject([
-      { text: 'Alpha', paragraph: 1 },
-      { text: 'Beta', paragraph: 2 },
-      { text: 'if ok:\n  run()', paragraph: 3 },
+      { text: 'Top', paragraph: 1 },
+      { text: 'Alpha', paragraph: 2 },
+      { text: 'Beta', paragraph: 3 },
+      { text: '  if ok:\n    run()', paragraph: 4 },
     ])
   })
 
