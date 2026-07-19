@@ -158,8 +158,9 @@ describeIf('document chunk migration (PostgreSQL)', () => {
 
   it('rolls back derived rows without deleting immutable source versions', async () => {
     const executor = migrationExecutor(scoped)
-    // Revert the current retrieval migration before reverting the document
+    // Revert directory ingestion and retrieval before reverting the document
     // chunk migration this test owns.
+    await Effect.runPromise(runMigrationsDown(executor))
     await Effect.runPromise(runMigrationsDown(executor))
     await Effect.runPromise(runMigrationsDown(executor))
 
@@ -184,6 +185,7 @@ describeIf('document chunk migration (PostgreSQL)', () => {
       documents_removed: true,
     })
 
+    await Effect.runPromise(runMigrationsUp(executor))
     await Effect.runPromise(runMigrationsUp(executor))
     await Effect.runPromise(runMigrationsUp(executor))
     const [restored] = await scoped.unsafe(
