@@ -44,6 +44,8 @@ export {
   DocumentChunkRepo,
   DirectoryIngestionJobRepo,
   DirectorySourceVersionRepo,
+  DirectoryControlRepo,
+  DirectoryControlConflictError,
   // Persistence errors
   QueryError,
   EntityNotFoundError,
@@ -118,3 +120,11 @@ export type {
   PreparedChunkEmbedding,
   PreparedDirectorySourceVersion,
 } from './repositories/source-versions.js'
+
+export type {
+  ControlDirectoryIngestionInput,
+  DirectoryControlRepositoryError,
+  DirectoryControlResult,
+  DirectoryJournalEvent,
+  RegisterDirectoryInput,
+} from './repositories/directory-controls.js'

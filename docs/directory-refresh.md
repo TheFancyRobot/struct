@@ -92,3 +92,28 @@ STEP-03-02 emits these contracts without widening registered roots. Later job
 and persistence steps may checkpoint and commit them only after handling every
 typed discovery outcome; they must preserve canonical ordering, digest identity,
 workspace/project scope, removed-entry history, and source-version lineage.
+
+## Status, recovery, and controls
+
+Directory registration creates a scoped logical directory source, registered
+root identity, planned snapshot identity, resumable ingestion job, and
+`directory-registered` journal event in one transaction. Host paths are not
+returned by the API or stored in progress events; workers resolve registered
+root identities through their trusted filesystem boundary.
+
+The directory status projection reports the persisted job state, attempt
+budget, aggregate totals, and the latest outcome for each manifest entry.
+`processed` always equals `succeeded + failed`, and `total` always equals
+`processed + unsupported + pending`. Entry failures expose only canonical
+relative paths and typed error tags.
+
+The API accepts `pause`, `resume`, `retry`, and `cancel` only when the persisted
+state machine permits the transition. Every command requires an
+`Idempotency-Key`; replaying the same key and command returns the current
+projection without repeating the transition or journal write, while reusing a
+key for another command is rejected.
+
+Directory progress uses the existing persisted SSE cursor protocol. Reconnects
+request events strictly after the last received cursor, clients deduplicate by
+cursor, and a terminal transition writes a final journal event so completion
+cannot be lost between the last entry checkpoint and the UI.

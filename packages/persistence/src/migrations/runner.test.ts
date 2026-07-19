@@ -148,7 +148,7 @@ describe('Migration Runner', () => {
       )
       expect(deleteQuery).toBeDefined()
       expect(fakeSql.queries.join('\n')).toMatch(
-        /DROP TABLE IF EXISTS directory_refresh_commits[\s\S]*DROP TABLE IF EXISTS directory_roots/i,
+        /DROP TABLE IF EXISTS directory_ingestion_commands[\s\S]*DROP COLUMN IF EXISTS directory_root_id/i,
       )
     })
 

@@ -8,6 +8,7 @@ import { Cause, Effect, Layer, Option, Runtime, Schema } from 'effect'
 import postgres from 'postgres'
 import {
   ProjectRepo,
+  DirectoryControlRepo,
   EntityNotFoundError,
   ResearchExecutionRepo,
   ResearchProjectionRepo,
@@ -16,6 +17,9 @@ import {
 } from '@struct/persistence'
 import {
   EventJournalId,
+  DirectoryControlCommand,
+  DirectoryRootId,
+  DirectorySnapshotId,
   JobQueueId,
   AuthorizationError,
   CitationId,
@@ -44,6 +48,17 @@ import {
   maxTextSourceBytesConfig,
 } from './config'
 import { registerTextSource } from './routes/sources'
+import {
+  decodeDirectoryRegistrationScope,
+  registerDirectory,
+} from './routes/directories'
+import {
+  controlDirectoryJob,
+  getDirectoryJobStatus,
+} from './routes/ingestion-jobs'
+import {
+  directoryEventsResponse,
+} from './routes/directory-events'
 import { startResearch } from './routes/research'
 import { getCitationDetail } from './routes/citations'
 import {
@@ -159,6 +174,10 @@ const server = Effect.gen(function* () {
   const registrationLayer = Layer.provide(SourceRegistrationRepo.Default, sqlLayer)
   const researchLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
   const projectionLayer = Layer.provide(ResearchProjectionRepo.Default, sqlLayer)
+  const directoryControlLayer = Layer.provide(
+    DirectoryControlRepo.Default,
+    sqlLayer,
+  )
   const effectRuntime = yield* Effect.runtime<never>()
 
   yield* Effect.acquireRelease(
@@ -177,6 +196,251 @@ const server = Effect.gen(function* () {
           {
           headers: { 'Content-Type': 'text/plain; version=0.0.4' },
           },
+        )
+      }
+
+      const directoryRoute =
+        /^\/api\/projects\/([^/]+)\/directories$/.exec(url.pathname)
+      if (directoryRoute !== null && req.method === 'POST') {
+        const program = Effect.gen(function* () {
+          const body = yield* Effect.tryPromise({
+            try: () => req.json() as Promise<{
+              readonly workspaceId?: unknown
+              readonly projectId?: unknown
+              readonly name?: unknown
+            }>,
+            catch: () => new ValidationError({
+              field: 'directory',
+              reason: 'invalid-json',
+              message: 'Invalid JSON body',
+            }),
+          })
+          const parsed = yield* decodeDirectoryRegistrationScope(body)
+          if (
+            parsed.projectId !== directoryRoute[1]
+          ) {
+            return yield* new ValidationError({
+              field: 'projectId',
+              reason: 'path-body-mismatch',
+              message: 'Project scope does not match the request path',
+            })
+          }
+          return yield* registerDirectory(parsed, {
+            randomSourceId: () => SourceId.make(crypto.randomUUID()),
+            randomDirectoryRootId: () =>
+              DirectoryRootId.make(crypto.randomUUID()),
+            randomSnapshotId: () =>
+              DirectorySnapshotId.make(crypto.randomUUID()),
+            randomJobId: () => JobQueueId.make(crypto.randomUUID()),
+            randomEventId: () => EventJournalId.make(crypto.randomUUID()),
+            register: (input) => DirectoryControlRepo.register(input).pipe(
+              Effect.provide(directoryControlLayer),
+            ),
+          })
+        })
+        const exit = await Runtime.runPromiseExit(effectRuntime)(program)
+        if (exit._tag === 'Failure') {
+          const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
+          const tag = typeof failure === 'object'
+            && failure !== null
+            && '_tag' in failure
+            ? String(failure._tag)
+            : ''
+          const reason = typeof failure === 'object'
+            && failure !== null
+            && 'reason' in failure
+            ? String(failure.reason)
+            : ''
+          const status = failure instanceof ValidationError
+            ? 400
+            : tag === 'DirectoryControlConflictError'
+              && reason === 'scope-not-found'
+              ? 404
+              : tag === 'DirectoryControlConflictError'
+                ? 409
+              : 503
+          return jsonResponse({ error: 'DirectoryRegistrationFailed' }, status)
+        }
+        return jsonResponse(exit.value, 202)
+      }
+
+      const directoryJobRoute =
+        /^\/api\/projects\/([^/]+)\/directory-jobs\/([^/]+)$/
+          .exec(url.pathname)
+      if (directoryJobRoute !== null && req.method === 'GET') {
+        const scope = Effect.try({
+          try: () => ({
+            workspaceId: Schema.decodeUnknownSync(WorkspaceId)(
+              url.searchParams.get('workspaceId'),
+            ),
+            projectId: Schema.decodeUnknownSync(ProjectId)(directoryJobRoute[1]),
+            jobId: Schema.decodeUnknownSync(JobQueueId)(directoryJobRoute[2]),
+          }),
+          catch: () => new ValidationError({
+            field: 'directoryJob',
+            reason: 'invalid-scope',
+            message: 'Directory job scope is invalid',
+          }),
+        })
+        const exit = await Runtime.runPromiseExit(effectRuntime)(
+          scope.pipe(
+            Effect.flatMap((decoded) => getDirectoryJobStatus(decoded, {
+              findStatus: (workspaceId, projectId, jobId) =>
+                DirectoryControlRepo.findStatus(
+                  workspaceId,
+                  projectId,
+                  jobId,
+                ).pipe(Effect.provide(directoryControlLayer)),
+            })),
+          ),
+        )
+        if (exit._tag === 'Failure') {
+          const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
+          return failure instanceof ValidationError
+            ? jsonResponse({ error: 'InvalidDirectoryJobScope' }, 400)
+            : jsonResponse({ error: 'DirectoryStatusUnavailable' }, 503)
+        }
+        if (Option.isNone(exit.value)) {
+          return jsonResponse({ error: 'DirectoryJobNotFound' }, 404)
+        }
+        return jsonResponse(exit.value.value)
+      }
+
+      const directoryCommandRoute =
+        /^\/api\/projects\/([^/]+)\/directory-jobs\/([^/]+)\/(pause|resume|retry|cancel)$/
+          .exec(url.pathname)
+      if (directoryCommandRoute !== null && req.method === 'POST') {
+        const program = Effect.gen(function* () {
+          const body = yield* Effect.tryPromise({
+            try: () => req.json() as Promise<{ readonly workspaceId?: unknown }>,
+            catch: () => new ValidationError({
+              field: 'directoryCommand',
+              reason: 'invalid-json',
+              message: 'Invalid JSON body',
+            }),
+          })
+          const scope = yield* Effect.try({
+            try: () => ({
+              workspaceId: Schema.decodeUnknownSync(WorkspaceId)(
+                body.workspaceId,
+              ),
+              projectId: Schema.decodeUnknownSync(ProjectId)(
+                directoryCommandRoute[1],
+              ),
+              jobId: Schema.decodeUnknownSync(JobQueueId)(
+                directoryCommandRoute[2],
+              ),
+            }),
+            catch: () => new ValidationError({
+              field: 'directoryCommand',
+              reason: 'invalid-scope',
+              message: 'Directory command scope is invalid',
+            }),
+          })
+          const command = Schema.decodeUnknownSync(DirectoryControlCommand)(
+            directoryCommandRoute[3],
+          )
+          return yield* controlDirectoryJob(
+            scope,
+            command,
+            req.headers.get('Idempotency-Key') ?? '',
+            {
+              randomEventId: () => EventJournalId.make(crypto.randomUUID()),
+              command: (input) => DirectoryControlRepo.command(input).pipe(
+                Effect.provide(directoryControlLayer),
+              ),
+            },
+          )
+        })
+        const exit = await Runtime.runPromiseExit(effectRuntime)(program)
+        if (exit._tag === 'Failure') {
+          const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
+          const tag = typeof failure === 'object'
+            && failure !== null
+            && '_tag' in failure
+            ? String(failure._tag)
+            : ''
+          const status = failure instanceof ValidationError
+            ? 400
+            : tag === 'DirectoryControlConflictError'
+              && typeof failure === 'object'
+              && failure !== null
+              && 'reason' in failure
+              && failure.reason === 'scope-not-found'
+              ? 404
+              : tag === 'InvalidDirectoryIngestionTransitionError'
+                || tag === 'DirectoryControlConflictError'
+                ? 409
+                : 503
+          return jsonResponse({ error: tag || 'DirectoryCommandFailed' }, status)
+        }
+        return jsonResponse(exit.value)
+      }
+
+      const directoryEventsRoute =
+        /^\/api\/projects\/([^/]+)\/directory-jobs\/([^/]+)\/events$/
+          .exec(url.pathname)
+      if (directoryEventsRoute !== null && req.method === 'GET') {
+        const cursor = parseEventCursor(url.searchParams.get('cursor'))
+        const identifiers = Effect.try({
+          try: () => ({
+            workspaceId: Schema.decodeUnknownSync(WorkspaceId)(
+              url.searchParams.get('workspaceId'),
+            ),
+            projectId: Schema.decodeUnknownSync(ProjectId)(
+              directoryEventsRoute[1],
+            ),
+            jobId: Schema.decodeUnknownSync(JobQueueId)(
+              directoryEventsRoute[2],
+            ),
+          }),
+          catch: () => new Error('Invalid directory event scope'),
+        })
+        const exit = await Runtime.runPromiseExit(effectRuntime)(identifiers)
+        if (cursor === undefined || exit._tag === 'Failure') {
+          return jsonResponse({ error: 'InvalidDirectoryEventScope' }, 400)
+        }
+        const scoped = await Runtime.runPromiseExit(effectRuntime)(
+          DirectoryControlRepo.findStatus(
+            exit.value.workspaceId,
+            exit.value.projectId,
+            exit.value.jobId,
+          ).pipe(Effect.provide(directoryControlLayer)),
+        )
+        if (scoped._tag === 'Failure') {
+          return jsonResponse({ error: 'DirectoryEventsUnavailable' }, 503)
+        }
+        if (Option.isNone(scoped.value)) {
+          return jsonResponse({ error: 'DirectoryJobNotFound' }, 404)
+        }
+        return directoryEventsResponse(
+          exit.value.workspaceId,
+          exit.value.projectId,
+          exit.value.jobId,
+          cursor,
+          {
+            listEventsAfter: (workspaceId, projectId, jobId, after, limit) =>
+              DirectoryControlRepo.listEventsAfter(
+                workspaceId,
+                projectId,
+                jobId,
+                after,
+                limit,
+              ).pipe(Effect.provide(directoryControlLayer)),
+            findStatus: (workspaceId, projectId, jobId) =>
+              DirectoryControlRepo.findStatus(
+                workspaceId,
+                projectId,
+                jobId,
+              ).pipe(
+                Effect.provide(directoryControlLayer),
+                Effect.flatMap(Option.match({
+                  onNone: () => Effect.die('directory-event-scope-lost'),
+                  onSome: Effect.succeed,
+                })),
+              ),
+          },
+          req.signal,
         )
       }
 

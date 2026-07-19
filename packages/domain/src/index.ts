@@ -7,6 +7,7 @@
 
 export * from './branded-ids.js'
 export * from './directory-manifest.js'
+export * from './directory-controls.js'
 export * from './ingestion-job.js'
 export * from './document.js'
 export * from './logical-refs.js'

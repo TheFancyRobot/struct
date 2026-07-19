@@ -11,3 +11,4 @@ peer = false
 [test]
 # Fred workflow tests exercise bounded deadlines and need more than Bun's 5s default.
 timeout = 10000
+preload = ["./apps/web/test/solid-test-preload.ts"]
