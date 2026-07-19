@@ -29,6 +29,9 @@ const chunkIds = [
   DocumentChunkId.make('c50e8400-e29b-41d4-a716-446655440005'),
   DocumentChunkId.make('c50e8400-e29b-41d4-a716-446655440006'),
 ] as const
+const staleChunkId = DocumentChunkId.make(
+  'c50e8400-e29b-41d4-a716-446655440007',
+)
 
 function migrationExecutor(
   sql: postgresTypes.Sql,
@@ -142,6 +145,23 @@ describeIf('hybrid retrieval (PostgreSQL)', () => {
           50,
           22,
           50
+        ),
+        (
+          '${staleChunkId}',
+          'c50e8400-e29b-41d4-a716-446655440004',
+          '${workspaceId}',
+          '${projectId}',
+          'c50e8400-e29b-41d4-a716-446655440002',
+          '${sourceVersionId}',
+          'fragments-v2',
+          0,
+          'Stale launch evidence',
+          'sha256:stale-chunk',
+          1,
+          0,
+          21,
+          0,
+          21
         );
     `)
     const sqlLayer = SqlClientLive(scoped)
@@ -161,6 +181,14 @@ describeIf('hybrid retrieval (PostgreSQL)', () => {
         projectId,
         sourceVersionId,
         chunkId: chunkIds[1],
+        embeddingModel: 'fixture-v1',
+        embedding: [1, 0, 0],
+      }),
+      VectorRetrieval.storeEmbedding({
+        workspaceId,
+        projectId,
+        sourceVersionId,
+        chunkId: staleChunkId,
         embeddingModel: 'fixture-v1',
         embedding: [1, 0, 0],
       }),
@@ -227,6 +255,26 @@ describeIf('hybrid retrieval (PostgreSQL)', () => {
     )
 
     expect(result.candidates).toEqual([])
+  })
+
+  it('excludes chunks from a stale chunking version in the same tenant and source version', async () => {
+    const result = await Effect.runPromise(
+      HybridRetrieval.search({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [sourceVersionId],
+        chunkingVersion: 'fragments-v1',
+        query: 'launch',
+        embeddingModel: 'fixture-v1',
+        embedding: [1, 0, 0],
+        candidateLimit: 10,
+        limit: 10,
+      }).pipe(Effect.provide(hybridLayer)),
+    )
+
+    expect(result.candidates.map((candidate) => candidate.chunkId)).not.toContain(
+      staleChunkId,
+    )
   })
 
   it('does not compare vectors from a different model dimension', async () => {

@@ -57,6 +57,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 2026-07-19: Implemented typed keyword/vector retrieval, immutable model-specific chunk embeddings, exact provenance, and deterministic reciprocal-rank fusion.
 - 2026-07-19: Self-review rejected zero, underflow-to-zero, overflow, and non-finite pgvector inputs; bounded hybrid candidate limits to the channel contract; verified identical embedding retry and immutable conflict behavior.
 - 2026-07-19: Adding migration 0006 exposed hard-coded migration-count assumptions in document-chunk, event-journal, and upgrade tests; updated each downgrade sequence and verified isolated plus full PostgreSQL runs.
+- 2026-07-19 PR review: CodeRabbit found the PostgreSQL isolation fixture varied only workspace scope. Added a same-tenant/same-source `fragments-v2` chunk and embedding, then proved `fragments-v1` hybrid retrieval excludes it. Remediation validation passed 6 unit tests, 6 real PostgreSQL integration tests, retrieval typecheck, zero-warning lint, and diff hygiene.
 
 ## Findings
 
