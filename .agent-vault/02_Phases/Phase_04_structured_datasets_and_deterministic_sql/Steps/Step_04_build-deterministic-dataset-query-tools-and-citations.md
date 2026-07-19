@@ -5,8 +5,8 @@ contract_version: 1
 title: Build Deterministic Dataset Query Tools and Citations
 step_id: STEP-04-04
 phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]'
-status: in_progress
-owner: codex-step-04-04-worker
+status: completed
+owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
 depends_on:
@@ -18,9 +18,9 @@ tags:
   - agent-vault
   - step
 context_id: SESSION-2026-07-19-213544
-active_session_id: SESSION-2026-07-19-213544
-context_status: in_progress
-context_summary: Implementation and local zero-defect validation complete; awaiting root-orchestrator branch, PR, review, merge, and completion update.
+active_session_id: 05_Sessions/2026-07-19-213544-build-deterministic-dataset-query-tools-and-citations-codex-step-04-04-worker
+context_status: completed
+context_summary: 'STEP-04-04 merged through PR #22 at merge commit 4cfcdce after full validation, review-impact audit, and zero unresolved review threads.'
 ---
 
 # Step 04 - Build Deterministic Dataset Query Tools and Citations

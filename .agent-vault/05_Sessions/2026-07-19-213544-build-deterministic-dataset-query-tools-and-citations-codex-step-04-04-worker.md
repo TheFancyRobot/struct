@@ -5,9 +5,9 @@ contract_version: 1
 title: codex-step-04-04-worker session for Build Deterministic Dataset Query Tools and Citations
 session_id: SESSION-2026-07-19-213544
 date: '2026-07-19'
-status: in-progress
-owner: codex-step-04-04-worker
-branch: ''
+status: completed
+owner: Codex
+branch: agent/step-04-04-dataset-query-tools
 phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]'
 context:
   context_id: SESSION-2026-07-19-213544
@@ -116,3 +116,4 @@ Use one note per meaningful work session. Record chronology, validation, and han
 
 - State what finished, what remains, and whether handoff is clean.
 - STEP-04-04 implementation and worker validation are complete with zero known confirmed defects. The step intentionally remains `in_progress` because root-owned PR review and merge are still pending.
+- Merged PR #22 into `main` at merge commit `4cfcdce` after 463 default tests passed with 0 failures, live sidecar/PostgreSQL evidence checks passed, typecheck/lint/import boundaries/build/docs/secrets/vault validation were clean, all review fixes received a downstream impact audit, and all four review threads were resolved.
