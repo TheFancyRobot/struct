@@ -16,9 +16,11 @@ related_architecture:
   - '[[01_Architecture/Integration_Map|Integration Map]]'
   - '[[01_Architecture/Agent_Workflow|Agent Workflow]]'
 related_decisions:
+  - '[[04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries|DEC-0003 Use TypeScript Bun and Effect with Explicit Runtime Boundaries]]'
   - '[[04_Decisions/DEC-0006_make-source-versions-immutable-and-provenance-typed|DEC-0006 Make Source Versions Immutable and Provenance Typed]]'
   - '[[04_Decisions/DEC-0007_compose-a-product-job-journal-with-fred-checkpoints|DEC-0007 Compose a Product Job Journal with Fred Checkpoints]]'
   - '[[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009 Sandbox Filesystem Roots and Allowlist Read-Only SQL]]'
+  - '[[04_Decisions/DEC-0015_use-per-step-branch-pr-review-and-merge-gates|DEC-0015 Use Per-Step Branch PR Review and Merge Gates]]'
 related_bugs: []
 tags:
   - agent-vault
@@ -45,7 +47,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - Build idempotent, lease-aware ingestion jobs with checkpoints, retries, dead-letter states, backpressure, and per-entry progress.
 - Reuse unchanged artifacts, version changed sources, retain removed-entry history, and invalidate only derived data tied to superseded versions.
 - Expose pause, resume, retry, cancel, reconnect, and partial-failure status to users and operators.
-- Test large-tree behavior, crashes, restarts, duplicate delivery, permission changes, and malicious paths.
+- Test large-tree behavior, crashes, restarts, duplicate delivery, portable injected permission failures, and malicious paths.
 
 ## Non-Goals
 
@@ -93,9 +95,11 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Related Decisions
 
 <!-- AGENT-START:phase-related-decisions -->
+- [[04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries|DEC-0003 Use TypeScript Bun and Effect with Explicit Runtime Boundaries]]
 - [[04_Decisions/DEC-0006_make-source-versions-immutable-and-provenance-typed|DEC-0006 Make Source Versions Immutable and Provenance Typed]]
 - [[04_Decisions/DEC-0007_compose-a-product-job-journal-with-fred-checkpoints|DEC-0007 Compose a Product Job Journal with Fred Checkpoints]]
 - [[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009 Sandbox Filesystem Roots and Allowlist Read-Only SQL]]
+- [[04_Decisions/DEC-0015_use-per-step-branch-pr-review-and-merge-gates|DEC-0015 Use Per-Step Branch PR Review and Merge Gates]]
 <!-- AGENT-END:phase-related-decisions -->
 
 ## Related Bugs

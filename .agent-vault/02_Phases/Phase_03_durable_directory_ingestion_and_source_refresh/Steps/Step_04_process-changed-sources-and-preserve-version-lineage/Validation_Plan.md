@@ -7,6 +7,7 @@
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: `packages/ingestion/src/diff-manifest.ts`, `packages/ingestion/src/apply-refresh.ts` to make discovery, classification, refresh, or job state deterministic before any model-dependent behavior is introduced.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
 - Integration tests cover mixed add/change/remove/unchanged refreshes, replay after partial failure, transaction rollback, and cross-workspace/project isolation.
+- Crash tests cover before artifact staging, after artifact staging/before PostgreSQL commit, after PostgreSQL commit/before acknowledgement, and before event publication; every replay must converge without duplicate versions, chunks, indexes, checkpoints, or events.
 - An unchanged refresh creates no new artifact, source version, document chunk, or retrieval index record.
 - Historical citations against superseded or removed entries still resolve to the original immutable source version.
 

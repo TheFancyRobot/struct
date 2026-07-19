@@ -23,7 +23,7 @@
 
 ## Regression Expectations
 
-- This step should remain a clean successor to [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]] rather than reworking already-planned scope upstream.
+- This step should remain a clean successor to merged [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance|STEP-02-06 Evaluate Retrieval Provenance and Injection Resistance]] and the Phase 03 refinement rather than reworking completed scope upstream.
 - Do not introduce one-model-call-per-file behavior during directory-scale ingestion.
 - Keep existing source-version and citation guarantees intact while adding refresh and lineage logic.
 - Make sure large-tree recovery scenarios stay bounded in time, memory, and repeated work.

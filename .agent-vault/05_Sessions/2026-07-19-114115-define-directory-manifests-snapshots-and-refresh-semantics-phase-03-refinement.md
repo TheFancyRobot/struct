@@ -23,7 +23,12 @@ context:
   last_action:
     type: saved
 related_bugs: []
-related_decisions: []
+related_decisions:
+  - '[[04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries|DEC-0003 Use TypeScript Bun and Effect with Explicit Runtime Boundaries]]'
+  - '[[04_Decisions/DEC-0006_make-source-versions-immutable-and-provenance-typed|DEC-0006 Make Source Versions Immutable and Provenance Typed]]'
+  - '[[04_Decisions/DEC-0007_compose-a-product-job-journal-with-fred-checkpoints|DEC-0007 Compose a Product Job Journal with Fred Checkpoints]]'
+  - '[[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009 Sandbox Filesystem Roots and Allowlist Read-Only SQL]]'
+  - '[[04_Decisions/DEC-0015_use-per-step-branch-pr-review-and-merge-gates|DEC-0015 Use Per-Step Branch PR Review and Merge Gates]]'
 created: '2026-07-19'
 updated: '2026-07-19'
 tags:
@@ -97,17 +102,21 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `git diff --check`: passed.
 - Agent Vault doctor: clean; 169 notes checked with zero errors and warnings.
 <!-- AGENT-END:session-validation-run -->
+- Post-review remediation: documentation links, diff check, stale-prerequisite audit, decision-link audit, and Agent Vault doctor passed; all five CodeRabbit findings were addressed.
 
 ## Bugs Encountered
 
 <!-- AGENT-START:session-bugs-encountered -->
 - None.
 <!-- AGENT-END:session-bugs-encountered -->
+- Resolved during PR review: stale STEP-01-06 prerequisite references, non-portable ACL-based permission evidence, underspecified job acknowledgement atomicity, underspecified artifact/database crash windows, and missing links to accepted decisions.
 
 ## Decisions Made or Updated
 
 <!-- AGENT-START:session-decisions-made-or-updated -->
-- None.
+- Applied [[04_Decisions/DEC-0015_use-per-step-branch-pr-review-and-merge-gates|DEC-0015]] to the sequential Phase 03 dependency and per-step PR policy.
+- Preserved [[04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries|DEC-0003]], [[04_Decisions/DEC-0006_make-source-versions-immutable-and-provenance-typed|DEC-0006]], [[04_Decisions/DEC-0007_compose-a-product-job-journal-with-fred-checkpoints|DEC-0007]], and [[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009]] as the Bun/Effect, immutable lineage, existing job journal, and sandbox boundaries.
+- No new decision note was required; STEP-03-01’s contract-only scope is the bounded application of these accepted decisions.
 <!-- AGENT-END:session-decisions-made-or-updated -->
 
 ## Follow-Up Work

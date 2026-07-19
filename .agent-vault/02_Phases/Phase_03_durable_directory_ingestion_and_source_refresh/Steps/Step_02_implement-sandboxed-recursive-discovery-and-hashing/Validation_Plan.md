@@ -6,7 +6,8 @@
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: `packages/ingestion/src/discover-directory.ts`, `packages/ingestion/src/path-safety.ts`, `packages/ingestion/src/hash-file.ts` to make discovery, classification, refresh, or job state deterministic before any model-dependent behavior is introduced.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: Worker-side execution in `apps/worker/src/jobs/scan-directory.ts` to one resumable, observable path for this slice.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
-- Tests cover `..` escapes, absolute paths, symlinks outside the root, symlink cycles, permission changes, disappearing files, and depth/count/byte limit exhaustion with typed failures.
+- Tests cover `..` escapes, absolute paths, symlinks outside the root, symlink cycles, disappearing files, and depth/count/byte limit exhaustion with typed failures.
+- Permission denial uses a portable injected filesystem-adapter fixture that returns the typed permission error for canonical path `restricted/denied.txt`; tests must not depend on host ACLs, user IDs, or container privileges.
 - Repeated scans of the same tree produce the same ordered entries and hashes regardless of filesystem enumeration order.
 - A bounded integration test proves the worker uses the discovery service without introducing another runtime or queue.
 

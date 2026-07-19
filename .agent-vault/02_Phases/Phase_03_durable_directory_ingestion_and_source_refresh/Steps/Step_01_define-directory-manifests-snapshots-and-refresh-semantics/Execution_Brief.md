@@ -7,7 +7,7 @@
 ## Prerequisites
 
 - Re-read [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]] and confirm the step still matches the current roadmap sequence.
-- Confirm the handoff from [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]] before widening scope.
+- Confirm the merged handoff from [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance|STEP-02-06 Evaluate Retrieval Provenance and Injection Resistance]] and the merged Phase 03 refinement PR before widening scope.
 - Keep deterministic work in typed Effect services, repositories, and tools; reserve Fred for agentic orchestration only.
 - Treat the listed files as planned starting points; create only the smallest set needed to land the slice.
 
@@ -25,7 +25,7 @@
 - [[01_Architecture/Domain_Model|Domain Model]]
 - [[01_Architecture/System_Overview|System Overview]]
 - [[01_Architecture/Code_Map|Code Map]]
-- [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]]
+- [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance|STEP-02-06 Evaluate Retrieval Provenance and Injection Resistance]]
 - `docs/product-brief.md` sections 10, 18-19, 21-25, 26-27, and 29-31.
 
 ## Concrete Deliverables
