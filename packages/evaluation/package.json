@@ -6,15 +6,19 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "corpus:smoke": "bun src/corpus-smoke.ts",
+    "corpus:smoke": "bun src/phase-02-smoke.ts",
     "corpus:eval": "bun src/corpus-eval.ts",
+    "document:eval": "bun src/phase-02-smoke.ts",
     "bench": "bun src/benchmarks/run.ts",
     "typecheck": "bun --bun tsc --noEmit --project tsconfig.json",
     "test": "bun test --max-concurrency 1 --pass-with-no-tests ."
   },
   "dependencies": {
-    "effect": "3.22.0",
-    "@struct/domain": "workspace:*"
+    "@struct/domain": "workspace:*",
+    "@struct/fred-workflows": "workspace:*",
+    "@struct/research-engine": "workspace:*",
+    "@struct/retrieval": "workspace:*",
+    "effect": "3.22.0"
   },
   "devDependencies": {
     "typescript": "7.0.2"

@@ -5,17 +5,22 @@ contract_version: 1
 title: Evaluate Retrieval Provenance and Injection Resistance
 step_id: STEP-02-06
 phase: '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|Phase 02 document research and hybrid retrieval]]'
-status: planned
-owner: ''
+status: completed
+owner: step-02-06-worker
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_05_add-document-research-ux-and-citation-navigation|STEP-02-05 Add Document Research UX and Citation Navigation]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-19-111348-evaluate-retrieval-provenance-and-injection-resistance-step-02-06-worker|SESSION-2026-07-19-111348 step-02-06-worker session for Evaluate Retrieval Provenance and Injection Resistance]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-19-111348
+active_session_id: 05_Sessions/2026-07-19-111348-evaluate-retrieval-provenance-and-injection-resistance-step-02-06-worker
+context_status: completed
+context_summary: Completed deterministic retrieval provenance and prompt-injection evaluation; all fixed gates and repository validation pass.
 ---
 
 # Step 06 - Evaluate Retrieval Provenance and Injection Resistance
@@ -47,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: completed
+- Current owner: Codex
+- Last touched: 2026-07-19
+- Next action: After this step is merged, close Phase 02 and refine Phase 03 before execution.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -60,7 +65,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-19 - [[05_Sessions/2026-07-19-111348-evaluate-retrieval-provenance-and-injection-resistance-step-02-06-worker|SESSION-2026-07-19-111348 step-02-06-worker session for Evaluate Retrieval Provenance and Injection Resistance]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes
