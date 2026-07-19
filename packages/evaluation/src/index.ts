@@ -13,3 +13,8 @@ export const walkingSkeletonCorpus: CorpusSpec = {
   expectedFileCount: 1,
   checks: ['exactness', 'provenance'],
 }
+
+export * from './document-retrieval.js'
+export * from './phase-02-fixture.js'
+export * from './prompt-injection.js'
+export * from './run-phase-02-evaluation.js'

@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@fancyrobot/fred": "2.0.0",
+    "@struct/evaluation": "workspace:*",
     "@struct/fred-workflows": "workspace:*",
     "@struct/ingestion": "workspace:*",
     "typescript": "7.0.2"

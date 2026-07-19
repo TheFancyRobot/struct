@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-19T10:48:53.350Z",
+  "generatedAt": "2026-07-19T11:37:35.168Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -366,7 +366,7 @@
       ],
       "exports": [],
       "hash": "21a9453f9830e9afbdc5f354de97919e75ae8c05dc8398778f0c1d00e01f46dc",
-      "mtimeMs": 1784457899615.4746,
+      "mtimeMs": 1784459569498.2078,
       "size": 13398,
       "generated": false,
       "vendor": false,
@@ -736,7 +736,7 @@
       ],
       "exports": [],
       "hash": "f594b4bb11fd235ee0f880bd3aa0e361787a2118fe0955524f12a38dbe8cc431",
-      "mtimeMs": 1784457813140.441,
+      "mtimeMs": 1784459569498.6582,
       "size": 3215,
       "generated": false,
       "vendor": false,
@@ -830,7 +830,7 @@
       ],
       "exports": [],
       "hash": "7ded5d18de54aeaec45af4b59ac5f56dee5bff7d6251a7021c1e773d2adc9e8a",
-      "mtimeMs": 1784457609171.0173,
+      "mtimeMs": 1784459569498.836,
       "size": 5461,
       "generated": false,
       "vendor": false,
@@ -996,7 +996,7 @@
       ],
       "exports": [],
       "hash": "91b953cfdaf5842e3a937456ddfb3f39db5fe49743c9e06c749f1d3fd96213fb",
-      "mtimeMs": 1784457482073.5427,
+      "mtimeMs": 1784459569499.2031,
       "size": 1025,
       "generated": false,
       "vendor": false,
@@ -3260,6 +3260,72 @@
       "parser": "regex"
     },
     {
+      "path": "packages/evaluation/src/document-retrieval.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "RetrievalEvaluationThresholds",
+          "kind": "interface",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "RetrievalEvaluationCase",
+          "kind": "interface",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "RetrievalEvaluationReport",
+          "kind": "interface",
+          "line": 37,
+          "exported": true,
+          "endLine": 37
+        },
+        {
+          "name": "recall",
+          "kind": "function",
+          "line": 53,
+          "exported": false,
+          "endLine": 53
+        },
+        {
+          "name": "minimum",
+          "kind": "function",
+          "line": 61,
+          "exported": false,
+          "endLine": 61,
+          "signature": "(values: ReadonlyArray<number>)"
+        },
+        {
+          "name": "isUnitInterval",
+          "kind": "function",
+          "line": 68,
+          "exported": false,
+          "endLine": 68,
+          "signature": "(value: number)"
+        },
+        {
+          "name": "evaluateDocumentRetrieval",
+          "kind": "function",
+          "line": 76,
+          "exported": true,
+          "endLine": 76,
+          "doc": "Measures deterministic retrieval recall, locator fidelity, and provenance\nisolation against a fixed fixture."
+        }
+      ],
+      "imports": [],
+      "exports": [],
+      "hash": "d1481f340dcd5dd706e4b349ab2d28b0e68a48270ac977d5d30cf0e009fae098",
+      "mtimeMs": 1784461008867.5425,
+      "size": 7025,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/evaluation/src/index.ts",
       "language": "TypeScript",
       "symbols": [
@@ -3279,10 +3345,389 @@
         }
       ],
       "imports": [],
+      "exports": [
+        {
+          "name": "*",
+          "source": "./document-retrieval.js",
+          "kind": "namespace"
+        },
+        {
+          "name": "*",
+          "source": "./phase-02-fixture.js",
+          "kind": "namespace"
+        },
+        {
+          "name": "*",
+          "source": "./prompt-injection.js",
+          "kind": "namespace"
+        },
+        {
+          "name": "*",
+          "source": "./run-phase-02-evaluation.js",
+          "kind": "namespace"
+        }
+      ],
+      "hash": "aba314fed9e0a8d2eb46c4288ac4bd260ec0b47622d3b70efd727a9b75558e4d",
+      "mtimeMs": 1784459858028.3132,
+      "size": 614,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/evaluation/src/phase-02-fixture.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "HybridCandidate",
+          "kind": "type",
+          "line": 6,
+          "exported": false,
+          "endLine": 6
+        },
+        {
+          "name": "KeywordCandidate",
+          "kind": "type",
+          "line": 7,
+          "exported": false,
+          "endLine": 7
+        },
+        {
+          "name": "VectorCandidate",
+          "kind": "type",
+          "line": 8,
+          "exported": false,
+          "endLine": 8
+        },
+        {
+          "name": "RetrievalEvaluationCase",
+          "kind": "type",
+          "line": 9,
+          "exported": false,
+          "endLine": 9
+        },
+        {
+          "name": "RetrievalEvaluationThresholds",
+          "kind": "type",
+          "line": 11,
+          "exported": false,
+          "endLine": 11
+        },
+        {
+          "name": "PromptInjectionEvaluationFixture",
+          "kind": "type",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        },
+        {
+          "name": "sourceVersionOne",
+          "kind": "const",
+          "line": 16,
+          "exported": false,
+          "endLine": 16
+        },
+        {
+          "name": "sourceVersionTwo",
+          "kind": "const",
+          "line": 19,
+          "exported": false,
+          "endLine": 19
+        },
+        {
+          "name": "documentOne",
+          "kind": "const",
+          "line": 22,
+          "exported": false,
+          "endLine": 22
+        },
+        {
+          "name": "documentTwo",
+          "kind": "const",
+          "line": 25,
+          "exported": false,
+          "endLine": 25
+        },
+        {
+          "name": "chunkOne",
+          "kind": "const",
+          "line": 28,
+          "exported": false,
+          "endLine": 28
+        },
+        {
+          "name": "chunkTwo",
+          "kind": "const",
+          "line": 31,
+          "exported": false,
+          "endLine": 31
+        },
+        {
+          "name": "locators",
+          "kind": "const",
+          "line": 35,
+          "exported": false,
+          "endLine": 35
+        },
+        {
+          "name": "keywordCandidate",
+          "kind": "function",
+          "line": 42,
+          "exported": false,
+          "endLine": 42
+        },
+        {
+          "name": "vectorCandidate",
+          "kind": "function",
+          "line": 71,
+          "exported": false,
+          "endLine": 71
+        },
+        {
+          "name": "phase02RetrievalThresholds",
+          "kind": "const",
+          "line": 83,
+          "exported": true,
+          "endLine": 83
+        },
+        {
+          "name": "phase02RetrievalCases",
+          "kind": "const",
+          "line": 92,
+          "exported": true,
+          "endLine": 92
+        },
+        {
+          "name": "injectionCandidate",
+          "kind": "const",
+          "line": 116,
+          "exported": false,
+          "endLine": 116
+        },
+        {
+          "name": "contradictionCandidate",
+          "kind": "const",
+          "line": 126,
+          "exported": false,
+          "endLine": 126
+        },
+        {
+          "name": "validCitation",
+          "kind": "const",
+          "line": 134,
+          "exported": false,
+          "endLine": 134
+        },
+        {
+          "name": "contradictionCitation",
+          "kind": "const",
+          "line": 138,
+          "exported": false,
+          "endLine": 138
+        },
+        {
+          "name": "phase02PromptInjectionFixture",
+          "kind": "const",
+          "line": 143,
+          "exported": true,
+          "endLine": 143
+        }
+      ],
+      "imports": [
+        {
+          "source": "",
+          "specifier": "@struct/retrieval",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/retrieval",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/retrieval",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "./document-retrieval.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "./document-retrieval.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "./prompt-injection.js",
+          "kind": "dynamic"
+        }
+      ],
       "exports": [],
-      "hash": "4f4b3267fdfaffaab2c2d5b96d680089769f1683d1181db80a562555c4c80f7c",
-      "mtimeMs": 1784442089975.188,
-      "size": 452,
+      "hash": "f6f0367ed49c67e055e36f1e1e343ea55d688738cf52e6a43f42c2e451e20bef",
+      "mtimeMs": 1784460037425.7915,
+      "size": 5363,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/evaluation/src/phase-02-smoke.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "report",
+          "kind": "const",
+          "line": 4,
+          "exported": false,
+          "endLine": 4
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "runPhase02Evaluation",
+          "specifier": "./run-phase-02-evaluation.js",
+          "imported": [
+            "runPhase02Evaluation"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "d182a8f2aa5e398867049169e65ec6070f25359c3afda72d539645b1187f53e2",
+      "mtimeMs": 1784459858029.0854,
+      "size": 280,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/evaluation/src/prompt-injection.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "PromptInjectionEvaluationFixture",
+          "kind": "interface",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "PromptInjectionEvaluationReport",
+          "kind": "interface",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "failedWith",
+          "kind": "function",
+          "line": 35,
+          "exported": false,
+          "endLine": 35
+        },
+        {
+          "name": "evaluatePromptInjection",
+          "kind": "const",
+          "line": 51,
+          "exported": true,
+          "endLine": 51
+        }
+      ],
+      "imports": [
+        {
+          "source": "HybridCandidate",
+          "specifier": "@struct/retrieval",
+          "imported": [
+            "HybridCandidate"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "EvidenceAssessment",
+          "specifier": "@struct/research-engine",
+          "imported": [
+            "EvidenceAssessment"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "Effect, Either",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Either"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "7887098c190aea984ecaab36b6dcac14a98c815ad511a80134e387cc7a9ba273",
+      "mtimeMs": 1784461008867.1316,
+      "size": 3576,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/evaluation/src/run-phase-02-evaluation.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "Phase02EvaluationReport",
+          "kind": "interface",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        },
+        {
+          "name": "runPhase02Evaluation",
+          "kind": "const",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "evaluateDocumentRetrieval",
+          "specifier": "./document-retrieval.js",
+          "imported": [
+            "evaluateDocumentRetrieval"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "evaluatePromptInjection",
+          "specifier": "./prompt-injection.js",
+          "imported": [
+            "evaluatePromptInjection"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "75599130ee438837b7e0feeaaece1fe2a82f21e5b00c379334b6cd216707b87d",
+      "mtimeMs": 1784461008867.8462,
+      "size": 1711,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3471,89 +3916,103 @@
           "endLine": 25
         },
         {
+          "name": "EVIDENCE_CRITIC_SYSTEM_MESSAGE",
+          "kind": "const",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "DOCUMENT_SYNTHESIZER_SYSTEM_MESSAGE",
+          "kind": "const",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
           "name": "DocumentResearchGraphDependencies",
           "kind": "interface",
-          "line": 28,
+          "line": 32,
           "exported": true,
-          "endLine": 28
+          "endLine": 32
         },
         {
           "name": "DocumentPlannerInput",
           "kind": "const",
-          "line": 51,
+          "line": 55,
           "exported": true,
-          "endLine": 51
+          "endLine": 55
         },
         {
           "name": "HybridDocumentRetrievalInput",
           "kind": "const",
-          "line": 56,
+          "line": 60,
           "exported": true,
-          "endLine": 56
+          "endLine": 60
         },
         {
           "name": "EvidenceCriticInput",
           "kind": "const",
-          "line": 61,
+          "line": 65,
           "exported": true,
-          "endLine": 61
+          "endLine": 65
         },
         {
           "name": "DocumentSynthesizerInput",
           "kind": "const",
-          "line": 68,
+          "line": 72,
           "exported": true,
-          "endLine": 68
+          "endLine": 72
         },
         {
           "name": "documentPlannerAgent",
           "kind": "const",
-          "line": 75,
+          "line": 79,
           "exported": true,
-          "endLine": 75
+          "endLine": 79
         },
         {
           "name": "evidenceCriticAgent",
           "kind": "const",
-          "line": 90,
+          "line": 94,
           "exported": true,
-          "endLine": 90
+          "endLine": 94
         },
         {
           "name": "documentSynthesizerAgent",
           "kind": "const",
-          "line": 105,
+          "line": 108,
           "exported": true,
-          "endLine": 105
+          "endLine": 108
         },
         {
           "name": "assertActive",
           "kind": "function",
-          "line": 120,
+          "line": 122,
           "exported": false,
-          "endLine": 120,
+          "endLine": 122,
           "signature": "(signal: AbortSignal)"
         },
         {
           "name": "decodeAgentOutput",
           "kind": "function",
-          "line": 128,
+          "line": 130,
           "exported": false,
-          "endLine": 128
+          "endLine": 130
         },
         {
           "name": "makeHybridDocumentRetrievalTool",
           "kind": "const",
-          "line": 151,
+          "line": 153,
           "exported": true,
-          "endLine": 151
+          "endLine": 153
         },
         {
           "name": "makeDocumentResearchWorkflow",
           "kind": "function",
-          "line": 192,
+          "line": 194,
           "exported": true,
-          "endLine": 192
+          "endLine": 194
         }
       ],
       "imports": [
@@ -3576,9 +4035,9 @@
         }
       ],
       "exports": [],
-      "hash": "5620db7b1e0a1e6f4287d06a41f6640e3a25ffa2b75cbcf54c7c6890ed40845d",
-      "mtimeMs": 1784457202197.3337,
-      "size": 11576,
+      "hash": "c4fbaaa42dbd7f1824b82f45207d147dea9929321452265c40cc7a78e5b6a452",
+      "mtimeMs": 1784459858026.9392,
+      "size": 11736,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -5385,9 +5844,9 @@
         }
       ],
       "exports": [],
-      "hash": "4a511d36b23737b65dd980e3d24c19ab6e0cd8221bdb941c930e940aa4371d33",
-      "mtimeMs": 1784457990756.4016,
-      "size": 9362,
+      "hash": "a76afbea45ce275ccda23f80ebc424889ce485d81b4a667005656c1b4a5a95dc",
+      "mtimeMs": 1784459569499.7903,
+      "size": 9384,
       "generated": false,
       "vendor": false,
       "parser": "regex"

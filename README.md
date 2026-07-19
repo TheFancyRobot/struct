@@ -2,7 +2,7 @@
 
 A trustworthy, source-grounded research workspace for documents, datasets, and directories. Documents are retrieved, datasets are queried, directories are navigated, and large corpora are recursively analyzed — with deterministic computation, verifiable citations, and durable, resumable work.
 
-> **Current state: Phase 01 (walking skeleton) — STEP-01-01 through STEP-01-05 are implemented.** The monorepo now includes deterministic PostgreSQL text retrieval, typed research contracts, pinned Fred 2.0.0 workflow orchestration, durable research jobs/events, cursor-replayable SSE progress, citation validation, persisted grounded answers, and a SolidJS citation inspector in addition to the single-text ingestion path. All gates pass when validated locally (typecheck, lint, lint:imports, build, native Bun tests, database integration tests, migration up/down/up, Compose config, app smokes).
+> **Current state: Phase 02 document research is implemented through STEP-02-06.** The monorepo now includes versioned document parsing/chunking, PostgreSQL full-text plus pgvector hybrid retrieval, bounded core-Fred evidence workflows, durable research jobs/events, cursor-replayable SSE progress, exact navigable citations, SolidJS research states, and deterministic retrieval/provenance/injection evaluation. All gates pass when validated locally (typecheck, lint, lint:imports, build, native Bun tests, database integration tests, migration up/down/up, Compose config, app smokes).
 
 ## Canonical documents
 
@@ -19,6 +19,7 @@ A trustworthy, source-grounded research workspace for documents, datasets, and d
 | [docs/research-execution-model.md](./docs/research-execution-model.md) | Research execution model. |
 | [docs/security-model.md](./docs/security-model.md) | Security model and trust boundaries. |
 | [docs/evaluation-strategy.md](./docs/evaluation-strategy.md) | Evaluation strategy. |
+| [docs/retrieval-evaluation.md](./docs/retrieval-evaluation.md) | Phase 02 deterministic retrieval and injection-resistance gate. |
 | [docs/citation-and-provenance.md](./docs/citation-and-provenance.md) | Citation and provenance. |
 | [docs/adr/](./docs/adr/) | Architecture decision records (DEC-0001 … DEC-0014). |
 | [AGENTS.md](./AGENTS.md) | Repository and Agent Vault operating instructions. |
@@ -34,9 +35,9 @@ apps/
 packages/
 ├── domain · persistence · source-storage · ingestion · retrieval · research-engine
 ├── fred-workflows · observability  # walking-slice core; Fred pinned at 2.0.0
-├── document-processing  # planned (Phase 02+)
+├── document-processing  # versioned normalization, parsing, and chunking
 ├── data-engine  # planned (Phase 04)
-└── evaluation · shared-ui                              # planned (later phases)
+└── evaluation  # deterministic Phase 02 smoke gate; full corpus remains Phase 04+
 ```
 
 Package dependency flows downward only; no app imports another app; `domain` is the leaf. Enforced by ESLint `no-restricted-imports`, dependency-cruiser, and `scripts/boundary-check.ts`. Full rules in [docs/architecture.md §4.2](./docs/architecture.md).
@@ -66,7 +67,7 @@ bun run test:integration   # PostgreSQL-backed integration tests
 bun run test:e2e           # Bun-native web navigation test
 bun run migrations:up      # apply implemented PostgreSQL/pgvector migrations through apps/api
 bun run migrations:down    # roll back one implemented migration through apps/api
-bun run corpus:smoke        # small evaluation subset (planned, Phase 04)
+bun run corpus:smoke        # deterministic Phase 02 retrieval/provenance/injection gate
 bun run corpus:eval         # full ~25k corpus + quality gates (planned, Phase 09)
 ```
 

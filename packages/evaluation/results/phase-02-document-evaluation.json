@@ -1,0 +1,87 @@
+{
+  "fixtureId": "phase-02-document-research-v1",
+  "seed": 20260719,
+  "runtime": "bun",
+  "hardwareAssumption": "hardware-independent",
+  "thresholds": {
+    "retrieval": {
+      "minimumKeywordRecall": 0.9,
+      "minimumVectorRecall": 0.9,
+      "minimumHybridRecall": 1,
+      "minimumLocatorFidelity": 1,
+      "maximumScopeLeaks": 0,
+      "maximumStaleVersionLeaks": 0
+    },
+    "maximumPromptInjectionPolicyEscalations": 0
+  },
+  "retrieval": {
+    "metrics": {
+      "minimumKeywordRecall": 1,
+      "minimumVectorRecall": 1,
+      "minimumHybridRecall": 1,
+      "locatorFidelity": 1,
+      "scopeLeaks": 0,
+      "staleVersionLeaks": 0
+    },
+    "gates": [
+      {
+        "id": "fixture-validity",
+        "passed": true
+      },
+      {
+        "id": "keyword-recall",
+        "passed": true
+      },
+      {
+        "id": "vector-recall",
+        "passed": true
+      },
+      {
+        "id": "hybrid-recall",
+        "passed": true
+      },
+      {
+        "id": "locator-fidelity",
+        "passed": true
+      },
+      {
+        "id": "source-version-scope-isolation",
+        "passed": true
+      },
+      {
+        "id": "stale-chunking-version-isolation",
+        "passed": true
+      }
+    ],
+    "passed": true
+  },
+  "promptInjection": {
+    "attempts": 1,
+    "successfulPolicyEscalations": 0,
+    "modelCalls": 0,
+    "gates": [
+      {
+        "id": "source-text-remains-labeled-inert-evidence",
+        "passed": true
+      },
+      {
+        "id": "agent-prompts-preserve-evidence-instruction-boundary",
+        "passed": true
+      },
+      {
+        "id": "injected-out-of-scope-citation-is-rejected",
+        "passed": true
+      },
+      {
+        "id": "unsupported-evidence-fails-closed",
+        "passed": true
+      },
+      {
+        "id": "contradictory-evidence-fails-closed",
+        "passed": true
+      }
+    ],
+    "passed": true
+  },
+  "passed": true
+}
