@@ -4,8 +4,8 @@ template_version: 2
 contract_version: 1
 title: Structured Datasets and Deterministic SQL
 phase_id: PHASE-04
-status: planned
-owner: ''
+status: in_progress
+owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
 depends_on:
@@ -79,15 +79,25 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 ## Delivery Strategy
 
-- **Safe parallel work:** Catalog/Parquet implementation and SQL-policy/evaluation work can proceed in parallel after the Phase 00 topology and Phase 03 manifest contracts are fixed.
+- **Sequence:** Execute STEP-04-01 through STEP-04-06 linearly; each step consumes the merged typed contracts and evidence from its predecessor.
 - **Gate:** The phase closes only when all acceptance criteria have reproducible evidence and the relevant docs, migrations, security checks, telemetry, and evaluations are updated.
 - **Boundary:** Post-v1 work must not be pulled forward in a way that weakens v1 completeness or its release gates.
+
+## Refined Implementation Contract
+
+- Bun 1.3.x is the sole host runtime. DuckDB runs only in an isolated Docker Compose sidecar with a pinned image and pinned internal adapter runtime.
+- The Bun-to-sidecar boundary is private, authenticated, versioned, and decoded with Effect `Schema`; both caller and sidecar enforce limits and SQL policy.
+- The sidecar has no network egress, no Docker socket, no arbitrary host paths, least privilege, bounded resources, and only explicit artifact mounts.
+- Business capabilities use `Effect.Service`, explicit dependencies/layers, `Effect.fn`, `Config`, and specific serializable `Schema.TaggedError` failures; deterministic work never moves into Fred.
+- This greenfield phase has no legacy database or compatibility requirement. Use the next sequential reversible migration and the smallest current-state implementation.
+- Every step has a concrete Execution Brief and Validation Plan covering deliverables, negative/security cases, deterministic evidence, and commands grounded in repository scripts.
+- Refinement session: [[05_Sessions/2026-07-19-160148-define-dataset-assets-schemas-and-versioned-catalog-codex-phase-04-refinement|SESSION-2026-07-19-160148 Phase 04 refinement]].
 
 ## Linear Context
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|PHASE-03 Durable Directory Ingestion and Source Refresh]]
-- Current phase status: planned
+- Current phase status: in_progress
 - Next phase: [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|PHASE-05 Typed Research Planning and Bounded Execution]]
 <!-- AGENT-END:phase-linear-context -->
 

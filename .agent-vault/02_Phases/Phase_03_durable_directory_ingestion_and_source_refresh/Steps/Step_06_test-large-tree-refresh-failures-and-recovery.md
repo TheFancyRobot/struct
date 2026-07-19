@@ -5,7 +5,7 @@ contract_version: 1
 title: Test Large-Tree Refresh Failures and Recovery
 step_id: STEP-03-06
 phase: '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]]'
-status: in_progress
+status: completed
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
@@ -19,8 +19,8 @@ tags:
   - step
 context_id: SESSION-2026-07-19-151248
 active_session_id: 05_Sessions/2026-07-19-151248-test-large-tree-refresh-failures-and-recovery-codex-step-03-06-worker
-context_status: in_progress
-context_summary: Implementation and root validation are complete; configured-limit and canonical permission behavior are exercised, the migration-0009 scoped create defect is fixed, and PR review/merge remain pending.
+context_status: completed
+context_summary: 'Implemented, independently validated, reviewed with zero unresolved findings, and merged to main in PR #16 at c9dab0d.'
 ---
 
 # Step 06 - Test Large-Tree Refresh Failures and Recovery

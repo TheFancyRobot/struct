@@ -2,51 +2,29 @@
 
 ## Exact Outcome
 
-- Produce the concrete contracts, artifacts, and bounded implementation/design surfaces for Allowlisted Read-Only SQL Service that this step is responsible for before any broader follow-on work begins.
+- Execute one authenticated, typed, allowlisted read-only SQL operation against cataloged immutable Parquet snapshots with deterministic bounded results.
 
 ## Prerequisites
 
-- Re-read [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]] and confirm the step still matches the current roadmap sequence.
-- Confirm the handoff from [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_02_implement-parquet-materialization-and-data-profiling|STEP-04-02 Implement Parquet Materialization and Data Profiling]] before widening scope.
-- Keep deterministic work in typed Effect services, repositories, and tools; reserve Fred for agentic orchestration only.
-- Treat the listed files as planned starting points; create only the smallest set needed to land the slice.
+- STEP-04-02 is merged and the sidecar/client protocol plus artifact boundary are stable.
+- Read the parent phase, DEC-0005, DEC-0009, and the STEP-04-02 Outcome.
 
-## Planned Starting Files
+## Deliverables
 
-- These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `packages/data-engine/src/sql/allowlist.ts`
-- `packages/data-engine/src/sql/validate.ts`
-- `packages/data-engine/src/sql/execute.ts`
-- `packages/data-engine/src/sql/errors.ts`
-- `apps/api/src/routes/dataset-sql.ts`
-
-## Required Reading
-
-- [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]
-- [[01_Architecture/Domain_Model|Domain Model]]
-- [[01_Architecture/Agent_Workflow|Agent Workflow]]
-- [[01_Architecture/System_Overview|System Overview]]
-- [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_02_implement-parquet-materialization-and-data-profiling|STEP-04-02 Implement Parquet Materialization and Data Profiling]]
-- `docs/product-brief.md` sections 9-12, 18-25, 26-27, and 29-31.
-
-## Concrete Deliverables
-
-- Implement the SQL allowlist and validator that reject DDL/DML, unsafe pragmas, arbitrary attaches, and unrestricted file access before execution.
-- Add a bounded executor that applies timeouts, row/output limits, and typed failure mapping around read-only DuckDB queries.
-- Expose the API boundary for submitting a validated dataset query without leaking raw engine errors or widening access scope.
-
-## Smallest Bounded Checklist
-
-- First, implement the SQL allowlist and validator that reject DDL/DML, unsafe pragmas, arbitrary attaches, and unrestricted file access before execution.
-- Then, add a bounded executor that applies timeouts, row/output limits, and typed failure mapping around read-only DuckDB queries.
-- Next, expose the API boundary for submitting a validated dataset query without leaking raw engine errors or widening access scope.
-- Finish by leaving one observable typed path—test, route, worker flow, or UI state—that proves the slice is ready for the next dependent step.
+- Parse and validate a single statement; allow only the required `SELECT`/CTE/aggregate/join subset over server-resolved catalog aliases.
+- Reject DDL, DML, multi-statements, `COPY`, `ATTACH`, extension loading, unsafe pragmas/functions, arbitrary paths/URLs, and catalog escape.
+- Validate again inside the sidecar; never trust only the Bun caller.
+- Apply configured timeout, cancellation, row/output/memory limits, deterministic ordering requirements, and stable value encoding.
+- Expose an authenticated workspace-scoped API/service boundary using `Effect.Service`, `Schema` request/response decoding, `Config`, and specific tagged failures without leaking engine internals.
 
 ## Constraints and Non-Goals
 
-- All exact answers must come from deterministic dataset tooling rather than model arithmetic or semantic guesswork.
-- Schema-family grouping, Parquet materialization, and query provenance must preserve lineage to original files and stable record identity.
-- SQL remains allowlisted, read-only, resource-bounded, and fully inspectable.
+- No general SQL proxy, admin endpoint, shell, browser client-to-sidecar access, or write capability.
+- No semantic query planner or model arithmetic; SQL text is deterministic input to a bounded engine.
+
+## Handoff
+
+- STEP-04-04 receives a stable query result contract containing canonical SQL, snapshot IDs, schema hash, result hash, columns, bounded rows, timing, and truncation state.
 
 ## Related Notes
 
