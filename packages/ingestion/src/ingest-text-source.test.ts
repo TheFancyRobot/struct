@@ -46,7 +46,7 @@ describe('ingestTextSource', () => {
     expect(result.contentHash).toMatch(/^sha256:[a-f0-9]{64}$/)
     expect(manifest).toMatchObject({
       kind: 'text-source-manifest',
-      version: 1,
+      version: 2,
       originalName: 'notes.md',
       mediaType: 'text/markdown',
       rawRef: result.rawRef,
@@ -56,5 +56,7 @@ describe('ingestTextSource', () => {
     expect(JSON.stringify(manifest)).not.toContain('# Title')
     expect(JSON.stringify(manifest)).not.toContain('/var/')
     expect(JSON.stringify(manifest)).not.toContain('/Users/')
+    expect(manifest).toMatchObject({ format: 'markdown' })
+    expect(manifest.fragments[0]).toMatchObject({ section: 'Title', paragraph: 1, charStart: 0, byteStart: 0 })
   })
 })

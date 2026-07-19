@@ -4,7 +4,7 @@ template_version: 2
 contract_version: 1
 title: Document Research and Hybrid Retrieval
 phase_id: PHASE-02
-status: planned
+status: in_progress
 owner: ''
 created: '2026-07-17'
 updated: '2026-07-19'
