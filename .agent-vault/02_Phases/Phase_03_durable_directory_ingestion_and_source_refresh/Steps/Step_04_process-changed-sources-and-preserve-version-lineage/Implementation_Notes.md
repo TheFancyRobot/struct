@@ -6,6 +6,7 @@
 - `packages/persistence/src/repositories/source-versions.ts` owns the single fenced transaction. It serializes the registered root, rejects stale snapshot heads and foreign scope, then records manifest inventory, immutable artifact/source/document/index lineage, refresh checkpoint, and the event row.
 - `apps/worker/src/jobs/refresh-directory.ts` exposes the one worker-callable path; event publication remains downstream of the committed journal row.
 - Migration 0008 adds directory roots, snapshots, entries, artifact metadata, refresh lineage, and refresh checkpoints without adding a runtime, queue, or database.
+- Root/PR review tightened topology-based head selection, unsupported-removal history, included-only staging, and safe sibling-cascade deletion semantics.
 
 ## Related Notes
 

@@ -55,6 +55,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Confirmed the execution target: pure deterministic manifest diff, content-addressed artifact staging, and one fenced PostgreSQL transaction for immutable source lineage, checkpoint, and event persistence.
 - Root independent review replaced timestamp-based head selection with topology-based head selection, added same-scope predecessor constraints, persisted removals of unsupported entries, and tightened runtime job/result validation.
 - Root added PostgreSQL regressions for timestamp-skewed snapshot heads and unsupported-entry removal lineage.
+- Addressed both CodeRabbit findings by enforcing included status at the staging boundary and using `NO ACTION` for the sibling-cascade manifest-entry reference.
 <!-- AGENT-END:session-execution-log -->
 
 ## Findings
@@ -100,16 +101,17 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Validation Run
 
 <!-- AGENT-START:session-validation-run -->
-- `DATABASE_URL=postgres://struct:struct@localhost:5432/struct bun run test` — 450 pass, 0 fail, 2,051 assertions across 72 files.
+- Final post-review `DATABASE_URL=postgres://struct:struct@localhost:5432/struct bun run test` — 451 pass, 0 fail, 2,053 assertions across 72 files.
 - `bun run typecheck` — passed.
 - `bun run lint` — passed with zero warnings.
 - `bun run build` — web, API, and worker passed.
 - `bun run lint:imports` — 106 modules and 248 dependencies; zero dependency or boundary violations.
 - `bun run docs:lint` — 38 Markdown files validated.
 - `bun run secrets:scan` — 839 repository paths and 0 branch-history blobs scanned; clean.
-- Focused worker/storage/diff crash suite — 6 pass, 0 fail.
+- Focused worker/storage/diff crash suite — 7 pass, 0 fail.
 - Focused refresh/job/migration PostgreSQL suite — 6 pass, 0 fail before the final full run.
 - Root focused refresh PostgreSQL suite — 2 pass, 0 fail, 14 assertions.
+- Migration 0008 down/up round-trip after review — passed.
 - `git diff --check` — passed.
 <!-- AGENT-END:session-validation-run -->
 

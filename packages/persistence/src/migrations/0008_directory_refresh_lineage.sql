@@ -96,7 +96,7 @@ CREATE TABLE artifact_objects (
 CREATE TABLE directory_entry_lineage (
   snapshot_id UUID NOT NULL REFERENCES directory_snapshots(id) ON DELETE CASCADE,
   relative_path TEXT NOT NULL,
-  manifest_entry_id UUID REFERENCES directory_manifest_entries(id) ON DELETE RESTRICT,
+  manifest_entry_id UUID REFERENCES directory_manifest_entries(id) ON DELETE NO ACTION,
   source_id UUID REFERENCES sources(id) ON DELETE RESTRICT,
   source_version_id UUID REFERENCES source_versions(id) ON DELETE RESTRICT,
   previous_source_version_id UUID REFERENCES source_versions(id) ON DELETE RESTRICT,

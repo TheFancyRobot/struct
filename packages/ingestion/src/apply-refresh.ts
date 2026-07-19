@@ -73,7 +73,9 @@ export const applyDirectoryRefresh = Effect.fn('applyDirectoryRefresh')(
   ) {
     const plan = diffManifest(input.previousManifest, input.currentManifest)
     const changed = plan.filter((item) =>
-      item.disposition === 'added' || item.disposition === 'modified')
+      (item.disposition === 'added' || item.disposition === 'modified')
+      && Option.isSome(item.current)
+      && item.current.value.status === 'included')
     const prepared = yield* Effect.forEach(
       changed,
       (item) =>

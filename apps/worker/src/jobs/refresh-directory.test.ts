@@ -112,6 +112,37 @@ const input = {
 }
 
 describe('refreshClaimedDirectory', () => {
+  it('persists unsupported inventory without loading or staging content', async () => {
+    const unsupportedEntry: DirectoryManifestEntry = {
+      ...entry,
+      status: 'unsupported',
+      byteLength: 0,
+      contentHash: null,
+      unsupportedReason: 'binary',
+    }
+    const unsupportedManifest = Schema.decodeUnknownSync(DirectoryManifest)({
+      ...currentManifest,
+      entries: [unsupportedEntry],
+      digest: computeManifestDigest([unsupportedEntry]),
+    })
+    let loads = 0
+    let writes = 0
+    expect(await Effect.runPromise(refreshClaimedDirectory({
+      store: store(() => writes += 1),
+      loadChangedEntry: () => {
+        loads += 1
+        return Effect.succeed({ bytes, mediaType: 'text/plain' })
+      },
+      prepareChangedEntry: () => Effect.succeed(prepared()),
+      commit: ({ prepared }) =>
+        Effect.succeed({ preparedCount: prepared.length }),
+    }, {
+      ...input,
+      currentManifest: unsupportedManifest,
+    }))).toEqual({ preparedCount: 0 })
+    expect({ loads, writes }).toEqual({ loads: 0, writes: 0 })
+  })
+
   it('writes no artifact and never crosses the commit boundary when loading fails', async () => {
     let writes = 0
     let commits = 0
