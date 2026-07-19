@@ -4,11 +4,16 @@ import { normalizeDocument } from '../normalize-document.js'
 
 const MAX_PDF_PAGES = 1_000
 const MAX_EXTRACTED_CHARACTERS = 5_000_000
+const MIN_USEFUL_PAGE_CHARACTERS = 16
 
 export const isOcrHeavyPdf = (pageText: ReadonlyArray<string>): boolean =>
   pageText.length === 0
   || pageText.filter((text) => text.length === 0).length
     > pageText.length / 2
+  || (
+    pageText.length > 1
+    && pageText.every((text) => text.length > 0 && text.length < MIN_USEFUL_PAGE_CHARACTERS)
+  )
 
 export interface PdfTextItem {
   readonly str?: string

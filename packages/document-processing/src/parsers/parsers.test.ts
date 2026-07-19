@@ -100,6 +100,17 @@ describe('document parsers', () => {
     expect(document.fragments).toMatchObject([{ paragraph: 1, text: 'loose inline text' }])
   })
 
+  it('preserves nested HTML block boundaries and preformatted whitespace', async () => {
+    const document = await Effect.runPromise(parseHtml(encode(
+      '<blockquote><p>Alpha</p><p>Beta</p></blockquote><pre>if ok:\n  run()</pre>',
+    )))
+    expect(document.fragments).toMatchObject([
+      { text: 'Alpha', paragraph: 1 },
+      { text: 'Beta', paragraph: 2 },
+      { text: 'if ok:\n  run()', paragraph: 3 },
+    ])
+  })
+
   it('rejects adversarial HTML nesting through the typed parser error', async () => {
     const nested = `${'<div>'.repeat(300)}text${'</div>'.repeat(300)}`
     const result = await Effect.runPromiseExit(parseHtml(encode(nested)))
@@ -125,6 +136,8 @@ describe('document parsers', () => {
     expect(isOcrHeavyPdf(['Hi', ''])).toBe(false)
     expect(isOcrHeavyPdf(['Hi', '', ''])).toBe(true)
     expect(isOcrHeavyPdf(['Hi'])).toBe(false)
+    expect(isOcrHeavyPdf(['Page 1', 'Page 2', 'Page 3'])).toBe(true)
+    expect(isOcrHeavyPdf(['A complete embedded-text page', 'Another complete page'])).toBe(false)
   })
 
   it('preserves PDF paragraph boundaries inferred from page layout', () => {

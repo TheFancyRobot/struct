@@ -57,6 +57,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 2026-07-19: Exact-head CodeRabbit review found that a shorter or code-suffixed fence could prematurely close a longer Markdown fenced block. Fence tracking now preserves the opening marker and length and accepts only whitespace-only closing markers of the same character and equal-or-greater length; regression coverage added.
 - 2026-07-19: Exact-head Codex review found PDF.js could detach the staged raw-byte buffer before immutable persistence and that adjacent content hashes in ATX headings (for example `# C#`) were stripped. PDF parsing now receives a copied buffer, with raw byte-for-byte persistence coverage; ATX closing hashes are consumed only when whitespace-delimited, with provenance regression coverage.
 - 2026-07-19: Exact-head CodeRabbit review identified character-counted PDF fixture offsets. Both PDF test builders now calculate stream lengths, object offsets, and `startxref` in encoded bytes; non-ASCII ingestion input exercises the corrected fixture.
+- 2026-07-19: Delayed exact-head Codex review identified nested HTML block flattening, `<pre>` whitespace collapse, and sparse repeated text bypassing OCR-heavy PDF classification. Nested blocks now traverse into distinct fragments, preformatted blocks preserve normalized line breaks and indentation, and multi-page documents containing only sparse non-empty page text are classified OCR-heavy while short single-page embedded text remains supported.
 
 ## Findings
 
@@ -89,6 +90,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 2026-07-19 exact-head remediation gate: focused document parser tests 12/12; PostgreSQL-backed repository suite 306/306 with 1,649 assertions; repository typecheck, zero-warning lint, import boundaries, production builds, docs links, history-aware secret scan, Compose config, and `git diff --check` all passed.
 - 2026-07-19 fence remediation gate: focused parser tests 13/13; PostgreSQL-backed suite 307/307 with 1,650 assertions; package typecheck, zero-warning repository lint, and `git diff --check` passed.
 - 2026-07-19 raw-PDF/ATX remediation gate: focused ingestion and parser tests 17/17; PostgreSQL-backed suite 309/309 with 1,653 assertions; document-processing and ingestion typechecks plus zero-warning repository lint passed.
+- 2026-07-19 HTML/OCR remediation gate: focused parser and ingestion tests 18/18; PostgreSQL-backed suite 310/310 with 1,656 assertions; document-processing typecheck and zero-warning repository lint passed.
 
 ## Bugs Encountered
 

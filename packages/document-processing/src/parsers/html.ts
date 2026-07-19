@@ -40,7 +40,13 @@ export const parseHtml = (bytes: Uint8Array) =>
         const tag = node.tagName?.toLowerCase()
         if (tag && ignoredTags.has(tag)) return
         if (tag && blockTags.has(tag)) {
-          const text = nodeText(node, depth).replace(/\s+/g, ' ').trim()
+          if (tag !== 'pre' && (node.childNodes ?? []).some((child) => containsBlock(child, depth + 1))) {
+            for (const child of node.childNodes ?? []) visit(child, depth + 1)
+            return
+          }
+          const text = tag === 'pre'
+            ? nodeText(node, depth).replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim()
+            : nodeText(node, depth).replace(/\s+/g, ' ').trim()
           if (/^h[1-6]$/.test(tag)) section = text || null
           if (text) fragments.push({ text, section, paragraph: ++paragraph })
           return
