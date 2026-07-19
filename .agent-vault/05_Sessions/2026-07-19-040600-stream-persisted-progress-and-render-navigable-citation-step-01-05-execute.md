@@ -148,3 +148,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - STEP-01-05 is complete and ready for root-orchestrator review/publication.
 - The greenfield walking slice now exposes persisted progress by SSE and opens exact immutable-source citations in SolidJS.
 - All focused and full repository gates pass; no confirmed defect remains.
+- PR #2 merged into `main` as merge commit `0e80c0e` after independent pre-PR review, remediation of four confirmed local defects, and remediation/resolution of all three exact-head Codex findings.
+- Final pre-push repository gate: 279 tests passed, 0 failed, 1,576 assertions; typecheck, lint, imports, builds, Compose, migrations, diff check, and Vault doctor passed.
+- Merge occurred under the user-imposed 15-minute deadline while CodeRabbit's exact-head review was still pending; inspect any late result before advancing under the zero-defect gate.
+- STEP-01-05 is complete. Continue with STEP-01-06 on its own branch and PR.

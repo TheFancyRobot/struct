@@ -5,7 +5,7 @@ contract_version: 1
 title: Stream Persisted Progress and Render Navigable Citation
 step_id: STEP-01-05
 phase: '[[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]'
-status: in_progress
+status: completed
 owner: step-01-05-execute
 created: '2026-07-17'
 updated: '2026-07-19'
@@ -19,7 +19,7 @@ tags:
   - step
 context_id: ''
 active_session_id: ''
-context_status: in_progress
+context_status: completed
 context_summary: Advance [[02_Phases/Phase_01_walking_skeleton/Steps/Step_05_stream-persisted-progress-and-render-navigable-citation|STEP-01-05 Stream Persisted Progress and Render Navigable Citation]].
 ---
 
@@ -53,10 +53,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: in_progress
+- Status: completed
 - Current owner: step-01-05-execute
 - Last touched: 2026-07-19
-- Next action: Publish the independently reviewed implementation through PR review and merge gates.
+- Next action: Advance to STEP-01-06 on its own branch and PR.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
