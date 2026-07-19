@@ -90,3 +90,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-END:bug-timeline -->
 - 2026-07-19: Fixed and validated. Focused web unit tests passed (12 tests, 72 assertions); the full walking-skeleton browser suite passed (5 tests, 13 assertions). Repository typecheck, build, lint, dependency/import boundaries, documentation links, and secret scan all passed.
 - 2026-07-19: Final package-level validation passed: `@struct/web test` ran 17 tests with 85 assertions. The web test script now explicitly loads the Solid TSX transform when executed from its workspace, avoiding reliance on the repository-root Bun configuration.
+- 2026-07-19: PR #20 merged to `main` at merge commit `1a44983` after root self-review, full web validation, and a clean CodeRabbit review.
