@@ -44,7 +44,7 @@ CREATE TABLE dataset_citations (
   canonical_sql TEXT NOT NULL CHECK (length(canonical_sql) BETWEEN 1 AND 32768),
   selected_columns JSONB NOT NULL,
   row_start INTEGER NOT NULL CHECK (row_start >= 0),
-  row_end_exclusive INTEGER NOT NULL CHECK (row_end_exclusive > row_start),
+  row_end_exclusive INTEGER NOT NULL CHECK (row_end_exclusive >= row_start),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT uq_dataset_citations_identity
     UNIQUE (

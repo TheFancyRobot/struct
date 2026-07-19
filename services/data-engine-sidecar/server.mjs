@@ -930,13 +930,15 @@ async function querySnapshots(request, httpRequest, httpResponse) {
     const allowedAliases = new Set(
       request.snapshots.map((snapshot) => snapshot.alias),
     )
+    const referencedAliases = new Set(referencedTables)
     if (
-      referencedTables.length === 0
+      referencedAliases.size !== allowedAliases.size
       || referencedTables.some((table) => !allowedAliases.has(table))
+      || [...allowedAliases].some((alias) => !referencedAliases.has(alias))
     ) {
       throw new RequestFailure(
         'lineage',
-        'Query references a table outside its catalog bindings',
+        'Query must reference every catalog binding and no other table',
       )
     }
     for (const snapshot of request.snapshots) {

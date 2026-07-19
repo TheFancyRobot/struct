@@ -386,13 +386,22 @@ describeIf('DatasetQueryEvidenceRepo (PostgreSQL)', () => {
       resultHash: joinResultHash,
       resultArtifactHash: joinArtifactHash,
       canonicalSql: joinedResult.canonicalSql,
-      selectedColumns: ['id'],
+      selectedColumns: ['id', 'label'],
       rowEndExclusive: 1,
     }
+    const joinedInputCitation = {
+      ...joinedCitation,
+      id: DatasetCitationId.make('850e8400-e29b-41d4-a716-446655440021'),
+      datasetId: joinedDatasetId,
+      datasetSnapshotId: joinedSnapshotId,
+      schemaHash: Sha256Digest.make(`sha256:${'7'.repeat(64)}`),
+      parquetDigest: '6'.repeat(64),
+    }
     await Effect.runPromise(
-      DatasetQueryEvidenceRepo.record(joinedResult, [joinedCitation]).pipe(
-        Effect.provide(layer),
-      ),
+      DatasetQueryEvidenceRepo.record(
+        joinedResult,
+        [joinedCitation, joinedInputCitation],
+      ).pipe(Effect.provide(layer)),
     )
     const reopened = await Effect.runPromise(
       DatasetQueryEvidenceRepo.reopen(
@@ -403,24 +412,39 @@ describeIf('DatasetQueryEvidenceRepo (PostgreSQL)', () => {
     )
     expect(reopened.citation.schemaHash).toBe(schemaHash)
     expect(reopened.snapshot.schemaHash).toBe(joinedResult.schemaHash)
-    expect(reopened.rows).toEqual([['1']])
+    expect(reopened.rows).toEqual([['1', 'one']])
   })
 
   it('rolls back the result when any citation cannot be persisted', async () => {
     const rollbackHash = Sha256Digest.make(`sha256:${'f'.repeat(64)}`)
     const duplicateCitationId =
       DatasetCitationId.make('850e8400-e29b-41d4-a716-446655440013')
+    const rollbackResult = {
+      ...result(rollbackResultId, rollbackHash),
+      snapshots: [
+        result().snapshots[0]!,
+        {
+          alias: 'labels',
+          datasetId: joinedDatasetId,
+          snapshotId: joinedSnapshotId,
+          schemaHash: Sha256Digest.make(`sha256:${'7'.repeat(64)}`),
+          parquetDigest: '6'.repeat(64),
+        },
+      ],
+    }
     const firstCitation = {
       ...citation(duplicateCitationId, rollbackResultId),
-      rowEndExclusive: 1,
     }
     const conflictingCitation = {
       ...citation(duplicateCitationId, rollbackResultId),
-      rowStart: 1,
+      datasetId: joinedDatasetId,
+      datasetSnapshotId: joinedSnapshotId,
+      schemaHash: Sha256Digest.make(`sha256:${'7'.repeat(64)}`),
+      parquetDigest: '6'.repeat(64),
     }
     const exit = await Effect.runPromiseExit(
       DatasetQueryEvidenceRepo.record(
-        result(rollbackResultId, rollbackHash),
+        rollbackResult,
         [firstCitation, conflictingCitation],
       ).pipe(Effect.provide(layer)),
     )

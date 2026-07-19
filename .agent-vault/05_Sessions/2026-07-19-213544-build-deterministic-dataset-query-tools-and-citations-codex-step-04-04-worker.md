@@ -58,6 +58,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Self-review found and corrected tamper-verification, lineage, duplicate-column, history-payload, API-wiring, migration-count, and replay-timestamp edge cases before handoff.
 - Completed repository-wide PostgreSQL, live sidecar, focused regression, static, build, docs, and secrets validation.
 - Root pre-PR review completed: verified the Effect service/layer/error patterns, corrected authoritative managed session summaries, and independently passed 23 focused tests (113 assertions), 5 PostgreSQL evidence tests (18 assertions), 2 live sidecar tests (168 assertions), the 413-test default suite, typecheck, lint/import boundaries, build, docs, secrets, diff integrity, and Agent Vault doctor.
+- PR #22 Codex remediation: required a redacted minimum-length API bearer token with constant-time comparison and project/workspace authorization before query-history or citation repository reads; made the sidecar reject unused catalog bindings; required one full-result citation per referenced snapshot so every exact cell returned to Fred is covered; added authorization, unused-binding, and complete-coverage regressions. Rebuilt the Node 24 sidecar and passed live integration with 170 assertions.
+- Addressed CodeRabbit's completed review finding by decoding history `limit` as an integer in the inclusive range 1–100 before repository access. Added route coverage for empty, nonnumeric, negative, zero, fractional, and oversized values; each returns HTTP 400 without invoking the repository.
 
 ## Findings
 
@@ -87,7 +89,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-START:session-validation-run -->
 - Command: `DATABASE_URL=postgres://… bun test --timeout 30000 --max-concurrency 1 --path-ignore-patterns='**/e2e/**' ./apps ./packages`
 - Result: passed — 511 tests, 2 expected sidecar-only skips, 0 failures, 2,386 assertions.
-- Notes: Live sidecar passed 2 tests with 168 assertions; focused regressions passed 17 tests with 81 assertions; evidence PostgreSQL passed 5 tests with 18 assertions. Typecheck, ESLint, import boundaries, build, docs lint, and secrets scan passed.
+- Notes: Live sidecar passed 2 tests with 170 assertions after PR remediation; focused auth/evidence regressions passed 30 tests with 105 assertions; evidence PostgreSQL passed 5 tests with 18 assertions. Typecheck, ESLint, import boundaries, build, docs lint, and secrets scan passed.
 <!-- AGENT-END:session-validation-run -->
 
 ## Bugs Encountered

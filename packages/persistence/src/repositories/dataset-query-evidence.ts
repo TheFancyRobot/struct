@@ -245,6 +245,11 @@ export class DatasetQueryEvidenceRepo
               ).pipe(
                 Effect.mapError(() => failure('citation validation')),
               ))
+            const resultColumnNames = result.columns.map((column) => column.name)
+            const resultSnapshotKeys = result.snapshots.map((snapshot) =>
+              `${snapshot.datasetId}:${snapshot.snapshotId}`)
+            const citedSnapshotKeys = new Set(citations.map((citation) =>
+              `${citation.datasetId}:${citation.datasetSnapshotId}`))
             if (citations.some((citation) =>
               {
                 const binding = result.snapshots.find((candidate) =>
@@ -262,10 +267,19 @@ export class DatasetQueryEvidenceRepo
                   || binding.schemaHash !== citation.schemaHash
                   || binding.parquetDigest !== citation.parquetDigest
                   || result.truncated
-                  || citation.rowEndExclusive > result.rows.length
+                  || citation.rowStart !== 0
+                  || citation.rowEndExclusive !== result.rows.length
+                  || citation.selectedColumns.length !== resultColumnNames.length
+                  || citation.selectedColumns.some(
+                    (name, index) => name !== resultColumnNames[index],
+                  )
                   || selected.some((matches) => matches.length !== 1)
               }
-            )) {
+            )
+              || citations.length !== result.snapshots.length
+              || citedSnapshotKeys.size !== result.snapshots.length
+              || resultSnapshotKeys.some((key) => !citedSnapshotKeys.has(key))
+            ) {
               return yield* new DatasetQueryEvidenceConflictError({
                 entity: 'citation',
                 message: 'Dataset citations do not match their immutable result',

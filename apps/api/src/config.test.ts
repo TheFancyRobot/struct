@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test'
-import { Effect, ConfigProvider, Layer, Exit } from 'effect'
-import { apiPortConfig, artifactStorageRootConfig, databaseUrlConfig, maxTextSourceBytesConfig } from './config'
+import { Effect, ConfigProvider, Layer, Exit, Redacted } from 'effect'
+import { apiAuthTokenConfig, apiPortConfig, artifactStorageRootConfig, databaseUrlConfig, maxTextSourceBytesConfig } from './config'
 
 describe('API Config', () => {
   it('uses default port 3001 when API_PORT not set', async () => {
@@ -45,6 +45,32 @@ describe('API Database URL Config', () => {
       databaseUrlConfig.pipe(Effect.provide(Layer.setConfigProvider(provider))),
     )
     expect(Exit.isFailure(result)).toBe(true)
+  })
+})
+
+describe('API authentication token config', () => {
+  it('loads a redacted token with a safe minimum length', async () => {
+    const provider = ConfigProvider.fromMap(
+      new Map([['API_AUTH_TOKEN', 'local-api-token-value']]),
+    )
+    const result = await Effect.runPromise(
+      apiAuthTokenConfig.pipe(Effect.provide(Layer.setConfigProvider(provider))),
+    )
+    expect(Redacted.value(result)).toBe('local-api-token-value')
+  })
+
+  it('rejects missing and short tokens', async () => {
+    for (const entries of [
+      new Map<string, string>(),
+      new Map([['API_AUTH_TOKEN', 'too-short']]),
+    ]) {
+      const result = await Effect.runPromiseExit(
+        apiAuthTokenConfig.pipe(
+          Effect.provide(Layer.setConfigProvider(ConfigProvider.fromMap(entries))),
+        ),
+      )
+      expect(Exit.isFailure(result)).toBe(true)
+    }
   })
 })
 

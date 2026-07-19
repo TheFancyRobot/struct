@@ -14,7 +14,6 @@ import {
 } from './query-service.js'
 
 const NonNegativeInteger = Schema.Number.pipe(Schema.int(), Schema.nonNegative())
-const PositiveInteger = Schema.Number.pipe(Schema.int(), Schema.positive())
 
 export const DatasetCitationRequest = Schema.Struct({
   datasetId: DatasetId,
@@ -23,12 +22,12 @@ export const DatasetCitationRequest = Schema.Struct({
     Schema.String.pipe(Schema.minLength(1)),
   ).pipe(Schema.minItems(1)),
   rowStart: NonNegativeInteger,
-  rowEndExclusive: PositiveInteger,
+  rowEndExclusive: NonNegativeInteger,
 }).pipe(
   Schema.filter((request) =>
-    request.rowEndExclusive > request.rowStart
+    request.rowEndExclusive >= request.rowStart
       ? true
-      : 'citation row range must be non-empty'),
+      : 'citation row range must not be inverted'),
 )
 export type DatasetCitationRequest =
   Schema.Schema.Type<typeof DatasetCitationRequest>
@@ -142,16 +141,29 @@ export function makeDeterministicDatasetQueryService(dependencies: {
           message: 'Deterministic dataset query request is invalid',
         })))
       const result = yield* dependencies.query.execute(request.query)
-      if (request.citations.length > 0 && result.truncated) {
+      if (result.truncated) {
         return yield* new DatasetQueryToolRequestError({
           reason: 'truncated-result',
           message: 'Truncated query results cannot support exact citations',
         })
       }
-      const snapshotKeys = new Set(result.snapshots.map((snapshot) =>
-        `${snapshot.datasetId}:${snapshot.snapshotId}`))
+      const resultColumnNames = result.columns.map((column) => column.name)
+      const citedSnapshotKeys = new Set(request.citations.map((citation) =>
+        `${citation.datasetId}:${citation.datasetSnapshotId}`))
+      const snapshotKeys = result.snapshots.map((snapshot) =>
+        `${snapshot.datasetId}:${snapshot.snapshotId}`)
+      if (
+        request.citations.length !== result.snapshots.length
+        || citedSnapshotKeys.size !== result.snapshots.length
+        || snapshotKeys.some((key) => !citedSnapshotKeys.has(key))
+      ) {
+        return yield* new DatasetQueryToolRequestError({
+          reason: 'incomplete-lineage',
+          message: 'Exact results require one citation for every referenced snapshot',
+        })
+      }
       for (const citation of request.citations) {
-        if (!snapshotKeys.has(
+        if (!snapshotKeys.includes(
           `${citation.datasetId}:${citation.datasetSnapshotId}`,
         )) {
           return yield* new DatasetQueryToolRequestError({
@@ -160,21 +172,24 @@ export function makeDeterministicDatasetQueryService(dependencies: {
           })
         }
         if (
-          citation.selectedColumns.some((name) =>
-            result.columns.filter((column) => column.name === name).length
-              !== 1)
-          || new Set(citation.selectedColumns).size
-            !== citation.selectedColumns.length
+          citation.selectedColumns.length !== resultColumnNames.length
+          || citation.selectedColumns.some(
+            (name, index) => name !== resultColumnNames[index],
+          )
+          || new Set(resultColumnNames).size !== resultColumnNames.length
         ) {
           return yield* new DatasetQueryToolRequestError({
-            reason: 'column-mismatch',
-            message: 'Citation columns were not uniquely selected by this query',
+            reason: 'incomplete-cell-coverage',
+            message: 'Every exact result column must be covered in ordinal order',
           })
         }
-        if (citation.rowEndExclusive > result.rows.length) {
+        if (
+          citation.rowStart !== 0
+          || citation.rowEndExclusive !== result.rows.length
+        ) {
           return yield* new DatasetQueryToolRequestError({
-            reason: 'row-range',
-            message: 'Citation row range exceeds the exact query result',
+            reason: 'incomplete-cell-coverage',
+            message: 'Every exact result row must be covered by each citation',
           })
         }
       }

@@ -143,7 +143,7 @@ describe('DeterministicDatasetQueryService', () => {
     expect(first.exactValuesInstruction).toContain('must not alter')
   })
 
-  it('rejects truncated, mismatched, missing-column, and out-of-range evidence', async () => {
+  it('rejects truncated, incomplete-lineage, and partial-cell evidence', async () => {
     const candidates = [
       {
         service: fixture({ ...queryResult, truncated: true }).service,
@@ -161,7 +161,7 @@ describe('DeterministicDatasetQueryService', () => {
             ),
           }],
         },
-        reason: 'snapshot-mismatch',
+        reason: 'incomplete-lineage',
       },
       {
         service: fixture().service,
@@ -172,7 +172,7 @@ describe('DeterministicDatasetQueryService', () => {
             selectedColumns: ['missing'],
           }],
         },
-        reason: 'column-mismatch',
+        reason: 'incomplete-cell-coverage',
       },
       {
         service: fixture({
@@ -189,7 +189,7 @@ describe('DeterministicDatasetQueryService', () => {
             selectedColumns: ['id'],
           }],
         },
-        reason: 'column-mismatch',
+        reason: 'incomplete-cell-coverage',
       },
       {
         service: fixture().service,
@@ -200,7 +200,7 @@ describe('DeterministicDatasetQueryService', () => {
             rowEndExclusive: 3,
           }],
         },
-        reason: 'row-range',
+        reason: 'incomplete-cell-coverage',
       },
     ]
     for (const candidate of candidates) {

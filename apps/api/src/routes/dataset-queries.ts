@@ -8,6 +8,8 @@ import {
 import {
   DeterministicDatasetQueryInput,
   DeterministicDatasetQueryOutput,
+  DatasetQueryAuthenticationError,
+  DatasetQueryAuthorizationError,
   DatasetQueryEvidenceStore,
   DatasetQueryToolPersistenceError,
 } from '@struct/data-engine'
@@ -15,6 +17,11 @@ import {
   DatasetQueryEvidenceRepo,
 } from '@struct/persistence'
 import { Cause, Effect, Layer, Option, Schema } from 'effect'
+
+const DatasetQueryHistoryLimit = Schema.NumberFromString.pipe(
+  Schema.int(),
+  Schema.between(1, 100),
+)
 
 export const runDatasetQuery = Effect.fn('runDatasetQuery')(
   function* (
@@ -106,11 +113,27 @@ function failureTag(cause: Cause.Cause<unknown>): {
   }
 }
 
+function bearerCredential(request: Request) {
+  const authorization = request.headers.get('authorization')
+  if (
+    authorization === null
+    || !authorization.startsWith('Bearer ')
+    || authorization.length <= 'Bearer '.length
+  ) {
+    return Effect.fail(new DatasetQueryAuthenticationError({
+      message: 'A bearer credential is required',
+    }))
+  }
+  return Effect.succeed(authorization.slice('Bearer '.length))
+}
+
 export const datasetQueryHistoryResponse = Effect.fn(
   'datasetQueryHistoryResponse',
 )(function* (
+  request: Request,
   url: URL,
   rawProjectId: string,
+  authorize: DatasetQueryReadRouteDependencies['authorize'],
   list: (
     workspaceId: typeof WorkspaceId.Type,
     projectId: typeof ProjectId.Type,
@@ -126,14 +149,22 @@ export const datasetQueryHistoryResponse = Effect.fn(
     )
     const projectId = yield* Schema.decodeUnknown(ProjectId)(rawProjectId)
     const rawLimit = url.searchParams.get('limit')
-    const limit = rawLimit === null ? 25 : Number(rawLimit)
+    const limit = rawLimit === null
+      ? 25
+      : yield* Schema.decodeUnknown(DatasetQueryHistoryLimit)(rawLimit)
+    const credential = yield* bearerCredential(request)
+    yield* authorize(credential, workspaceId, projectId)
     const history = yield* list(workspaceId, projectId, limit)
     return yield* Schema.encode(Schema.Array(DatasetQueryHistoryItem))(history)
   })
   return yield* Effect.matchCause(program, {
     onFailure: (cause) => {
       const failure = failureTag(cause)
-      return failure.tag === 'DatasetQueryEvidenceScopeError'
+      return failure.tag === 'DatasetQueryAuthenticationError'
+        ? json({ error: 'DatasetQueryAuthenticationRequired' }, 401)
+        : failure.tag === 'DatasetQueryAuthorizationError'
+          ? json({ error: 'DatasetQueryScopeForbidden' }, 403)
+          : failure.tag === 'DatasetQueryEvidenceScopeError'
         ? json({ error: 'DatasetQueryHistoryNotFound' }, 404)
         : failure.tag === 'ParseError'
           || (
@@ -149,9 +180,11 @@ export const datasetQueryHistoryResponse = Effect.fn(
 
 export const datasetCitationResponse = Effect.fn('datasetCitationResponse')(
   function* (
+    request: Request,
     url: URL,
     rawProjectId: string,
     rawCitationId: string,
+    authorize: DatasetQueryReadRouteDependencies['authorize'],
     reopen: (
       workspaceId: typeof WorkspaceId.Type,
       projectId: typeof ProjectId.Type,
@@ -169,13 +202,19 @@ export const datasetCitationResponse = Effect.fn('datasetCitationResponse')(
       const citationId = yield* Schema.decodeUnknown(DatasetCitationId)(
         rawCitationId,
       )
+      const credential = yield* bearerCredential(request)
+      yield* authorize(credential, workspaceId, projectId)
       const evidence = yield* reopen(workspaceId, projectId, citationId)
       return yield* Schema.encode(DatasetCitationEvidence)(evidence)
     })
     return yield* Effect.matchCause(program, {
       onFailure: (cause) => {
         const failure = failureTag(cause)
-        return failure.tag === 'DatasetQueryEvidenceScopeError'
+        return failure.tag === 'DatasetQueryAuthenticationError'
+          ? json({ error: 'DatasetQueryAuthenticationRequired' }, 401)
+          : failure.tag === 'DatasetQueryAuthorizationError'
+            ? json({ error: 'DatasetQueryScopeForbidden' }, 403)
+            : failure.tag === 'DatasetQueryEvidenceScopeError'
           ? json({ error: 'DatasetCitationNotFound' }, 404)
           : failure.tag === 'ParseError'
             ? json({ error: 'InvalidDatasetCitationRequest' }, 400)
@@ -189,6 +228,14 @@ export const datasetCitationResponse = Effect.fn('datasetCitationResponse')(
 )
 
 export interface DatasetQueryReadRouteDependencies {
+  readonly authorize: (
+    credential: string,
+    workspaceId: typeof WorkspaceId.Type,
+    projectId: typeof ProjectId.Type,
+  ) => Effect.Effect<
+    void,
+    DatasetQueryAuthenticationError | DatasetQueryAuthorizationError
+  >
   readonly list: (
     workspaceId: typeof WorkspaceId.Type,
     projectId: typeof ProjectId.Type,
@@ -215,8 +262,10 @@ export const datasetQueryReadRoute = Effect.fn('datasetQueryReadRoute')(
       /^\/api\/projects\/([^/]+)\/dataset-queries$/.exec(url.pathname)
     if (history !== null) {
       return yield* datasetQueryHistoryResponse(
+        request,
         url,
         history[1] ?? '',
+        dependencies.authorize,
         dependencies.list,
       )
     }
@@ -225,9 +274,11 @@ export const datasetQueryReadRoute = Effect.fn('datasetQueryReadRoute')(
         .exec(url.pathname)
     if (citation !== null) {
       return yield* datasetCitationResponse(
+        request,
         url,
         citation[1] ?? '',
         citation[2] ?? '',
+        dependencies.authorize,
         dependencies.reopen,
       )
     }

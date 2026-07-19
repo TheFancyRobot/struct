@@ -10,7 +10,6 @@ import {
 import { Sha256Digest } from './directory-manifest.js'
 
 const NonNegativeInteger = Schema.Number.pipe(Schema.int(), Schema.nonNegative())
-const PositiveInteger = Schema.Number.pipe(Schema.int(), Schema.positive())
 const CanonicalSql = Schema.String.pipe(Schema.minLength(1), Schema.maxLength(32_768))
 const QueryValue = Schema.Union(Schema.Null, Schema.Boolean, Schema.String)
 const ArtifactDigest = Schema.String.pipe(Schema.pattern(/^[a-f0-9]{64}$/))
@@ -104,13 +103,13 @@ export const DatasetCitation = Schema.Struct({
     Schema.minItems(1),
   ),
   rowStart: NonNegativeInteger,
-  rowEndExclusive: PositiveInteger,
+  rowEndExclusive: NonNegativeInteger,
   createdAt: Schema.BigIntFromNumber,
 }).pipe(
   Schema.filter((citation) =>
-    citation.rowEndExclusive > citation.rowStart
+    citation.rowEndExclusive >= citation.rowStart
       ? true
-      : 'dataset citation row range must be non-empty'),
+      : 'dataset citation row range must not be inverted'),
 )
 export type DatasetCitation = Schema.Schema.Type<typeof DatasetCitation>
 
@@ -118,7 +117,7 @@ export const DatasetCitationEvidence = Schema.Struct({
   citation: DatasetCitation,
   snapshot: QueryResultSnapshot,
   columns: Schema.Array(QueryResultColumn).pipe(Schema.minItems(1)),
-  rows: Schema.Array(Schema.Array(QueryValue)).pipe(Schema.minItems(1)),
+  rows: Schema.Array(Schema.Array(QueryValue)),
 })
 export type DatasetCitationEvidence =
   Schema.Schema.Type<typeof DatasetCitationEvidence>

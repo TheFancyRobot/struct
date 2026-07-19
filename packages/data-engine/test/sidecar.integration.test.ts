@@ -364,6 +364,29 @@ suite('data-engine sidecar', () => {
       ok: true,
       result: { rows: [['1', 'alpha']], truncated: false },
     })
+    const unusedBinding = await hostRequest({
+      path: '/v1/query',
+      method: 'POST',
+      credential: token,
+      body: {
+        ...query,
+        sql: 'SELECT id FROM records ORDER BY ALL',
+        snapshots: [
+          ...query.snapshots,
+          {
+            ...query.snapshots[0],
+            alias: 'unused_rows',
+            datasetId: '970e8400-e29b-41d4-a716-446655440001',
+            snapshotId: '970e8400-e29b-41d4-a716-446655440002',
+          },
+        ],
+      },
+    })
+    expect(unusedBinding.json).toMatchObject({
+      ok: false,
+      error: { code: 'lineage' },
+    })
+    expect(unusedBinding.status).toBe(400)
     const projectedQuery = await hostRequest({
       path: '/v1/query',
       method: 'POST',
