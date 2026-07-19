@@ -63,6 +63,10 @@ const middleCrossLineSourceId =
   SourceId.make('f50e8400-e29b-41d4-a716-446655440016')
 const middleCrossLineSourceVersionId =
   SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440017')
+const literalMarkerSourceId =
+  SourceId.make('f50e8400-e29b-41d4-a716-446655440018')
+const literalMarkerSourceVersionId =
+  SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440019')
 const distantTermsContent = [
   'Prologue',
   'alpha',
@@ -101,6 +105,7 @@ const middleCrossLineContent = Array.from({ length: 50 }, (_, index) => {
     ? `alpha isolated ${index} ${'x'.repeat(200)}`
     : `omega isolated ${index} ${'y'.repeat(200)}`
 }).join('\n')
+const literalMarkerContent = 'prefix \uE000 literal \uE001 target suffix'
 
 async function cleanup(sql: postgresTypes.Sql): Promise<void> {
   await sql.unsafe(`DELETE FROM event_journal WHERE workspace_id = $1`, [workspaceId])
@@ -110,6 +115,7 @@ async function cleanup(sql: postgresTypes.Sql): Promise<void> {
     [projectId],
   )
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [longLineSourceId])
+  await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [literalMarkerSourceId])
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [middleCrossLineSourceId])
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [middlePhraseSourceId])
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [repeatedCrossLineSourceId])
@@ -121,6 +127,7 @@ async function cleanup(sql: postgresTypes.Sql): Promise<void> {
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [crossLineSourceId])
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [sourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [longLineSourceId])
+  await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [literalMarkerSourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [middleCrossLineSourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [middlePhraseSourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [repeatedCrossLineSourceId])
@@ -327,6 +334,21 @@ describeIf('research walking slice real DB integration', () => {
         middleCrossLineSourceVersionId,
         middleCrossLineContent,
       ],
+    )
+    await sql.unsafe(
+      `INSERT INTO sources (id, project_id, name, kind)
+       VALUES ($1, $2, 'literal-markers.txt', 'document')`,
+      [literalMarkerSourceId, projectId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_versions (id, source_id, version, artifact_ref, content_hash)
+       VALUES ($1, $2, 1, 'artifact://sha256/literal-markers', 'sha256:literal-markers')`,
+      [literalMarkerSourceVersionId, literalMarkerSourceId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_text_index (source_version_id, content)
+       VALUES ($1, $2)`,
+      [literalMarkerSourceVersionId, literalMarkerContent],
     )
     await sql.unsafe(
       `UPDATE source_text_reindex_jobs
@@ -631,6 +653,34 @@ describeIf('research walking slice real DB integration', () => {
     expect(evidence.locator).toMatch(/25/)
     expect(evidence.locator).toMatch(/26/)
     expect(evidence.excerpt.length).toBeLessThanOrEqual(1200)
+    await expect(
+      Effect.runPromise(validateAnswerCitations({
+        answer: evidence.excerpt,
+        citations: [{
+          sourceVersionId: evidence.sourceVersionId,
+          locator: evidence.locator,
+        }],
+      }, result.evidence)),
+    ).resolves.toMatchObject({ citations: [{ locator: evidence.locator }] })
+  })
+
+  it('treats literal headline delimiters as source text with exact grounding', async () => {
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, SqlClientLive(sql))
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [literalMarkerSourceVersionId],
+        query: 'target',
+        limit: 1,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+
+    const evidence = result.evidence[0]!
+    expect(evidence.sourceVersionId).toBe(literalMarkerSourceVersionId)
+    expect(evidence.locator).toBe('lines:1-1')
+    expect(evidence.excerpt).toContain('\uE000 literal \uE001 target')
+    expect(evidence.excerpt).toBe(literalMarkerContent)
     await expect(
       Effect.runPromise(validateAnswerCitations({
         answer: evidence.excerpt,

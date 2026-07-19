@@ -15,6 +15,17 @@ import { TextRetrieval } from '../src/search-text'
 const workspaceId = WorkspaceId.make('a50e8400-e29b-41d4-a716-446655440000')
 const projectId = ProjectId.make('a50e8400-e29b-41d4-a716-446655440001')
 const sourceVersionId = SourceVersionId.make('a50e8400-e29b-41d4-a716-446655440002')
+const testStartMarker = '\uE000'
+const testEndMarker = '\uE001'
+
+function matchPassage(
+  line_number: number,
+  highlighted_line: string,
+  start_marker = testStartMarker,
+  end_marker = testEndMarker,
+) {
+  return { line_number, highlighted_line, start_marker, end_marker }
+}
 
 describe('TextRetrieval', () => {
   it('uses bounded PostgreSQL FTS scoped to workspace, project, and immutable versions', async () => {
@@ -30,10 +41,9 @@ describe('TextRetrieval', () => {
         content: 'Alpha\nThe launch date is July 18.\nOmega',
         rank: 0.75,
         match_line: 2,
-        match_passages: [{
-          line_number: 2,
-          highlighted_line: `The \uE000launch\uE001 \uE000date\uE001 is July 18.`,
-        }],
+        match_passages: [
+          matchPassage(2, `The \uE000launch\uE001 \uE000date\uE001 is July 18.`),
+        ],
       }]
     })
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
@@ -58,6 +68,9 @@ describe('TextRetrieval', () => {
     expect(calls[1]?.query).toMatch(/locator_query/)
     expect(calls[1]?.query).toMatch(/has_query_match/)
     expect(calls[1]?.query).toMatch(/ts_headline/)
+    expect(calls[1]?.query).toMatch(/WITH RECURSIVE marker_candidates/)
+    expect(calls[1]?.query).toMatch(/position\(start_marker IN source_lines\.line\) = 0/)
+    expect(calls[1]?.query).toMatch(/'start_marker', match_markers\.start_marker/)
     expect(calls[0]?.params?.slice(0, 3)).toEqual([
       workspaceId,
       projectId,
@@ -68,6 +81,50 @@ describe('TextRetrieval', () => {
       locator: 'lines:2-3',
       excerpt: 'The launch date is July 18.\nOmega',
       rank: 0.75,
+    }])
+  })
+
+  it('treats literal former headline delimiters as source content', async () => {
+    const content = `prefix \uE000 literal \uE001 target suffix`
+    const startMarker = '__struct_test_start__'
+    const endMarker = '__struct_test_end__'
+    const sqlLayer = SqlClientTest(async (query) => {
+      if (query.includes('AS ready_count')) return [{ ready_count: 1 }]
+      if (query.includes('AS candidates(excerpt, candidate_number)')) {
+        return [{ candidate_number: 1 }]
+      }
+      return [{
+        source_version_id: sourceVersionId,
+        content,
+        rank: 0.7,
+        match_line: 1,
+        match_passages: [
+          matchPassage(
+            1,
+            `prefix \uE000 literal \uE001 ${startMarker}target${endMarker} suffix`,
+            startMarker,
+            endMarker,
+          ),
+        ],
+      }]
+    })
+    const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
+
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [sourceVersionId],
+        query: 'target',
+        limit: 1,
+      }).pipe(Effect.provide(layer)),
+    )
+
+    expect(result.evidence).toEqual([{
+      sourceVersionId,
+      locator: 'lines:1-1',
+      excerpt: content,
+      rank: 0.7,
     }])
   })
 
@@ -252,10 +309,9 @@ describe('TextRetrieval', () => {
         content: 'The immutable indexed launch plan is ready.',
         rank: 0.8,
         match_line: 1,
-        match_passages: [{
-          line_number: 1,
-          highlighted_line: 'The immutable indexed \uE000launch\uE001 plan is ready.',
-        }],
+        match_passages: [
+          matchPassage(1, 'The immutable indexed \uE000launch\uE001 plan is ready.'),
+        ],
       }]
     })
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
@@ -322,10 +378,9 @@ describe('TextRetrieval', () => {
       ].join('\n'),
       rank: 0.5,
       match_line: 7,
-      match_passages: [{
-        line_number: 7,
-        highlighted_line: `The service \uE000runs\uE001 nightly.`,
-      }],
+      match_passages: [
+        matchPassage(7, `The service \uE000runs\uE001 nightly.`),
+      ],
       }]
     })
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
@@ -373,8 +428,8 @@ describe('TextRetrieval', () => {
       rank: 0.4,
       match_line: 2,
       match_passages: [
-        { line_number: 2, highlighted_line: `\uE000alpha\uE001` },
-        { line_number: 10, highlighted_line: `\uE000omega\uE001` },
+        matchPassage(2, `\uE000alpha\uE001`),
+        matchPassage(10, `\uE000omega\uE001`),
       ],
       }]
     })
@@ -425,18 +480,9 @@ describe('TextRetrieval', () => {
       match_line: 1,
       query_is_positional: true,
       match_passages: [
-        {
-          line_number: 1,
-          highlighted_line: `\uE000alpha\uE001 isolated`,
-        },
-        {
-          line_number: 3,
-          highlighted_line: `\uE000omega\uE001 isolated`,
-        },
-        {
-          line_number: 10,
-          highlighted_line: `\uE000alpha\uE001 \uE000omega\uE001 phrase`,
-        },
+        matchPassage(1, `\uE000alpha\uE001 isolated`),
+        matchPassage(3, `\uE000omega\uE001 isolated`),
+        matchPassage(10, `\uE000alpha\uE001 \uE000omega\uE001 phrase`),
       ],
       }]
     })
@@ -485,10 +531,10 @@ describe('TextRetrieval', () => {
         match_line: 1,
         query_is_positional: true,
         match_passages: [
-          { line_number: 1, highlighted_line: `\uE000alpha\uE001 isolated early` },
-          { line_number: 11, highlighted_line: `\uE000omega\uE001 isolated early` },
-          { line_number: 30, highlighted_line: `\uE000alpha\uE001` },
-          { line_number: 31, highlighted_line: `\uE000omega\uE001` },
+          matchPassage(1, `\uE000alpha\uE001 isolated early`),
+          matchPassage(11, `\uE000omega\uE001 isolated early`),
+          matchPassage(30, `\uE000alpha\uE001`),
+          matchPassage(31, `\uE000omega\uE001`),
         ],
       }]
     })
@@ -530,14 +576,8 @@ describe('TextRetrieval', () => {
         match_line: 1,
         query_is_positional: true,
         match_passages: [
-          {
-            line_number: 1,
-            highlighted_line: `${'x'.repeat(1300)} \uE000alpha\uE001`,
-          },
-          {
-            line_number: 2,
-            highlighted_line: `\uE000alpha\uE001 ${'y'.repeat(1300)}`,
-          },
+          matchPassage(1, `${'x'.repeat(1300)} \uE000alpha\uE001`),
+          matchPassage(2, `\uE000alpha\uE001 ${'y'.repeat(1300)}`),
         ],
       }]
     })
@@ -568,10 +608,10 @@ describe('TextRetrieval', () => {
 
   it('selects bounded supported evidence for a high-frequency single-term match', async () => {
     const content = Array.from({ length: 400 }, () => 'alpha').join('\n')
-    const matchPassages = Array.from({ length: 400 }, (_, index) => ({
-      line_number: index + 1,
-      highlighted_line: `\uE000alpha\uE001`,
-    }))
+    const matchPassages = Array.from(
+      { length: 400 },
+      (_, index) => matchPassage(index + 1, `\uE000alpha\uE001`),
+    )
     const sqlLayer = SqlClientTest(async (query) => {
       if (query.includes('AS ready_count')) return [{ ready_count: 1 }]
       if (query.includes('AS candidates(excerpt, candidate_number)')) return [{ candidate_number: 1 }]
@@ -612,7 +652,7 @@ describe('TextRetrieval', () => {
         rank: 0.7,
         match_line: 1,
         query_is_positional: true,
-        match_passages: [{ line_number: 1, highlighted_line: highlightedLine }],
+        match_passages: [matchPassage(1, highlightedLine)],
       }]
     })
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
@@ -679,10 +719,7 @@ describe('TextRetrieval', () => {
         rank: 0.95,
         match_line: 1,
         query_is_positional: true,
-        match_passages: [{
-          line_number: 1,
-          highlighted_line: highlightedLine,
-        }],
+        match_passages: [matchPassage(1, highlightedLine)],
       }]
     })
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
@@ -716,14 +753,13 @@ describe('TextRetrieval', () => {
     })
     const content = lines.join('\n')
     const sampledPassages = [
-      ...lines.slice(0, 12).map((line, index) => ({
-        line_number: index + 1,
-        highlighted_line: line.replace('alpha', '\uE000alpha\uE001'),
-      })),
-      ...lines.slice(-12).map((line, index) => ({
-        line_number: lines.length - 11 + index,
-        highlighted_line: line.replace('omega', '\uE000omega\uE001'),
-      })),
+      ...lines.slice(0, 12).map((line, index) =>
+        matchPassage(index + 1, line.replace('alpha', '\uE000alpha\uE001'))),
+      ...lines.slice(-12).map((line, index) =>
+        matchPassage(
+          lines.length - 11 + index,
+          line.replace('omega', '\uE000omega\uE001'),
+        )),
     ]
     const sqlLayer = SqlClientTest(async (query, params) => {
       if (query.includes('AS ready_count')) return [{ ready_count: 1 }]
@@ -792,7 +828,7 @@ describe('TextRetrieval', () => {
         content,
         rank: 0.9,
         match_line: 1,
-        match_passages: [{ line_number: 1, highlighted_line: highlightedLine }],
+        match_passages: [matchPassage(1, highlightedLine)],
       }]
     })
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
@@ -826,7 +862,7 @@ describe('TextRetrieval', () => {
       content,
       rank: 0.3,
       match_line: 1,
-      match_passages: [{ line_number: 1, highlighted_line: highlightedLine }],
+      match_passages: [matchPassage(1, highlightedLine)],
       }]
     })
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)

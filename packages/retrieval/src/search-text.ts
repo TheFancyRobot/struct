@@ -51,8 +51,6 @@ const MAX_EXCERPT_CHARS = 1200
 const MAX_CONTEXT_CHARS_PER_SIDE = 120
 const MAX_SUPPORTED_LOCATIONS = 24
 const MAX_EVIDENCE_CANDIDATES = 80
-const MATCH_START = '\uE000'
-const MATCH_END = '\uE001'
 
 class ReindexTransactionOwnershipLost extends Error {
   readonly name = 'ReindexTransactionOwnershipLost'
@@ -68,6 +66,8 @@ const OMITTED_SOURCE = '\n…\n'
 interface MatchPassage {
   readonly lineNumber: number
   readonly highlightedLine: string
+  readonly startMarker: string
+  readonly endMarker: string
 }
 
 interface MatchRange {
@@ -179,8 +179,19 @@ function decodeMatchPassages(value: unknown): ReadonlyArray<MatchPassage> {
     const record = item as Record<string, unknown>
     const lineNumber = Number(record['line_number'])
     const highlightedLine = record['highlighted_line']
-    if (Number.isInteger(lineNumber) && lineNumber > 0 && typeof highlightedLine === 'string') {
-      passages.add({ lineNumber, highlightedLine })
+    const startMarker = record['start_marker']
+    const endMarker = record['end_marker']
+    if (
+      Number.isInteger(lineNumber)
+      && lineNumber > 0
+      && typeof highlightedLine === 'string'
+      && typeof startMarker === 'string'
+      && startMarker.length > 0
+      && typeof endMarker === 'string'
+      && endMarker.length > 0
+      && startMarker !== endMarker
+    ) {
+      passages.add({ lineNumber, highlightedLine, startMarker, endMarker })
     }
   }
   return [...passages.values()].sort((left, right) => left.lineNumber - right.lineNumber)
@@ -197,6 +208,10 @@ function matchRanges(
     const lineIndex = passage.lineNumber - 1
     const sourceLine = lines[lineIndex]
     if (sourceLine === undefined) continue
+    if (
+      sourceLine.includes(passage.startMarker)
+      || sourceLine.includes(passage.endMarker)
+    ) continue
 
     let cursor = 0
     let plain = ''
@@ -204,15 +219,21 @@ function matchRanges(
       MAX_SUPPORTED_LOCATIONS,
     )
     while (cursor < passage.highlightedLine.length) {
-      const markedStart = passage.highlightedLine.indexOf(MATCH_START, cursor)
+      const markedStart = passage.highlightedLine.indexOf(passage.startMarker, cursor)
       if (markedStart === -1) {
         plain += passage.highlightedLine.slice(cursor)
         break
       }
       plain += passage.highlightedLine.slice(cursor, markedStart)
-      const markedEnd = passage.highlightedLine.indexOf(MATCH_END, markedStart + MATCH_START.length)
+      const markedEnd = passage.highlightedLine.indexOf(
+        passage.endMarker,
+        markedStart + passage.startMarker.length,
+      )
       if (markedEnd === -1) break
-      const matchedText = passage.highlightedLine.slice(markedStart + MATCH_START.length, markedEnd)
+      const matchedText = passage.highlightedLine.slice(
+        markedStart + passage.startMarker.length,
+        markedEnd,
+      )
       const start = plain.length
       plain += matchedText
       if (matchedText.length > 0) {
@@ -221,7 +242,7 @@ function matchRanges(
           end: plain.length,
         })
       }
-      cursor = markedEnd + MATCH_END.length
+      cursor = markedEnd + passage.endMarker.length
     }
 
     // PostgreSQL's HighlightAll output should be the source line plus markers. Ignore
@@ -691,12 +712,18 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
                       jsonb_agg(
                         jsonb_build_object(
                           'line_number', line_number,
+                          'start_marker', match_markers.start_marker,
+                          'end_marker', match_markers.end_marker,
                           'highlighted_line',
                           ts_headline(
                             'english',
                             source_lines.line,
                             search_query.locator_query,
-                            'StartSel=${MATCH_START}, StopSel=${MATCH_END}, HighlightAll=true'
+                            format(
+                              'StartSel=%s, StopSel=%s, HighlightAll=true',
+                              match_markers.start_marker,
+                              match_markers.end_marker
+                            )
                           )
                         )
                         ORDER BY line_number
@@ -725,7 +752,31 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
                  ) eligible_lines
                  WHERE eligible_lines.matches_query
                     OR NOT eligible_lines.has_query_match
-               ) source_lines
+                 ) source_lines
+               CROSS JOIN LATERAL (
+                 WITH RECURSIVE marker_candidates(
+                   attempt,
+                   start_marker,
+                   end_marker
+                 ) AS (
+                   SELECT 0,
+                          '__struct_match_start_' || md5(source_lines.line) || '__',
+                          '__struct_match_end_' || md5(source_lines.line) || '__'
+                   UNION ALL
+                   SELECT attempt + 1,
+                          start_marker || '_',
+                          end_marker || '_'
+                   FROM marker_candidates
+                   WHERE position(start_marker IN source_lines.line) > 0
+                      OR position(end_marker IN source_lines.line) > 0
+                 )
+                 SELECT start_marker, end_marker
+                 FROM marker_candidates
+                 WHERE position(start_marker IN source_lines.line) = 0
+                   AND position(end_marker IN source_lines.line) = 0
+                 ORDER BY attempt
+                 LIMIT 1
+               ) match_markers
                WHERE source_lines.forward_location <= ($6::int + 1) / 2
                   OR source_lines.reverse_location <= $6::int / 2
              ) matched_lines ON TRUE

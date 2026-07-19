@@ -5,7 +5,7 @@ contract_version: 1
 title: Implement Deterministic Retrieval and Fred Research Workflow
 step_id: STEP-01-04
 phase: '[[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]'
-status: completed
+status: in_progress
 owner: step-01-04-implementor
 created: '2026-07-17'
 updated: '2026-07-19'
@@ -32,9 +32,9 @@ related_bugs:
 tags:
   - agent-vault
   - step
-context_id: SESSION-2026-07-19-032025
-active_session_id: 05_Sessions/2026-07-19-032025-implement-deterministic-retrieval-and-fred-research-workflow-generic-event-append-remediator
-context_status: active
+context_id: ''
+active_session_id: ''
+context_status: in_progress
 context_summary: Advance [[02_Phases/Phase_01_walking_skeleton/Steps/Step_04_implement-deterministic-retrieval-and-fred-research-workflow|STEP-01-04 Implement Deterministic Retrieval and Fred Research Workflow]].
 ---
 
