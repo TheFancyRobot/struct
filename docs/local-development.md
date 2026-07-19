@@ -79,6 +79,7 @@ Reset is a destructive local-only operation. It must never be wired to a product
 | --- | --- | --- | --- |
 | `DATABASE_URL` | `apps/api`, `apps/worker` | PostgreSQL connection | `postgres://struct:struct@localhost:5432/struct` |
 | `ARTIFACT_STORAGE_ROOT` | `packages/source-storage`, `apps/api`, `apps/worker` | dev FS artifact root and upload staging root | `./.local/artifacts` |
+| `API_AUTH_TOKEN` | `apps/api` | bearer credential for protected local API reads (minimum 16 characters) | local secret |
 | `MAX_TEXT_SOURCE_BYTES` | `apps/api`, `packages/ingestion` | walking-slice upload byte cap | `1048576` |
 | `DATA_ENGINE_URL` | `packages/data-engine`, `apps/worker` | authenticated loopback gateway | `http://127.0.0.1:4300` |
 | `DATA_ENGINE_TOKEN` | `packages/data-engine`, DuckDB sidecar | shared bearer credential (minimum 16 characters) | local secret |
