@@ -5,7 +5,7 @@ contract_version: 1
 title: Implement Deterministic Retrieval and Fred Research Workflow
 step_id: STEP-01-04
 phase: '[[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]'
-status: in_progress
+status: completed
 owner: step-01-04-implementor
 created: '2026-07-17'
 updated: '2026-07-19'
@@ -34,7 +34,7 @@ tags:
   - step
 context_id: ''
 active_session_id: ''
-context_status: in_progress
+context_status: completed
 context_summary: Advance [[02_Phases/Phase_01_walking_skeleton/Steps/Step_04_implement-deterministic-retrieval-and-fred-research-workflow|STEP-01-04 Implement Deterministic Retrieval and Fred Research Workflow]].
 ---
 
@@ -71,7 +71,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - Status: completed
 - Current owner: step-01-04-implementor
 - Last touched: 2026-07-19
-- Next action: Root orchestrator publishes the independently reviewed implementation through the remaining PR re-review and merge gates, then advances to STEP-01-05.
+- Next action: Advance to STEP-01-05 on its own branch and PR.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

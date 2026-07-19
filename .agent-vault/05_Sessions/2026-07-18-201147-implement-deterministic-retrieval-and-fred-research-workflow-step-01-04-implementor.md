@@ -258,3 +258,6 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 2026-07-19 documentation/test-integrity remediation: session and Outcome handoffs now identify scoped maintained-host native Bun/PostgreSQL 173/173 across 27 files as authoritative, with 213/213 and 214/214 retained only as historical unscoped checkpoints. Current Code Map records native `bun:test` and ESLint 9.39.2.
 - Upgrade guidance preserves reindex `attempts`, requeues only rows with remaining budget, and states current readiness truth: a tenant-scoped immutable index is searchable during pending/in-progress background work, while a missing index fails closed.
 - The isolated PostgreSQL upgrade regression now asserts workspace, project, artifact reference, content hash, pending status, and zero initial attempts for both migration-backfilled and trigger-created jobs.
+- PR #1 merged into `main` as merge commit `1057a98` after CodeRabbit succeeded on exact head `a9862db` and every Codex thread was addressed and resolved.
+- Final repository gate: 264 tests passed, 0 failed, 1,515 assertions; typecheck, lint, import boundaries, builds, Compose config, migrations down/up, diff check, and strict Vault validation all passed.
+- STEP-01-04 is complete. Continue with STEP-01-05 on its own branch and PR.

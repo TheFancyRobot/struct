@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-19._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_01_walking_skeleton/Steps/Step_04_implement-deterministic-retrieval-and-fred-research-workflow|STEP-01-04 Implement Deterministic Retrieval and Fred Research Workflow]] - status: in_progress - phase: [[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]] - owner: step-01-04-implementor
+- Current step: [[02_Phases/Phase_01_walking_skeleton/Steps/Step_05_stream-persisted-progress-and-render-navigable-citation|STEP-01-05 Stream Persisted Progress and Render Navigable Citation]] - status: planned - phase: [[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]
 - Active phase: [[02_Phases/Phase_01_walking_skeleton/Phase|PHASE-01 Walking Skeleton]] - status: in_progress - updated: 2026-07-19
-- Also active: 68 more additional steps.
+- Also active: 67 more additional steps.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
