@@ -251,20 +251,15 @@ suite('data-engine sidecar', () => {
     expect(unauthenticatedHealth.status).toBe(401)
   }, 20_000)
 
-  it('rejects numeric values that would lose precision', async () => {
-    const cases = [
-      {
-        bytes: new TextEncoder().encode('[{"value":1.5}]'),
-        logicalType: 'integer' as const,
-      },
-      {
-        bytes: new TextEncoder().encode('[{"value":1.12345678901}]'),
-        logicalType: 'decimal' as const,
-      },
-    ]
-    for (const [index, candidate] of cases.entries()) {
-      const input = await storeInput(candidate.bytes)
-      const response = await hostRequest({
+  it('preserves exact decimals and rejects deterministic schema conversion failures', async () => {
+    const materializeValue = async (
+      text: string,
+      format: 'json' | 'csv',
+      logicalType: MaterializeRequest['fields'][number]['logicalType'],
+      suffix: number,
+    ) => {
+      const input = await storeInput(new TextEncoder().encode(text))
+      return hostRequest({
         path: '/v1/materialize',
         method: 'POST',
         credential: token,
@@ -272,19 +267,19 @@ suite('data-engine sidecar', () => {
           protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
           operation: 'materialize',
           snapshotId: DatasetSnapshotId.make(
-            `550e8400-e29b-41d4-a716-44665544000${index + 4}`,
+            `550e8400-e29b-41d4-a716-44665544000${suffix}`,
           ),
           inputs: [{
             ordinal: 0,
-            format: 'json',
+            format,
             artifactDigest: input.digest,
             contentHash: Sha256Digest.make(`sha256:${input.digest}`),
           }],
           fields: [{
             ordinal: 0,
             name: 'value',
-            sourceType: 'number',
-            logicalType: candidate.logicalType,
+            sourceType: 'test',
+            logicalType,
             nullable: false,
           }],
           limits: {
@@ -295,14 +290,45 @@ suite('data-engine sidecar', () => {
           },
         } satisfies MaterializeRequest,
       })
+    }
+
+    const cases = [
+      {
+        text: '[{"value":1.5}]',
+        logicalType: 'integer' as const,
+      },
+      {
+        text: '[{"value":1.12345678901}]',
+        logicalType: 'decimal' as const,
+      },
+      {
+        text: '[{"value":"not-a-date"}]',
+        logicalType: 'date' as const,
+      },
+    ]
+    for (const [index, candidate] of cases.entries()) {
+      const response = await materializeValue(
+        candidate.text,
+        'json',
+        candidate.logicalType,
+        index + 4,
+      )
       expect(response.status).toBe(400)
       expect(response.json).toEqual({
         ok: false,
         error: {
           code: 'invalid-input',
-          message: 'Field cannot be represented without numeric precision loss: value',
+          message: 'Field cannot be converted to its declared logical type: value',
         },
       })
     }
+
+    const exactDecimal = await materializeValue(
+      'value\n0000000000000000000000000001.00000000000\n',
+      'csv',
+      'decimal',
+      7,
+    )
+    expect(exactDecimal.status).toBe(200)
   }, 20_000)
 })

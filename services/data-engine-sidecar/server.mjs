@@ -240,21 +240,37 @@ async function materialize(request, httpRequest) {
     if (rowCount > request.limits.maxRows) {
       throw new RequestFailure('resource-limit', 'Input rows exceed configured limit')
     }
+    const schemaReader = await connection.runAndReadAll("PRAGMA table_info('imported')")
+    await schemaReader.readAll()
+    const importedNames = new Set(
+      schemaReader.getRowObjectsJS().map((column) => String(column.name)),
+    )
     for (const field of request.fields) {
-      if (field.logicalType !== 'integer' && field.logicalType !== 'decimal') continue
+      if (!importedNames.has(field.name)) {
+        throw new RequestFailure(
+          'invalid-input',
+          `Declared field is missing from structured input: ${field.name}`,
+        )
+      }
       const name = quoteIdentifier(field.name)
       const text = `trim(CAST(${name} AS VARCHAR))`
-      const invalid = field.logicalType === 'integer'
-        ? `${name} IS NOT NULL AND (
+      let invalid = `${name} IS NOT NULL AND TRY_CAST(${name} AS ${duckType(field.logicalType)}) IS NULL`
+      if (field.logicalType === 'integer') {
+        invalid = `${name} IS NOT NULL AND (
              NOT regexp_full_match(${text}, '^[+-]?[0-9]+(\\.0+)?$')
              OR TRY_CAST(${name} AS BIGINT) IS NULL
            )`
-        : `${name} IS NOT NULL AND (
+      } else if (field.logicalType === 'decimal') {
+        const unsigned = `regexp_replace(${text}, '^[+-]', '')`
+        const significantInteger = `regexp_replace(split_part(${unsigned}, '.', 1), '^0+', '')`
+        const significantFraction = `regexp_replace(split_part(${unsigned}, '.', 2), '0+$', '')`
+        invalid = `${name} IS NOT NULL AND (
              NOT regexp_full_match(${text}, '^[+-]?[0-9]+(\\.[0-9]+)?$')
-             OR length(regexp_replace(${text}, '[^0-9]', '', 'g')) > 38
-             OR length(split_part(${text}, '.', 2)) > 10
+             OR length(${significantInteger}) > 28
+             OR length(${significantFraction}) > 10
              OR TRY_CAST(${name} AS DECIMAL(38,10)) IS NULL
            )`
+      }
       const invalidReader = await connection.runAndReadAll(
         `SELECT count(*) AS invalid_count FROM imported WHERE ${invalid}`,
       )
@@ -262,7 +278,7 @@ async function materialize(request, httpRequest) {
       if (Number(invalidReader.getRowObjectsJS()[0].invalid_count) > 0) {
         throw new RequestFailure(
           'invalid-input',
-          `Field cannot be represented without numeric precision loss: ${field.name}`,
+          `Field cannot be converted to its declared logical type: ${field.name}`,
         )
       }
     }

@@ -85,7 +85,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-START:session-validation-run -->
 - Commands: canonical default and PostgreSQL suites; focused data-engine/worker/persistence suites; real Compose sidecar integration; typecheck, lint, import boundaries, build, docs, secrets, migration down/up, Compose config, and vault doctor.
 - Result: passed.
-- Notes: 395 default tests passed (143 environment-gated skips, 1,539 assertions); 93 PostgreSQL integration tests passed (2 sidecar-only skips, 730 assertions); real Node 24.18.0 sidecar integration passed 2 tests / 18 assertions; focused data-engine/worker tests passed 11 / 24; focused materialization persistence passed 2 / 18. Dependency validation covered 130 modules and 306 dependencies; docs validated 40 Markdown files; secrets scan covered 898 paths and 908 history blobs.
+- Notes: 395 default tests passed (143 environment-gated skips, 1,539 assertions); 93 PostgreSQL integration tests passed (2 sidecar-only skips, 730 assertions); real Node 24.18.0 sidecar integration passed 2 tests / 21 assertions; focused data-engine/worker tests passed 11 / 24; focused materialization persistence passed 2 / 18. Dependency validation covered 130 modules and 306 dependencies; docs validated 40 Markdown files; secrets scan covered 898 paths and 928 history blobs.
 <!-- AGENT-END:session-validation-run -->
 
 ## Bugs Encountered
