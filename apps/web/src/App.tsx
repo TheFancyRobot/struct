@@ -6,11 +6,11 @@
  * evidence, and synthesis work.
  */
 
-import { type Component, createSignal } from 'solid-js'
+import { type ParentComponent, createSignal } from 'solid-js'
 
 type Theme = 'struct-light' | 'struct-dark'
 
-const App: Component = () => {
+const App: ParentComponent = (props) => {
   const [theme, setTheme] = createSignal<Theme>('struct-light')
 
   return (
@@ -33,7 +33,8 @@ const App: Component = () => {
       </header>
 
       <main class="container mx-auto px-4 py-8">
-        <div class="max-w-3xl mx-auto">
+        {props.children ?? (
+          <div class="max-w-3xl mx-auto">
           <div class="hero min-h-[40vh] bg-base-200/30 rounded-2xl border border-base-300">
             <div class="hero-content text-center">
               <h2 class="text-3xl font-bold mb-2">
@@ -80,7 +81,8 @@ const App: Component = () => {
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        )}
       </main>
 
       <footer class="border-t border-base-300 bg-base-200/30 mt-auto">

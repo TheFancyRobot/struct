@@ -9,6 +9,7 @@ import postgres from 'postgres'
 import {
   ProjectRepo,
   ResearchExecutionRepo,
+  ResearchProjectionRepo,
   SourceRegistrationRepo,
   SqlClientLive,
 } from '@struct/persistence'
@@ -16,6 +17,8 @@ import {
   EventJournalId,
   JobQueueId,
   AuthorizationError,
+  CitationId,
+  NotFoundError,
   SourceId,
   WorkspaceId,
   ProjectId,
@@ -33,6 +36,11 @@ import {
 } from './config'
 import { registerTextSource } from './routes/sources'
 import { startResearch } from './routes/research'
+import { getCitationDetail } from './routes/citations'
+import {
+  parseEventCursor,
+  researchEventsResponse,
+} from './routes/research-events'
 
 interface RegisterRequestBody {
   readonly workspaceId?: unknown
@@ -137,6 +145,7 @@ const server = Effect.gen(function* () {
   const projectLayer = Layer.provide(ProjectRepo.Default, sqlLayer)
   const registrationLayer = Layer.provide(SourceRegistrationRepo.Default, sqlLayer)
   const researchLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
+  const projectionLayer = Layer.provide(ResearchProjectionRepo.Default, sqlLayer)
 
   Bun.serve({
     port,
@@ -147,13 +156,17 @@ const server = Effect.gen(function* () {
         return jsonResponse({ status: 'ok', version: '0.0.1-skeleton' })
       }
 
-      if (url.pathname === '/sources/text' && req.method === 'POST') {
+      const sourceRoute = /^\/api\/projects\/([^/]+)\/sources$/.exec(url.pathname)
+      if (sourceRoute !== null && req.method === 'POST') {
         const program = Effect.gen(function* () {
           const body = yield* Effect.tryPromise({
             try: () => req.json() as Promise<RegisterRequestBody>,
             catch: () => new Error('Invalid JSON body'),
           })
           const parsed = yield* parseBody(body)
+          if (parsed.projectId !== sourceRoute[1]) {
+            return yield* Effect.fail(new Error('Project scope mismatch'))
+          }
           return yield* registerTextSource(parsed, {
             now: () => BigInt(Date.now()),
             randomUuid: () => SourceId.make(crypto.randomUUID()),
@@ -181,7 +194,8 @@ const server = Effect.gen(function* () {
         }, 202)
       }
 
-      if (url.pathname === '/research/runs' && req.method === 'POST') {
+      const researchRoute = /^\/api\/projects\/([^/]+)\/research$/.exec(url.pathname)
+      if (researchRoute !== null && req.method === 'POST') {
         const program = Effect.gen(function* () {
           const body = yield* Effect.tryPromise({
             try: () => req.json() as Promise<ResearchRequestBody>,
@@ -193,6 +207,13 @@ const server = Effect.gen(function* () {
               }),
           })
           const parsed = yield* parseResearchBody(body)
+          if (parsed.projectId !== researchRoute[1]) {
+            return yield* new ValidationError({
+              field: 'projectId',
+              reason: 'path-body-mismatch',
+              message: 'Project scope does not match the request path',
+            })
+          }
           return yield* startResearch(parsed, {
             now: () => BigInt(Date.now()),
             randomThreadId: () => ResearchThreadId.make(crypto.randomUUID()),
@@ -219,14 +240,85 @@ const server = Effect.gen(function* () {
         )
       }
 
-      if (url.pathname === '/events' && req.method === 'GET') {
-        return new Response('SSE endpoint: walking skeleton placeholder', {
-          headers: {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-          },
+      const eventsRoute =
+        /^\/api\/projects\/([^/]+)\/runs\/([^/]+)\/events$/.exec(url.pathname)
+      if (eventsRoute !== null && req.method === 'GET') {
+        const cursor = parseEventCursor(url.searchParams.get('cursor'))
+        if (cursor === undefined) {
+          return jsonResponse({ error: 'InvalidEventCursor' }, 400)
+        }
+        const identifiers = Effect.try({
+          try: () => ({
+            projectId: Schema.decodeUnknownSync(ProjectId)(eventsRoute[1]),
+            runId: Schema.decodeUnknownSync(ResearchRunId)(eventsRoute[2]),
+          }),
+          catch: () => new Error('Invalid event stream identifiers'),
         })
+        const exit = await Effect.runPromiseExit(identifiers)
+        if (exit._tag === 'Failure') {
+          return jsonResponse({ error: 'ResearchRunNotFound' }, 404)
+        }
+        return researchEventsResponse(
+          exit.value.projectId,
+          exit.value.runId,
+          cursor,
+          {
+            listEventsAfter: (projectId, runId, after, limit) =>
+              ResearchProjectionRepo.listEventsAfter(
+                projectId,
+                runId,
+                after,
+                limit,
+              ).pipe(Effect.provide(projectionLayer)),
+            findCompleted: (runId) =>
+              ResearchProjectionRepo.findCompleted(runId).pipe(
+                Effect.provide(projectionLayer),
+              ),
+          },
+          req.signal,
+        )
+      }
+
+      const citationRoute =
+        /^\/api\/projects\/([^/]+)\/research\/([^/]+)\/citation\/([^/]+)$/
+          .exec(url.pathname)
+      if (citationRoute !== null && req.method === 'GET') {
+        const identifiers = Effect.try({
+          try: () => ({
+            projectId: Schema.decodeUnknownSync(ProjectId)(citationRoute[1]),
+            threadId: Schema.decodeUnknownSync(ResearchThreadId)(citationRoute[2]),
+            citationId: Schema.decodeUnknownSync(CitationId)(citationRoute[3]),
+          }),
+          catch: () => new NotFoundError({
+            entityType: 'Citation',
+            entityId: citationRoute[3] ?? '',
+            message: 'Citation not found',
+          }),
+        })
+        const exit = await Effect.runPromiseExit(
+          identifiers.pipe(
+            Effect.flatMap(({ projectId, threadId, citationId }) =>
+              getCitationDetail(
+                projectId,
+                threadId,
+                citationId,
+                (scopedProjectId, scopedThreadId, scopedCitationId) =>
+                  ResearchProjectionRepo.findCitation(
+                    scopedProjectId,
+                    scopedThreadId,
+                    scopedCitationId,
+                  ).pipe(Effect.provide(projectionLayer)),
+              ),
+            ),
+          ),
+        )
+        if (exit._tag === 'Failure') {
+          const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
+          return failure instanceof NotFoundError
+            ? jsonResponse({ error: 'CitationNotFound' }, 404)
+            : jsonResponse({ error: 'CitationUnavailable' }, 503)
+        }
+        return jsonResponse(exit.value)
       }
 
       return new Response('Not Found', { status: 404 })

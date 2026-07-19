@@ -5,7 +5,7 @@
     "rootDir": "./src",
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
-    "types": ["node", "solid-js", "solid-js/web", "@solidjs/router"]
+    "types": ["node", "bun", "solid-js", "solid-js/web", "@solidjs/router"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts"]
 }

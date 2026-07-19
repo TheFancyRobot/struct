@@ -66,6 +66,12 @@ The product event journal is consumed via SSE streamed from `apps/api`. A dedica
 3. Handles reconnection with exponential backoff and cursor-based replay.
 4. Maps event families (`ingestion-*`, `research-*`) to store updates without polling.
 
+The walking-slice implementation reconnects after 1 second with exponential
+backoff capped at 30 seconds and stops after 10 retries. It resumes from the
+last received monotonic cursor, deduplicates replayed events, closes the
+`EventSource` on cleanup, and validates every event against the shared Effect
+Schema before updating the Solid store.
+
 Events are not persisted on the client beyond the current session. The canonical record of progress lives in PostgreSQL and is replayed on reconnect.
 
 ### 4.3 API client state
