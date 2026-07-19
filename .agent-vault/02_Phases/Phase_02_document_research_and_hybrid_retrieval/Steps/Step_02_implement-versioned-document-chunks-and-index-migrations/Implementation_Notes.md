@@ -5,6 +5,7 @@
 - Added branded `DocumentId` / `DocumentChunkId` and Effect Schema contracts for normalized documents, immutable versioned chunks, and exact document locators in `packages/domain/src/document.ts`.
 - Added deterministic Bun-native `fragments-v1` chunking in `packages/document-processing/src/chunk-document.ts`. It validates parser locator round-trips, groups bounded adjacent fragments, splits oversized fragments without breaking surrogate pairs, and preserves exact character/byte provenance.
 - Added reversible `0005_document_chunks` schema with workspace/project/source/source-version lineage foreign keys, immutable document/chunk uniqueness, generated PostgreSQL full-text vectors, and a GIN index. Vector embedding shape remains intentionally deferred to STEP-02-03.
+- The migration runner applies `0005` transactionally. Supporting lineage indexes intentionally use ordinary `CREATE UNIQUE INDEX`; this greenfield schema has no legacy production dataset requiring a concurrent-index rollout.
 - Added `DocumentChunkRepo` as an `Effect.Service`; writes are atomic, idempotent for an identical aggregate, immutable-conflict detecting, workspace scoped, and fenced by the exact in-progress ingestion attempt.
 - Updating the latest migration exposed positional assumptions in event-journal and upgrade migration fixtures; those fixtures now step through `0005` before exercising their intended historical migration.
 
@@ -22,8 +23,10 @@
   repository validation. Both now advance byte offsets from the previous
   validated boundary, keeping validation linear in document size; real
   multi-chunk PostgreSQL coverage exercises multibyte text and inter-chunk gaps.
-- Final PostgreSQL-backed suite after review remediation: 369 passed, 0
-  failed, 2,104 assertions across 61 files.
+- Grouped chunk provenance is accumulated across every included fragment; page,
+  section, and paragraph locators clear when any intermediate fragment differs.
+- Final PostgreSQL-backed suite after review remediation: 370 passed, 0
+  failed, 2,107 assertions across 61 files.
 
 ## Related Notes
 

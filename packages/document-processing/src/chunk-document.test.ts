@@ -180,6 +180,65 @@ describe('chunkDocument', () => {
     expect(chunks[0]?.text).toBe('FirstSecond')
   })
 
+  it('clears grouped provenance when any intermediate fragment differs', async () => {
+    const normalized = {
+      format: 'text',
+      text: 'abc',
+      fragments: [
+        {
+          text: 'a',
+          page: 1,
+          section: 'Outer',
+          paragraph: 1,
+          charStart: 0,
+          charEnd: 1,
+          byteStart: 0,
+          byteEnd: 1,
+        },
+        {
+          text: 'b',
+          page: 2,
+          section: 'Inner',
+          paragraph: 1,
+          charStart: 1,
+          charEnd: 2,
+          byteStart: 1,
+          byteEnd: 2,
+        },
+        {
+          text: 'c',
+          page: 1,
+          section: 'Outer',
+          paragraph: 1,
+          charStart: 2,
+          charEnd: 3,
+          byteStart: 2,
+          byteEnd: 3,
+        },
+      ],
+    } as const
+    const document: Document = {
+      id: documentId,
+      sourceVersionId,
+      format: 'text',
+      normalizedText: normalized.text,
+      contentHash: 'sha256:document',
+      parserVersion: 'text-v1',
+      createdAt: 1n,
+    }
+
+    const chunks = await Effect.runPromise(
+      chunkDocument({ document, normalized, maxCharacters: 100 }),
+    )
+
+    expect(chunks).toHaveLength(1)
+    expect(chunks[0]?.locator).toMatchObject({
+      page: null,
+      section: null,
+      paragraph: null,
+    })
+  })
+
   it('fails with a typed error when a fragment locator does not round-trip', async () => {
     const normalized = {
       format: 'text',

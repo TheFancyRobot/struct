@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-19T08:50:07.783Z",
+  "generatedAt": "2026-07-19T08:57:46.584Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -1757,16 +1757,16 @@
         {
           "name": "splitFragment",
           "kind": "function",
-          "line": 70,
+          "line": 73,
           "exported": false,
-          "endLine": 70
+          "endLine": 73
         },
         {
           "name": "chunkDocument",
           "kind": "const",
-          "line": 114,
+          "line": 117,
           "exported": true,
-          "endLine": 114
+          "endLine": 117
         }
       ],
       "imports": [
@@ -1798,9 +1798,9 @@
         }
       ],
       "exports": [],
-      "hash": "0680881217f998562258fb46cdfa161f013e57c5009716ca43b53cf1c151a89e",
-      "mtimeMs": 1784450919578.988,
-      "size": 6428,
+      "hash": "7eafb4438e0591b6d311a4e5e6209d711bcb82ca894df1d744829fd2ca539e09",
+      "mtimeMs": 1784451406560.5183,
+      "size": 6714,
       "generated": false,
       "vendor": false,
       "parser": "regex"

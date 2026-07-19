@@ -65,6 +65,9 @@ function validateFragment(
 interface ChunkGroup {
   readonly first: DocumentFragment
   readonly last: DocumentFragment
+  readonly page: number | null
+  readonly section: string | null
+  readonly paragraph: number | null
 }
 
 function splitFragment(
@@ -153,10 +156,27 @@ export const chunkDocument = Effect.fn('chunkDocument')(function* (
       current === undefined
       || segment.charEnd - current.first.charStart > maxCharacters
     ) {
-      current = { first: segment, last: segment }
+      current = {
+        first: segment,
+        last: segment,
+        page: segment.page,
+        section: segment.section,
+        paragraph: segment.paragraph,
+      }
       groups.push(current)
     } else {
-      current = { first: current.first, last: segment }
+      const samePage = current.page === segment.page
+      current = {
+        first: current.first,
+        last: segment,
+        page: samePage ? current.page : null,
+        section: current.section === segment.section
+          ? current.section
+          : null,
+        paragraph: samePage && current.paragraph === segment.paragraph
+          ? current.paragraph
+          : null,
+      }
       groups[groups.length - 1] = current
     }
   }
@@ -166,9 +186,6 @@ export const chunkDocument = Effect.fn('chunkDocument')(function* (
       group.first.charStart,
       group.last.charEnd,
     )
-    const samePage = group.first.page === group.last.page
-    const sameSection = group.first.section === group.last.section
-    const sameParagraph = group.first.paragraph === group.last.paragraph
     return {
       id: makeDocumentChunkId(
         input.document.id,
@@ -182,9 +199,9 @@ export const chunkDocument = Effect.fn('chunkDocument')(function* (
       text,
       textHash: hashDocumentChunkText(text),
       locator: {
-        page: samePage ? group.first.page : null,
-        section: sameSection ? group.first.section : null,
-        paragraph: sameParagraph ? group.first.paragraph : null,
+        page: group.page,
+        section: group.section,
+        paragraph: group.paragraph,
         charStart: group.first.charStart,
         charEnd: group.last.charEnd,
         byteStart: group.first.byteStart,

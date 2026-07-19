@@ -56,6 +56,29 @@ describe('document domain contracts', () => {
   })
 
   it('rejects invalid chunk ordinals and locator ranges', async () => {
+    const invalidOrdinal = await Effect.runPromiseExit(
+      Schema.decodeUnknown(DocumentChunk)({
+        id: chunkId,
+        documentId,
+        sourceVersionId,
+        chunkingVersion: 'fragments-v1',
+        ordinal: -1,
+        text: 'Body',
+        textHash: 'sha256:chunk',
+        locator: {
+          page: null,
+          section: null,
+          paragraph: null,
+          charStart: 0,
+          charEnd: 4,
+          byteStart: 0,
+          byteEnd: 4,
+        },
+        createdAt: 1,
+      }),
+    )
+    expect(Exit.isFailure(invalidOrdinal)).toBe(true)
+
     for (const locator of [
       {
         page: 0,
@@ -91,7 +114,7 @@ describe('document domain contracts', () => {
           documentId,
           sourceVersionId,
           chunkingVersion: 'fragments-v1',
-          ordinal: -1,
+          ordinal: 0,
           text: 'Body',
           textHash: 'sha256:chunk',
           locator,
