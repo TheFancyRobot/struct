@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { mkdtemp, rm, symlink } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, symlink } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import {
   CORPUS_CANONICAL_SEED,
@@ -48,6 +48,18 @@ describe('reproducible JSON evaluation corpus', () => {
         recordCount: 1,
         sourceVersion: 'v1',
       })
+      for (const family of manifest.schemaFamilies) {
+        const emittedColumns = new Set<string>()
+        for (const file of manifest.files.filter(
+          (entry) => entry.schemaFamilyId === family.schemaFamilyId,
+        )) {
+          const record = await Bun.file(resolve(first.outDir, file.path)).json()
+          for (const column of Object.keys(record)) emittedColumns.add(column)
+        }
+        expect([...emittedColumns].toSorted()).toEqual(
+          family.fields.map((field) => field.name).toSorted(),
+        )
+      }
       expect(manifest.caseCounts['prompt-injection']).toBe(4)
       expect(manifest.caseCounts['type-conflict']).toBeGreaterThan(0)
       expect(manifest.caseCounts['duplicate']).toBeGreaterThan(0)
@@ -68,6 +80,19 @@ describe('reproducible JSON evaluation corpus', () => {
         (entry) =>
           entry.citations.every((citation) => citation.sourceVersion === 'v1'),
       )).toBe(true)
+      const questions = await Bun.file(
+        resolve(first.outDir, 'questions.json'),
+      ).json()
+      expect(questions.questions.filter(
+        (question: { category: string }) => question.category === 'schema',
+      ).map(
+        (question: { groundTruthKey: string }) => question.groundTruthKey,
+      )).toEqual(['expectedSchemas'])
+      expect(questions.questions.filter(
+        (question: { category: string }) => question.category === 'security',
+      ).map(
+        (question: { groundTruthKey: string }) => question.groundTruthKey,
+      ).toSorted()).toEqual(Object.keys(groundTruth.securityCases).toSorted())
     } finally {
       await rm(root, { recursive: true, force: true })
     }
@@ -164,6 +189,26 @@ describe('reproducible JSON evaluation corpus', () => {
     }
   })
 
+  it('rejects excess manifest fields instead of hashing a stripped object', async () => {
+    const root = await temporaryRoot('struct-corpus-excess-manifest')
+    try {
+      const generated = await generateCorpus({
+        outDir: resolve(root, 'generated'),
+        profile: 'smoke',
+      })
+      const manifestPath = resolve(generated.outDir, 'manifest.json')
+      const manifest = await Bun.file(manifestPath).json()
+      manifest.unexpected = true
+      await Bun.write(manifestPath, JSON.stringify(manifest))
+
+      await expect(verifyCorpus(manifestPath)).rejects.toThrow(
+        'is unexpected',
+      )
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  })
+
   it('refuses to clean an unmarked non-empty output directory', async () => {
     const root = await temporaryRoot('struct-corpus-cleanup')
     const output = resolve(root, 'owned-by-someone-else')
@@ -175,6 +220,27 @@ describe('reproducible JSON evaluation corpus', () => {
       expect(await Bun.file(resolve(output, 'keep.txt')).text()).toBe('keep')
     } finally {
       await rm(root, { recursive: true, force: true })
+    }
+  })
+
+  it('allows a generated output directory below the repository root', async () => {
+    const localRoot = resolve(process.cwd(), '.local')
+    await mkdir(localRoot, { recursive: true })
+    const output = await mkdtemp(resolve(localRoot, 'struct-corpus-child-'))
+    try {
+      const generated = await generateCorpus({
+        outDir: output,
+        profile: 'smoke',
+      })
+      expect(generated.outDir).toBe(output)
+      expect(await Bun.file(resolve(output, 'manifest.json')).exists()).toBe(
+        true,
+      )
+      await expect(
+        verifyCorpus(resolve(output, 'manifest.json')),
+      ).resolves.toBeDefined()
+    } finally {
+      await rm(output, { recursive: true, force: true })
     }
   })
 

@@ -52,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_05_generate-reproducible-25000-json-corpus-and-ground-truth/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_05_generate-reproducible-25000-json-corpus-and-ground-truth/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: in_progress
+- Current owner: Codex
+- Last touched: 2026-07-19
+- Next action: Complete the root-reviewed PR feedback close-out, merge, and update the step/session mirrors to completed.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

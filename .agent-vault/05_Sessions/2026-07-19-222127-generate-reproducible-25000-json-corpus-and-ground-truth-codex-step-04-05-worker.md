@@ -50,13 +50,15 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-START:session-execution-log -->
 - 22:21 - Created session note.
 - 22:21 - Linked related step [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_05_generate-reproducible-25000-json-corpus-and-ground-truth|STEP-04-05 Generate Reproducible 25000 JSON Corpus and Ground Truth]].
-<!-- AGENT-END:session-execution-log -->
 - Implemented the fixed-seed Bun corpus generator, independent exact oracle, manifest verifier, compare CLI, smoke integration, tests, compact result evidence, and operator documentation.
 - Self-review caught and fixed downstream issues before handoff: preserved the existing Phase 02 smoke consumer, corrected percentage basis-point units, added source-version lineage to citations/files, hardened output/metadata/symlink handling, and regenerated all canonical hashes.
 - Generated two independent 25,000-record full corpora and verified every record plus identical manifests.
 - Root impact review aligned the emitted manifest with the declared stable corpus contract: schema/file descriptor names, record counts and identities, inert abuse IDs, SHA-256 stream metadata, benchmark-environment schema version, and strict Effect Schema decoding. Added malformed-manifest regression coverage, reconciled the broader v2 documentation boundary, regenerated two full corpora, and updated all dependent evidence hashes.
 - Root adversarial review made verification enforce the complete on-disk inventory, reject nested symlinks/non-regular entries, and validate the ownership marker, so unlisted files cannot silently expand the evaluated corpus. Added regression coverage for unlisted-file and marker tampering.
 - Downstream documentation audit updated the canonical repository command/gate contract for corpus generation and comparison, removed stale claims that the full corpus and DuckDB sidecar were deferred, and corrected the README data-engine status.
+- Addressed all four automatic Codex findings as one impact-reviewed change: declared every emitted family column (including optional fixture columns), rejected excess manifest properties before hashing, added one complete schema question plus one question for each of eight security truth classes, and preserved root-level output basenames with `basename`. Added direct regression coverage that derives emitted columns from generated files, proves complete question coverage, and reproduces excess-property rejection. Regenerated and compared two full corpora and reconciled all dependent hashes/evidence.
+- Addressed all four completed CodeRabbit findings in the same remediation: synchronized the step snapshot, moved session history into its bounded execution-log block, labeled the documentation fence, and corrected repository-descendant output detection with direct-child regression coverage.
+<!-- AGENT-END:session-execution-log -->
 
 ## Findings
 
@@ -94,10 +96,10 @@ Use one note per meaningful work session. Record chronology, validation, and han
 
 <!-- AGENT-START:session-validation-run -->
 - `bun run corpus:smoke` — passed Phase 02 gates plus deterministic 250-record generator repeat.
-- Root-reviewed `bun run corpus:generate --profile full --out <absolute-dir>` runs — 25,000 records each; 1,944 ms and 1,917 ms.
+- Post-review `bun run corpus:generate --profile full --out <absolute-dir>` runs — 25,000 records each; 1,986 ms and 1,847 ms.
 - `bun run corpus:compare-hashes <a>/manifest.json <b>/manifest.json` — passed after verifying all 50,000 generated record files and both metadata sets.
-- Root-reviewed `bun test packages/evaluation --max-concurrency 1` — 18 passed, 0 failed, 63 assertions.
-- Root-reviewed full repository tests — 470 passed, 151 expected integration skips, 0 failed, 2,083 assertions.
+- Post-review `bun test packages/evaluation --max-concurrency 1` — 20 passed, 0 failed, 73 assertions.
+- Post-review full repository tests — 472 passed, 151 expected integration skips, 0 failed, 2,093 assertions.
 - `bun run typecheck && bun run lint && bun run lint:imports && bun run build` — passed.
 - `bun run docs:lint && bun run secrets:scan` — passed.
 <!-- AGENT-END:session-validation-run -->

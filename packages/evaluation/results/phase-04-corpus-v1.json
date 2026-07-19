@@ -33,6 +33,9 @@
   },
   "groundTruth": {
     "exactQuestions": 8,
+    "schemaQuestions": 1,
+    "securityQuestions": 8,
+    "recoveryQuestions": 1,
     "deletedRecordIds": 25,
     "changedRecordIds": 25,
     "addedRecordIds": 25,
@@ -40,15 +43,15 @@
     "recoveryBoundaries": 6
   },
   "hashes": {
-    "manifestSha256": "a063ea9977676b5d5a0eb791ddcb119a5be73ff91e6978b952b9d37ab1c62896",
+    "manifestSha256": "32bcb867e71e3e94177d72e6de6945205cf2cef0617a5d5dd32b3b40a06ef8e3",
     "corpusSha256": "3201ecb9580cdce5db7770340b349134d50a4611880c69cb7266b91aa62ddc07",
-    "groundTruthSha256": "27fbd2f48feb252f591cb56d8c5319b7df3c6d76ed44330cdd30a50155dffc38",
-    "questionSetSha256": "1a879cb38c2e0036632df01b6012757296e7258b7dd5f9f6fa396c02c189fb52"
+    "groundTruthSha256": "df2c8c3983f6d7e202d6afd19400f622ec6cd9b6468f2901bd39765124f523d1",
+    "questionSetSha256": "33e8383975dcb2e3f17b930f0d219e762d45586c358a588aa1ee8e98eea2fae4"
   },
   "reproducibility": {
     "fullRunsCompared": 2,
     "identical": true,
-    "elapsedMs": [1944, 1917],
+    "elapsedMs": [1986, 1847],
     "observedAllocatedStorage": "107 MiB"
   }
 }

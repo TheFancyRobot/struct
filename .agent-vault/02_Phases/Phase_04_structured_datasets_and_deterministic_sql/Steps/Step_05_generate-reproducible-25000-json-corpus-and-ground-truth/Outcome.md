@@ -6,19 +6,19 @@
   and close-out.
 - Canonical seed `5d4c02a1f3b8e617`; corpus/generator version `1.0.0`;
   exactly 25,000 JSON records across four schema families.
-- Root-reviewed full generations completed in 1,944 ms and 1,917 ms, occupied
+- Post-review full generations completed in 1,986 ms and 1,847 ms, occupied
   approximately 107 MiB allocated storage each, and verified byte-identical
   after every file was re-read.
 - Final hashes: manifest
-  `a063ea9977676b5d5a0eb791ddcb119a5be73ff91e6978b952b9d37ab1c62896`;
+  `32bcb867e71e3e94177d72e6de6945205cf2cef0617a5d5dd32b3b40a06ef8e3`;
   corpus
   `3201ecb9580cdce5db7770340b349134d50a4611880c69cb7266b91aa62ddc07`;
   ground truth
-  `27fbd2f48feb252f591cb56d8c5319b7df3c6d76ed44330cdd30a50155dffc38`;
+  `df2c8c3983f6d7e202d6afd19400f622ec6cd9b6468f2901bd39765124f523d1`;
   questions
-  `1a879cb38c2e0036632df01b6012757296e7258b7dd5f9f6fa396c02c189fb52`.
-- Root-reviewed evaluation package: 18 passed, 0 failed, 63 assertions. Full
-  repository: 470 passed, 151 expected integration skips, 0 failed, 2,083
+  `33e8383975dcb2e3f17b930f0d219e762d45586c358a588aa1ee8e98eea2fae4`.
+- Post-review evaluation package: 20 passed, 0 failed, 73 assertions. Full
+  repository: 472 passed, 151 expected integration skips, 0 failed, 2,093
   assertions.
   Typecheck, ESLint, dependency/import boundaries, build, docs links, secrets
   scan, corpus smoke, and vault doctor passed.

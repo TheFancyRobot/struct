@@ -552,7 +552,7 @@ A toy smoke corpus may not support a 25,000-file scale claim; only `full` may.
 
 ### 14.3 Generated output layout
 
-```
+```text
 <out-dir>/
   .struct-evaluation-corpus      # cleanup ownership marker
   manifest.json                  # per-file and aggregate hashes

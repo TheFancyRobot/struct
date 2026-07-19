@@ -56,6 +56,8 @@ and citation targets without using the product SQL engine.
 Controlled cases cover type conflicts, null and missing fields, duplicates,
 numeric extremes, Unicode, contradictions, malformed shapes, schema drift,
 changed/deleted records, inert prompt-injection text, and six replay
-boundaries. The compact checked-in evidence is
+boundaries. The question set includes eight exact questions, one complete
+schema question, one question for each of eight security truth classes, and
+one recovery question. The compact checked-in evidence is
 [`phase-04-corpus-v1.json`](../packages/evaluation/results/phase-04-corpus-v1.json);
 the 25,000 generated records remain local artifacts.
