@@ -480,13 +480,22 @@ async function materialize(request, httpRequest, httpResponse) {
              OR ${scale} > ${trailingZeros}
            )`
       } else if (field.logicalType === 'decimal') {
-        const unsigned = `regexp_replace(${text}, '^[+-]', '')`
-        const significantInteger = `regexp_replace(split_part(${unsigned}, '.', 1), '^0+', '')`
-        const significantFraction = `regexp_replace(split_part(${unsigned}, '.', 2), '0+$', '')`
+        const fraction = `regexp_extract(${text}, '^[+-]?[0-9]+(?:\\.([0-9]+))?', 1)`
+        const digits = `regexp_replace(regexp_replace(split_part(lower(${text}), 'e', 1), '^[+-]', ''), '\\.', '')`
+        const exponentText = `regexp_extract(lower(${text}), 'e([+-]?[0-9]+)$', 1)`
+        const exponent = `COALESCE(TRY_CAST(NULLIF(${exponentText}, '') AS INTEGER), 0)`
+        const scale = `(length(${fraction}) - ${exponent})`
+        const trailingZeros = `(length(${digits}) - length(rtrim(${digits}, '0')))`
+        const leadingZeros = `(length(${digits}) - length(ltrim(${digits}, '0')))`
+        const integerDigits = `(CASE
+          WHEN ltrim(${digits}, '0') = '' THEN 0
+          ELSE greatest(length(${digits}) - ${scale} - ${leadingZeros}, 0)
+        END)`
         invalid = `${name} IS NOT NULL AND (
-             NOT regexp_full_match(${text}, '^[+-]?[0-9]+(\\.[0-9]+)?$')
-             OR length(${significantInteger}) > 28
-             OR length(${significantFraction}) > 10
+             NOT regexp_full_match(${text}, '^[+-]?[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?$')
+             OR (${exponentText} <> '' AND TRY_CAST(${exponentText} AS INTEGER) IS NULL)
+             OR ${integerDigits} > 28
+             OR (${scale} > 10 AND ${trailingZeros} < ${scale} - 10)
              OR TRY_CAST(${name} AS DECIMAL(38,10)) IS NULL
            )`
       }

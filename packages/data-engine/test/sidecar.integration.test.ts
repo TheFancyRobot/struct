@@ -423,6 +423,25 @@ suite('data-engine sidecar', () => {
       },
     })
 
+    const exponentDecimal = await materializeValue(
+      '[{"value":1.25e-2}]',
+      'json',
+      'decimal',
+      'c',
+    )
+    expect(exponentDecimal.status).toBe(200)
+    expect(exponentDecimal.json).toMatchObject({
+      ok: true,
+      result: {
+        profile: {
+          columns: [{
+            minimum: '0.0125',
+            maximum: '0.0125',
+          }],
+        },
+      },
+    })
+
     const exactJsonDecimal = await materializeValue(
       '[{"value":1234567890123456.1234567891}]',
       'json',
