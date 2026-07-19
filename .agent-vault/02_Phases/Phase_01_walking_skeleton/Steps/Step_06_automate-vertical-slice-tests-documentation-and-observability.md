@@ -5,17 +5,22 @@ contract_version: 1
 title: Automate Vertical Slice Tests Documentation and Observability
 step_id: STEP-01-06
 phase: '[[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]'
-status: planned
-owner: ''
+status: in_progress
+owner: step-01-06-execute
 created: '2026-07-17'
 updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_01_walking_skeleton/Steps/Step_05_stream-persisted-progress-and-render-navigable-citation|STEP-01-05 Stream Persisted Progress and Render Navigable Citation]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-19-043816-automate-vertical-slice-tests-documentation-and-observability-step-01-06-execute|SESSION-2026-07-19-043816 step-01-06-execute session for Automate Vertical Slice Tests Documentation and Observability]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-19-043816
+active_session_id: SESSION-2026-07-19-043816
+context_status: in_progress
+context_summary: Advance [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]].
 ---
 
 # Step 06 - Automate Vertical Slice Tests Documentation and Observability
@@ -48,10 +53,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: in_progress
+- Current owner: root orchestration
+- Last touched: 2026-07-19
+- Next action: Publish the independently reviewed implementation, address every PR review finding, and merge before closing the step.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -61,7 +66,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-19 - [[05_Sessions/2026-07-19-043816-automate-vertical-slice-tests-documentation-and-observability-step-01-06-execute|SESSION-2026-07-19-043816 step-01-06-execute session for Automate Vertical Slice Tests Documentation and Observability]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

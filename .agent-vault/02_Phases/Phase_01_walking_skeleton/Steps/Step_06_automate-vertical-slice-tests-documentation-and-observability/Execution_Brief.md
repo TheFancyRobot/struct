@@ -60,11 +60,21 @@ Bun-native tests.
 
 - Use a Bun-native test entry point with the smallest browser-driving dependency
   needed for the real web path.
-- Cover: create project → add source → ingest → run research → view answer → open citation
+- Cover the browser surface implemented by Phase 01: replay persisted research
+  progress → view the completed answer → focus and open a citation → render its
+  exact highlighted source context.
 - Include keyboard navigation assertions (accessibility)
-- Mock model calls in deterministic e2e (no real provider keys required)
-- The `bun run test:e2e` script (currently a placeholder) must invoke a
-  Bun-native test entry point such as `bun test test/e2e`.
+- Mock HTTP/SSE at the browser boundary so the UI test is deterministic and
+  requires no provider keys.
+- The `bun run test:e2e` script must invoke a Bun-native test entry point such
+  as `bun test test/e2e`.
+
+Project/source authoring screens are not part of the Phase 01 web surface and
+must not be created solely for this test. The single PostgreSQL-backed vertical
+slice integration test owns create project → register source → worker ingestion
+→ real Fred adapter with deterministic provider → persisted SSE/citation →
+database reconnect. Together, the integration and browser tests cover the
+walking slice without duplicating later authoring UI.
 
 ### Observability (architecture.md §11)
 

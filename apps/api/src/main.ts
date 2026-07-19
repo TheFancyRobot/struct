@@ -4,7 +4,7 @@
  * Runtime entry point — Effect.runPromise at the application boundary.
  */
 
-import { Cause, Effect, Layer, Option, Schema } from 'effect'
+import { Cause, Effect, Layer, Option, Runtime, Schema } from 'effect'
 import postgres from 'postgres'
 import {
   ProjectRepo,
@@ -29,6 +29,14 @@ import {
   ValidationError,
 } from '@struct/domain'
 import { LocalArtifactStore } from '@struct/source-storage'
+import {
+  incrementWalkingSliceMetric,
+  logWalkingSlice,
+  makeTracingLayer,
+  renderWalkingSliceMetrics,
+  tracingOtlpEndpointConfig,
+  withWalkingSliceSpan,
+} from '@struct/observability'
 import {
   apiPortConfig,
   artifactStorageRootConfig,
@@ -141,20 +149,35 @@ const server = Effect.gen(function* () {
   const artifactRoot = yield* artifactStorageRootConfig
   const maxBytes = yield* maxTextSourceBytesConfig
   const storage = yield* LocalArtifactStore.make({ root: artifactRoot })
-  const sql = postgres(databaseUrl, { max: 5, idle_timeout: 5 })
+  const sql = yield* Effect.acquireRelease(
+    Effect.sync(() => postgres(databaseUrl, { max: 5, idle_timeout: 5 })),
+    (client) =>
+      Effect.promise(() => client.end({ timeout: 5 })).pipe(Effect.orDie),
+  )
   const sqlLayer = SqlClientLive(sql)
   const projectLayer = Layer.provide(ProjectRepo.Default, sqlLayer)
   const registrationLayer = Layer.provide(SourceRegistrationRepo.Default, sqlLayer)
   const researchLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
   const projectionLayer = Layer.provide(ResearchProjectionRepo.Default, sqlLayer)
+  const effectRuntime = yield* Effect.runtime<never>()
 
-  Bun.serve({
-    port,
-    async fetch(req: Request) {
+  yield* Effect.acquireRelease(
+    Effect.sync(() =>
+      Bun.serve({
+        port,
+        async fetch(req: Request) {
       const url = new URL(req.url)
 
       if (url.pathname === '/healthz' && req.method === 'GET') {
         return jsonResponse({ status: 'ok', version: '0.0.1-skeleton' })
+      }
+      if (url.pathname === '/metrics' && req.method === 'GET') {
+        return new Response(
+          await Runtime.runPromise(effectRuntime)(renderWalkingSliceMetrics),
+          {
+          headers: { 'Content-Type': 'text/plain; version=0.0.4' },
+          },
+        )
       }
 
       const sourceRoute = /^\/api\/projects\/([^/]+)\/sources$/.exec(url.pathname)
@@ -168,23 +191,69 @@ const server = Effect.gen(function* () {
           if (parsed.projectId !== sourceRoute[1]) {
             return yield* Effect.fail(new Error('Project scope mismatch'))
           }
-          return yield* registerTextSource(parsed, {
-            now: () => BigInt(Date.now()),
-            randomUuid: () => SourceId.make(crypto.randomUUID()),
-            randomJobQueueId: () => JobQueueId.make(crypto.randomUUID()),
-            randomEventJournalId: () => EventJournalId.make(crypto.randomUUID()),
-            maxBytes,
-            projects: {
-              findById: (projectId) => ProjectRepo.findById(projectId).pipe(Effect.provide(projectLayer)),
+          const registered = yield* withWalkingSliceSpan(
+            'api-request',
+            {
+              workspaceId: parsed.workspaceId,
+              projectId: parsed.projectId,
             },
-            registration: {
-              create: (input) => SourceRegistrationRepo.create(input).pipe(Effect.provide(registrationLayer)),
-            },
-            storage,
-          })
+            Effect.gen(function* () {
+              const registered = yield* withWalkingSliceSpan(
+                'command',
+                {
+                  workspaceId: parsed.workspaceId,
+                  projectId: parsed.projectId,
+                },
+                Effect.gen(function* () {
+                  const registered = yield* registerTextSource(parsed, {
+                    now: () => BigInt(Date.now()),
+                    randomUuid: () => SourceId.make(crypto.randomUUID()),
+                    randomJobQueueId: () =>
+                      JobQueueId.make(crypto.randomUUID()),
+                    randomEventJournalId: () =>
+                      EventJournalId.make(crypto.randomUUID()),
+                    maxBytes,
+                    projects: {
+                      findById: (projectId) =>
+                        ProjectRepo.findById(projectId).pipe(
+                          Effect.provide(projectLayer),
+                        ),
+                    },
+                    registration: {
+                      create: (input) =>
+                        SourceRegistrationRepo.create(input).pipe(
+                          Effect.provide(registrationLayer),
+                        ),
+                    },
+                    storage,
+                  })
+                  yield* Effect.annotateCurrentSpan({
+                    'struct.source.id': registered.source.id,
+                    'struct.job.id': registered.job.id,
+                  })
+                  return registered
+                }),
+              )
+              yield* Effect.annotateCurrentSpan({
+                'struct.source.id': registered.source.id,
+                'struct.job.id': registered.job.id,
+              })
+              yield* logWalkingSlice({
+                event: 'source.registration.accepted',
+                identity: {
+                  workspaceId: parsed.workspaceId,
+                  projectId: parsed.projectId,
+                  sourceId: registered.source.id,
+                  jobId: registered.job.id,
+                },
+              })
+              return registered
+            }),
+          )
+          return registered
         })
 
-        const exit = await Effect.runPromiseExit(program)
+        const exit = await Runtime.runPromiseExit(effectRuntime)(program)
         if (exit._tag === 'Failure') {
           return jsonResponse({ error: 'SourceRegistrationFailed' }, 400)
         }
@@ -215,18 +284,62 @@ const server = Effect.gen(function* () {
               message: 'Project scope does not match the request path',
             })
           }
-          return yield* startResearch(parsed, {
-            now: () => BigInt(Date.now()),
-            randomThreadId: () => ResearchThreadId.make(crypto.randomUUID()),
-            randomRunId: () => ResearchRunId.make(crypto.randomUUID()),
-            randomJobId: () => JobQueueId.make(crypto.randomUUID()),
-            randomEventId: () => EventJournalId.make(crypto.randomUUID()),
-            register: (input) =>
-              ResearchExecutionRepo.register(input).pipe(Effect.provide(researchLayer)),
-          })
+          const started = yield* withWalkingSliceSpan(
+            'api-request',
+            {
+              workspaceId: parsed.workspaceId,
+              projectId: parsed.projectId,
+            },
+            Effect.gen(function* () {
+              const started = yield* withWalkingSliceSpan(
+                'command',
+                {
+                  workspaceId: parsed.workspaceId,
+                  projectId: parsed.projectId,
+                },
+                Effect.gen(function* () {
+                  const started = yield* startResearch(parsed, {
+                    now: () => BigInt(Date.now()),
+                    randomThreadId: () =>
+                      ResearchThreadId.make(crypto.randomUUID()),
+                    randomRunId: () =>
+                      ResearchRunId.make(crypto.randomUUID()),
+                    randomJobId: () => JobQueueId.make(crypto.randomUUID()),
+                    randomEventId: () =>
+                      EventJournalId.make(crypto.randomUUID()),
+                    register: (input) =>
+                      ResearchExecutionRepo.register(input).pipe(
+                        Effect.provide(researchLayer),
+                      ),
+                  })
+                  yield* Effect.annotateCurrentSpan({
+                    'struct.run.id': started.run.id,
+                    'struct.job.id': started.job.id,
+                  })
+                  return started
+                }),
+              )
+              yield* Effect.annotateCurrentSpan({
+                'struct.run.id': started.run.id,
+                'struct.job.id': started.job.id,
+              })
+              yield* logWalkingSlice({
+                event: 'research.run.started',
+                identity: {
+                  workspaceId: parsed.workspaceId,
+                  projectId: parsed.projectId,
+                  runId: started.run.id,
+                  jobId: started.job.id,
+                },
+              })
+              yield* incrementWalkingSliceMetric('runs.started')
+              return started
+            }),
+          )
+          return started
         })
 
-        const exit = await Effect.runPromiseExit(program)
+        const exit = await Runtime.runPromiseExit(effectRuntime)(program)
         if (exit._tag === 'Failure') {
           return researchFailureResponse(exit.cause)
         }
@@ -255,11 +368,11 @@ const server = Effect.gen(function* () {
           }),
           catch: () => new Error('Invalid event stream identifiers'),
         })
-        const exit = await Effect.runPromiseExit(identifiers)
+        const exit = await Runtime.runPromiseExit(effectRuntime)(identifiers)
         if (exit._tag === 'Failure') {
           return jsonResponse({ error: 'ResearchRunNotFound' }, 404)
         }
-        const scopedRun = await Effect.runPromiseExit(
+        const scopedRun = await Runtime.runPromiseExit(effectRuntime)(
           ResearchProjectionRepo.runExists(
             exit.value.projectId,
             exit.value.runId,
@@ -308,7 +421,7 @@ const server = Effect.gen(function* () {
             message: 'Citation not found',
           }),
         })
-        const exit = await Effect.runPromiseExit(
+        const exit = await Runtime.runPromiseExit(effectRuntime)(
           identifiers.pipe(
             Effect.flatMap(({ projectId, threadId, citationId }) =>
               getCitationDetail(
@@ -335,16 +448,34 @@ const server = Effect.gen(function* () {
         return jsonResponse(exit.value)
       }
 
-      return new Response('Not Found', { status: 404 })
-    },
-  })
+          return new Response('Not Found', { status: 404 })
+        },
+      }),
+    ),
+    (httpServer) =>
+      Effect.promise(() => httpServer.stop(true)).pipe(Effect.orDie),
+  )
 
   yield* Effect.log(`API server starting on port ${port}`)
   yield* Effect.log(`Health check: http://localhost:${port}/healthz`)
   yield* Effect.never
 })
 
-Effect.runPromise(server).catch((error) => {
+Effect.runPromise(
+  Effect.scoped(
+    Effect.gen(function* () {
+      const otlpEndpoint = yield* tracingOtlpEndpointConfig
+      yield* server.pipe(
+        Effect.provide(
+          makeTracingLayer({
+            serviceName: '@struct/api',
+            otlpEndpoint,
+          }),
+        ),
+      )
+    }),
+  ),
+).catch((error) => {
   console.error('API server failed to start:', error)
   process.exit(1)
 })

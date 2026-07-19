@@ -24,6 +24,8 @@
     "postgres": "^3.4.9"
   },
   "devDependencies": {
+    "@fancyrobot/fred": "2.0.0",
+    "@struct/fred-workflows": "workspace:*",
     "@struct/ingestion": "workspace:*",
     "typescript": "7.0.2"
   }

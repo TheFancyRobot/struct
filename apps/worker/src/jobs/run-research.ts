@@ -8,6 +8,11 @@ import {
 } from '@struct/domain'
 import type * as Domain from '@struct/domain'
 import { ResearchJobOwnershipLostError } from '@struct/persistence'
+import {
+  incrementWalkingSliceMetric,
+  logWalkingSlice,
+  withWalkingSliceSpan,
+} from '@struct/observability'
 import type * as Research from '@struct/research-engine'
 
 interface ResearchPayload {
@@ -165,44 +170,101 @@ export const processOneResearchJob = (
 ): Effect.Effect<{ readonly processed: boolean; readonly jobId?: string }, unknown, never> =>
   Effect.gen(function* () {
     const stale = yield* deps.jobs.recoverStale(deps.staleAfterMs)
-    void stale
+    yield* Effect.forEach(stale, (job) =>
+      withWalkingSliceSpan(
+        'worker-job',
+        {
+          workspaceId: job.workspaceId,
+          runId: job.entityId,
+          jobId: job.id,
+        },
+        Effect.gen(function* () {
+          yield* incrementWalkingSliceMetric('runs.failed')
+          yield* logWalkingSlice({
+            event: 'research.run.failed',
+            identity: {
+              workspaceId: job.workspaceId,
+              runId: job.entityId,
+              jobId: job.id,
+            },
+            errorTag: 'ResearchJobStaleError',
+          })
+        }),
+      ),
+    )
     const claimed = yield* deps.jobs.claimNext()
     if (Option.isNone(claimed)) return { processed: false }
     const job = claimed.value
 
-    const executeClaimedJob = Effect.gen(function* () {
-      const run = yield* deps.runs.findById(job.entityId as typeof Domain.ResearchRun.Type['id'])
-      const payload = yield* decodePayload(job.payload)
-      const result = yield* deps.workflow.run({
-        run,
+    const executeClaimedJob = withWalkingSliceSpan(
+      'worker-job',
+      {
         workspaceId: job.workspaceId,
-        projectId: payload.projectId,
-        sourceVersionIds: payload.sourceVersionIds,
-        onRetrievalCompleted: (evidence) =>
-          deps.jobs.appendInProgressEvent(
-            job,
-            event(deps, job, 'retrieval-completed', {
-              evidenceCount: evidence.length,
-              sourceVersionIds: evidence.map((item) => item.sourceVersionId),
-            }),
-          ),
-      })
-      yield* deps.jobs.appendInProgressEvent(
-        job,
-        event(deps, job, 'citations-validated', {
-          citationCount: result.answer.citations.length,
-        }),
-      )
-      yield* deps.jobs.complete({
-        runId: run.id,
-        job,
-        answer: result.answer,
-        citations: citationsFor(deps, run, result.answer),
-        event: event(deps, job, 'research-completed', {
-          citationCount: result.answer.citations.length,
-        }),
-      })
-    })
+        runId: job.entityId,
+        jobId: job.id,
+      },
+      Effect.gen(function* () {
+        const run = yield* deps.runs.findById(
+          job.entityId as typeof Domain.ResearchRun.Type['id'],
+        )
+        const payload = yield* decodePayload(job.payload)
+        const result = yield* withWalkingSliceSpan(
+          'fred-run',
+          {
+            workspaceId: job.workspaceId,
+            projectId: payload.projectId,
+            runId: run.id,
+            jobId: job.id,
+          },
+          deps.workflow.run({
+            run,
+            workspaceId: job.workspaceId,
+            projectId: payload.projectId,
+            sourceVersionIds: payload.sourceVersionIds,
+            onRetrievalCompleted: (evidence) =>
+              deps.jobs.appendInProgressEvent(
+                job,
+                event(deps, job, 'retrieval-completed', {
+                  evidenceCount: evidence.length,
+                  sourceVersionIds: evidence.map(
+                    (item) => item.sourceVersionId,
+                  ),
+                }),
+              ),
+          }),
+        )
+        yield* deps.jobs.appendInProgressEvent(
+          job,
+          event(deps, job, 'citations-validated', {
+            citationCount: result.answer.citations.length,
+          }),
+        )
+        yield* deps.jobs.complete({
+          runId: run.id,
+          job,
+          answer: result.answer,
+          citations: citationsFor(deps, run, result.answer),
+          event: event(deps, job, 'research-completed', {
+            citationCount: result.answer.citations.length,
+          }),
+        })
+        yield* incrementWalkingSliceMetric(
+          'citations.validated',
+          result.answer.citations.length,
+        )
+        yield* logWalkingSlice({
+          event: 'research.run.completed',
+          identity: {
+            workspaceId: job.workspaceId,
+            projectId: payload.projectId,
+            runId: run.id,
+            jobId: job.id,
+          },
+          count: result.answer.citations.length,
+        })
+        yield* incrementWalkingSliceMetric('runs.completed')
+      }),
+    )
     const renewLease = Effect.gen(function* () {
       while (true) {
         yield* deps.jobs.renewLease(job)
@@ -241,6 +303,28 @@ export const processOneResearchJob = (
       }).pipe(Effect.either)
       if (failed._tag === 'Left' && !isOwnershipLost(failed.left)) {
         return yield* Effect.fail(failed.left)
+      }
+      if (failed._tag === 'Right') {
+        yield* withWalkingSliceSpan(
+          'worker-job',
+          {
+            workspaceId: job.workspaceId,
+            runId: job.entityId,
+            jobId: job.id,
+          },
+          Effect.gen(function* () {
+            yield* incrementWalkingSliceMetric('runs.failed')
+            yield* logWalkingSlice({
+              event: 'research.run.failed',
+              identity: {
+                workspaceId: job.workspaceId,
+                runId: job.entityId,
+                jobId: job.id,
+              },
+              errorTag: safeFailureTag(executed.left),
+            })
+          }),
+        )
       }
     }
     return { processed: true, jobId: job.id }
