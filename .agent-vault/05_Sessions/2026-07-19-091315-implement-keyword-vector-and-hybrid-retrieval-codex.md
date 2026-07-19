@@ -96,7 +96,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Bugs Encountered
 
 <!-- AGENT-START:session-bugs-encountered -->
-- None.
+- Resolved: adding migration `0006` exposed hard-coded latest-migration counts in existing rollback tests. Updated the affected downgrade/upgrade sequences and verified them in isolation and in the full PostgreSQL suite.
+- Resolved during PR review: the isolation integration fixture covered workspace scope but not stale chunking versions. Added a same-tenant `fragments-v2` candidate and proved `fragments-v1` retrieval excludes it.
 <!-- AGENT-END:session-bugs-encountered -->
 
 ## Decisions Made or Updated
