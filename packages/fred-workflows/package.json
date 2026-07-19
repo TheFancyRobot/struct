@@ -23,6 +23,7 @@
     "@struct/domain": "workspace:*",
     "@struct/observability": "workspace:*",
     "@struct/research-engine": "workspace:*",
+    "@struct/retrieval": "workspace:*",
     "effect": "3.22.0"
   },
   "devDependencies": {

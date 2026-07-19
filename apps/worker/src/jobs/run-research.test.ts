@@ -2,10 +2,13 @@ import { describe, expect, it } from 'bun:test'
 import { Effect, Exit, Metric, Option } from 'effect'
 import {
   CitationId,
+  EvidenceContradictionError,
+  EvidenceInsufficientError,
   EventJournalId,
   JobQueueId,
   ProjectId,
   ResearchRunId,
+  ResearchCitationValidationError,
   ResearchThreadId,
   SourceVersionId,
   WorkspaceId,
@@ -158,6 +161,55 @@ describe('processOneResearchJob', () => {
       message: 'Research failed',
     }])
     expect(JSON.stringify(base.calls.eventPayloads)).not.toContain('must not be journaled')
+  })
+
+  it.each([
+    [
+      'EvidenceInsufficientError',
+      new EvidenceInsufficientError({
+        question: run.question,
+        message: 'Evidence was insufficient',
+      }),
+      'EvidenceInsufficientError',
+    ],
+    [
+      'EvidenceContradictionError',
+      new EvidenceContradictionError({
+        question: run.question,
+        conflictCount: 1,
+        message: 'Evidence contradicted itself',
+      }),
+      'EvidenceContradictionError',
+    ],
+    [
+      'ResearchCitationValidationError',
+      new ResearchCitationValidationError({
+        sourceVersionId,
+        locator: evidence[0].locator,
+        message: 'Citation was rejected',
+      }),
+      'ResearchCitationValidationError',
+    ],
+  ])('durably records the exact typed document-research failure tag: %s', async (
+    _label,
+    failure,
+    expectedTag,
+  ) => {
+    const base = deps()
+    const testDeps: ResearchWorkerDeps = {
+      ...base,
+      workflow: {
+        run: () => Effect.fail(failure),
+      },
+    }
+
+    await Effect.runPromise(processOneResearchJob(testDeps))
+
+    expect(base.calls.events).toEqual(['research-failed'])
+    expect(base.calls.eventPayloads).toEqual([{
+      errorTag: expectedTag,
+      message: 'Research failed',
+    }])
   })
 
   it('durably exposes retrieval completion while synthesis is blocked and retains it on failure', async () => {

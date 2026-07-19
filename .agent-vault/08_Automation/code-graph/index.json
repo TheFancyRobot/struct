@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-19T09:26:32.034Z",
+  "generatedAt": "2026-07-19T10:04:04.039Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -3180,18 +3180,25 @@
           "endLine": 86
         },
         {
-          "name": "ResearchWorkflowError",
+          "name": "EvidenceContradictionError",
           "kind": "class",
           "line": 91,
           "exported": true,
           "endLine": 91
         },
         {
+          "name": "ResearchWorkflowError",
+          "kind": "class",
+          "line": 97,
+          "exported": true,
+          "endLine": 97
+        },
+        {
           "name": "ResearchCitationValidationError",
           "kind": "class",
-          "line": 96,
+          "line": 102,
           "exported": true,
-          "endLine": 96
+          "endLine": 102
         }
       ],
       "imports": [
@@ -3205,9 +3212,9 @@
         }
       ],
       "exports": [],
-      "hash": "0ad325a472321d599cb4cc399d0d3fc1a6fe93f1f83cf34ad8675c5b1425d259",
-      "mtimeMs": 1784433778774.7754,
-      "size": 3273,
+      "hash": "73726e6a2422e0c310f24930774ad45411055602f4f029f0ee8cbacd6f3994e7",
+      "mtimeMs": 1784454549349.0503,
+      "size": 3532,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3247,80 +3254,101 @@
         {
           "name": "FredRuntimeConfig",
           "kind": "interface",
-          "line": 18,
+          "line": 33,
           "exported": true,
-          "endLine": 18
+          "endLine": 33
         },
         {
           "name": "fredRuntimeConfig",
           "kind": "const",
-          "line": 25,
+          "line": 40,
           "exported": true,
-          "endLine": 25
+          "endLine": 40
         },
         {
           "name": "FredClientFactory",
           "kind": "interface",
-          "line": 38,
+          "line": 53,
           "exported": true,
-          "endLine": 38
+          "endLine": 53
+        },
+        {
+          "name": "DocumentResearchFailure",
+          "kind": "type",
+          "line": 66,
+          "exported": true,
+          "endLine": 66
+        },
+        {
+          "name": "documentResearchFailure",
+          "kind": "function",
+          "line": 72,
+          "exported": false,
+          "endLine": 72
         },
         {
           "name": "assertActive",
           "kind": "function",
-          "line": 49,
+          "line": 100,
           "exported": false,
-          "endLine": 49,
+          "endLine": 100,
           "signature": "(signal: AbortSignal)"
         },
         {
           "name": "EMERGENCY_SHUTDOWN_MS",
           "kind": "const",
-          "line": 60,
+          "line": 111,
           "exported": false,
-          "endLine": 60
+          "endLine": 111
         },
         {
           "name": "boundedShutdown",
           "kind": "function",
-          "line": 62,
+          "line": 113,
           "exported": false,
-          "endLine": 62
+          "endLine": 113
         },
         {
           "name": "createFredBeforeDeadline",
           "kind": "function",
-          "line": 81,
+          "line": 132,
           "exported": false,
-          "endLine": 81
+          "endLine": 132
         },
         {
           "name": "shutdownWithinDeadline",
           "kind": "function",
-          "line": 133,
+          "line": 184,
           "exported": false,
-          "endLine": 133
+          "endLine": 184
         },
         {
           "name": "makeDefaultFactory",
           "kind": "const",
-          "line": 149,
+          "line": 200,
           "exported": false,
-          "endLine": 149
+          "endLine": 200
         },
         {
           "name": "preflightFredRuntime",
           "kind": "const",
-          "line": 195,
+          "line": 246,
           "exported": true,
-          "endLine": 195
+          "endLine": 246
         },
         {
           "name": "runFredWalkingSkeleton",
           "kind": "const",
-          "line": 247,
+          "line": 298,
           "exported": true,
-          "endLine": 247
+          "endLine": 298
+        },
+        {
+          "name": "runFredDocumentResearch",
+          "kind": "const",
+          "line": 371,
+          "exported": true,
+          "endLine": 371
         }
       ],
       "imports": [
@@ -3333,14 +3361,6 @@
             "Effect",
             "Runtime",
             "Schema"
-          ],
-          "kind": "static"
-        },
-        {
-          "source": "ResearchWorkflowError",
-          "specifier": "@struct/domain",
-          "imported": [
-            "ResearchWorkflowError"
           ],
           "kind": "static"
         },
@@ -3364,9 +3384,169 @@
         }
       ],
       "exports": [],
-      "hash": "9bfb8e90b36846161e023038894f7e8a8761360e286233e84b45b831f9b857fc",
-      "mtimeMs": 1784442089975.6914,
-      "size": 10548,
+      "hash": "b3ad221968882cda6a51b0e8941bcac6436c1586ec268d750544e3dea8960b7a",
+      "mtimeMs": 1784455173603.1533,
+      "size": 14954,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/fred-workflows/src/graphs/document-research.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DOCUMENT_RESEARCH_WORKFLOW_ID",
+          "kind": "const",
+          "line": 16,
+          "exported": true,
+          "endLine": 16
+        },
+        {
+          "name": "DOCUMENT_PLANNER_AGENT_ID",
+          "kind": "const",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "EVIDENCE_CRITIC_AGENT_ID",
+          "kind": "const",
+          "line": 18,
+          "exported": true,
+          "endLine": 18
+        },
+        {
+          "name": "DOCUMENT_SYNTHESIZER_AGENT_ID",
+          "kind": "const",
+          "line": 19,
+          "exported": true,
+          "endLine": 19
+        },
+        {
+          "name": "HYBRID_DOCUMENT_RETRIEVAL_TOOL_ID",
+          "kind": "const",
+          "line": 20,
+          "exported": true,
+          "endLine": 20
+        },
+        {
+          "name": "DocumentResearchGraphDependencies",
+          "kind": "interface",
+          "line": 23,
+          "exported": true,
+          "endLine": 23
+        },
+        {
+          "name": "DocumentPlannerInput",
+          "kind": "const",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "HybridDocumentRetrievalInput",
+          "kind": "const",
+          "line": 44,
+          "exported": true,
+          "endLine": 44
+        },
+        {
+          "name": "EvidenceCriticInput",
+          "kind": "const",
+          "line": 49,
+          "exported": true,
+          "endLine": 49
+        },
+        {
+          "name": "DocumentSynthesizerInput",
+          "kind": "const",
+          "line": 56,
+          "exported": true,
+          "endLine": 56
+        },
+        {
+          "name": "documentPlannerAgent",
+          "kind": "const",
+          "line": 63,
+          "exported": true,
+          "endLine": 63
+        },
+        {
+          "name": "evidenceCriticAgent",
+          "kind": "const",
+          "line": 78,
+          "exported": true,
+          "endLine": 78
+        },
+        {
+          "name": "documentSynthesizerAgent",
+          "kind": "const",
+          "line": 93,
+          "exported": true,
+          "endLine": 93
+        },
+        {
+          "name": "assertActive",
+          "kind": "function",
+          "line": 108,
+          "exported": false,
+          "endLine": 108,
+          "signature": "(signal: AbortSignal)"
+        },
+        {
+          "name": "decodeAgentOutput",
+          "kind": "function",
+          "line": 116,
+          "exported": false,
+          "endLine": 116
+        },
+        {
+          "name": "makeHybridDocumentRetrievalTool",
+          "kind": "const",
+          "line": 139,
+          "exported": true,
+          "endLine": 139
+        },
+        {
+          "name": "makeDocumentResearchWorkflow",
+          "kind": "function",
+          "line": 173,
+          "exported": true,
+          "endLine": 173
+        }
+      ],
+      "imports": [
+        {
+          "source": "ResearchAnswer",
+          "specifier": "@struct/domain",
+          "imported": [
+            "ResearchAnswer"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DocumentResearchContext",
+          "specifier": "@struct/retrieval",
+          "imported": [
+            "DocumentResearchContext"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "b94b187d4ac37007f5e607751d24253d4eafbe5c0b35f20d351aa498bb298c4c",
+      "mtimeMs": 1784455102233.0857,
+      "size": 10813,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -4020,7 +4200,7 @@
       "imports": [],
       "exports": [],
       "hash": "f7aa8ad5e72580eecbb38aceab0e4e1614ec480630324707b9e7572f998db85d",
-      "mtimeMs": 1784452598462.976,
+      "mtimeMs": 1784454281776.016,
       "size": 1662,
       "generated": false,
       "vendor": false,
@@ -5532,6 +5712,129 @@
       "parser": "regex"
     },
     {
+      "path": "packages/research-engine/src/evidence-sufficiency.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonBlankString",
+          "kind": "const",
+          "line": 21,
+          "exported": false,
+          "endLine": 21
+        },
+        {
+          "name": "DocumentResearchInput",
+          "kind": "const",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "DocumentResearchInput",
+          "kind": "type",
+          "line": 36,
+          "exported": true,
+          "endLine": 36
+        },
+        {
+          "name": "DocumentResearchPlan",
+          "kind": "const",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "DocumentResearchPlan",
+          "kind": "type",
+          "line": 51,
+          "exported": true,
+          "endLine": 51
+        },
+        {
+          "name": "EvidenceConflict",
+          "kind": "const",
+          "line": 54,
+          "exported": true,
+          "endLine": 54
+        },
+        {
+          "name": "EvidenceConflict",
+          "kind": "type",
+          "line": 61,
+          "exported": true,
+          "endLine": 61
+        },
+        {
+          "name": "EvidenceAssessment",
+          "kind": "const",
+          "line": 63,
+          "exported": true,
+          "endLine": 63
+        },
+        {
+          "name": "EvidenceAssessment",
+          "kind": "type",
+          "line": 70,
+          "exported": true,
+          "endLine": 70
+        },
+        {
+          "name": "DocumentResearchWorkflowResult",
+          "kind": "const",
+          "line": 73,
+          "exported": true,
+          "endLine": 73
+        },
+        {
+          "name": "DocumentResearchWorkflowResult",
+          "kind": "type",
+          "line": 79,
+          "exported": true,
+          "endLine": 79
+        },
+        {
+          "name": "citationKey",
+          "kind": "function",
+          "line": 82,
+          "exported": false,
+          "endLine": 82,
+          "signature": "(citation: typeof ResearchCitation.Type)"
+        },
+        {
+          "name": "requireSufficientEvidence",
+          "kind": "const",
+          "line": 86,
+          "exported": true,
+          "endLine": 86
+        },
+        {
+          "name": "validateDocumentAnswerCitations",
+          "kind": "const",
+          "line": 148,
+          "exported": true,
+          "endLine": 148
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "0a06a3f8138a746552170ca1b0b5615ae31f8320c14f541297a435a019203e47",
+      "mtimeMs": 1784455173602.3098,
+      "size": 5829,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/research-engine/src/run-walking-skeleton.ts",
       "language": "TypeScript",
       "symbols": [
@@ -5619,6 +5922,101 @@
       "parser": "regex"
     },
     {
+      "path": "packages/retrieval/src/build-context.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NullableRank",
+          "kind": "const",
+          "line": 12,
+          "exported": false,
+          "endLine": 12
+        },
+        {
+          "name": "NullableScore",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "DocumentContextEvidence",
+          "kind": "const",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "DocumentContextEvidence",
+          "kind": "type",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "DocumentResearchContext",
+          "kind": "const",
+          "line": 42,
+          "exported": true,
+          "endLine": 42
+        },
+        {
+          "name": "DocumentResearchContext",
+          "kind": "type",
+          "line": 45,
+          "exported": true,
+          "endLine": 45
+        },
+        {
+          "name": "encodeDocumentLocator",
+          "kind": "function",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "buildDocumentContext",
+          "kind": "function",
+          "line": 63,
+          "exported": true,
+          "endLine": 63
+        },
+        {
+          "name": "DocumentContextBuilder",
+          "kind": "class",
+          "line": 86,
+          "exported": true,
+          "endLine": 86
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "HybridRetrieval",
+          "specifier": "./hybrid-retrieval.js",
+          "imported": [
+            "HybridRetrieval"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "b0dcfd7415ca2728c37aa66b1c712421dd2b6b47ed1e7df865a4618e68dc0b49",
+      "mtimeMs": 1784454989724.7563,
+      "size": 3505,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/retrieval/src/full-text.ts",
       "language": "TypeScript",
       "symbols": [
@@ -5665,7 +6063,7 @@
       ],
       "exports": [],
       "hash": "763fa99e8cfc8a796309d793b4723c39a145dccb14cadd9edd6e3a464c3dd75d",
-      "mtimeMs": 1784452855393.7349,
+      "mtimeMs": 1784454281776.6953,
       "size": 5018,
       "generated": false,
       "vendor": false,
@@ -5683,21 +6081,21 @@
           "endLine": 10
         },
         {
-          "name": "typeHybridCandidate",
+          "name": "HybridCandidate",
           "kind": "type",
           "line": 11,
           "exported": false,
           "endLine": 11
         },
         {
-          "name": "typeKeywordCandidate",
+          "name": "KeywordCandidate",
           "kind": "type",
           "line": 13,
           "exported": false,
           "endLine": 13
         },
         {
-          "name": "typeVectorCandidate",
+          "name": "VectorCandidate",
           "kind": "type",
           "line": 15,
           "exported": false,
@@ -5776,9 +6174,9 @@
         }
       ],
       "exports": [],
-      "hash": "dc90ef4efccbf048f6cba92f411793b65eecf5a37c08cca8798e15894e2e9c7d",
-      "mtimeMs": 1784452855395.4373,
-      "size": 4363,
+      "hash": "747d788a0fe307f818ad76c7a6d49604d405e6c9675ed24466a6a8e4fb3806f0",
+      "mtimeMs": 1784454281776.8228,
+      "size": 4331,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -5982,7 +6380,7 @@
       ],
       "exports": [],
       "hash": "55099fefb1d7f0f80b4dae2e1fe9b03e0d55c8e93228271f99e92257c30b62c6",
-      "mtimeMs": 1784453131854.2502,
+      "mtimeMs": 1784454281777.1157,
       "size": 4166,
       "generated": false,
       "vendor": false,
@@ -6303,7 +6701,7 @@
       ],
       "exports": [],
       "hash": "f599069fe478888f3e6c04444af70e6b729d9a33a62a91591ac911dccad8b8ed",
-      "mtimeMs": 1784452855394.7598,
+      "mtimeMs": 1784454281777.2954,
       "size": 8705,
       "generated": false,
       "vendor": false,

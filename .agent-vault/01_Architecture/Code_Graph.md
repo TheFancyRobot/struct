@@ -28,8 +28,8 @@ tags:
 ## Overview
 
 - Repository: struct
-- Files indexed: 87
-- Symbols found: 892
+- Files indexed: 90
+- Symbols found: 936
 - Detailed index path: `.agent-vault/08_Automation/code-graph/index.json`
 
 ## Key Components
@@ -66,8 +66,8 @@ tags:
 
 - `packages/persistence/src/repositories`: 7 files, 62 exported symbols, 75 internal symbols
 - `spikes/research-durability/src`: 4 files, 31 exported symbols, 91 internal symbols
-- `packages/domain/src`: 7 files, 100 exported symbols, 7 internal symbols
-- `packages/retrieval/src`: 5 files, 36 exported symbols, 37 internal symbols
+- `packages/domain/src`: 7 files, 101 exported symbols, 7 internal symbols
+- `packages/retrieval/src`: 6 files, 43 exported symbols, 39 internal symbols
 - `spikes/fred-runtime/src`: 2 files, 32 exported symbols, 26 internal symbols
 - `apps/worker/src/jobs`: 3 files, 11 exported symbols, 32 internal symbols
 - `spikes/duckdb-topology/src/common`: 5 files, 33 exported symbols, 5 internal symbols

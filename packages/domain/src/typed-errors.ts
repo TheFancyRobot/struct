@@ -88,6 +88,12 @@ export class EvidenceInsufficientError extends Schema.TaggedError<EvidenceInsuff
   message: Schema.String,
 }) {}
 
+export class EvidenceContradictionError extends Schema.TaggedError<EvidenceContradictionError>()('EvidenceContradictionError', {
+  question: Schema.String,
+  conflictCount: Schema.Number.pipe(Schema.int(), Schema.positive()),
+  message: Schema.String,
+}) {}
+
 export class ResearchWorkflowError extends Schema.TaggedError<ResearchWorkflowError>()('ResearchWorkflowError', {
   stage: Schema.String,
   message: Schema.String,
