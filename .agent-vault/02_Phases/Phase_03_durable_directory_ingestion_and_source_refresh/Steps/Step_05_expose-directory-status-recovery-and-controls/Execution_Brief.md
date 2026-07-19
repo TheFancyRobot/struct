@@ -34,6 +34,9 @@
 - Implement the narrowest typed slice for Directory Status Recovery and Controls that is callable by the next step without broadening scope.
 - Expose only the minimal API surface in `apps/api/src/routes/directories.ts`, `apps/api/src/routes/ingestion-jobs.ts` needed to exercise this step end to end.
 - Use `apps/web/src/components/DirectoryBrowser.tsx`, `apps/web/src/components/IngestionJobStatus.tsx`, `apps/web/src/components/SourceControls.tsx` to expose only the UI states required to inspect this step’s output and failures.
+- Expose workspace/project-scoped directory registration, refresh status, entry failures, and validated pause/resume/retry/cancel commands through the existing API and persisted SSE cursor stream.
+- Build the required SolidJS states with fine-grained primitives: registering, scanning, processing, paused, partial failure, retrying, cancelled, completed, and reconnect replay.
+- Use the SolidJS skill for UI work and existing Effect API services/errors; do not add polling transport or a second client state framework.
 
 ## Smallest Bounded Checklist
 

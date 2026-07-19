@@ -7,7 +7,7 @@
 ## Prerequisites
 
 - Re-read [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]] and confirm the step still matches the current roadmap sequence.
-- Confirm the handoff from [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]] before widening scope.
+- Confirm the merged handoff from [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance|STEP-02-06 Evaluate Retrieval Provenance and Injection Resistance]] and the merged Phase 03 refinement PR before widening scope.
 - Keep deterministic work in typed Effect services, repositories, and tools; reserve Fred for agentic orchestration only.
 - Treat the listed files as planned starting points; create only the smallest set needed to land the slice.
 
@@ -25,7 +25,7 @@
 - [[01_Architecture/Domain_Model|Domain Model]]
 - [[01_Architecture/System_Overview|System Overview]]
 - [[01_Architecture/Code_Map|Code Map]]
-- [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]]
+- [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance|STEP-02-06 Evaluate Retrieval Provenance and Injection Resistance]]
 - `docs/product-brief.md` sections 10, 18-19, 21-25, 26-27, and 29-31.
 
 ## Concrete Deliverables
@@ -34,6 +34,9 @@
 - Define or update typed domain modules for `Directory Manifest`, `SourceVersion` in `packages/domain/src/directory-manifest.ts`, `packages/domain/src/source-version.ts`.
 - Use `packages/ingestion/src/refresh-plan.ts` to make discovery, classification, refresh, or job state deterministic before any model-dependent behavior is introduced.
 - Capture the durable contract or operator guidance in `docs/directory-refresh.md` rather than burying it in session-only notes.
+- Define branded directory-root/snapshot/manifest-entry identities, canonical relative paths, content identity, entry status, and deterministic refresh dispositions: `unchanged`, `added`, `modified`, `removed`, and `unsupported`.
+- Freeze stable ordering and manifest-digest rules plus the lineage invariant that snapshots and source versions are immutable; unchanged content may reuse an existing source version, while changed content must create one.
+- Keep this step contract-only: no filesystem traversal worker, UI, second queue, or new storage engine.
 
 ## Smallest Bounded Checklist
 

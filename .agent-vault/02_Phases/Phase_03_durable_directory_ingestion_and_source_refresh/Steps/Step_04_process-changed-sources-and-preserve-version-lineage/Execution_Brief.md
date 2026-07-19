@@ -35,6 +35,10 @@
 - Add repository boundaries in `packages/persistence/src/repositories/source-versions.ts` that translate between storage records and typed domain objects.
 - Use `packages/ingestion/src/diff-manifest.ts`, `packages/ingestion/src/apply-refresh.ts` to make discovery, classification, refresh, or job state deterministic before any model-dependent behavior is introduced.
 - Constrain worker-side execution in `apps/worker/src/jobs/refresh-directory.ts` to one resumable, observable path for this slice.
+- Compute a pure manifest diff, then stage immutable content-addressed artifacts by digest. One PostgreSQL transaction records artifact metadata, source/version lineage, chunks, PostgreSQL full-text/pgvector indexes, refresh checkpoint, and persisted event/outbox row.
+- A crash before artifact staging writes no durable database state; a crash after staging but before database commit may leave only an unreferenced immutable blob that retry reuses by digest; a crash after database commit but before acknowledgement replays through the stored idempotency result. SSE publication occurs from the committed event row, not inside the transaction.
+- Reuse unchanged artifacts and source versions, create immutable versions only for changed or added content, and record removals in snapshot history without deleting prior provenance.
+- Keep rename handling conservative: classify only when stable identity proves it; otherwise represent removal plus addition rather than guessing.
 
 ## Smallest Bounded Checklist
 

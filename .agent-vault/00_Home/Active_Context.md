@@ -4,8 +4,8 @@ template_version: 1
 contract_version: 1
 title: Active Context
 status: active
-created: "YYYY-MM-DD"
-updated: "YYYY-MM-DD"
+created: '2026-07-17'
+updated: '2026-07-19'
 tags:
   - agent-vault
   - home
@@ -21,8 +21,8 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-19._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_01_define-directory-manifests-snapshots-and-refresh-semantics|STEP-03-01 Define Directory Manifests Snapshots and Refresh Semantics]] - status: planned - phase: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]]
-- Active phase: [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]] - status: in_progress - updated: 2026-07-19
+- Current step: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_01_define-directory-manifests-snapshots-and-refresh-semantics|STEP-03-01 Define Directory Manifests Snapshots and Refresh Semantics]] - status: planned - phase: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]] - owner: Codex
+- Active phase: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|PHASE-03 Durable Directory Ingestion and Source Refresh]] - status: in_progress - owner: Codex - updated: 2026-07-19
 - Also active: 59 more additional steps.
 <!-- AGENT-END:current-focus -->
 
@@ -35,17 +35,16 @@ _Last refreshed: 2026-07-19._
 
 ## In Scope Right Now
 
-- Phase 01 walking skeleton: STEP-01-01 through STEP-01-05 are merged; STEP-01-06 is implemented, independently reviewed, and awaiting publication.
-- Keep architecture notes aligned with the code as implementation progresses.
-- Record non-trivial decisions as dedicated notes.
-- STEP-01-04 provides tenant-scoped deterministic PostgreSQL retrieval, a bounded Fred workflow, exact citation validation, and atomic durable research execution.
-- STEP-01-06 now supplies the complete PostgreSQL/Fred vertical-slice test, real Solid browser citation navigation, correlated telemetry, metrics, and setup documentation.
+- Phase 02 is completed and merged through STEP-02-06 with deterministic retrieval, exact provenance, bounded core-Fred document research, SolidJS citation navigation, and injection-resistance evaluation.
+- Phase 03 is refined and awaits publication of the refinement branch before STEP-03-01 starts in a fresh worker.
+- STEP-03-01 is contract-only: directory/snapshot/manifest schemas, deterministic refresh classifications and digests, and durable documentation.
+- Keep Bun as the sole host runtime and reuse the existing Effect, PostgreSQL, job-journal, SSE, artifact-storage, and SolidJS boundaries.
 
 ## Out Of Scope Right Now
 
-- Deep automation inside \`08_Automation/\`
-- Large historical migrations
-- Repo-wide audits beyond starter notes
+- STEP-03-02 implementation and later Phase 03 work until STEP-03-01 is reviewed and merged.
+- A second runtime, queue, database, filesystem service, client state framework, or Fred executor.
+- The 25,000-file corpus, structured dataset computation, and later-phase release work.
 
 ## Working Assumptions
 
@@ -61,8 +60,7 @@ _Last refreshed: 2026-07-19._
 
 ## Open Questions
 
-- Which automation helpers should land first?
-- When will typescript-eslint and eslint-plugin-solid support TS 7.0.2?
+- None blocking STEP-03-01.
 
 ## Critical Bugs
 
@@ -72,6 +70,6 @@ _Last refreshed: 2026-07-19._
 
 ## Next Actions
 
-- Publish and merge [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]] after the final clean gate and bot review.
-- After the merge gate, refine [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]] before starting its first step.
-- Keep architecture notes aligned with the code as implementation progresses.
+- Publish and merge the Phase 02 close-out and Phase 03 refinement after final local and bot review.
+- Start [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_01_define-directory-manifests-snapshots-and-refresh-semantics|STEP-03-01 Define Directory Manifests Snapshots and Refresh Semantics]] in one fresh non-git worker on its own branch.
+- Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.

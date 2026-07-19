@@ -6,6 +6,9 @@
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: Worker-side execution in `apps/worker/test/directory-recovery.integration.test.ts` to one resumable, observable path for this slice.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: Deterministic evaluation or benchmark artifacts in `packages/evaluation/src/directory-refresh.ts` so this step can be judged without hand-waving.
 - The output includes a clear pass/fail signal, recorded defects or blockers, and the next action for anything intentionally left unresolved.
+- Fixed gates require zero traversal escapes, zero duplicate committed artifacts or versions, exact manifest/diff reproducibility, exact terminal progress, and successful convergence after every injected restart point.
+- The 1,000-file generated tree includes nested paths, unchanged, changed, removed, unsupported, and configured-limit cases with a fixed seed. Its permission-failure case reuses STEP-03-02’s injected filesystem-adapter fixture and canonical path `restricted/denied.txt`, never host ACL behavior.
+- Full repository, migration up/down/up, Compose configuration, API/worker/web smoke, observability, security, docs, and Agent Vault checks must pass before Phase 03 closes.
 
 ## Planned Verification
 

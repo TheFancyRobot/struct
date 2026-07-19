@@ -6,6 +6,9 @@
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: update typed domain modules for `Directory Manifest`, `SourceVersion` in `packages/domain/src/directory-manifest.ts`, `packages/domain/src/source-version.ts`.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: `packages/ingestion/src/refresh-plan.ts` to make discovery, classification, refresh, or job state deterministic before any model-dependent behavior is introduced.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
+- Schema round-trip tests cover valid contracts and reject absolute or escaping paths, duplicate manifest paths, malformed digests, invalid limits, and forged workspace/project scope.
+- Deterministic tests prove input enumeration order cannot change manifest ordering, digest, or refresh classification.
+- A table-driven refresh matrix proves `unchanged`, `added`, `modified`, `removed`, and `unsupported` semantics before traversal or persistence code is added.
 
 ## Planned Verification
 
@@ -20,7 +23,7 @@
 
 ## Regression Expectations
 
-- This step should remain a clean successor to [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]] rather than reworking already-planned scope upstream.
+- This step should remain a clean successor to merged [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance|STEP-02-06 Evaluate Retrieval Provenance and Injection Resistance]] and the Phase 03 refinement rather than reworking completed scope upstream.
 - Do not introduce one-model-call-per-file behavior during directory-scale ingestion.
 - Keep existing source-version and citation guarantees intact while adding refresh and lineage logic.
 - Make sure large-tree recovery scenarios stay bounded in time, memory, and repeated work.

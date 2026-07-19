@@ -6,16 +6,21 @@ title: Define Directory Manifests Snapshots and Refresh Semantics
 step_id: STEP-03-01
 phase: '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]]'
 status: planned
-owner: ''
+owner: Codex
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 depends_on:
-  - '[[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]]'
-related_sessions: []
+  - '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance|STEP-02-06 Evaluate Retrieval Provenance and Injection Resistance]]'
+related_sessions:
+  - '[[05_Sessions/2026-07-19-114115-define-directory-manifests-snapshots-and-refresh-semantics-phase-03-refinement|SESSION-2026-07-19-114115 phase-03-refinement session for Define Directory Manifests Snapshots and Refresh Semantics]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-19-114115
+active_session_id: 05_Sessions/2026-07-19-114115-define-directory-manifests-snapshots-and-refresh-semantics-phase-03-refinement
+context_status: completed
+context_summary: Phase 03 refinement completed; STEP-03-01 is ready for a fresh execution worker after the refinement PR merges.
 ---
 
 # Step 01 - Define Directory Manifests Snapshots and Refresh Semantics
@@ -26,7 +31,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 - Outcome: Define the smallest stable contract for Directory Manifests Snapshots and Refresh Semantics so later implementation can proceed without reopening boundaries around sandboxed, resumable ingestion without per-file model calls.
 - Parent phase: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]].
-- Sequencing: start after [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]]; PHASE-02 and PHASE-03 may then proceed in parallel.
+- Sequencing: start only after merged [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance|STEP-02-06 Evaluate Retrieval Provenance and Injection Resistance]] and the Phase 03 refinement PR.
 
 ## Required Reading
 
@@ -60,7 +65,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-19 - [[05_Sessions/2026-07-19-114115-define-directory-manifests-snapshots-and-refresh-semantics-phase-03-refinement|SESSION-2026-07-19-114115 phase-03-refinement session for Define Directory Manifests Snapshots and Refresh Semantics]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

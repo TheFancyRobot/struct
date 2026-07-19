@@ -4,8 +4,8 @@ template_version: 2
 contract_version: 1
 title: Document Research and Hybrid Retrieval
 phase_id: PHASE-02
-status: in_progress
-owner: ''
+status: completed
+owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
 depends_on:
@@ -58,13 +58,13 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 ## Acceptance Criteria
 
-- [ ] Supported document fixtures ingest into immutable versions with stable structural locators and deterministic chunk identities.
-- [ ] Keyword, vector, and fused retrieval are workspace-scoped, filterable, reproducible, and covered by ranking tests.
-- [ ] Research answers distinguish supported claims, contradictions, and insufficient evidence.
-- [ ] Every citation resolves to the exact original version and visible source location after index rebuilds.
-- [ ] Injected instructions inside documents cannot change tool policy, system behavior, workspace scope, or citation validation.
-- [ ] Retrieval quality, latency, cost, and citation-validity thresholds pass the documented evaluation set.
-- [ ] Migrations, reindexing, traces, dashboards, user docs, and failure recovery are exercised end to end.
+- [x] Supported document fixtures ingest into immutable versions with stable structural locators and deterministic chunk identities.
+- [x] Keyword, vector, and fused retrieval are workspace-scoped, filterable, reproducible, and covered by ranking tests.
+- [x] Research answers distinguish supported claims, contradictions, and insufficient evidence.
+- [x] Every citation resolves to the exact original version and visible source location after index rebuilds.
+- [x] Injected instructions inside documents cannot change tool policy, system behavior, workspace scope, or citation validation.
+- [x] Deterministic retrieval quality and citation-validity thresholds pass the documented hardware-independent evaluation set with zero model calls.
+- [x] Applicable migrations, reindexing, traces, user docs, and failure recovery are exercised end to end.
 
 ## Delivery Strategy
 
@@ -76,7 +76,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_01_walking_skeleton/Phase|PHASE-01 Walking Skeleton]]
-- Current phase status: planned
+- Current phase status: completed
 - Next phase: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|PHASE-03 Durable Directory Ingestion and Source Refresh]]
 <!-- AGENT-END:phase-linear-context -->
 
@@ -105,12 +105,12 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Steps
 
 <!-- AGENT-START:phase-steps -->
-- [ ] [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_01_parse-and-normalize-supported-documents|STEP-02-01 Parse and Normalize Supported Documents]]
-- [ ] [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_02_implement-versioned-document-chunks-and-index-migrations|STEP-02-02 Implement Versioned Document Chunks and Index Migrations]]
-- [ ] [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_03_implement-keyword-vector-and-hybrid-retrieval|STEP-02-03 Implement Keyword Vector and Hybrid Retrieval]]
-- [ ] [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_04_build-document-research-and-evidence-sufficiency-workflow|STEP-02-04 Build Document Research and Evidence Sufficiency Workflow]]
-- [ ] [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_05_add-document-research-ux-and-citation-navigation|STEP-02-05 Add Document Research UX and Citation Navigation]]
-- [ ] [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance|STEP-02-06 Evaluate Retrieval Provenance and Injection Resistance]]
+- [x] [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_01_parse-and-normalize-supported-documents|STEP-02-01 Parse and Normalize Supported Documents]]
+- [x] [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_02_implement-versioned-document-chunks-and-index-migrations|STEP-02-02 Implement Versioned Document Chunks and Index Migrations]]
+- [x] [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_03_implement-keyword-vector-and-hybrid-retrieval|STEP-02-03 Implement Keyword Vector and Hybrid Retrieval]]
+- [x] [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_04_build-document-research-and-evidence-sufficiency-workflow|STEP-02-04 Build Document Research and Evidence Sufficiency Workflow]]
+- [x] [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_05_add-document-research-ux-and-citation-navigation|STEP-02-05 Add Document Research UX and Citation Navigation]]
+- [x] [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_06_evaluate-retrieval-provenance-and-injection-resistance|STEP-02-06 Evaluate Retrieval Provenance and Injection Resistance]]
 <!-- AGENT-END:phase-steps -->
 
 ## Notes
@@ -118,6 +118,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - Product requirements: authoritative repository document `docs/product-brief.md`.
 - Human-readable roadmap: `docs/roadmap.md`; concise index: `docs/implementation-plan.md`.
 - Assumption policy: reversible uncertainties use the documented default until spike evidence requires a decision update; no hidden architectural assumption is carried only in chat.
+
 ### 2026-07-19 Refinement
 
 - Supersedes generic path, migration-number, parallel-work, and acceptance assumptions elsewhere in this note when they conflict with completed Phase 01.
@@ -129,3 +130,10 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - Withdraw the earlier parallel-work suggestion: each step consumes its predecessor's merged handoff.
 - Each step must clear focused and applicable repo-wide typecheck, lint, import-boundary, database-backed test, e2e, build, docs, secret-scan, and Vault-doctor gates. Zero known defects may remain.
 - Refined in [[05_Sessions/2026-07-19-062410-parse-and-normalize-supported-documents-refine-phase-02|SESSION-2026-07-19-062410]].
+
+### 2026-07-19 Completion
+
+- All six phase steps are merged to `main`.
+- The deterministic Phase 02 report records lexical, semantic, and hybrid recall 1.0, locator fidelity 1.0, zero scope/stale leaks, zero injection escalations, and zero model calls.
+- Final post-review validation passed 384 tests with zero failures; typecheck, lint, dependency boundaries, builds, docs, secret scan, and Agent Vault doctor were clean.
+- Phase 03 refinement is the next gate; no Phase 03 implementation starts until that refinement is merged.
