@@ -74,8 +74,6 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Changed Paths
 
 <!-- AGENT-START:session-changed-paths -->
-- None yet.
-<!-- AGENT-END:session-changed-paths -->
 - `package.json`, `bun.lock`
 - `packages/observability/package.json`, `packages/observability/src/index.ts`, `packages/observability/src/tracing.ts`, `packages/observability/src/tracing.test.ts`
 - `packages/evaluation/package.json`, `packages/evaluation/tsconfig.json`, `packages/evaluation/src/index.ts`, `packages/evaluation/src/corpus-smoke.ts`, `packages/evaluation/src/corpus-eval.ts`, `packages/evaluation/src/benchmarks/run.ts`, `packages/evaluation/test/walking-skeleton.test.ts`
@@ -86,6 +84,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `docs/setup.md`, `README.md`
 - STEP-01-06 step/session Vault notes.
 - Root review additionally changed `.env.example`, `docs/local-development.md`, `packages/fred-workflows/src/adapters/fred-runtime.ts`, `apps/worker/src/main.ts`, `apps/api/src/routes/vertical-slice.integration.test.ts`, `apps/web/package.json`, `scripts/docs-lint.ts`, and `scripts/secrets-scan.ts`.
+<!-- AGENT-END:session-changed-paths -->
 
 ## Validation Run
 

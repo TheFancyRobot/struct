@@ -1,9 +1,17 @@
 import { existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
-const markdownFiles = Bun.spawnSync(['rg', '--files', '-g', '*.md'], {
+const discovery = Bun.spawnSync(['rg', '--files', '-g', '*.md'], {
   stdout: 'pipe',
-}).stdout.toString().trim().split('\n').filter(Boolean)
+  stderr: 'pipe',
+})
+if (!discovery.success) {
+  console.error(
+    `Failed to enumerate Markdown files with rg: ${discovery.stderr.toString().trim() || `exit ${discovery.exitCode}`}`,
+  )
+  process.exit(1)
+}
+const markdownFiles = discovery.stdout.toString().trim().split('\n').filter(Boolean)
 const missing: string[] = []
 
 for (const file of markdownFiles) {

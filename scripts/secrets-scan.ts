@@ -1,4 +1,4 @@
-const repositoryPaths = Bun.spawnSync([
+const discovery = Bun.spawnSync([
   'rg',
   '--files',
   '--hidden',
@@ -13,7 +13,15 @@ const repositoryPaths = Bun.spawnSync([
   '!**/.local/**',
 ], {
   stdout: 'pipe',
-}).stdout.toString().split('\n').filter(Boolean)
+  stderr: 'pipe',
+})
+if (!discovery.success) {
+  console.error(
+    `Failed to enumerate repository paths with rg: ${discovery.stderr.toString().trim() || `exit ${discovery.exitCode}`}`,
+  )
+  process.exit(1)
+}
+const repositoryPaths = discovery.stdout.toString().split('\n').filter(Boolean)
 
 const secretPatterns: ReadonlyArray<readonly [string, RegExp]> = [
   ['OpenAI key', /\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b/g],

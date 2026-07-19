@@ -23,13 +23,19 @@ beforeAll(async () => {
     },
   )
 
+  let ready = false
   for (let attempt = 0; attempt < 40; attempt += 1) {
     try {
-      if ((await fetch(origin)).ok) break
+      if ((await fetch(origin)).ok) {
+        ready = true
+        break
+      }
     } catch {
-      await Bun.sleep(100)
+      // The server is not accepting connections yet.
     }
+    await Bun.sleep(100)
   }
+  if (!ready) throw new Error(`Web server did not become ready at ${origin}`)
   browser = await chromium.launch({ headless: true })
 })
 

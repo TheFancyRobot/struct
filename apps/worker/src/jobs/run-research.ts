@@ -227,10 +227,6 @@ export const processOneResearchJob = (
             }),
           ),
         )
-        yield* incrementWalkingSliceMetric(
-          'citations.validated',
-          result.answer.citations.length,
-        )
         yield* deps.jobs.complete({
           runId: run.id,
           job,
@@ -240,6 +236,10 @@ export const processOneResearchJob = (
             citationCount: result.answer.citations.length,
           }),
         })
+        yield* incrementWalkingSliceMetric(
+          'citations.validated',
+          result.answer.citations.length,
+        )
         yield* logWalkingSlice({
           event: 'research.run.completed',
           identity: {
@@ -293,16 +293,26 @@ export const processOneResearchJob = (
         return yield* Effect.fail(failed.left)
       }
       if (failed._tag === 'Right') {
-        yield* incrementWalkingSliceMetric('runs.failed')
-        yield* logWalkingSlice({
-          event: 'research.run.failed',
-          identity: {
+        yield* withWalkingSliceSpan(
+          'worker-job',
+          {
             workspaceId: job.workspaceId,
             runId: job.entityId,
             jobId: job.id,
           },
-          errorTag: safeFailureTag(executed.left),
-        })
+          Effect.gen(function* () {
+            yield* incrementWalkingSliceMetric('runs.failed')
+            yield* logWalkingSlice({
+              event: 'research.run.failed',
+              identity: {
+                workspaceId: job.workspaceId,
+                runId: job.entityId,
+                jobId: job.id,
+              },
+              errorTag: safeFailureTag(executed.left),
+            })
+          }),
+        )
       }
     }
     return { processed: true, jobId: job.id }

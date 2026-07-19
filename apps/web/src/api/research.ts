@@ -10,10 +10,21 @@ export async function fetchCitation(
   threadId: typeDomain.ResearchThreadId,
   citationId: typeDomain.CitationId,
 ): Promise<CitationDetail> {
-  const response = await fetch(
-    `/api/projects/${projectId}/research/${threadId}/citation/${citationId}`,
-    { signal: AbortSignal.timeout(10_000) },
-  )
+  let response: Response
+  try {
+    response = await fetch(
+      `/api/projects/${projectId}/research/${threadId}/citation/${citationId}`,
+      { signal: AbortSignal.timeout(10_000) },
+    )
+  } catch (error) {
+    if (
+      error instanceof DOMException
+      && (error.name === 'AbortError' || error.name === 'TimeoutError')
+    ) {
+      throw new Error('The citation could not be loaded. Try again.')
+    }
+    throw error
+  }
   if (!response.ok) {
     throw new Error(
       response.status === 404

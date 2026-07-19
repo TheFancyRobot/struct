@@ -35,8 +35,14 @@ describe('walking-slice observability', () => {
     expect(Number(after.count) - Number(before.count)).toBe(2)
   })
 
-  it('configures stdout tracing without requiring an OTLP collector', () => {
-    expect(makeTracingLayer({ serviceName: 'struct-test' })).toBeDefined()
+  it('configures stdout tracing without requiring an OTLP collector', async () => {
+    const result = await Effect.runPromise(
+      Effect.succeed('traced').pipe(
+        Effect.withSpan('struct.test'),
+        Effect.provide(makeTracingLayer({ serviceName: 'struct-test' })),
+      ),
+    )
+    expect(result).toBe('traced')
   })
 
   it('renders the counters for operational scraping', async () => {
