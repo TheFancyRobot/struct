@@ -32,6 +32,17 @@ const secretPatterns: ReadonlyArray<readonly [string, RegExp]> = [
 const findings: string[] = []
 
 for (const file of repositoryPaths) {
+  const basename = file.split('/').at(-1)
+  if (
+    basename === '.env'
+    || (
+      basename?.startsWith('.env.') === true
+      && basename !== '.env.example'
+    )
+  ) {
+    findings.push(`${file}: committed environment file`)
+    continue
+  }
   const blob = Bun.file(file)
   if (!(await blob.exists()) || blob.size > 2_000_000) continue
   const text = await blob.text()

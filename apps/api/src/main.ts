@@ -197,44 +197,59 @@ const server = Effect.gen(function* () {
               workspaceId: parsed.workspaceId,
               projectId: parsed.projectId,
             },
-            withWalkingSliceSpan(
-              'command',
-              {
-                workspaceId: parsed.workspaceId,
-                projectId: parsed.projectId,
-              },
-              registerTextSource(parsed, {
-                now: () => BigInt(Date.now()),
-                randomUuid: () => SourceId.make(crypto.randomUUID()),
-                randomJobQueueId: () => JobQueueId.make(crypto.randomUUID()),
-                randomEventJournalId: () =>
-                  EventJournalId.make(crypto.randomUUID()),
-                maxBytes,
-                projects: {
-                  findById: (projectId) =>
-                    ProjectRepo.findById(projectId).pipe(
-                      Effect.provide(projectLayer),
-                    ),
+            Effect.gen(function* () {
+              const registered = yield* withWalkingSliceSpan(
+                'command',
+                {
+                  workspaceId: parsed.workspaceId,
+                  projectId: parsed.projectId,
                 },
-                registration: {
-                  create: (input) =>
-                    SourceRegistrationRepo.create(input).pipe(
-                      Effect.provide(registrationLayer),
-                    ),
+                Effect.gen(function* () {
+                  const registered = yield* registerTextSource(parsed, {
+                    now: () => BigInt(Date.now()),
+                    randomUuid: () => SourceId.make(crypto.randomUUID()),
+                    randomJobQueueId: () =>
+                      JobQueueId.make(crypto.randomUUID()),
+                    randomEventJournalId: () =>
+                      EventJournalId.make(crypto.randomUUID()),
+                    maxBytes,
+                    projects: {
+                      findById: (projectId) =>
+                        ProjectRepo.findById(projectId).pipe(
+                          Effect.provide(projectLayer),
+                        ),
+                    },
+                    registration: {
+                      create: (input) =>
+                        SourceRegistrationRepo.create(input).pipe(
+                          Effect.provide(registrationLayer),
+                        ),
+                    },
+                    storage,
+                  })
+                  yield* Effect.annotateCurrentSpan({
+                    'struct.source.id': registered.source.id,
+                    'struct.job.id': registered.job.id,
+                  })
+                  return registered
+                }),
+              )
+              yield* Effect.annotateCurrentSpan({
+                'struct.source.id': registered.source.id,
+                'struct.job.id': registered.job.id,
+              })
+              yield* logWalkingSlice({
+                event: 'source.registration.accepted',
+                identity: {
+                  workspaceId: parsed.workspaceId,
+                  projectId: parsed.projectId,
+                  sourceId: registered.source.id,
+                  jobId: registered.job.id,
                 },
-                storage,
-              }),
-            ),
+              })
+              return registered
+            }),
           )
-          yield* logWalkingSlice({
-            event: 'source.registration.accepted',
-            identity: {
-              workspaceId: parsed.workspaceId,
-              projectId: parsed.projectId,
-              sourceId: registered.source.id,
-              jobId: registered.job.id,
-            },
-          })
           return registered
         })
 
@@ -275,36 +290,52 @@ const server = Effect.gen(function* () {
               workspaceId: parsed.workspaceId,
               projectId: parsed.projectId,
             },
-            withWalkingSliceSpan(
-              'command',
-              {
-                workspaceId: parsed.workspaceId,
-                projectId: parsed.projectId,
-              },
-              startResearch(parsed, {
-                now: () => BigInt(Date.now()),
-                randomThreadId: () =>
-                  ResearchThreadId.make(crypto.randomUUID()),
-                randomRunId: () => ResearchRunId.make(crypto.randomUUID()),
-                randomJobId: () => JobQueueId.make(crypto.randomUUID()),
-                randomEventId: () => EventJournalId.make(crypto.randomUUID()),
-                register: (input) =>
-                  ResearchExecutionRepo.register(input).pipe(
-                    Effect.provide(researchLayer),
-                  ),
-              }),
-            ),
+            Effect.gen(function* () {
+              const started = yield* withWalkingSliceSpan(
+                'command',
+                {
+                  workspaceId: parsed.workspaceId,
+                  projectId: parsed.projectId,
+                },
+                Effect.gen(function* () {
+                  const started = yield* startResearch(parsed, {
+                    now: () => BigInt(Date.now()),
+                    randomThreadId: () =>
+                      ResearchThreadId.make(crypto.randomUUID()),
+                    randomRunId: () =>
+                      ResearchRunId.make(crypto.randomUUID()),
+                    randomJobId: () => JobQueueId.make(crypto.randomUUID()),
+                    randomEventId: () =>
+                      EventJournalId.make(crypto.randomUUID()),
+                    register: (input) =>
+                      ResearchExecutionRepo.register(input).pipe(
+                        Effect.provide(researchLayer),
+                      ),
+                  })
+                  yield* Effect.annotateCurrentSpan({
+                    'struct.run.id': started.run.id,
+                    'struct.job.id': started.job.id,
+                  })
+                  return started
+                }),
+              )
+              yield* Effect.annotateCurrentSpan({
+                'struct.run.id': started.run.id,
+                'struct.job.id': started.job.id,
+              })
+              yield* logWalkingSlice({
+                event: 'research.run.started',
+                identity: {
+                  workspaceId: parsed.workspaceId,
+                  projectId: parsed.projectId,
+                  runId: started.run.id,
+                  jobId: started.job.id,
+                },
+              })
+              yield* incrementWalkingSliceMetric('runs.started')
+              return started
+            }),
           )
-          yield* logWalkingSlice({
-            event: 'research.run.started',
-            identity: {
-              workspaceId: parsed.workspaceId,
-              projectId: parsed.projectId,
-              runId: started.run.id,
-              jobId: started.job.id,
-            },
-          })
-          yield* incrementWalkingSliceMetric('runs.started')
           return started
         })
 
