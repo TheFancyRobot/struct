@@ -327,8 +327,8 @@ suite('data-engine sidecar', () => {
       executionMs: firstQuery.result['executionMs'],
     }).toEqual(firstQuery.result)
     expect(firstQuery.result['rows']).toEqual([
-      [false, '7.2500000000'],
-      [true, '12.5000000000'],
+      [false, '7.250000000000000000'],
+      [true, '12.500000000000000000'],
     ])
     expect(firstQuery.result['truncated']).toBe(false)
     expect(firstQuery.result['engineVersion']).toBe('duckdb-1.5.4')
@@ -646,7 +646,7 @@ suite('data-engine sidecar', () => {
         logicalType: 'integer' as const,
       },
       {
-        text: '[{"value":1.12345678901}]',
+        text: '[{"value":1.1234567890123456789}]',
         logicalType: 'decimal' as const,
       },
       {
@@ -716,6 +716,25 @@ suite('data-engine sidecar', () => {
           columns: [{
             minimum: '0.0125',
             maximum: '0.0125',
+          }],
+        },
+      },
+    })
+
+    const corpusPrecisionDecimal = await materializeValue(
+      '[{"value":59.93000000000001}]',
+      'json',
+      'decimal',
+      'd',
+    )
+    expect(corpusPrecisionDecimal.status).toBe(200)
+    expect(corpusPrecisionDecimal.json).toMatchObject({
+      ok: true,
+      result: {
+        profile: {
+          columns: [{
+            minimum: '59.93000000000001',
+            maximum: '59.93000000000001',
           }],
         },
       },

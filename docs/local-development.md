@@ -2,10 +2,10 @@
 
 This document is the Phase 0 **local-stack contract** for [`architecture.md`](./architecture.md). It fixes local service ownership, ports, volumes, health checks, startup/shutdown/reset behavior, environment/secrets policy, and platform fallbacks so a first-day developer can bootstrap without guessing.
 
-> **Current status:** STEP-04-02 adds the DuckDB data-plane sidecar to
+> **Current status:** Phase 04 adds the DuckDB data-plane sidecar to
 > `docker-compose.yml`. PostgreSQL remains the durable application database;
-> DuckDB is an isolated materialization engine and is never loaded into a
-> maintained host process.
+> DuckDB is an isolated materialization and allowlisted read-only query engine
+> and is never loaded into a maintained host process.
 
 ## 1. Local service table
 
@@ -22,7 +22,7 @@ selected production topology.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | PostgreSQL 16 + pgvector | `apps/api` (migrations/schema) | `5432` (host→container) | `./.local/pgdata` (gitignored, persistent) | `pg_isready -h localhost -p 5432 -U struct` or `SELECT 1` | 1 (first) | stop container / `pg_ctl stop` | drop volume, then `migrations:up` |
 | Artifact storage (dev FS adapter) | `packages/source-storage` adapter; written by `apps/worker`, read by `apps/api` | none (filesystem path) | `./.local/artifacts` (gitignored, persistent) | directory exists and is writable | 2 (after PG, before worker) | no process to stop | delete `./.local/artifacts` |
-| DuckDB data-plane sidecar | `packages/data-engine` owns the typed client/protocol; Compose owns service lifecycle | sidecar is internal/no-egress; fixed-target gateway publishes authenticated `127.0.0.1:4300` and has no mounts | `./.local/artifacts` read-only and the `data-engine-scratch` local Docker volume read/write | authenticated `GET /healthz`; host Bun-client materialization integration probe | after artifact storage, before worker | stop/restart sidecar and gateway; remove unpromoted partials | `docker compose down -v` removes scratch |
+| DuckDB data-plane sidecar | `packages/data-engine` owns the typed client/protocol; Compose owns service lifecycle | sidecar is internal/no-egress; fixed-target gateway publishes authenticated `127.0.0.1:4300` and has no mounts | `./.local/artifacts` read-only and the `data-engine-scratch` local Docker volume read/write | authenticated `GET /healthz`; host Bun-client materialization/query integration probe | after artifact storage, before worker | stop/restart sidecar and gateway; remove unpromoted partials | `docker compose down -v` removes scratch |
 | `apps/worker` | itself | no inbound HTTP; optional metrics on `3002`; authenticated data-engine access through the loopback gateway | reads `./.local/artifacts` | `GET /healthz` on metrics port (optional) or process liveness | 3 (after PG + storage dirs) | `SIGTERM`; finish in-flight, checkpoint, exit | stop process |
 | `apps/api` | itself | `3001` (HTTP) | reads PG + artifact refs | `GET /healthz` → `200` | 4 (after worker) | `SIGTERM`; drain SSE, exit | stop process |
 | `apps/web` | itself | `3000` (Vite 8 dev) | none | `GET /` → `200` | 5 (after API) | `SIGTERM`; exit | stop process |
@@ -30,10 +30,11 @@ selected production topology.
 Ownership rules captured by the table:
 
 - **PostgreSQL** is shared by `apps/api` and `apps/worker`, but only `apps/api` owns schema migrations (see [`architecture.md` §6.5](./architecture.md)). `apps/worker` connects as a read/write client for domain data; it never runs migrations.
-- **DuckDB is isolated in the Compose stack.** The sidecar accepts only the
-  authenticated version-1 materialization protocol. It derives source paths
-  from catalog hashes, reads the artifact mount, and writes temporary/final
-  outputs only under its scratch mount. It exposes no arbitrary SQL endpoint.
+- **DuckDB is isolated in the Compose stack.** The sidecar accepts only
+  authenticated version-1 materialization and allowlisted read-only query
+  operations. It derives source paths from catalog hashes, reads the artifact
+  mount, and writes temporary/final outputs only under its scratch mount. It
+  does not expose an unrestricted raw-SQL endpoint.
 - **Artifact storage** uses the local filesystem adapter in development; production uses an S3-compatible abstraction. The rest of the product depends on stable object references, never raw host paths.
 
 ## 2. Startup, shutdown, and reset
@@ -216,10 +217,11 @@ row fails closed instead of being reported as ordinary zero-result evidence.
   protocol. The maintained Bun worker uses a typed client and never loads the
   native DuckDB adapter. The sidecar image pins Node `24.18.0` and DuckDB
   `1.5.4-r.1`.
-- **Protocol:** version-1 authenticated materialization requests only. Inputs
-  are content-addressed JSON, JSONL, or CSV artifacts; outputs are
-  deterministic Parquet plus a bounded profile. There is no arbitrary SQL
-  endpoint.
+- **Protocol:** version-1 authenticated materialization and allowlisted
+  read-only query requests. Inputs are content-addressed JSON, JSONL, or CSV
+  artifacts; outputs are deterministic Parquet, bounded profiles, and bounded
+  query results. Query SQL is parser-checked, total-order-required, and bound
+  only to catalog-authorized immutable snapshots.
 - **Resource limits:** container `1` CPU, `256 MiB`, and `64` PIDs; DuckDB
   `192MB`, one thread, and one concurrent request; request body `256 KiB`;
   worker defaults of `64 MiB` input, `1,000,000` rows, `128 MiB` output, and

@@ -5,17 +5,22 @@ contract_version: 1
 title: Evaluate Exact Computation Schema Security and Recovery
 step_id: STEP-04-06
 phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]'
-status: planned
-owner: ''
+status: in_progress
+owner: Codex
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_05_generate-reproducible-25000-json-corpus-and-ground-truth|STEP-04-05 Generate Reproducible 25000 JSON Corpus and Ground Truth]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-19-225211-evaluate-exact-computation-schema-security-and-recovery-codex-step-04-06-worker|SESSION-2026-07-19-225211 codex-step-04-06-worker session for Evaluate Exact Computation Schema Security and Recovery]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-19-225211
+active_session_id: 05_Sessions/2026-07-19-225211-evaluate-exact-computation-schema-security-and-recovery-codex-step-04-06-worker
+context_status: active
+context_summary: Advance [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_06_evaluate-exact-computation-schema-security-and-recovery|STEP-04-06 Evaluate Exact Computation Schema Security and Recovery]].
 ---
 
 # Step 06 - Evaluate Exact Computation Schema Security and Recovery
@@ -60,7 +65,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-19 - [[05_Sessions/2026-07-19-225211-evaluate-exact-computation-schema-security-and-recovery-codex-step-04-06-worker|SESSION-2026-07-19-225211 codex-step-04-06-worker session for Evaluate Exact Computation Schema Security and Recovery]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

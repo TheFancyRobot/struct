@@ -526,7 +526,7 @@ Benchmark results are emitted as machine-readable JSON with `BenchmarkEnvironmen
 
 STEP-04-05 implements generation and hash verification. STEP-04-06 consumes these artifacts for deterministic gate evaluation.
 
-### 14.1 Planned generator CLI
+### 14.1 Implemented generator and evaluation CLI
 
 ```bash
 # full corpus (release authority)
@@ -537,8 +537,12 @@ bun run corpus:generate --profile smoke --seed <canonical> --out <dir>
 bun run corpus:generate --profile full --seed <alternate-seed> --out <alternate-dir>
 # reproducibility check
 bun run corpus:compare-hashes <dir-a>/manifest.json <dir-b>/manifest.json
-# gate evaluation against a corpus + question set
-bun run corpus:eval --corpus <dir> --questions <question-manifest> --profile {smoke|full} --out <results-dir>
+# full gate evaluation (default)
+bun run corpus:eval
+# deterministic smoke gate with an optional repository-relative output root
+bun run corpus:eval --profile smoke --out .local/evaluation/phase-04-smoke
+# focused live recovery/evaluation integration
+bun run corpus:recovery
 ```
 
 ### 14.2 Profiles
