@@ -20,10 +20,10 @@ Keep this note short and current.
 
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-19._
-- Session in progress: [[05_Sessions/2026-07-19-205401-implement-allowlisted-read-only-sql-service-codex-step-04-03-worker|SESSION-2026-07-19-205401 codex-step-04-03-worker session for Implement Allowlisted Read-Only SQL Service]] - owner: codex-step-04-03-worker - phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]] - updated: 2026-07-19
-- Current step: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_03_implement-allowlisted-read-only-sql-service|STEP-04-03 Implement Allowlisted Read-Only SQL Service]] - status: in_progress - phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]] - owner: Codex
+- Session in progress: none.
+- Current step: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_04_build-deterministic-dataset-query-tools-and-citations|STEP-04-04 Build Deterministic Dataset Query Tools and Citations]] - status: planned - phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]
 - Active phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]] - status: in_progress - owner: Codex - updated: 2026-07-19
-- Also active: 51 more additional steps.
+- Also active: 50 more additional steps.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot

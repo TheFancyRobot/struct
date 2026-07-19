@@ -5,7 +5,7 @@ contract_version: 1
 title: Implement Allowlisted Read-Only SQL Service
 step_id: STEP-04-03
 phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]'
-status: in_progress
+status: completed
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
@@ -19,8 +19,8 @@ tags:
   - step
 context_id: SESSION-2026-07-19-205401
 active_session_id: 05_Sessions/2026-07-19-205401-implement-allowlisted-read-only-sql-service-codex-step-04-03-worker
-context_status: in_progress
-context_summary: Allowlisted read-only SQL service is implemented and locally validated; awaiting root self-review, PR review, and merge.
+context_status: completed
+context_summary: 'STEP-04-03 merged through PR #21 at merge commit 169eac8 after full validation and clean automatic CodeRabbit completion.'
 ---
 
 # Step 03 - Implement Allowlisted Read-Only SQL Service

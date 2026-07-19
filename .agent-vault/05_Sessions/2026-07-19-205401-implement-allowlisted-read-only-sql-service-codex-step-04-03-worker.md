@@ -5,9 +5,9 @@ contract_version: 1
 title: codex-step-04-03-worker session for Implement Allowlisted Read-Only SQL Service
 session_id: SESSION-2026-07-19-205401
 date: '2026-07-19'
-status: in-progress
+status: completed
 owner: codex-step-04-03-worker
-branch: ''
+branch: agent/step-04-03-read-only-sql
 phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]'
 context:
   context_id: SESSION-2026-07-19-205401
@@ -133,6 +133,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - [x] Root independently self-reviewed and remediated the SQL allowlist,
   protocol, authenticated catalog boundary, and failure semantics.
 - [ ] Publish the dedicated STEP-04-03 PR, address all actionable review feedback, and merge before STEP-04-04.
+- Continue with STEP-04-04 on a fresh branch and fresh worker after confirming the repository and vault are clean.
 
 ## Completion Summary
 
@@ -140,3 +141,4 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - STEP-04-03 implementation and local validation are complete with no known defect.
 - The handoff is clean for root self-review, branch commit/push, PR checks, bot feedback remediation, and merge.
 - Keep the step/session in progress until the root orchestration gates complete.
+- STEP-04-03 merged into `main` through PR #21 at merge commit `169eac8`. All known Codex and CodeRabbit findings were addressed, all review threads were resolved, the automatic CodeRabbit check passed, and the zero-defect validation gate was clean.
