@@ -5,17 +5,22 @@ contract_version: 1
 title: Process Changed Sources and Preserve Version Lineage
 step_id: STEP-03-04
 phase: '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]]'
-status: planned
-owner: ''
+status: completed
+owner: Codex
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs|STEP-03-03 Build Resumable Idempotent Ingestion Jobs]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-19-132927-process-changed-sources-and-preserve-version-lineage-codex-step-03-04-worker|SESSION-2026-07-19-132927 Codex STEP-03-04 worker session for Process Changed Sources and Preserve Version Lineage]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-19-132927
+active_session_id: 05_Sessions/2026-07-19-132927-process-changed-sources-and-preserve-version-lineage-codex-step-03-04-worker
+context_status: completed
+context_summary: Implemented and validated deterministic directory refresh with content-addressed staging, immutable source-version lineage, atomic checkpoints, derived indexes, and committed events.
 ---
 
 # Step 04 - Process Changed Sources and Preserve Version Lineage
@@ -47,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_04_process-changed-sources-and-preserve-version-lineage/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_04_process-changed-sources-and-preserve-version-lineage/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: completed
+- Current owner: Codex
+- Last touched: 2026-07-19
+- Next action: Complete PR review and merge, then begin STEP-03-05 in a fresh worker.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -60,7 +65,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-19 - [[05_Sessions/2026-07-19-132927-process-changed-sources-and-preserve-version-lineage-codex-step-03-04-worker|SESSION-2026-07-19-132927 Codex STEP-03-04 worker session for Process Changed Sources and Preserve Version Lineage]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

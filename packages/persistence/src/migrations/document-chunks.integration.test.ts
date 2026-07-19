@@ -163,6 +163,7 @@ describeIf('document chunk migration (PostgreSQL)', () => {
     await Effect.runPromise(runMigrationsDown(executor))
     await Effect.runPromise(runMigrationsDown(executor))
     await Effect.runPromise(runMigrationsDown(executor))
+    await Effect.runPromise(runMigrationsDown(executor))
 
     expect(await scoped.unsafe(
       `SELECT id FROM source_versions

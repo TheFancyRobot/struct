@@ -46,4 +46,9 @@ export const migrations: readonly Migration[] = [
     upPath: new URL('./0007_directory_ingestion_jobs.sql', import.meta.url).pathname,
     downPath: new URL('./0007_directory_ingestion_jobs.down.sql', import.meta.url).pathname,
   },
+  {
+    name: '0008_directory_refresh_lineage',
+    upPath: new URL('./0008_directory_refresh_lineage.sql', import.meta.url).pathname,
+    downPath: new URL('./0008_directory_refresh_lineage.down.sql', import.meta.url).pathname,
+  },
 ] as const

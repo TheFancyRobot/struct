@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-19T11:37:35.168Z",
+  "generatedAt": "2026-07-19T13:50:12.833Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -1348,6 +1348,36 @@
       "parser": "regex"
     },
     {
+      "path": "apps/worker/src/jobs/refresh-directory.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "refreshClaimedDirectory",
+          "kind": "const",
+          "line": 8,
+          "exported": true,
+          "endLine": 8
+        }
+      ],
+      "imports": [
+        {
+          "source": "applyDirectoryRefresh",
+          "specifier": "@struct/ingestion",
+          "imported": [
+            "applyDirectoryRefresh"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "3d7e6ccc6072153ed43e1547235918bbec1d377f4e70d697cff04477597e4616",
+      "mtimeMs": 1784468642724.2117,
+      "size": 371,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "apps/worker/src/jobs/reindex-source-text.ts",
       "language": "TypeScript",
       "symbols": [
@@ -2422,172 +2452,214 @@
           "endLine": 25
         },
         {
-          "name": "DocumentId",
+          "name": "DirectoryRootId",
           "kind": "const",
           "line": 28,
           "exported": true,
           "endLine": 28
         },
         {
-          "name": "DocumentId",
+          "name": "DirectoryRootId",
           "kind": "type",
           "line": 29,
           "exported": true,
           "endLine": 29
         },
         {
-          "name": "DocumentChunkId",
+          "name": "DirectorySnapshotId",
           "kind": "const",
           "line": 32,
           "exported": true,
           "endLine": 32
         },
         {
-          "name": "DocumentChunkId",
+          "name": "DirectorySnapshotId",
           "kind": "type",
           "line": 33,
           "exported": true,
           "endLine": 33
         },
         {
-          "name": "ResearchThreadId",
+          "name": "ManifestEntryId",
           "kind": "const",
           "line": 36,
           "exported": true,
           "endLine": 36
         },
         {
-          "name": "ResearchThreadId",
+          "name": "ManifestEntryId",
           "kind": "type",
           "line": 37,
           "exported": true,
           "endLine": 37
         },
         {
-          "name": "ResearchRunId",
+          "name": "DocumentId",
           "kind": "const",
           "line": 40,
           "exported": true,
           "endLine": 40
         },
         {
-          "name": "ResearchRunId",
+          "name": "DocumentId",
           "kind": "type",
           "line": 41,
           "exported": true,
           "endLine": 41
         },
         {
-          "name": "CitationId",
+          "name": "DocumentChunkId",
           "kind": "const",
           "line": 44,
           "exported": true,
           "endLine": 44
         },
         {
-          "name": "CitationId",
+          "name": "DocumentChunkId",
           "kind": "type",
           "line": 45,
           "exported": true,
           "endLine": 45
         },
         {
-          "name": "FindingId",
+          "name": "ResearchThreadId",
           "kind": "const",
           "line": 48,
           "exported": true,
           "endLine": 48
         },
         {
-          "name": "FindingId",
+          "name": "ResearchThreadId",
           "kind": "type",
           "line": 49,
           "exported": true,
           "endLine": 49
         },
         {
-          "name": "ReportId",
+          "name": "ResearchRunId",
           "kind": "const",
           "line": 52,
           "exported": true,
           "endLine": 52
         },
         {
-          "name": "ReportId",
+          "name": "ResearchRunId",
           "kind": "type",
           "line": 53,
           "exported": true,
           "endLine": 53
         },
         {
-          "name": "DatasetId",
+          "name": "CitationId",
           "kind": "const",
           "line": 56,
           "exported": true,
           "endLine": 56
         },
         {
-          "name": "DatasetId",
+          "name": "CitationId",
           "kind": "type",
           "line": 57,
           "exported": true,
           "endLine": 57
         },
         {
-          "name": "DatasetSnapshotId",
+          "name": "FindingId",
           "kind": "const",
           "line": 60,
           "exported": true,
           "endLine": 60
         },
         {
-          "name": "DatasetSnapshotId",
+          "name": "FindingId",
           "kind": "type",
           "line": 61,
           "exported": true,
           "endLine": 61
         },
         {
-          "name": "QueryResultSnapshotId",
+          "name": "ReportId",
           "kind": "const",
           "line": 64,
           "exported": true,
           "endLine": 64
         },
         {
-          "name": "QueryResultSnapshotId",
+          "name": "ReportId",
           "kind": "type",
           "line": 65,
           "exported": true,
           "endLine": 65
         },
         {
-          "name": "EventJournalId",
+          "name": "DatasetId",
           "kind": "const",
           "line": 68,
           "exported": true,
           "endLine": 68
         },
         {
-          "name": "EventJournalId",
+          "name": "DatasetId",
           "kind": "type",
           "line": 69,
           "exported": true,
           "endLine": 69
         },
         {
-          "name": "JobQueueId",
+          "name": "DatasetSnapshotId",
           "kind": "const",
           "line": 72,
           "exported": true,
           "endLine": 72
         },
         {
-          "name": "JobQueueId",
+          "name": "DatasetSnapshotId",
           "kind": "type",
           "line": 73,
           "exported": true,
           "endLine": 73
+        },
+        {
+          "name": "QueryResultSnapshotId",
+          "kind": "const",
+          "line": 76,
+          "exported": true,
+          "endLine": 76
+        },
+        {
+          "name": "QueryResultSnapshotId",
+          "kind": "type",
+          "line": 77,
+          "exported": true,
+          "endLine": 77
+        },
+        {
+          "name": "EventJournalId",
+          "kind": "const",
+          "line": 80,
+          "exported": true,
+          "endLine": 80
+        },
+        {
+          "name": "EventJournalId",
+          "kind": "type",
+          "line": 81,
+          "exported": true,
+          "endLine": 81
+        },
+        {
+          "name": "JobQueueId",
+          "kind": "const",
+          "line": 84,
+          "exported": true,
+          "endLine": 84
+        },
+        {
+          "name": "JobQueueId",
+          "kind": "type",
+          "line": 85,
+          "exported": true,
+          "endLine": 85
         }
       ],
       "imports": [
@@ -2601,9 +2673,203 @@
         }
       ],
       "exports": [],
-      "hash": "ee811150701bdac13243ba5f561752771641be94016af265e15c5ec93e69adda",
-      "mtimeMs": 1784452368234.9253,
-      "size": 3508,
+      "hash": "9dd1d46880e6da09a906b9be2ac67449c8b8269c20a819d4e69b231136dcc132",
+      "mtimeMs": 1784463905700.7373,
+      "size": 4243,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/directory-manifest.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonEmptyString",
+          "kind": "const",
+          "line": 10,
+          "exported": false,
+          "endLine": 10
+        },
+        {
+          "name": "NonNegativeInteger",
+          "kind": "const",
+          "line": 11,
+          "exported": false,
+          "endLine": 11
+        },
+        {
+          "name": "Sha256Pattern",
+          "kind": "const",
+          "line": 12,
+          "exported": false,
+          "endLine": 12
+        },
+        {
+          "name": "MAX_DIRECTORY_RELATIVE_PATH_BYTES",
+          "kind": "const",
+          "line": 14,
+          "exported": true,
+          "endLine": 14
+        },
+        {
+          "name": "MAX_DIRECTORY_PATH_SEGMENT_BYTES",
+          "kind": "const",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "Sha256Digest",
+          "kind": "const",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "Sha256Digest",
+          "kind": "type",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "isCanonicalRelativePath",
+          "kind": "function",
+          "line": 23,
+          "exported": false,
+          "endLine": 23,
+          "signature": "(value: string)"
+        },
+        {
+          "name": "DirectoryRelativePath",
+          "kind": "const",
+          "line": 59,
+          "exported": true,
+          "endLine": 59
+        },
+        {
+          "name": "DirectoryRelativePath",
+          "kind": "type",
+          "line": 65,
+          "exported": true,
+          "endLine": 65
+        },
+        {
+          "name": "ManifestEntryStatus",
+          "kind": "const",
+          "line": 67,
+          "exported": true,
+          "endLine": 67
+        },
+        {
+          "name": "ManifestEntryStatus",
+          "kind": "type",
+          "line": 68,
+          "exported": true,
+          "endLine": 68
+        },
+        {
+          "name": "DirectoryRoot",
+          "kind": "const",
+          "line": 70,
+          "exported": true,
+          "endLine": 70
+        },
+        {
+          "name": "DirectoryRoot",
+          "kind": "type",
+          "line": 76,
+          "exported": true,
+          "endLine": 76
+        },
+        {
+          "name": "DirectorySnapshot",
+          "kind": "const",
+          "line": 78,
+          "exported": true,
+          "endLine": 78
+        },
+        {
+          "name": "DirectorySnapshot",
+          "kind": "type",
+          "line": 86,
+          "exported": true,
+          "endLine": 86
+        },
+        {
+          "name": "DirectoryManifestEntry",
+          "kind": "const",
+          "line": 88,
+          "exported": true,
+          "endLine": 88
+        },
+        {
+          "name": "DirectoryManifestEntry",
+          "kind": "type",
+          "line": 112,
+          "exported": true,
+          "endLine": 112
+        },
+        {
+          "name": "compareDirectoryRelativePaths",
+          "kind": "function",
+          "line": 114,
+          "exported": true,
+          "endLine": 114
+        },
+        {
+          "name": "orderManifestEntries",
+          "kind": "function",
+          "line": 131,
+          "exported": true,
+          "endLine": 131
+        },
+        {
+          "name": "digestField",
+          "kind": "function",
+          "line": 138,
+          "exported": false,
+          "endLine": 138,
+          "signature": "(value: string)"
+        },
+        {
+          "name": "computeManifestDigest",
+          "kind": "function",
+          "line": 146,
+          "exported": true,
+          "endLine": 146,
+          "doc": "Hashes only stable inventory facts. Entry and snapshot IDs are intentionally\nexcluded so identical directory content yields the same digest on retry."
+        },
+        {
+          "name": "DirectoryManifest",
+          "kind": "const",
+          "line": 164,
+          "exported": true,
+          "endLine": 164
+        },
+        {
+          "name": "DirectoryManifest",
+          "kind": "type",
+          "line": 195,
+          "exported": true,
+          "endLine": 195
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "c8468e31d97a7333713bdc20d31631377eb1f07c61d980cd9b33061699e60e8f",
+      "mtimeMs": 1784463905700.9539,
+      "size": 6563,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2719,6 +2985,163 @@
       "hash": "a8f4e1344cc2548707ebc16371605a243acfaf5321d521e97a7164783a8cc059",
       "mtimeMs": 1784452368236.5793,
       "size": 2574,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/ingestion-job.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DirectoryIngestionJobStatus",
+          "kind": "const",
+          "line": 9,
+          "exported": true,
+          "endLine": 9
+        },
+        {
+          "name": "DirectoryIngestionJobStatus",
+          "kind": "type",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "DirectoryIngestionJobTransition",
+          "kind": "const",
+          "line": 20,
+          "exported": true,
+          "endLine": 20
+        },
+        {
+          "name": "DirectoryIngestionJobTransition",
+          "kind": "type",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "DirectoryIngestionLeaseToken",
+          "kind": "const",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
+          "name": "DirectoryIngestionLeaseToken",
+          "kind": "type",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        },
+        {
+          "name": "StableContentKey",
+          "kind": "const",
+          "line": 38,
+          "exported": true,
+          "endLine": 38
+        },
+        {
+          "name": "StableContentKey",
+          "kind": "type",
+          "line": 42,
+          "exported": true,
+          "endLine": 42
+        },
+        {
+          "name": "DirectoryIngestionEntryOutcome",
+          "kind": "const",
+          "line": 44,
+          "exported": true,
+          "endLine": 44
+        },
+        {
+          "name": "DirectoryIngestionEntryOutcome",
+          "kind": "type",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "DirectoryIngestionResult",
+          "kind": "const",
+          "line": 51,
+          "exported": true,
+          "endLine": 51
+        },
+        {
+          "name": "DirectoryIngestionResult",
+          "kind": "type",
+          "line": 55,
+          "exported": true,
+          "endLine": 55
+        },
+        {
+          "name": "DirectoryIngestionJob",
+          "kind": "const",
+          "line": 58,
+          "exported": true,
+          "endLine": 58
+        },
+        {
+          "name": "DirectoryIngestionJob",
+          "kind": "type",
+          "line": 69,
+          "exported": true,
+          "endLine": 69
+        },
+        {
+          "name": "DirectoryIngestionEntryCommit",
+          "kind": "const",
+          "line": 72,
+          "exported": true,
+          "endLine": 72
+        },
+        {
+          "name": "DirectoryIngestionEntryCommit",
+          "kind": "type",
+          "line": 92,
+          "exported": true,
+          "endLine": 92
+        },
+        {
+          "name": "InvalidDirectoryIngestionTransitionError",
+          "kind": "class",
+          "line": 95,
+          "exported": true,
+          "endLine": 95
+        },
+        {
+          "name": "transitionDirectoryIngestionJob",
+          "kind": "function",
+          "line": 124,
+          "exported": true,
+          "endLine": 124
+        },
+        {
+          "name": "nextDirectoryIngestionJobStatus",
+          "kind": "function",
+          "line": 141,
+          "exported": true,
+          "endLine": 141
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "853cd510f7e86e3c2a1125d40ca6fedf1102ebe35200ac3a25a50558d51f6b1c",
+      "mtimeMs": 1784467669978.838,
+      "size": 4517,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2863,193 +3286,193 @@
       "language": "TypeScript",
       "symbols": [
         {
+          "name": "SourceVersion",
+          "kind": "const",
+          "line": 3,
+          "exported": true,
+          "endLine": 3
+        },
+        {
           "name": "SourceKind",
           "kind": "const",
-          "line": 6,
+          "line": 7,
           "exported": true,
-          "endLine": 6
+          "endLine": 7
         },
         {
           "name": "SourceKind",
           "kind": "type",
-          "line": 12,
+          "line": 13,
           "exported": true,
-          "endLine": 12
+          "endLine": 13
         },
         {
           "name": "IngestionStatus",
           "kind": "const",
-          "line": 14,
+          "line": 15,
           "exported": true,
-          "endLine": 14
+          "endLine": 15
         },
         {
           "name": "IngestionStatus",
           "kind": "type",
-          "line": 21,
+          "line": 22,
           "exported": true,
-          "endLine": 21
+          "endLine": 22
         },
         {
           "name": "JobStatus",
           "kind": "const",
-          "line": 23,
-          "exported": true,
-          "endLine": 23
-        },
-        {
-          "name": "JobStatus",
-          "kind": "type",
           "line": 24,
           "exported": true,
           "endLine": 24
         },
         {
+          "name": "JobStatus",
+          "kind": "type",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
           "name": "ResearchStatus",
           "kind": "const",
-          "line": 26,
+          "line": 27,
           "exported": true,
-          "endLine": 26
+          "endLine": 27
         },
         {
           "name": "ResearchStatus",
           "kind": "type",
-          "line": 34,
+          "line": 35,
           "exported": true,
-          "endLine": 34
+          "endLine": 35
         },
         {
           "name": "CitationStatus",
           "kind": "const",
-          "line": 36,
+          "line": 37,
           "exported": true,
-          "endLine": 36
+          "endLine": 37
         },
         {
           "name": "CitationStatus",
           "kind": "type",
-          "line": 41,
+          "line": 42,
           "exported": true,
-          "endLine": 41
+          "endLine": 42
         },
         {
           "name": "Workspace",
           "kind": "const",
-          "line": 45,
+          "line": 46,
           "exported": true,
-          "endLine": 45
+          "endLine": 46
         },
         {
           "name": "Project",
           "kind": "const",
-          "line": 52,
+          "line": 53,
           "exported": true,
-          "endLine": 52
+          "endLine": 53
         },
         {
           "name": "Source",
           "kind": "const",
-          "line": 60,
+          "line": 61,
           "exported": true,
-          "endLine": 60
-        },
-        {
-          "name": "SourceVersion",
-          "kind": "const",
-          "line": 69,
-          "exported": true,
-          "endLine": 69
+          "endLine": 61
         },
         {
           "name": "ResearchThread",
+          "kind": "const",
+          "line": 70,
+          "exported": true,
+          "endLine": 70
+        },
+        {
+          "name": "ResearchRun",
           "kind": "const",
           "line": 78,
           "exported": true,
           "endLine": 78
         },
         {
-          "name": "ResearchRun",
-          "kind": "const",
-          "line": 86,
-          "exported": true,
-          "endLine": 86
-        },
-        {
           "name": "Citation",
           "kind": "const",
-          "line": 95,
+          "line": 87,
           "exported": true,
-          "endLine": 95
+          "endLine": 87
         },
         {
           "name": "TextEvidence",
+          "kind": "const",
+          "line": 96,
+          "exported": true,
+          "endLine": 96
+        },
+        {
+          "name": "TextEvidence",
+          "kind": "type",
+          "line": 102,
+          "exported": true,
+          "endLine": 102
+        },
+        {
+          "name": "ResearchCitation",
           "kind": "const",
           "line": 104,
           "exported": true,
           "endLine": 104
         },
         {
-          "name": "TextEvidence",
+          "name": "ResearchCitation",
           "kind": "type",
+          "line": 108,
+          "exported": true,
+          "endLine": 108
+        },
+        {
+          "name": "ResearchAnswer",
+          "kind": "const",
           "line": 110,
           "exported": true,
           "endLine": 110
         },
         {
-          "name": "ResearchCitation",
-          "kind": "const",
-          "line": 112,
-          "exported": true,
-          "endLine": 112
-        },
-        {
-          "name": "ResearchCitation",
-          "kind": "type",
-          "line": 116,
-          "exported": true,
-          "endLine": 116
-        },
-        {
-          "name": "ResearchAnswer",
-          "kind": "const",
-          "line": 118,
-          "exported": true,
-          "endLine": 118
-        },
-        {
           "name": "ResearchAnswer",
           "kind": "type",
-          "line": 125,
+          "line": 117,
           "exported": true,
-          "endLine": 125
+          "endLine": 117
         },
         {
           "name": "Finding",
           "kind": "const",
-          "line": 127,
+          "line": 119,
           "exported": true,
-          "endLine": 127
+          "endLine": 119
         },
         {
           "name": "Report",
           "kind": "const",
-          "line": 136,
+          "line": 128,
           "exported": true,
-          "endLine": 136
+          "endLine": 128
         },
         {
           "name": "JobQueue",
           "kind": "const",
-          "line": 145,
+          "line": 137,
           "exported": true,
-          "endLine": 145
+          "endLine": 137
         },
         {
           "name": "EventJournal",
           "kind": "const",
-          "line": 158,
+          "line": 150,
           "exported": true,
-          "endLine": 158
+          "endLine": 150
         }
       ],
       "imports": [
@@ -3067,10 +3490,16 @@
           "kind": "static"
         }
       ],
-      "exports": [],
-      "hash": "1505c8215197a976b321f9ec161890ba220bb57254cc841383bf6a0c717f232a",
-      "mtimeMs": 1784433778774.6697,
-      "size": 4522,
+      "exports": [
+        {
+          "name": "SourceVersion",
+          "source": "./source-version.js",
+          "kind": "reexport"
+        }
+      ],
+      "hash": "7fa3e7ad10281f7fda1e4887511c871499c87a8ae0bf84296ebe4107c4ff8773",
+      "mtimeMs": 1784463905701.3005,
+      "size": 4348,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3106,6 +3535,80 @@
       "hash": "5655f3c4b2007ec54a6e91ecc85ca4fcb13977aafaea43b374f2a3ad09fe8214",
       "mtimeMs": 1784448731018.6309,
       "size": 944,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/source-version.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "SourceVersion",
+          "kind": "const",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        },
+        {
+          "name": "SourceVersion",
+          "kind": "type",
+          "line": 18,
+          "exported": true,
+          "endLine": 18
+        },
+        {
+          "name": "SourceVersionRefreshDisposition",
+          "kind": "const",
+          "line": 20,
+          "exported": true,
+          "endLine": 20
+        },
+        {
+          "name": "SourceVersionRefreshDisposition",
+          "kind": "type",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "DirectorySourceVersionLineage",
+          "kind": "const",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
+          "name": "DirectorySourceVersionLineage",
+          "kind": "type",
+          "line": 64,
+          "exported": true,
+          "endLine": 64
+        }
+      ],
+      "imports": [
+        {
+          "source": "Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Sha256Digest",
+          "specifier": "./directory-manifest.js",
+          "imported": [
+            "Sha256Digest"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "e2f35520368287c443ad863c3da725abd80e0b97f339063788013e14cd18ff0f",
+      "mtimeMs": 1784463905701.5205,
+      "size": 2225,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3319,7 +3822,7 @@
       "imports": [],
       "exports": [],
       "hash": "d1481f340dcd5dd706e4b349ab2d28b0e68a48270ac977d5d30cf0e009fae098",
-      "mtimeMs": 1784461008867.5425,
+      "mtimeMs": 1784461248063.393,
       "size": 7025,
       "generated": false,
       "vendor": false,
@@ -3368,7 +3871,7 @@
         }
       ],
       "hash": "aba314fed9e0a8d2eb46c4288ac4bd260ec0b47622d3b70efd727a9b75558e4d",
-      "mtimeMs": 1784459858028.3132,
+      "mtimeMs": 1784461248063.5398,
       "size": 614,
       "generated": false,
       "vendor": false,
@@ -3567,7 +4070,7 @@
       ],
       "exports": [],
       "hash": "f6f0367ed49c67e055e36f1e1e343ea55d688738cf52e6a43f42c2e451e20bef",
-      "mtimeMs": 1784460037425.7915,
+      "mtimeMs": 1784461248063.6606,
       "size": 5363,
       "generated": false,
       "vendor": false,
@@ -3605,7 +4108,7 @@
       ],
       "exports": [],
       "hash": "d182a8f2aa5e398867049169e65ec6070f25359c3afda72d539645b1187f53e2",
-      "mtimeMs": 1784459858029.0854,
+      "mtimeMs": 1784461248063.7644,
       "size": 280,
       "generated": false,
       "vendor": false,
@@ -3673,7 +4176,7 @@
       ],
       "exports": [],
       "hash": "7887098c190aea984ecaab36b6dcac14a98c815ad511a80134e387cc7a9ba273",
-      "mtimeMs": 1784461008867.1316,
+      "mtimeMs": 1784461248063.8738,
       "size": 3576,
       "generated": false,
       "vendor": false,
@@ -3726,7 +4229,7 @@
       ],
       "exports": [],
       "hash": "75599130ee438837b7e0feeaaece1fe2a82f21e5b00c379334b6cd216707b87d",
-      "mtimeMs": 1784461008867.8462,
+      "mtimeMs": 1784461248063.9827,
       "size": 1711,
       "generated": false,
       "vendor": false,
@@ -4036,7 +4539,7 @@
       ],
       "exports": [],
       "hash": "c4fbaaa42dbd7f1824b82f45207d147dea9929321452265c40cc7a78e5b6a452",
-      "mtimeMs": 1784459858026.9392,
+      "mtimeMs": 1784461248064.3308,
       "size": 11736,
       "generated": false,
       "vendor": false,
@@ -4171,6 +4674,425 @@
       "parser": "regex"
     },
     {
+      "path": "packages/ingestion/src/apply-refresh.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "PreparedRefreshEntry",
+          "kind": "interface",
+          "line": 19,
+          "exported": true,
+          "endLine": 19
+        },
+        {
+          "name": "ApplyDirectoryRefreshInput",
+          "kind": "interface",
+          "line": 38,
+          "exported": true,
+          "endLine": 38
+        },
+        {
+          "name": "ApplyDirectoryRefreshDeps",
+          "kind": "interface",
+          "line": 46,
+          "exported": true,
+          "endLine": 46
+        },
+        {
+          "name": "applyDirectoryRefresh",
+          "kind": "const",
+          "line": 69,
+          "exported": true,
+          "endLine": 69
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Option",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "diffManifest",
+          "specifier": "./diff-manifest.js",
+          "imported": [
+            "diffManifest"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "17defe1513cc43d4f3c5ef7c2bc7836334bad8ede51247fa1705059148e75eb6",
+      "mtimeMs": 1784468136675.2603,
+      "size": 3267,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/ingestion/src/diff-manifest.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ManifestDiffDisposition",
+          "kind": "type",
+          "line": 7,
+          "exported": true,
+          "endLine": 7
+        },
+        {
+          "name": "ManifestDiffItem",
+          "kind": "interface",
+          "line": 14,
+          "exported": true,
+          "endLine": 14
+        },
+        {
+          "name": "disposition",
+          "kind": "function",
+          "line": 21,
+          "exported": false,
+          "endLine": 21
+        },
+        {
+          "name": "diffManifest",
+          "kind": "function",
+          "line": 38,
+          "exported": true,
+          "endLine": 38,
+          "doc": "Produces a deterministic path-based diff. A rename is deliberately not\ninferred from equal content hashes because a digest is not stable identity."
+        }
+      ],
+      "imports": [
+        {
+          "source": "Option",
+          "specifier": "effect",
+          "imported": [
+            "Option"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "d2417c0f2706f07cd59f9d6ef946f9f3fd57512eb22d79ee7d6e6769c83f7f32",
+      "mtimeMs": 1784468476835.9119,
+      "size": 2018,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/ingestion/src/directory-errors.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DirectoryRootError",
+          "kind": "class",
+          "line": 4,
+          "exported": true,
+          "endLine": 4
+        },
+        {
+          "name": "DirectoryPathError",
+          "kind": "class",
+          "line": 12,
+          "exported": true,
+          "endLine": 12
+        },
+        {
+          "name": "DirectorySymlinkError",
+          "kind": "class",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "DirectoryPermissionError",
+          "kind": "class",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "DirectoryEntryDisappearedError",
+          "kind": "class",
+          "line": 38,
+          "exported": true,
+          "endLine": 38
+        },
+        {
+          "name": "DirectoryFilesystemError",
+          "kind": "class",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "DirectoryLimitExceededError",
+          "kind": "class",
+          "line": 58,
+          "exported": true,
+          "endLine": 58
+        },
+        {
+          "name": "DirectoryEntryError",
+          "kind": "type",
+          "line": 70,
+          "exported": true,
+          "endLine": 70
+        },
+        {
+          "name": "DirectoryDiscoveryError",
+          "kind": "type",
+          "line": 76,
+          "exported": true,
+          "endLine": 76
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DirectoryRelativePath",
+          "specifier": "@struct/domain",
+          "imported": [
+            "DirectoryRelativePath"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "6dc7d301c9ace7cf007d24294489160f2d1adb4de5abaecee88cbaa0debab30e",
+      "mtimeMs": 1784465620487.5515,
+      "size": 2423,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/ingestion/src/discover-directory.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DirectoryFileInfo",
+          "kind": "interface",
+          "line": 34,
+          "exported": true,
+          "endLine": 34
+        },
+        {
+          "name": "DirectoryFileSystemShape",
+          "kind": "interface",
+          "line": 40,
+          "exported": true,
+          "endLine": 40
+        },
+        {
+          "name": "DirectoryFileSystem",
+          "kind": "class",
+          "line": 66,
+          "exported": true,
+          "endLine": 66
+        },
+        {
+          "name": "FileOperation",
+          "kind": "type",
+          "line": 70,
+          "exported": false,
+          "endLine": 70
+        },
+        {
+          "name": "mapFilesystemError",
+          "kind": "function",
+          "line": 72,
+          "exported": false,
+          "endLine": 72
+        },
+        {
+          "name": "BunDirectoryFileSystemShape",
+          "kind": "const",
+          "line": 102,
+          "exported": true,
+          "endLine": 102
+        },
+        {
+          "name": "BunDirectoryFileSystem",
+          "kind": "const",
+          "line": 188,
+          "exported": true,
+          "endLine": 188
+        },
+        {
+          "name": "DirectoryDiscoveryLimits",
+          "kind": "interface",
+          "line": 193,
+          "exported": true,
+          "endLine": 193
+        },
+        {
+          "name": "DiscoverDirectoryInput",
+          "kind": "interface",
+          "line": 200,
+          "exported": true,
+          "endLine": 200
+        },
+        {
+          "name": "DirectoryEntrySuccess",
+          "kind": "interface",
+          "line": 211,
+          "exported": true,
+          "endLine": 211
+        },
+        {
+          "name": "DirectoryEntryFailure",
+          "kind": "interface",
+          "line": 217,
+          "exported": true,
+          "endLine": 217
+        },
+        {
+          "name": "DirectoryDiscoveryOutcome",
+          "kind": "type",
+          "line": 223,
+          "exported": true,
+          "endLine": 223
+        },
+        {
+          "name": "DirectoryDiscoveryResult",
+          "kind": "interface",
+          "line": 225,
+          "exported": true,
+          "endLine": 225
+        },
+        {
+          "name": "defaultIgnoredNames",
+          "kind": "const",
+          "line": 231,
+          "exported": false,
+          "endLine": 231
+        },
+        {
+          "name": "isSupportedFile",
+          "kind": "function",
+          "line": 233,
+          "exported": false,
+          "endLine": 233,
+          "signature": "(relativePath: DirectoryRelativePath)"
+        },
+        {
+          "name": "deterministicEntryId",
+          "kind": "function",
+          "line": 237,
+          "exported": false,
+          "endLine": 237
+        },
+        {
+          "name": "validateLimits",
+          "kind": "function",
+          "line": 248,
+          "exported": false,
+          "endLine": 248
+        },
+        {
+          "name": "rootError",
+          "kind": "function",
+          "line": 270,
+          "exported": false,
+          "endLine": 270
+        },
+        {
+          "name": "DirectoryDiscovery",
+          "kind": "class",
+          "line": 279,
+          "exported": true,
+          "endLine": 279
+        }
+      ],
+      "imports": [
+        {
+          "source": "Context, Effect, Layer, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Context",
+            "Effect",
+            "Layer",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "constants",
+          "specifier": "node:fs",
+          "imported": [
+            "constants"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "lstat, open, readdir, realpath",
+          "specifier": "node:fs/promises",
+          "imported": [
+            "lstat",
+            "open",
+            "readdir",
+            "realpath"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "resolve",
+          "specifier": "node:path",
+          "imported": [
+            "resolve"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "hashFile",
+          "specifier": "./hash-file.js",
+          "imported": [
+            "hashFile"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "supportedTextSourceExtensionFor",
+          "specifier": "./file-classifier.js",
+          "imported": [
+            "supportedTextSourceExtensionFor"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "./directory-errors.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "./directory-errors.js",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "2d948a83db93f558b31faffdb25c3e3761a523669f90f91021fbe020dea0c4a8",
+      "mtimeMs": 1784465620487.8416,
+      "size": 18715,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/ingestion/src/file-classifier.ts",
       "language": "TypeScript",
       "symbols": [
@@ -4210,19 +5132,18 @@
           "endLine": 23
         },
         {
-          "name": "extensionFor",
+          "name": "supportedTextSourceExtensionFor",
           "kind": "function",
           "line": 25,
-          "exported": false,
-          "endLine": 25,
-          "signature": "(name: string)"
+          "exported": true,
+          "endLine": 25
         },
         {
           "name": "classifyTextSource",
           "kind": "const",
-          "line": 36,
+          "line": 38,
           "exported": true,
-          "endLine": 36
+          "endLine": 38
         }
       ],
       "imports": [
@@ -4236,9 +5157,73 @@
         }
       ],
       "exports": [],
-      "hash": "cd39c00e0648d52474341cb1b8197523e4da702216467a0106eb7ea1ef469867",
-      "mtimeMs": 1784448731018.928,
-      "size": 3572,
+      "hash": "2da7bd99d40c33fdaf5fff892f7a4487f5960a0912c6817b119df7fe4beea66c",
+      "mtimeMs": 1784465620488.0466,
+      "size": 3622,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/ingestion/src/hash-file.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "FileReadError",
+          "kind": "type",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        },
+        {
+          "name": "HashFileInput",
+          "kind": "interface",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "HashedFile",
+          "kind": "interface",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "hashFile",
+          "kind": "const",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Sha256Digest",
+          "specifier": "@struct/domain",
+          "imported": [
+            "Sha256Digest"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "1a5e9d7d89a911354a2599c5ed047e727f9a25fbc4134fa9b8cff5ca9337e2bc",
+      "mtimeMs": 1784465620488.1846,
+      "size": 2661,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -4392,6 +5377,190 @@
       "hash": "b8d6444970a6fceb15ef53247179894b3b5927d802e8b5dffccd8480afd950ff",
       "mtimeMs": 1784448731019.458,
       "size": 5378,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/ingestion/src/job-state.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DirectoryIngestionJobState",
+          "kind": "interface",
+          "line": 8,
+          "exported": true,
+          "endLine": 8
+        },
+        {
+          "name": "applyDirectoryIngestionTransition",
+          "kind": "function",
+          "line": 14,
+          "exported": true,
+          "endLine": 14
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "4a8bc257f4fed32559d4785321017250275e7c89a06f174fdf46b313d6347eb2",
+      "mtimeMs": 1784467669979.1746,
+      "size": 1009,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/ingestion/src/path-safety.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ResolvedDirectoryPath",
+          "kind": "interface",
+          "line": 6,
+          "exported": true,
+          "endLine": 6
+        },
+        {
+          "name": "isOutside",
+          "kind": "function",
+          "line": 11,
+          "exported": false,
+          "endLine": 11,
+          "signature": "(root: string, candidate: string)"
+        },
+        {
+          "name": "resolveRegisteredDirectoryPath",
+          "kind": "const",
+          "line": 18,
+          "exported": true,
+          "endLine": 18
+        },
+        {
+          "name": "isCanonicalPathContained",
+          "kind": "function",
+          "line": 54,
+          "exported": true,
+          "endLine": 54
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "isAbsolute, relative, resolve, sep",
+          "specifier": "node:path",
+          "imported": [
+            "isAbsolute",
+            "relative",
+            "resolve",
+            "sep"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DirectoryRelativePath",
+          "specifier": "@struct/domain",
+          "imported": [
+            "DirectoryRelativePath"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DirectoryPathError",
+          "specifier": "./directory-errors.js",
+          "imported": [
+            "DirectoryPathError"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "8d542a9448def779e0e88def49e7331f2b3b28dd0c9a07fb5dbb9cac1845970d",
+      "mtimeMs": 1784465620488.4392,
+      "size": 1972,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/ingestion/src/refresh-plan.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "RefreshDisposition",
+          "kind": "const",
+          "line": 8,
+          "exported": true,
+          "endLine": 8
+        },
+        {
+          "name": "RefreshDisposition",
+          "kind": "type",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "RefreshPlanItem",
+          "kind": "interface",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "RefreshEntry",
+          "kind": "interface",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "classify",
+          "kind": "function",
+          "line": 31,
+          "exported": false,
+          "endLine": 31
+        },
+        {
+          "name": "buildRefreshPlan",
+          "kind": "function",
+          "line": 51,
+          "exported": true,
+          "endLine": 51,
+          "doc": "Classifies two already-validated manifests by canonical path. Output order\nis independent of discovery enumeration order."
+        }
+      ],
+      "imports": [
+        {
+          "source": "Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "bc0b1f8b8cbf9db0c33ac6e33c344e3f04ab4cfa95b69f99d4b5b874a9e2c91b",
+      "mtimeMs": 1784463905701.8496,
+      "size": 2222,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -4662,9 +5831,9 @@
           "kind": "reexport"
         }
       ],
-      "hash": "fc6bd12162e931e80dcfb9eda57e19cb2008cbc739896c06595b4060db609a53",
-      "mtimeMs": 1784452368237.2402,
-      "size": 2895,
+      "hash": "4737c94b21306f962cc7ff3c149387aaf62eed690b39bccc8610dc38a24991ca",
+      "mtimeMs": 1784468320230.2627,
+      "size": 3161,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -4690,9 +5859,9 @@
       ],
       "imports": [],
       "exports": [],
-      "hash": "f7aa8ad5e72580eecbb38aceab0e4e1614ec480630324707b9e7572f998db85d",
-      "mtimeMs": 1784454281776.016,
-      "size": 1662,
+      "hash": "f3918ceec1562274e3087f15c986b40419817c6de893e82634023119137c1c6b",
+      "mtimeMs": 1784467892516.0286,
+      "size": 2127,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -5229,6 +6398,147 @@
       "hash": "18f7bcf073af59bc154817cb0dee11abf918fd3c3b58e5c29ad3f136bd42230d",
       "mtimeMs": 1784452368238.8838,
       "size": 16670,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/repositories/ingestion-jobs.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "TransactionExecutor",
+          "kind": "interface",
+          "line": 18,
+          "exported": false,
+          "endLine": 18
+        },
+        {
+          "name": "PositiveInteger",
+          "kind": "const",
+          "line": 25,
+          "exported": false,
+          "endLine": 25
+        },
+        {
+          "name": "ClaimedJobRow",
+          "kind": "const",
+          "line": 30,
+          "exported": false,
+          "endLine": 30
+        },
+        {
+          "name": "CreateDirectoryIngestionJobInput",
+          "kind": "interface",
+          "line": 42,
+          "exported": true,
+          "endLine": 42
+        },
+        {
+          "name": "OwnedDirectoryIngestionAttempt",
+          "kind": "interface",
+          "line": 49,
+          "exported": true,
+          "endLine": 49
+        },
+        {
+          "name": "DirectoryIngestionCommitResult",
+          "kind": "type",
+          "line": 53,
+          "exported": true,
+          "endLine": 53
+        },
+        {
+          "name": "DirectoryIngestionLeaseResult",
+          "kind": "type",
+          "line": 72,
+          "exported": true,
+          "endLine": 72
+        },
+        {
+          "name": "DirectoryIngestionRecovery",
+          "kind": "interface",
+          "line": 79,
+          "exported": true,
+          "endLine": 79
+        },
+        {
+          "name": "DirectoryIngestionRepositoryError",
+          "kind": "type",
+          "line": 84,
+          "exported": true,
+          "endLine": 84
+        },
+        {
+          "name": "queryError",
+          "kind": "function",
+          "line": 88,
+          "exported": false,
+          "endLine": 88,
+          "signature": "(operation: string, cause?: unknown)"
+        },
+        {
+          "name": "decodeStoredResult",
+          "kind": "function",
+          "line": 97,
+          "exported": false,
+          "endLine": 97,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "decodeClaimedJob",
+          "kind": "function",
+          "line": 102,
+          "exported": false,
+          "endLine": 102
+        },
+        {
+          "name": "readStateForUpdate",
+          "kind": "function",
+          "line": 122,
+          "exported": false,
+          "endLine": 122
+        },
+        {
+          "name": "DirectoryIngestionJobRepo",
+          "kind": "class",
+          "line": 137,
+          "exported": true,
+          "endLine": 137
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "QueryError",
+          "specifier": "../errors.js",
+          "imported": [
+            "QueryError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlClient",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "7b365495bee01719123b18a25a747d3dd3eb7b869436b5f688fff8d7e641da41",
+      "mtimeMs": 1784467669980.7336,
+      "size": 25412,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -6133,6 +7443,154 @@
       "hash": "055a509bb6e1a919393ce7e880694c00acd3d67e271a048253462a86e41808cc",
       "mtimeMs": 1784433778781.6345,
       "size": 8046,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/repositories/source-versions.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "RefreshResult",
+          "kind": "const",
+          "line": 18,
+          "exported": false,
+          "endLine": 18
+        },
+        {
+          "name": "DirectoryRefreshResult",
+          "kind": "type",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "DirectoryRefreshValidationError",
+          "kind": "class",
+          "line": 30,
+          "exported": true,
+          "endLine": 30
+        },
+        {
+          "name": "PreparedChunkEmbedding",
+          "kind": "interface",
+          "line": 40,
+          "exported": true,
+          "endLine": 40
+        },
+        {
+          "name": "PreparedDirectorySourceVersion",
+          "kind": "interface",
+          "line": 46,
+          "exported": true,
+          "endLine": 46
+        },
+        {
+          "name": "CommitDirectoryRefreshInput",
+          "kind": "interface",
+          "line": 61,
+          "exported": true,
+          "endLine": 61
+        },
+        {
+          "name": "CommitDirectoryRefreshResult",
+          "kind": "type",
+          "line": 70,
+          "exported": true,
+          "endLine": 70
+        },
+        {
+          "name": "TransactionExecutor",
+          "kind": "interface",
+          "line": 75,
+          "exported": false,
+          "endLine": 75
+        },
+        {
+          "name": "queryError",
+          "kind": "function",
+          "line": 82,
+          "exported": false,
+          "endLine": 82,
+          "signature": "(operation: string, cause?: unknown)"
+        },
+        {
+          "name": "validation",
+          "kind": "function",
+          "line": 91,
+          "exported": false,
+          "endLine": 91
+        },
+        {
+          "name": "assertInput",
+          "kind": "function",
+          "line": 99,
+          "exported": false,
+          "endLine": 99,
+          "signature": "(input: CommitDirectoryRefreshInput)"
+        },
+        {
+          "name": "insertManifest",
+          "kind": "function",
+          "line": 226,
+          "exported": false,
+          "endLine": 226
+        },
+        {
+          "name": "pgVector",
+          "kind": "function",
+          "line": 269,
+          "exported": false,
+          "endLine": 269,
+          "signature": "(values: ReadonlyArray<number>)"
+        },
+        {
+          "name": "insertPreparedDocument",
+          "kind": "function",
+          "line": 273,
+          "exported": false,
+          "endLine": 273
+        },
+        {
+          "name": "DirectorySourceVersionRepo",
+          "kind": "class",
+          "line": 367,
+          "exported": true,
+          "endLine": 367
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "QueryError",
+          "specifier": "../errors.js",
+          "imported": [
+            "QueryError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlClient",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "ee406cc6e08c2da775176a6e398bd1bbfd09892f8b657f044e45be704ef1785a",
+      "mtimeMs": 1784468702662.114,
+      "size": 31385,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -7489,6 +8947,43 @@
       "hash": "39eb0826c36ad22a6a7fa1ddd6efc20d3cbbfb42b60812327a668a47c3862ea3",
       "mtimeMs": 1784433778783.1716,
       "size": 15922,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/source-storage/src/versioned-artifacts.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "WriteVersionedArtifactInput",
+          "kind": "interface",
+          "line": 9,
+          "exported": true,
+          "endLine": 9
+        },
+        {
+          "name": "writeVersionedArtifact",
+          "kind": "const",
+          "line": 19,
+          "exported": true,
+          "endLine": 19
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "300bc52ffc36a080f703c48a10ebfc6b8df89f1d5b7ee83742cf33e4b87649e5",
+      "mtimeMs": 1784468476836.358,
+      "size": 1850,
       "generated": false,
       "vendor": false,
       "parser": "regex"

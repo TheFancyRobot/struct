@@ -75,6 +75,7 @@ tags:
 - `packages/ingestion` — `.txt`/`.md` classification, UTF-8 normalization, normalized hash, and source-version manifest creation.
 - `packages/observability` — placeholder (scaffolded).
 - `docs/adr/` — architecture decision records (DEC-0001 … DEC-0014).
+- STEP-03-04: `packages/ingestion/src/diff-manifest.ts` and `apply-refresh.ts`, `packages/source-storage/src/versioned-artifacts.ts`, `packages/persistence/src/repositories/source-versions.ts` plus migration 0008, and `apps/worker/src/jobs/refresh-directory.ts` form the deterministic directory-refresh path.
 <!-- AGENT-END:architecture-important-paths -->
 
 ## Constraints
