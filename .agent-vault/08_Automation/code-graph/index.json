@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-19T09:05:11.439Z",
+  "generatedAt": "2026-07-19T09:26:32.034Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -1799,7 +1799,7 @@
       ],
       "exports": [],
       "hash": "b07ede6f07345a3ddac1c909b9d5e2285789329fa0286e1e99aca8ab437c4373",
-      "mtimeMs": 1784451846676.907,
+      "mtimeMs": 1784452368234.3477,
       "size": 7542,
       "generated": false,
       "vendor": false,
@@ -1836,7 +1836,7 @@
       ],
       "exports": [],
       "hash": "78d76018345cfc14ce870cb93d17fcff9ce741b9b86a47dcffcfc44b960cf87f",
-      "mtimeMs": 1784449150810.3218,
+      "mtimeMs": 1784452368234.4773,
       "size": 532,
       "generated": false,
       "vendor": false,
@@ -2562,7 +2562,7 @@
       ],
       "exports": [],
       "hash": "ee811150701bdac13243ba5f561752771641be94016af265e15c5ec93e69adda",
-      "mtimeMs": 1784449150809.4075,
+      "mtimeMs": 1784452368234.9253,
       "size": 3508,
       "generated": false,
       "vendor": false,
@@ -2677,7 +2677,7 @@
       ],
       "exports": [],
       "hash": "a8f4e1344cc2548707ebc16371605a243acfaf5321d521e97a7164783a8cc059",
-      "mtimeMs": 1784450379005.2048,
+      "mtimeMs": 1784452368236.5793,
       "size": 2574,
       "generated": false,
       "vendor": false,
@@ -3946,7 +3946,7 @@
       ],
       "exports": [],
       "hash": "e7faed5c840e8dffb085fe3c2421858f758a7709b9fdb9d3d33324682722569b",
-      "mtimeMs": 1784449217087.0623,
+      "mtimeMs": 1784452368237.067,
       "size": 3584,
       "generated": false,
       "vendor": false,
@@ -3992,7 +3992,7 @@
         }
       ],
       "hash": "fc6bd12162e931e80dcfb9eda57e19cb2008cbc739896c06595b4060db609a53",
-      "mtimeMs": 1784449293179.9482,
+      "mtimeMs": 1784452368237.2402,
       "size": 2895,
       "generated": false,
       "vendor": false,
@@ -4019,9 +4019,9 @@
       ],
       "imports": [],
       "exports": [],
-      "hash": "acd33af44179dc02bcce046fa17d892640c5ed6a15f541a79f545f8e49c309d9",
-      "mtimeMs": 1784449217086.8447,
-      "size": 1455,
+      "hash": "f7aa8ad5e72580eecbb38aceab0e4e1614ec480630324707b9e7572f998db85d",
+      "mtimeMs": 1784452598462.976,
+      "size": 1662,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -4556,7 +4556,7 @@
       ],
       "exports": [],
       "hash": "18f7bcf073af59bc154817cb0dee11abf918fd3c3b58e5c29ad3f136bd42230d",
-      "mtimeMs": 1784451846677.2485,
+      "mtimeMs": 1784452368238.8838,
       "size": 16670,
       "generated": false,
       "vendor": false,
@@ -5619,6 +5619,376 @@
       "parser": "regex"
     },
     {
+      "path": "packages/retrieval/src/full-text.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "KeywordRow",
+          "kind": "const",
+          "line": 14,
+          "exported": false,
+          "endLine": 14
+        },
+        {
+          "name": "rowToCandidate",
+          "kind": "function",
+          "line": 34,
+          "exported": false,
+          "endLine": 34
+        },
+        {
+          "name": "KeywordRetrieval",
+          "kind": "class",
+          "line": 59,
+          "exported": true,
+          "endLine": 59
+        }
+      ],
+      "imports": [
+        {
+          "source": "SqlClient",
+          "specifier": "@struct/persistence",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "763fa99e8cfc8a796309d793b4723c39a145dccb14cadd9edd6e3a464c3dd75d",
+      "mtimeMs": 1784452855393.7349,
+      "size": 5018,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/retrieval/src/hybrid-retrieval.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "RECIPROCAL_RANK_OFFSET",
+          "kind": "const",
+          "line": 10,
+          "exported": false,
+          "endLine": 10
+        },
+        {
+          "name": "typeHybridCandidate",
+          "kind": "type",
+          "line": 11,
+          "exported": false,
+          "endLine": 11
+        },
+        {
+          "name": "typeKeywordCandidate",
+          "kind": "type",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        },
+        {
+          "name": "typeVectorCandidate",
+          "kind": "type",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "MutableHybridCandidate",
+          "kind": "interface",
+          "line": 18,
+          "exported": false,
+          "endLine": 18
+        },
+        {
+          "name": "fuseCandidates",
+          "kind": "function",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "HybridRetrieval",
+          "kind": "class",
+          "line": 78,
+          "exported": true,
+          "endLine": 78
+        }
+      ],
+      "imports": [
+        {
+          "source": "RetrievalQueryError",
+          "specifier": "@struct/domain",
+          "imported": [
+            "RetrievalQueryError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "KeywordRetrieval",
+          "specifier": "./full-text.js",
+          "imported": [
+            "KeywordRetrieval"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "VectorRetrieval",
+          "specifier": "./vector-search.js",
+          "imported": [
+            "VectorRetrieval"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "./retrieval-types.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "./retrieval-types.js",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "./retrieval-types.js",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "dc90ef4efccbf048f6cba92f411793b65eecf5a37c08cca8798e15894e2e9c7d",
+      "mtimeMs": 1784452855395.4373,
+      "size": 4363,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/retrieval/src/retrieval-types.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonBlankString",
+          "kind": "const",
+          "line": 11,
+          "exported": false,
+          "endLine": 11
+        },
+        {
+          "name": "CandidateLimit",
+          "kind": "const",
+          "line": 14,
+          "exported": false,
+          "endLine": 14
+        },
+        {
+          "name": "RetrievalScope",
+          "kind": "const",
+          "line": 16,
+          "exported": true,
+          "endLine": 16
+        },
+        {
+          "name": "RetrievalScope",
+          "kind": "type",
+          "line": 23,
+          "exported": true,
+          "endLine": 23
+        },
+        {
+          "name": "KeywordSearchRequest",
+          "kind": "const",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "KeywordSearchRequest",
+          "kind": "type",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "EmbeddingVector",
+          "kind": "const",
+          "line": 31,
+          "exported": true,
+          "endLine": 31
+        },
+        {
+          "name": "EmbeddingVector",
+          "kind": "type",
+          "line": 51,
+          "exported": true,
+          "endLine": 51
+        },
+        {
+          "name": "VectorSearchRequest",
+          "kind": "const",
+          "line": 53,
+          "exported": true,
+          "endLine": 53
+        },
+        {
+          "name": "VectorSearchRequest",
+          "kind": "type",
+          "line": 58,
+          "exported": true,
+          "endLine": 58
+        },
+        {
+          "name": "RetrievalChunk",
+          "kind": "const",
+          "line": 60,
+          "exported": true,
+          "endLine": 60
+        },
+        {
+          "name": "RetrievalChunk",
+          "kind": "type",
+          "line": 69,
+          "exported": true,
+          "endLine": 69
+        },
+        {
+          "name": "KeywordCandidate",
+          "kind": "const",
+          "line": 71,
+          "exported": true,
+          "endLine": 71
+        },
+        {
+          "name": "KeywordCandidate",
+          "kind": "type",
+          "line": 79,
+          "exported": true,
+          "endLine": 79
+        },
+        {
+          "name": "VectorCandidate",
+          "kind": "const",
+          "line": 81,
+          "exported": true,
+          "endLine": 81
+        },
+        {
+          "name": "VectorCandidate",
+          "kind": "type",
+          "line": 89,
+          "exported": true,
+          "endLine": 89
+        },
+        {
+          "name": "HybridSearchRequest",
+          "kind": "const",
+          "line": 91,
+          "exported": true,
+          "endLine": 91
+        },
+        {
+          "name": "HybridSearchRequest",
+          "kind": "type",
+          "line": 98,
+          "exported": true,
+          "endLine": 98
+        },
+        {
+          "name": "HybridCandidate",
+          "kind": "const",
+          "line": 100,
+          "exported": true,
+          "endLine": 100
+        },
+        {
+          "name": "HybridCandidate",
+          "kind": "type",
+          "line": 114,
+          "exported": true,
+          "endLine": 114
+        },
+        {
+          "name": "KeywordSearchResult",
+          "kind": "const",
+          "line": 116,
+          "exported": true,
+          "endLine": 116
+        },
+        {
+          "name": "KeywordSearchResult",
+          "kind": "type",
+          "line": 119,
+          "exported": true,
+          "endLine": 119
+        },
+        {
+          "name": "VectorSearchResult",
+          "kind": "const",
+          "line": 121,
+          "exported": true,
+          "endLine": 121
+        },
+        {
+          "name": "VectorSearchResult",
+          "kind": "type",
+          "line": 124,
+          "exported": true,
+          "endLine": 124
+        },
+        {
+          "name": "HybridSearchResult",
+          "kind": "const",
+          "line": 126,
+          "exported": true,
+          "endLine": 126
+        },
+        {
+          "name": "HybridSearchResult",
+          "kind": "type",
+          "line": 129,
+          "exported": true,
+          "endLine": 129
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "55099fefb1d7f0f80b4dae2e1fe9b03e0d55c8e93228271f99e92257c30b62c6",
+      "mtimeMs": 1784453131854.2502,
+      "size": 4166,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/retrieval/src/search-text.ts",
       "language": "TypeScript",
       "symbols": [
@@ -5860,6 +6230,81 @@
       "hash": "0521187c7285b2f19ec27bac318b3047397ce8fc5c44390a3bd91d2602f34f6c",
       "mtimeMs": 1784433778782.4373,
       "size": 38308,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/retrieval/src/vector-search.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "StoreChunkEmbeddingInput",
+          "kind": "const",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "StoreChunkEmbeddingInput",
+          "kind": "type",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "VectorRow",
+          "kind": "const",
+          "line": 30,
+          "exported": false,
+          "endLine": 30
+        },
+        {
+          "name": "vectorLiteral",
+          "kind": "function",
+          "line": 50,
+          "exported": false,
+          "endLine": 50,
+          "signature": "(embedding: ReadonlyArray<number>)"
+        },
+        {
+          "name": "rowToCandidate",
+          "kind": "function",
+          "line": 54,
+          "exported": false,
+          "endLine": 54
+        },
+        {
+          "name": "VectorRetrieval",
+          "kind": "class",
+          "line": 79,
+          "exported": true,
+          "endLine": 79
+        }
+      ],
+      "imports": [
+        {
+          "source": "SqlClient",
+          "specifier": "@struct/persistence",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "f599069fe478888f3e6c04444af70e6b729d9a33a62a91591ac911dccad8b8ed",
+      "mtimeMs": 1784452855394.7598,
+      "size": 8705,
       "generated": false,
       "vendor": false,
       "parser": "regex"

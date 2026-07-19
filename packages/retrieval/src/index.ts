@@ -1,1 +1,5 @@
 export * from './search-text.js'
+export * from './retrieval-types.js'
+export * from './full-text.js'
+export * from './vector-search.js'
+export * from './hybrid-retrieval.js'

@@ -36,4 +36,9 @@ export const migrations: readonly Migration[] = [
     upPath: new URL('./0005_document_chunks.sql', import.meta.url).pathname,
     downPath: new URL('./0005_document_chunks.down.sql', import.meta.url).pathname,
   },
+  {
+    name: '0006_hybrid_retrieval',
+    upPath: new URL('./0006_hybrid_retrieval.sql', import.meta.url).pathname,
+    downPath: new URL('./0006_hybrid_retrieval.down.sql', import.meta.url).pathname,
+  },
 ] as const

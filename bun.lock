@@ -198,6 +198,7 @@
         "effect": "3.22.0",
       },
       "devDependencies": {
+        "postgres": "^3.4.9",
         "typescript": "7.0.2",
       },
     },
