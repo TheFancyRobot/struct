@@ -1,6 +1,6 @@
 /* global Buffer, URL, clearTimeout, process, setTimeout */
 import { createHash, timingSafeEqual } from 'node:crypto'
-import { createReadStream } from 'node:fs'
+import { createReadStream, createWriteStream } from 'node:fs'
 import {
   mkdir,
   rename,
@@ -9,7 +9,11 @@ import {
 } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { join } from 'node:path'
+import { Transform } from 'node:stream'
+import { pipeline } from 'node:stream/promises'
 import { DuckDBInstance } from '@duckdb/node-api'
+import Parser from 'stream-json/Parser.js'
+import Stringer from 'stream-json/Stringer.js'
 
 const PROTOCOL_VERSION = '1'
 const ARTIFACT_ROOT = '/artifacts'
@@ -138,12 +142,109 @@ function sourcePath(input) {
   )
 }
 
-function sourceSql(input) {
-  const path = sourcePath(input).replaceAll("'", "''")
+function sourceSql(input, fields) {
+  const path = (input.preparedPath ?? sourcePath(input)).replaceAll("'", "''")
   if (input.format === 'csv') {
     return `read_csv_auto('${path}', header=true, all_varchar=true, strict_mode=true)`
   }
+  if (fields !== undefined) {
+    const columns = fields
+      .map((field) => `'${field.name.replaceAll("'", "''")}': 'VARCHAR'`)
+      .join(', ')
+    return `read_json_auto('${path}', format='auto', union_by_name=true, columns={${columns}}, maximum_object_size=16777216)`
+  }
   return `read_json_auto('${path}', format='auto', union_by_name=true, maximum_object_size=16777216)`
+}
+
+class PreserveExactNumbers extends Transform {
+  constructor(fieldNames, ensureActive) {
+    super({ objectMode: true })
+    this.fieldNames = fieldNames
+    this.ensureActive = ensureActive
+    this.containers = []
+  }
+
+  _transform(token, _encoding, callback) {
+    try {
+      this.ensureActive()
+      const parent = this.containers.at(-1)
+      if (token.name === 'startObject') {
+        if (parent?.kind === 'object') parent.key = undefined
+        this.containers.push({
+          kind: 'object',
+          record: this.containers.length === 0
+            || (this.containers.length === 1 && parent?.kind === 'array' && parent.root),
+          key: undefined,
+        })
+      } else if (token.name === 'startArray') {
+        if (parent?.kind === 'object') parent.key = undefined
+        this.containers.push({
+          kind: 'array',
+          root: this.containers.length === 0,
+        })
+      } else if (token.name === 'keyValue' && parent?.kind === 'object') {
+        parent.key = token.value
+      } else if (
+        token.name === 'numberValue'
+        && parent?.kind === 'object'
+        && parent.record
+        && this.fieldNames.has(parent.key)
+      ) {
+        parent.key = undefined
+        return callback(null, { name: 'stringValue', value: token.value })
+      } else if (
+        ['stringValue', 'numberValue', 'nullValue', 'trueValue', 'falseValue'].includes(token.name)
+        && parent?.kind === 'object'
+      ) {
+        parent.key = undefined
+      } else if (token.name === 'endObject' || token.name === 'endArray') {
+        this.containers.pop()
+      }
+      callback(null, token)
+    } catch (error) {
+      callback(error)
+    }
+  }
+}
+
+async function prepareExactJsonInput(input, request, ensureActive) {
+  if (input.format === 'csv') return input
+  const directory = join(SCRATCH_ROOT, 'input')
+  await mkdir(directory, { recursive: true })
+  const preparedPath = join(directory, `${request.snapshotId}-${input.ordinal}.json`)
+  const exactNumberFields = new Set(
+    request.fields
+      .filter((field) => field.logicalType === 'integer' || field.logicalType === 'decimal')
+      .map((field) => field.name),
+  )
+  try {
+    await rm(preparedPath, { force: true })
+    await pipeline(
+      createReadStream(sourcePath(input)),
+      Parser.make({
+        jsonStreaming: input.format === 'jsonl',
+        packKeys: true,
+        packStrings: true,
+        packNumbers: true,
+        streamKeys: false,
+        streamStrings: false,
+        streamNumbers: false,
+      }),
+      new PreserveExactNumbers(exactNumberFields, ensureActive),
+      Stringer.make({
+        useValues: true,
+        makeArray: input.format === 'jsonl',
+      }),
+      createWriteStream(preparedPath, { flags: 'wx' }),
+    )
+  } catch (error) {
+    await rm(preparedPath, { force: true })
+    if (error?.code === undefined) {
+      throw new RequestFailure('invalid-input', 'Structured JSON input is invalid')
+    }
+    throw error
+  }
+  return { ...input, preparedPath }
 }
 
 function duckType(logicalType) {
@@ -178,6 +279,7 @@ async function materialize(request, httpRequest) {
   let cancelled = false
   let instance
   let connection
+  const preparedPaths = []
   const temporary = join(OUTPUT_ROOT, `${request.snapshotId}.parquet.tmp`)
   const interrupt = () => {
     cancelled = true
@@ -229,21 +331,46 @@ async function materialize(request, httpRequest) {
     ensureActive()
     await connection.run(`SET allowed_directories=['${ARTIFACT_ROOT}','${SCRATCH_ROOT}']`)
     await connection.run('SET enable_external_access=false')
-    const union = request.inputs.map((input) => `SELECT * FROM ${sourceSql(input)}`).join(' UNION ALL BY NAME ')
+    const inferredUnion = request.inputs
+      .map((input) => `SELECT * FROM ${sourceSql(input)}`)
+      .join(' UNION ALL BY NAME ')
     await connection.run(
-      `CREATE TABLE imported AS SELECT * FROM (${union}) LIMIT ${request.limits.maxRows + 1}`,
+      `CREATE TABLE scanned AS SELECT * FROM (${inferredUnion}) LIMIT ${request.limits.maxRows + 1}`,
     )
-    const countReader = await connection.runAndReadAll('SELECT count(*) AS row_count FROM imported')
+    const countReader = await connection.runAndReadAll('SELECT count(*) AS row_count FROM scanned')
     await countReader.readAll()
     const rowCount = Number(countReader.getRowObjectsJS()[0].row_count)
     if (rowCount === 0) throw new RequestFailure('invalid-input', 'Structured input contains no rows')
     if (rowCount > request.limits.maxRows) {
       throw new RequestFailure('resource-limit', 'Input rows exceed configured limit')
     }
-    const schemaReader = await connection.runAndReadAll("PRAGMA table_info('imported')")
+    const schemaReader = await connection.runAndReadAll("PRAGMA table_info('scanned')")
     await schemaReader.readAll()
     const importedNames = new Set(
       schemaReader.getRowObjectsJS().map((column) => String(column.name)),
+    )
+    const declaredNames = new Set(request.fields.map((field) => field.name))
+    if (
+      importedNames.size !== declaredNames.size
+      || [...importedNames].some((name) => !declaredNames.has(name))
+    ) {
+      throw new RequestFailure(
+        'invalid-input',
+        'Structured input columns do not match the declared schema',
+      )
+    }
+    await connection.run('DROP TABLE scanned')
+    const exactInputs = []
+    for (const input of request.inputs) {
+      const prepared = await prepareExactJsonInput(input, request, ensureActive)
+      exactInputs.push(prepared)
+      if (prepared.preparedPath !== undefined) preparedPaths.push(prepared.preparedPath)
+    }
+    const exactUnion = exactInputs
+      .map((input) => `SELECT * FROM ${sourceSql(input, request.fields)}`)
+      .join(' UNION ALL BY NAME ')
+    await connection.run(
+      `CREATE TABLE imported AS SELECT * FROM (${exactUnion}) LIMIT ${request.limits.maxRows + 1}`,
     )
     for (const field of request.fields) {
       if (!importedNames.has(field.name)) {
@@ -293,12 +420,18 @@ async function materialize(request, httpRequest) {
       const orderable = field.logicalType === 'json'
         ? `TRY_CAST(${name} AS VARCHAR)`
         : name
+      const minimum = field.logicalType === 'decimal'
+        ? `regexp_replace(regexp_replace(CAST(min(${name}) AS VARCHAR), '0+$', ''), '\\.$', '')`
+        : `min(${orderable})`
+      const maximum = field.logicalType === 'decimal'
+        ? `regexp_replace(regexp_replace(CAST(max(${name}) AS VARCHAR), '0+$', ''), '\\.$', '')`
+        : `max(${orderable})`
       const reader = await connection.runAndReadAll(
         `SELECT
            count(*) - count(${name}) AS null_count,
            count(DISTINCT ${name}) AS distinct_count,
-           min(${orderable}) AS minimum,
-           max(${orderable}) AS maximum
+           ${minimum} AS minimum,
+           ${maximum} AS maximum
          FROM materialized`,
       )
       await reader.readAll()
@@ -364,6 +497,7 @@ async function materialize(request, httpRequest) {
     clearTimeout(timeout)
     httpRequest.off('aborted', interrupt)
     await rm(temporary, { force: true })
+    await Promise.all(preparedPaths.map((path) => rm(path, { force: true })))
     connection?.disconnectSync()
     instance?.closeSync()
   }

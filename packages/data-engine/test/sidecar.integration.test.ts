@@ -254,9 +254,9 @@ suite('data-engine sidecar', () => {
   it('preserves exact decimals and rejects deterministic schema conversion failures', async () => {
     const materializeValue = async (
       text: string,
-      format: 'json' | 'csv',
+      format: 'json' | 'jsonl' | 'csv',
       logicalType: MaterializeRequest['fields'][number]['logicalType'],
-      suffix: number,
+      suffix: number | string,
     ) => {
       const input = await storeInput(new TextEncoder().encode(text))
       return hostRequest({
@@ -330,5 +330,58 @@ suite('data-engine sidecar', () => {
       7,
     )
     expect(exactDecimal.status).toBe(200)
+
+    const exactJsonDecimal = await materializeValue(
+      '[{"value":1234567890123456.1234567891}]',
+      'json',
+      'decimal',
+      8,
+    )
+    expect(exactJsonDecimal.status).toBe(200)
+    expect(exactJsonDecimal.json).toMatchObject({
+      ok: true,
+      result: {
+        profile: {
+          columns: [{
+            minimum: '1234567890123456.1234567891',
+            maximum: '1234567890123456.1234567891',
+          }],
+        },
+      },
+    })
+
+    const exactJsonlDecimal = await materializeValue(
+      '{"value":1234567890123456.1234567891}\n',
+      'jsonl',
+      'decimal',
+      9,
+    )
+    expect(exactJsonlDecimal.status).toBe(200)
+    expect(exactJsonlDecimal.json).toMatchObject({
+      ok: true,
+      result: {
+        profile: {
+          columns: [{
+            minimum: '1234567890123456.1234567891',
+            maximum: '1234567890123456.1234567891',
+          }],
+        },
+      },
+    })
+
+    const unexpectedColumn = await materializeValue(
+      '[{"value":1,"extra":2}]',
+      'json',
+      'integer',
+      'a',
+    )
+    expect(unexpectedColumn.status).toBe(400)
+    expect(unexpectedColumn.json).toEqual({
+      ok: false,
+      error: {
+        code: 'invalid-input',
+        message: 'Structured input columns do not match the declared schema',
+      },
+    })
   }, 20_000)
 })

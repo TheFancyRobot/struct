@@ -205,6 +205,15 @@ describeIf('DatasetMaterializationRepo (PostgreSQL)', () => {
       ),
     )
     expect(stale._tag).toBe('Failure')
+    const wrongSnapshot = await Effect.runPromiseExit(
+      DatasetMaterializationRepo.complete(recovered.value, {
+        ...materialization,
+        snapshotId: DatasetSnapshotId.make(
+          '730e8400-e29b-41d4-a716-446655440099',
+        ),
+      }).pipe(Effect.provide(layer)),
+    )
+    expect(String(wrongSnapshot)).toContain('DatasetMaterializationScopeError')
     await Effect.runPromise(
       DatasetMaterializationRepo.complete(recovered.value, materialization).pipe(
         Effect.provide(layer),

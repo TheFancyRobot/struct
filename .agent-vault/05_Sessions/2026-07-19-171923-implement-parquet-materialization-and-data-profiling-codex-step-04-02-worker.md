@@ -57,6 +57,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Completed worker self-review and all repository, PostgreSQL, container, documentation, and vault handoff gates.
 - Root pre-publication review found and fixed uncapped request limits, unauthenticated health, non-portable host transport, whole-file allocation before size checks, nondeterministic sidecar dependency installation, missing production enqueue, and missing immediate failure transitions. The final topology keeps DuckDB internal/no-egress and uses a fixed-target loopback gateway; the sidecar is pinned to Node `24.18.0` LTS.
 - PR #19 Codex review raised three findings. Remediation keeps the step/vault in progress until merge, introduces an explicit retryable `busy` sidecar outcome without retrying hard resource-limit failures, and bounds both artifact response acquisition and body download with the configured timeout.
+- Root review remediation pass completed on 2026-07-19: preserved exact JSON/JSONL integer and decimal lexemes with bounded streaming before DuckDB conversion; returned decimal profile extrema as canonical exact text; rejected undeclared input columns; bound completion to the claimed snapshot/workspace/project/dataset; and pinned the Node 24.18.0 sidecar base image by digest.
+- Final candidate validation: 395 default tests passed (143 environment-gated skips, 1,539 assertions); 487 PostgreSQL tests passed (2 sidecar-only skips, 2,266 assertions); live Compose sidecar integration passed 2 tests / 27 assertions. Typecheck, lint, dependency boundaries, production builds, docs lint, secrets scan, migration down/up, Compose config, Node syntax checks, diff checks, and vault doctor all passed.
 
 ## Findings
 

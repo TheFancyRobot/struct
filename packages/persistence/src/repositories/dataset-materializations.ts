@@ -377,6 +377,17 @@ export class DatasetMaterializationRepo
             job: DatasetMaterializationJob,
             materialization: DatasetMaterialization,
           ) {
+            if (
+              materialization.snapshotId !== job.snapshotId
+              || materialization.workspaceId !== job.workspaceId
+              || materialization.projectId !== job.projectId
+              || materialization.datasetId !== job.datasetId
+            ) {
+              return yield* new DatasetMaterializationScopeError({
+                snapshotId: materialization.snapshotId,
+                message: 'Materialization result does not match its claimed job scope',
+              })
+            }
             const completed = yield* Effect.tryPromise({
               try: () => sql.transaction(async (transaction) => {
                 const ownership = await transaction.unsafe(

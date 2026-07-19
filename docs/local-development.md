@@ -120,8 +120,8 @@ Additional variables (budgets, limits, log level) are added as their owning phas
 ### 4.1 Apple Silicon (macOS arm64)
 
 - Bun runs natively on arm64; no Rosetta required.
-- The sidecar Dockerfile supports arm64 and amd64 and verifies the published
-  Node `24.18.0` archive SHA-256 for the selected architecture.
+- The sidecar Dockerfile supports arm64 and amd64 and pins the published
+  Node `24.18.0` multi-architecture image digest.
 - `pgvector/pgvector:pg16` provides an arm64 PostgreSQL image.
 - Bun applications run natively; PostgreSQL and DuckDB require Compose. The
   sidecar does not require Node or another adapter runtime on the host.
