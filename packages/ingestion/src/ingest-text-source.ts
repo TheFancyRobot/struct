@@ -45,6 +45,7 @@ export interface IngestTextSourceResult {
 
 const textDecoder = new TextDecoder('utf-8', { fatal: true })
 const textEncoder = new TextEncoder()
+const MAX_MANIFEST_FRAGMENTS = 10_000
 
 const hashBytes = (bytes: Uint8Array): `sha256:${string}` =>
   `sha256:${createHash('sha256').update(bytes).digest('hex')}`
@@ -84,6 +85,12 @@ export const ingestTextSource = (input: IngestTextSourceInput) =>
           : parseText(staged.bytes)).pipe(
       Effect.mapError((error) => new IngestionFailureError({ reason: error.reason, message: error.message })),
     )
+    if (document.fragments.length > MAX_MANIFEST_FRAGMENTS) {
+      return yield* Effect.fail(new IngestionFailureError({
+        reason: 'document-too-large',
+        message: `Document exceeds the ${MAX_MANIFEST_FRAGMENTS} fragment limit`,
+      }))
+    }
     const normalizedBytes = textEncoder.encode(document.text)
     const normalized: NormalizedText = { bytes: normalizedBytes, contentHash: hashBytes(normalizedBytes) }
     const raw = yield* input.store.writeObject(staged.bytes, { mediaType: input.mediaType }).pipe(

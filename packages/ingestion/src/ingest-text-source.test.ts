@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { Effect } from 'effect'
+import { Cause, Effect, Exit } from 'effect'
 import { createHash } from 'node:crypto'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -100,5 +100,31 @@ describe('ingestTextSource', () => {
 
     expect(raw.byteLength).toBe(original.byteLength)
     expect(raw.bytes).toEqual(original)
+  })
+
+  it('rejects documents whose locator manifest would exceed the bounded fragment limit', async () => {
+    const store = await Effect.runPromise(LocalArtifactStore.make({ root: await tempRoot() }))
+    const staged = await Effect.runPromise(store.stageObject(
+      'many.txt',
+      encode(Array.from({ length: 10_001 }, () => 'x').join('\n\n')),
+      { mediaType: 'text/plain' },
+    ))
+
+    const result = await Effect.runPromiseExit(ingestTextSource({
+      store,
+      stagedRef: staged.ref,
+      name: 'many.txt',
+      mediaType: 'text/plain',
+      maxBytes: 100_000,
+    }))
+
+    expect(Exit.isFailure(result)).toBe(true)
+    if (Exit.isFailure(result)) {
+      const failure = Cause.failureOption(result.cause)
+      expect(failure._tag).toBe('Some')
+      if (failure._tag === 'Some') {
+        expect(failure.value).toMatchObject({ reason: 'document-too-large' })
+      }
+    }
   })
 })

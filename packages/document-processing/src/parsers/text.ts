@@ -9,7 +9,7 @@ export const parseText = (bytes: Uint8Array) =>
     try: () => {
       const source = decoder.decode(bytes)
       const fragments = normalize(source)
-        .split(/\n{2,}/)
+        .split(/\n(?:[ \t]*\n)+/)
         .filter((text) => text.trim().length > 0)
         .map((text, index) => ({ text, paragraph: index + 1 }))
       return normalizeSourceDocument('text', source, fragments)

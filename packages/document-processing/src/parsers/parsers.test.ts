@@ -60,6 +60,19 @@ describe('document parsers', () => {
     expect(text.fragments.map((fragment) => fragment.paragraph)).toEqual([1, 2])
   })
 
+  it('recognizes Setext sections and whitespace-only text paragraph separators', async () => {
+    const markdown = await Effect.runPromise(parseMarkdown(encode('Title\n=====\n\nBody')))
+    const text = await Effect.runPromise(parseText(encode('First\n  \t\nSecond')))
+    expect(markdown.fragments).toMatchObject([
+      { text: 'Title\n=====', section: 'Title', paragraph: 1 },
+      { text: 'Body', section: 'Title', paragraph: 2 },
+    ])
+    expect(text.fragments).toMatchObject([
+      { text: 'First', paragraph: 1 },
+      { text: 'Second', paragraph: 2 },
+    ])
+  })
+
   it('preserves adjacent hashes while removing whitespace-delimited ATX closing markers', async () => {
     const document = await Effect.runPromise(parseMarkdown(encode('# C#\n\n# Topic ###')))
     expect(document.fragments).toMatchObject([

@@ -50,6 +50,18 @@ const markdownFragments = (source: string): ReadonlyArray<MarkdownFragment> => {
       lines.push(line)
       continue
     }
+    if (/^ {0,3}(?:=+|-+)[ \t]*$/.test(line) && lines.length > 0) {
+      const headingText = lines.join('\n').trim()
+      section = headingText
+      fragments.push({
+        text: `${lines.join('\n')}\n${line}`.trim(),
+        section,
+        paragraph: ++paragraph,
+      })
+      lines = []
+      blockSection = section
+      continue
+    }
     const heading = /^ {0,3}#{1,6}[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/.exec(line)
     if (heading) {
       flush()
