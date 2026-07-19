@@ -59,6 +59,14 @@ describe('document parsers', () => {
     expect(text.fragments.map((fragment) => fragment.paragraph)).toEqual([1, 2])
   })
 
+  it('preserves adjacent hashes while removing whitespace-delimited ATX closing markers', async () => {
+    const document = await Effect.runPromise(parseMarkdown(encode('# C#\n\n# Topic ###')))
+    expect(document.fragments).toMatchObject([
+      { text: '# C#', section: 'C#', paragraph: 1 },
+      { text: '# Topic ###', section: 'Topic', paragraph: 2 },
+    ])
+  })
+
   it('splits Markdown headings at block boundaries and ignores headings inside fences', async () => {
     const document = await Effect.runPromise(parseMarkdown(encode('Intro\n# Details\nBody\n```\n# not a heading\n```')))
     expect(document.fragments).toMatchObject([

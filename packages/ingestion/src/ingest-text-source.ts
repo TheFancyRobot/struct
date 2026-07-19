@@ -76,7 +76,7 @@ export const ingestTextSource = (input: IngestTextSourceInput) =>
       maxBytes: input.maxBytes,
     })
     const document = yield* (classification.extension === '.pdf'
-      ? parsePdf(staged.bytes)
+      ? parsePdf(staged.bytes.slice())
       : classification.extension === '.html' || classification.extension === '.htm'
         ? parseHtml(staged.bytes)
         : classification.extension === '.md'

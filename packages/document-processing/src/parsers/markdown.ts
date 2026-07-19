@@ -50,7 +50,7 @@ const markdownFragments = (source: string): ReadonlyArray<MarkdownFragment> => {
       lines.push(line)
       continue
     }
-    const heading = /^ {0,3}#{1,6}[ \t]+(.+?)[ \t]*#*[ \t]*$/.exec(line)
+    const heading = /^ {0,3}#{1,6}[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/.exec(line)
     if (heading) {
       flush()
       section = heading[1]?.trim() ?? null
