@@ -2,7 +2,7 @@
 
 This document is the Phase 0 specification for the reproducible evaluation corpus and the release quality-gate matrix. It is the contract that lets later phases implement the corpus generator, question loaders, and gate evaluator without re-litigating schemas, ground truth, thresholds, or security handoffs. It consumes [STEP-00-05's finalized handoff](./security-model.md#25-step-00-06-handoff) (abuse categories, limits, sanitization, and audit events) and sharpens [evaluation-strategy.md](./evaluation-strategy.md) into a single, deterministic, content-addressed asset.
 
-**Phase ownership.** Phase 0 owns this specification only. `packages/evaluation`, the corpus generator CLI, the gate evaluator, and `.github/workflows/ci.yml` are created by later phases (Phase 04 implements the generator and deterministic gates; Phase 09 hardens and audits). Every CLI command and file path below that is not already present is a **planned contract**, not a claim that the artifact exists. Phase 0 creates `docs/evaluation-corpus.md` and nothing else.
+**Phase ownership.** Phase 0 owns this specification. STEP-04-05 implements the deterministic JSON generator, manifest verifier, question/ground-truth artifacts, and compare command in `packages/evaluation`; see [evaluation-corpus-generator.md](./evaluation-corpus-generator.md). STEP-04-06 owns the full gate evaluator, and Phase 09 hardens the pre-release audit and CI policy.
 
 Related documents:
 
@@ -29,7 +29,7 @@ Related documents:
 The corpus manifest is the single root of trust for one generated corpus version. It is machine-readable, deterministic, and content-addressed. The product encodes it with Effect Schema; the shape below is the stable TypeScript contract (TypeScript 7.0.2 compatible, plain types — no compile-time-only decorators).
 
 ```typescript
-// packages/evaluation/src/corpus/manifest.ts  (planned, Phase 04 — not yet present)
+// Implemented in packages/evaluation/src/corpus.ts by STEP-04-05.
 export type CorpusVersion = `${number}.${number}.${number}`;          // e.g. "1.0.0"
 export type ProfileId = "smoke" | "full";
 export type Sha256 = string;                                         // 64 lowercase hex chars
@@ -56,13 +56,15 @@ export interface FieldDescriptor {
 
 export interface CorpusFileEntry {
   path: string;                      // repo-relative, POSIX, under the corpus root
-  kind: "json" | "jsonl" | "markdown" | "pdf" | "log" | "code" | "dictionary" | "readme";
-  schemaFamilyId?: string;           // present for json/jsonl record files
+  kind: "json";
+  schemaFamilyId: string;
   sha256: Sha256;                     // content hash of canonical bytes
   sizeBytes: number;
-  recordCount?: number;              // for jsonl batches
-  sourceVersion: "v1" | "v2";         // which version introduced this exact content
+  recordCount: 1;
+  recordId: Sha256;
+  sourceVersion: "v1";
   injectedAbuseIds: string[];         // ABUSE-xx present as inert fixtures in this file ([])
+  caseTags: string[];
 }
 
 export interface CorpusManifest {
@@ -71,8 +73,8 @@ export interface CorpusManifest {
   generatorVersion: CorpusVersion;         // generator that produced this manifest
   profile: ProfileId;                      // "smoke" | "full"
   canonicalSeed: string;                    // hex, e.g. "5d4c02a1f3b8e617"
-  prng: "splitmix64+seedsplit" | "xoshiro256ss"; // documented deterministic PRNG
-  generatedAt: Iso8601Utc;                  // informational only; not a reproducibility input
+  prng: "sha256-seedsplit";                 // documented deterministic stream derivation
+  generatedAt: Iso8601Utc;                  // fixed v1 constant
   totalFiles: number;                       // exact count, manifest-defined
   totalRecords: number;
   schemaFamilies: SchemaFamilyDescriptor[];
@@ -93,10 +95,10 @@ Example (abbreviated) manifest for a `full` v1 corpus:
   "generatorVersion": "0.1.0",
   "profile": "full",
   "canonicalSeed": "5d4c02a1f3b8e617",
-  "prng": "splitmix64+seedsplit",
-  "generatedAt": "2026-03-01T00:00:00Z",
-  "totalFiles": 24260,
-  "totalRecords": 24000,
+  "prng": "sha256-seedsplit",
+  "generatedAt": "2026-07-17T00:00:00Z",
+  "totalFiles": 25000,
+  "totalRecords": 25000,
   "schemaFamilies": [
     {
       "schemaFamilyId": "fam.call_log",
@@ -138,25 +140,17 @@ Example (abbreviated) manifest for a `full` v1 corpus:
 
 ```typescript
 export interface GeneratorConfig {
-  corpusVersion: CorpusVersion;
-  profile: ProfileId;
-  canonicalSeed: string;            // one canonical seed per corpus version
   outDir: string;
-  prng: "splitmix64+seedsplit" | "xoshiro256ss";
-  emitGroundTruth: boolean;         // always true for full; true for smoke
-  emitQuestionManifest: boolean;    // always true for full; true for smoke
-  emitBenchmarkEnvTemplate: boolean;
-  // Hard guard: generation must not call any model provider or network.
-  forbidModelCalls: true;
-  forbidNetwork: true;
+  profile?: ProfileId;              // defaults to full
+  seed?: string;                    // defaults to the canonical v1 seed
 }
 ```
 
 ### 3.1 Seed policy
 
-- **One canonical seed per corpus version.** `v1` uses `5d4c02a1f3b8e617`; `v2` uses a distinct, committed seed (e.g. `6e5d13b204c9f728`) plus a fixed `v1` derivation chain so `v2` is a deterministic superset/delta of `v1`, not an independent random corpus. Both seeds are committed in the manifest and in this document.
-- The seed is the **only** entropy source. Generation must not read the wall clock, `Math.random()`, `crypto.randomBytes`, process ID, UUIDs, or host state for any content decision. The `generatedAt` field is informational and excluded from reproducibility hashing.
-- Seed splitting: splitmix64 derives independent sub-seeds per stream (records, documents, logs, code, questions, ground truth). Each stream is reproducible from the canonical seed alone.
+- **Canonical structured seed.** `v1` uses `5d4c02a1f3b8e617`. STEP-04-05 accepts another seed to prove sensitivity and internal consistency; a materialized v2 delta remains part of the broader refresh-evaluation contract in §5.
+- The seed is the **only** entropy source. Generation does not read the wall clock, `Math.random()`, `crypto.randomBytes`, process ID, UUIDs, or host state for any content decision. `generatedAt` is a fixed v1 constant.
+- Seed splitting: SHA-256 derives independent deterministic values from the seed, schema family, record index, and named stream.
 - Reproducibility claim: regenerating `v1` with `5d4c02a1f3b8e617` and the committed `generatorVersion` must produce a byte-identical corpus and an identical `manifestSha256`. The Phase 4 gate enforces this with a generate-twice/hash-compare check (§14).
 
 ### 3.2 No model/provider calls during generation
@@ -167,22 +161,16 @@ export interface GeneratorConfig {
 
 ## 4. Corpus contents and shape
 
-The `full` profile targets approximately 25,000 files. The generator's deterministic input targets are:
+The STEP-04-05 `full` structured profile contains exactly 25,000 JSON record files:
 
 | Category | Kind | Target files | Notes |
 | --- | --- | --- | --- |
 | `fam.call_log` incident records | json | 12,000 | one record per file; known severity/status/region distributions |
 | `fam.device_telemetry` | json | 6,000 | nested `metadata`; numeric trends |
 | `fam.transaction` | json | 4,000 | joinable to `call_log` via `incident_id` |
-| `fam.inventory_item` | json | 2,000 | nullable `owner_id` (~15% null) for null-handling tests |
-| Markdown design documents | markdown | 40 | overlapping + conflicting mitigation statements; some carry inert ABUSE-06 strings |
-| PDF specifications | pdf | 30 | synthetic text; overlapping/conflicting statements; some carry inert ABUSE-06 strings |
-| Application logs (linked to records) | log | 120 | log lines reference `incident_id`; some carry inert ABUSE-06 strings |
-| Source-code files | code | 60 | mitigations marked `implemented` / `partial` / `missing`; some carry inert ABUSE-06 strings in comments/strings |
-| Data dictionary + schema notes | dictionary | 8 | field meanings, schema-family notes, drift notes |
-| README + corpus manifest | readme | 2 | corpus readme + generated manifest |
+| `fam.inventory_item` | json | 3,000 | nullable `owner_id` (~15% null) for null-handling tests |
 
-**Total ≈ 24,260 files**, rounded to "~25,000"; the manifest records the exact count. A `smoke` profile is a fixed, deterministic ~250-file subset (§14.2) and **must never** be cited as 25,000-file evidence.
+**Total = 25,000 JSON record files.** The generated manifest, ground truth, question set, and ownership marker are metadata and are not included in that count. A `smoke` profile is a fixed, deterministic 250-file subset (§14.2) and **must never** be cited as 25,000-file evidence. Mixed-source Markdown/PDF/log/code fixtures remain additive future corpus views; they do not dilute this structured scale claim.
 
 ### 4.1 Required deterministic content features
 
@@ -521,22 +509,22 @@ Benchmark results are emitted as machine-readable JSON with `BenchmarkEnvironmen
 
 ## 13. Reproducibility contract
 
-- **Canonical seed.** `v1 = 5d4c02a1f3b8e617`; `v2 = 6e5d13b204c9f728` (committed). The generator accepts `--seed` and refuses to run without it; a seed mismatch between two runs is a hard error.
+- **Canonical seed.** `v1 = 5d4c02a1f3b8e617`; `v2 = 6e5d13b204c9f728` (committed). The generator defaults to the v1 seed and accepts an explicit `--seed`; a seed mismatch between two runs is a hard comparison failure.
 - **No hidden entropy.** Generation forbids model calls, network, `Math.random`, `crypto.randomBytes`, time, PID, UUIDs (see `GeneratorConfig.forbidModelCalls`/`forbidNetwork`).
-- **Content-addressing.** Every file is hashed (SHA-256 of canonical bytes). The manifest hash is SHA-256 over the manifest with sorted keys and the `generatedAt`/`manifestSha256`/`groundTruthSha256`/`questionSetSha256` fields excluded or set to a fixed placeholder during self-hashing (the generator computes them in a fixed order so the hash is stable).
+- **Content-addressing.** Every file is hashed (SHA-256 of canonical bytes). The manifest hash is SHA-256 over the sorted-key manifest with only `manifestSha256` omitted; `generatedAt` is fixed and the ground-truth/question hashes are already final before self-hashing.
 - **Generate-twice/hash-compare (Phase 4 gate).** The implementation contract must include:
   ```bash
-  bun run corpus:generate --profile smoke --seed 5d4c02a1f3b8e617 --out .tmp/corpus-a
-  bun run corpus:generate --profile smoke --seed 5d4c02a1f3b8e617 --out .tmp/corpus-b
-  bun run corpus:compare-hashes .tmp/corpus-a/manifest.json .tmp/corpus-b/manifest.json
+  bun run corpus:generate --profile smoke --seed 5d4c02a1f3b8e617 --out /tmp/corpus-a
+  bun run corpus:generate --profile smoke --seed 5d4c02a1f3b8e617 --out /tmp/corpus-b
+  bun run corpus:compare-hashes /tmp/corpus-a/manifest.json /tmp/corpus-b/manifest.json
   ```
-  `corpus:compare-hashes` fails if any file `sha256`, `manifestSha256`, `groundTruthSha256`, or `questionSetSha256` differs. These are **future commands** (Phase 04), specification requirements — not Phase 0 commands against packages that do not yet exist.
+  `corpus:compare-hashes` verifies every generated file and fails if any file `sha256`, `manifestSha256`, `groundTruthSha256`, or `questionSetSha256` differs. STEP-04-05 implements both commands.
 - **Ground-truth independence.** Exact ground truth is computed by the generator from the seed, not by running the product's SQL and trusting it. The product's SQL output is what is *checked* against ground truth.
 - **Version pinning.** Every evaluation artifact records `corpusVersion`, `generatorVersion`, `questionSetVersion`, code revision, model/provider config, dependency versions, and `BenchmarkEnvironment` (evaluation-strategy §11).
 
 ## 14. Phase 4 implementation handoff
 
-This section hands Phase 04 a planned, bounded implementation contract. **None of these files exist yet; this is the contract, not a claim of existence.** Phase 0 creates `docs/evaluation-corpus.md` only.
+STEP-04-05 implements generation and hash verification. STEP-04-06 consumes these artifacts for deterministic gate evaluation.
 
 ### 14.1 Planned generator CLI
 
@@ -545,8 +533,8 @@ This section hands Phase 04 a planned, bounded implementation contract. **None o
 bun run corpus:generate --profile full  --seed <canonical> --out <dir>
 # smoke corpus (fast tier; never a 25k claim)
 bun run corpus:generate --profile smoke --seed <canonical> --out <dir>
-# v1→v2 change manifest + v2 corpus
-bun run corpus:generate --profile full --seed <v2-seed> --base <v1-dir> --out <v2-dir>
+# alternate-seed sensitivity corpus; not a materialized v2 delta
+bun run corpus:generate --profile full --seed <alternate-seed> --out <alternate-dir>
 # reproducibility check
 bun run corpus:compare-hashes <dir-a>/manifest.json <dir-b>/manifest.json
 # gate evaluation against a corpus + question set
@@ -558,38 +546,29 @@ bun run corpus:eval --corpus <dir> --questions <question-manifest> --profile {sm
 | Profile | Files (approx.) | Use | 25k claim? |
 | --- | --- | --- | --- |
 | `smoke` | ~250 (fixed deterministic subset) | PR + nightly fast tier | **No** |
-| `full` | ~24,260 | nightly (if affordable) + pre-release | **Yes** |
+| `full` | 25,000 JSON records | nightly (if affordable) + pre-release | **Yes** |
 
 A toy smoke corpus may not support a 25,000-file scale claim; only `full` may.
 
-### 14.3 Planned output layout
+### 14.3 Generated output layout
 
-```
+```text
 <out-dir>/
-  manifest.json                 # CorpusManifest (§2)
-  ground-truth/
-    exact/<questionId>.json      # ExactGroundTruth (§7)
-    semantic/<questionId>.json   # SemanticGroundTruth (§8)
-    provenance/<questionId>.json # ProvenanceRequirement expectations (§9)
-    adversarial/<questionId>.json# safe-outcome expectations (§10)
-    recovery/<questionId>.json
-    changes/v1-to-v2.json         # CorpusChange[] (§5)
-  questions/
-    manifest.json                # QuestionManifestEntry[] (§6)
-  records/<family>/...           # json/jsonl record files
-  docs/design/*.md               # markdown design docs
-  specs/*.pdf                    # synthetic PDF specs
-  logs/*.log                     # linked application logs
-  src/<mitigation>/*.ts          # code files with mitigation status
-  dictionary/*                   # data dictionary + schema notes
-  README.md
-  benchmark-env.template.json    # BenchmarkEnvironment template (§12)
+  .struct-evaluation-corpus      # cleanup ownership marker
+  manifest.json                  # per-file and aggregate hashes
+  ground-truth.json              # exact/schema/security/recovery truth
+  questions.json                 # versioned question manifest
+  records/
+    call-log/*.json
+    device-telemetry/*.json
+    transaction/*.json
+    inventory-item/*.json
 ```
 
-### 14.4 Planned loaders and gate evaluator
+### 14.4 Loaders and gate evaluator
 
-- **Loaders** consume `manifest.json` + per-question ground truth and expose typed records, locators, and expected answers to the product's evaluation package. Loaders must fail closed on a malformed manifest or a hash mismatch.
-- **Gate evaluator** runs the question set against a corpus, emits machine-readable results keyed by `questionId` with `pass|fail|safe-failure|not-run`, attaches the failing evidence (expected vs actual, locator, snapshot hash), and emits a per-tier rollup that computes the §11 thresholds. The evaluator must never mark an unrun metric as `pass`.
+- **STEP-04-05 verifier** consumes `manifest.json`, checks the manifest self-hash, verifies every regular record file, and checks ground-truth, question-set, and aggregate hashes. It fails closed on malformed, missing, unsafe, or mismatched evidence.
+- **STEP-04-06 gate evaluator** runs the question set against a corpus, emits machine-readable results keyed by `questionId` with `pass|fail|safe-failure|not-run`, attaches the failing evidence (expected vs actual, locator, snapshot hash), and emits a per-tier rollup that computes the §11 thresholds. The evaluator must never mark an unrun metric as `pass`.
 - **Result artifact layout** (§16): one JSON results file + one human-readable rollup per tier, plus the `BenchmarkEnvironment` block for any benchmark tier.
 
 ### 14.5 Known unsupported source types handed to Phase 4+

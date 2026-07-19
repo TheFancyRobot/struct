@@ -22,6 +22,8 @@
     "migrations:up": "bun run --filter @struct/api migrations:up",
     "migrations:down": "bun run --filter @struct/api migrations:down",
     "migrations:create": "bun run --filter @struct/persistence migrations:create",
+    "corpus:generate": "bun run --filter @struct/evaluation corpus:generate",
+    "corpus:compare-hashes": "bun run --filter @struct/evaluation corpus:compare-hashes",
     "corpus:smoke": "bun run --filter @struct/evaluation corpus:smoke",
     "corpus:eval": "bun run --filter @struct/evaluation corpus:eval",
     "directory:eval": "bun run --filter @struct/evaluation directory:eval",

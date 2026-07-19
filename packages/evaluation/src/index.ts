@@ -14,6 +14,7 @@ export const walkingSkeletonCorpus: CorpusSpec = {
   checks: ['exactness', 'provenance'],
 }
 
+export * from './corpus.js'
 export * from './document-retrieval.js'
 export * from './directory-refresh.js'
 export * from './phase-02-fixture.js'

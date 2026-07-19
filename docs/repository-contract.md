@@ -24,7 +24,9 @@ All commands run from the repository root via the Bun workspace scripts that STE
 | `bun run migrations:down` | Roll back exactly one migration (sole executor: `apps/api`) | `apps/api` | STEP-01-01 |
 | `bun run migrations:create` | Scaffold a new timestamped migration in `packages/persistence` | `packages/persistence` | Phase 02+ |
 | `bun run corpus:smoke` | Run a small synthetic subset of the evaluation corpus | `packages/evaluation` | Phase 04 |
-| `bun run corpus:eval` | Run the full ~25,000-file evaluation corpus and quality gates | `packages/evaluation` | Phase 04 / Phase 09 |
+| `bun run corpus:generate` | Generate a deterministic smoke or full 25,000-record corpus | `packages/evaluation` | STEP-04-05 |
+| `bun run corpus:compare-hashes` | Verify and compare two generated corpus manifests and all on-disk files | `packages/evaluation` | STEP-04-05 |
+| `bun run corpus:eval` | Run the full corpus quality gates | `packages/evaluation` | STEP-04-06 / Phase 09 |
 | `bun run bench` | Run performance benchmarks (machine-specific; regenerate local evidence) | owning package | Phase 04+ |
 | `bun run secrets:scan` | Scan for committed secrets and `.env`/`.env.local` leakage | root scripts / CI | STEP-01-01 |
 | `bun run docs:lint` | Lint and link-check canonical docs | root scripts / CI | STEP-01-01 |
@@ -60,8 +62,9 @@ Three gate tiers. Each check names its owner. Gate-tier *thresholds* (pass/fail 
 | --- | --- | --- |
 | `bun run test:integration` | apps + persistence | API, worker, persistence, data-engine integration |
 | recovery / cancellation replay | `apps/worker` | restart-safe scenarios from STEP-00-02 (two-process resume, exit `86`→`0`, duplicate side-effect rate `0`) |
-| DuckDB topology regression | `packages/data-engine` | Phase-04 sidecar crash cannot terminate the Bun worker; in-process `direct` remains rejected. Until the sidecar exists, verify current Compose contains PostgreSQL only and treat STEP-00-03 child-process results as historical evidence. |
-| `bun run corpus:smoke` | `packages/evaluation` | small synthetic corpus subset (full corpus deferred) |
+| DuckDB topology regression | `packages/data-engine` | The isolated Node 24 LTS sidecar crash cannot terminate the Bun worker; in-process `direct` remains rejected. Compose health and live sidecar integration tests enforce the boundary. |
+| `bun run corpus:smoke` | `packages/evaluation` | fast Phase 02 quality gates plus the reproducible 250-record structured subset; never scale evidence |
+| `bun run corpus:generate --profile full` | `packages/evaluation` | exactly 25,000 JSON record files with deterministic ground truth and hashes |
 | injection-resistance smoke | `packages/data-engine` + security | DuckDB `read_json_auto('/etc/passwd')` DENIED; `ATTACH`/`INSTALL` DENIED (STEP-00-03) |
 | docs build | docs | full docs site builds |
 

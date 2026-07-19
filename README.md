@@ -19,6 +19,7 @@ A trustworthy, source-grounded research workspace for documents, datasets, and d
 | [docs/research-execution-model.md](./docs/research-execution-model.md) | Research execution model. |
 | [docs/security-model.md](./docs/security-model.md) | Security model and trust boundaries. |
 | [docs/evaluation-strategy.md](./docs/evaluation-strategy.md) | Evaluation strategy. |
+| [docs/evaluation-corpus-generator.md](./docs/evaluation-corpus-generator.md) | Reproducible 25,000-file JSON corpus generation and verification. |
 | [docs/retrieval-evaluation.md](./docs/retrieval-evaluation.md) | Phase 02 deterministic retrieval and injection-resistance gate. |
 | [docs/citation-and-provenance.md](./docs/citation-and-provenance.md) | Citation and provenance. |
 | [docs/adr/](./docs/adr/) | Architecture decision records (DEC-0001 … DEC-0014). |
@@ -36,8 +37,8 @@ packages/
 ├── domain · persistence · source-storage · ingestion · retrieval · research-engine
 ├── fred-workflows · observability  # walking-slice core; Fred pinned at 2.0.0
 ├── document-processing  # versioned normalization, parsing, and chunking
-├── data-engine  # planned (Phase 04)
-└── evaluation  # deterministic Phase 02 smoke gate; full corpus remains Phase 04+
+├── data-engine  # deterministic DuckDB sidecar client, SQL policy, and query evidence
+└── evaluation  # deterministic smoke gates and reproducible 25,000-file JSON corpus
 ```
 
 Package dependency flows downward only; no app imports another app; `domain` is the leaf. Enforced by ESLint `no-restricted-imports`, dependency-cruiser, and `scripts/boundary-check.ts`. Full rules in [docs/architecture.md §4.2](./docs/architecture.md).
@@ -68,7 +69,9 @@ bun run test:e2e           # Bun-native web navigation test
 bun run migrations:up      # apply implemented PostgreSQL/pgvector migrations through apps/api
 bun run migrations:down    # roll back one implemented migration through apps/api
 bun run corpus:smoke        # deterministic Phase 02 retrieval/provenance/injection gate
-bun run corpus:eval         # full ~25k corpus + quality gates (planned, Phase 09)
+bun run corpus:generate --profile full --out /absolute/path/corpus
+bun run corpus:compare-hashes /path/a/manifest.json /path/b/manifest.json
+bun run corpus:eval         # full corpus quality gates (STEP-04-06)
 ```
 
 The walking-slice research command accepts `workspaceId`, `projectId`, a non-empty
