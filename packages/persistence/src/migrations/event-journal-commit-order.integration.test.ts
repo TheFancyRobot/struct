@@ -181,6 +181,8 @@ describeIf('event_journal commit-ordered cursor allocation (PostgreSQL)', () => 
 
   it('deterministically reproduces the legacy late-lower-cursor replay loss', async () => {
     const executor = migrationExecutor(migrationSql)
+    // Remove 0005 first, then 0004 to restore the legacy cursor allocator.
+    await Effect.runPromise(runMigrationsDown(executor))
     await Effect.runPromise(runMigrationsDown(executor))
 
     const eventA = crypto.randomUUID()
@@ -309,6 +311,8 @@ describeIf('event_journal commit-ordered cursor allocation (PostgreSQL)', () => 
 
   it('round-trips the migration and restores commit-order allocation', async () => {
     const executor = migrationExecutor(migrationSql)
+    // Remove 0005 first, then 0004; runMigrationsUp restores both in order.
+    await Effect.runPromise(runMigrationsDown(executor))
     await Effect.runPromise(runMigrationsDown(executor))
 
     const afterDown = await observer.unsafe(

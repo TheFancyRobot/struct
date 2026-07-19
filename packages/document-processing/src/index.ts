@@ -1,3 +1,4 @@
+export * from './chunk-document.js'
 export * from './errors.js'
 export * from './normalize-document.js'
 export * from './types.js'

@@ -81,6 +81,7 @@
       "name": "@struct/document-processing",
       "version": "0.0.1",
       "dependencies": {
+        "@struct/domain": "workspace:*",
         "effect": "3.22.0",
         "parse5": "7.3.0",
         "pdfjs-dist": "5.4.149",

@@ -56,11 +56,23 @@ export class IngestionJobOwnershipLostError
     transition: Schema.Literal(
       'renew-lease',
       'create-version',
+      'store-document-chunks',
       'append-event',
       'complete',
       'pending',
       'fail',
     ),
+    message: Schema.String,
+  }) {}
+
+/**
+ * A normalized document/chunk aggregate is inconsistent or conflicts with an
+ * immutable aggregate already persisted for the same source version.
+ */
+export class DocumentChunkValidationError
+  extends Schema.TaggedError<DocumentChunkValidationError>()('DocumentChunkValidationError', {
+    field: Schema.String,
+    reason: Schema.Literal('aggregate-mismatch', 'immutable-conflict'),
     message: Schema.String,
   }) {}
 
@@ -97,4 +109,5 @@ export type PersistenceError =
   | ResearchJobOwnershipLostError
   | IngestionJobOwnershipLostError
   | IngestionEventValidationError
+  | DocumentChunkValidationError
   | SourceTextReindexOwnershipLostError

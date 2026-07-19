@@ -6,6 +6,7 @@
  */
 
 export * from './branded-ids.js'
+export * from './document.js'
 export * from './logical-refs.js'
 export * from './research-events.js'
 export * from './schemas.js'

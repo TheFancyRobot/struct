@@ -24,6 +24,14 @@ export type SourceId = Schema.Schema.Type<typeof SourceId>
 export const SourceVersionId = BrandedUUID.pipe(Schema.brand('SourceVersionId'))
 export type SourceVersionId = Schema.Schema.Type<typeof SourceVersionId>
 
+/** DocumentId — identity of normalized content for one immutable source version. */
+export const DocumentId = BrandedUUID.pipe(Schema.brand('DocumentId'))
+export type DocumentId = Schema.Schema.Type<typeof DocumentId>
+
+/** DocumentChunkId — identity of one immutable, versioned retrieval unit. */
+export const DocumentChunkId = BrandedUUID.pipe(Schema.brand('DocumentChunkId'))
+export type DocumentChunkId = Schema.Schema.Type<typeof DocumentChunkId>
+
 /** ResearchThreadId — identity of a research conversation thread. */
 export const ResearchThreadId = BrandedUUID.pipe(Schema.brand('ResearchThreadId'))
 export type ResearchThreadId = Schema.Schema.Type<typeof ResearchThreadId>
