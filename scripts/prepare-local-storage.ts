@@ -1,8 +1,11 @@
 import { access, lstat, mkdir } from 'node:fs/promises'
 import { constants } from 'node:fs'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 
-const artifactRoot = join(process.cwd(), '.local', 'artifacts')
+const artifactRoot = resolve(
+  process.env.ARTIFACT_STORAGE_ROOT
+    ?? join(process.cwd(), '.local', 'artifacts'),
+)
 
 await mkdir(artifactRoot, { recursive: true })
 const metadata = await lstat(artifactRoot)
