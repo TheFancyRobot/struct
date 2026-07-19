@@ -1,6 +1,7 @@
 import { Clock, Config, Effect, Runtime, Schema } from 'effect'
 import type * as Fred from '@fancyrobot/fred'
 import { ResearchWorkflowError } from '@struct/domain'
+import { tracingOtlpEndpointConfig } from '@struct/observability'
 import {
   WalkingSkeletonWorkflowResult,
 } from '@struct/research-engine'
@@ -18,6 +19,7 @@ export interface FredRuntimeConfig {
   readonly providerPackage: string
   readonly model: string
   readonly maxElapsedMs: number
+  readonly otlpEndpoint?: string
 }
 
 export const fredRuntimeConfig = Config.all({
@@ -30,6 +32,7 @@ export const fredRuntimeConfig = Config.all({
       validation: (value) => value > 0,
     }),
   ),
+  otlpEndpoint: tracingOtlpEndpointConfig,
 })
 
 export interface FredClientFactory {
@@ -143,11 +146,25 @@ function shutdownWithinDeadline(
   })
 }
 
-const defaultFactory: FredClientFactory = {
+const makeDefaultFactory = (
+  otlpEndpoint: string | undefined,
+): FredClientFactory => ({
   create: async (signal) => {
     const { createFred } = await import('@fancyrobot/fred')
     assertActive(signal)
-    return createFred()
+    return createFred({
+      observability: {
+        resource: { serviceName: '@struct/fred-workflows' },
+        enableConsoleFallback: true,
+        ...(otlpEndpoint === undefined
+          ? {}
+          : {
+              otlp: {
+                endpoint: otlpEndpoint,
+              },
+            }),
+      },
+    })
   },
   execute: async (fred, workflow, input, _maxElapsedMs, signal) => {
     assertActive(signal)
@@ -173,11 +190,11 @@ const defaultFactory: FredClientFactory = {
     })
     return Runtime.runPromise(fred.runtime)(execution, { signal })
   },
-}
+})
 
 export const preflightFredRuntime = (
   config: FredRuntimeConfig,
-  factory: FredClientFactory = defaultFactory,
+  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
 ): Effect.Effect<void, ResearchWorkflowError, never> =>
   Effect.flatMap(Clock.currentTimeMillis, (startedAtMs) => {
     const deadlineMs = startedAtMs + config.maxElapsedMs
@@ -231,7 +248,7 @@ export const runFredWalkingSkeleton = (
   input: typeof Research.WalkingSkeletonResearchInput.Type,
   deps: WalkingSkeleton.WalkingSkeletonGraphDependencies,
   config: FredRuntimeConfig,
-  factory: FredClientFactory = defaultFactory,
+  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
 ): Effect.Effect<typeof WalkingSkeletonWorkflowResult.Type, ResearchWorkflowError, never> =>
   Effect.flatMap(Clock.currentTimeMillis, (startedAtMs) => {
     const deadlineMs = startedAtMs + config.maxElapsedMs

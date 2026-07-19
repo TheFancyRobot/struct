@@ -11,6 +11,7 @@ A trustworthy, source-grounded research workspace for documents, datasets, and d
 | [docs/product-brief.md](./docs/product-brief.md) | Authoritative requirements and preferred technical direction. |
 | [docs/architecture.md](./docs/architecture.md) | Architecture contract: repository, runtime, data/storage, migration ownership. |
 | [docs/repository-contract.md](./docs/repository-contract.md) | Root command inventory, CI gate matrix, Phase 1 handoff. |
+| [docs/setup.md](./docs/setup.md) | Concise first-run setup and walking-skeleton demo. |
 | [docs/local-development.md](./docs/local-development.md) | Local service table, environment/secrets, platform fallbacks. |
 | [docs/implementation-plan.md](./docs/implementation-plan.md) | Phase sequence, dependencies, risks. |
 | [docs/roadmap.md](./docs/roadmap.md) | Horizons and release checkpoints. |
@@ -61,8 +62,8 @@ bun run lint        # ESLint flat config (TS/Solid/Effect conventions)
 bun run lint:imports  # dependency-cruiser + Bun-aware boundary checker
 bun run test        # native Bun unit, integration, and entrypoint tests (serial)
 bun run build       # build all apps (web Vite, api/worker tsc)
-bun run test:integration   # integration tests (planned, Phase 01+)
-bun run test:e2e           # browser/e2e (planned, Phase 01+)
+bun run test:integration   # PostgreSQL-backed integration tests
+bun run test:e2e           # Bun-native web navigation test
 bun run migrations:up      # apply implemented PostgreSQL/pgvector migrations through apps/api
 bun run migrations:down    # roll back one implemented migration through apps/api
 bun run corpus:smoke        # small evaluation subset (planned, Phase 04)

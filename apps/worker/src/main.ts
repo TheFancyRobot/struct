@@ -4,7 +4,7 @@
  * Runtime entry point — Effect.runPromise at the application boundary.
  */
 
-import { Effect, Layer } from 'effect'
+import { Effect, Layer, Runtime } from 'effect'
 import postgres from 'postgres'
 import {
   JobQueueRepo,
@@ -26,6 +26,12 @@ import {
   preflightFredRuntime,
   runFredWalkingSkeleton,
 } from '@struct/fred-workflows'
+import {
+  makeTracingLayer,
+  renderWalkingSliceMetrics,
+  tracingOtlpEndpointConfig,
+  withWalkingSliceSpan,
+} from '@struct/observability'
 import {
   artifactStorageRootConfig,
   databaseUrlConfig,
@@ -75,6 +81,34 @@ const program = Effect.gen(function* () {
   const researchExecutionLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
   const researchRunLayer = Layer.provide(ResearchRunRepo.Default, sqlLayer)
   const sourceTextReindexLayer = Layer.provide(SourceTextReindexRepo.Default, sqlLayer)
+  const effectRuntime = yield* Effect.runtime<never>()
+  yield* Effect.acquireRelease(
+    Effect.sync(() =>
+      Bun.serve({
+        port: metricsPort,
+        async fetch(request) {
+          const { pathname } = new URL(request.url)
+          if (request.method !== 'GET') {
+            return new Response('Method Not Allowed', { status: 405 })
+          }
+          if (pathname === '/healthz') {
+            return new Response('ok')
+          }
+          if (pathname === '/metrics') {
+            return new Response(
+              await Runtime.runPromise(effectRuntime)(
+                renderWalkingSliceMetrics,
+              ),
+              { headers: { 'Content-Type': 'text/plain; version=0.0.4' } },
+            )
+          }
+          return new Response('Not Found', { status: 404 })
+        },
+      }),
+    ),
+    (metricsServer) =>
+      Effect.promise(() => metricsServer.stop(true)).pipe(Effect.orDie),
+  )
 
   yield* Effect.log(`Worker starting (metrics on port ${metricsPort})`)
   yield* Effect.tryPromise({
@@ -173,26 +207,34 @@ const program = Effect.gen(function* () {
             },
             {
               searchText: (input, signal) =>
-                Effect.runPromise(
-                  TextRetrieval.searchText({
-                    workspaceId: input.workspaceId,
-                    projectId: input.projectId,
-                    sourceVersionIds: [...input.sourceVersionIds],
-                    query: input.question,
-                    limit: 5,
-                  }).pipe(
-                    Effect.map((result) => result.evidence),
-                    Effect.provide(retrievalLayer),
+                Runtime.runPromise(effectRuntime)(
+                  withWalkingSliceSpan(
+                    'retrieval',
+                    {
+                      workspaceId: input.workspaceId,
+                      projectId: input.projectId,
+                      runId: input.runId,
+                    },
+                    TextRetrieval.searchText({
+                      workspaceId: input.workspaceId,
+                      projectId: input.projectId,
+                      sourceVersionIds: [...input.sourceVersionIds],
+                      query: input.question,
+                      limit: 5,
+                    }).pipe(
+                      Effect.map((result) => result.evidence),
+                      Effect.provide(retrievalLayer),
+                    ),
                   ),
                   { signal },
                 ),
               onRetrievalCompleted: (evidence, signal) =>
-                Effect.runPromise(
+                Runtime.runPromise(effectRuntime)(
                   onRetrievalCompleted(evidence).pipe(Effect.asVoid),
                   { signal },
                 ),
               validate: (answer, evidence, question, signal) =>
-                Effect.runPromise(
+                Runtime.runPromise(effectRuntime)(
                   validateAnswerCitations(answer, evidence, question),
                   { signal },
                 ),
@@ -232,7 +274,21 @@ const program = Effect.gen(function* () {
   yield* runWorkerPollLoops(poll, researchPoll, pollMs, reindexPoll)
 })
 
-Effect.runPromise(Effect.scoped(program)).catch((error) => {
+Effect.runPromise(
+  Effect.scoped(
+    Effect.gen(function* () {
+      const otlpEndpoint = yield* tracingOtlpEndpointConfig
+      yield* program.pipe(
+        Effect.provide(
+          makeTracingLayer({
+            serviceName: '@struct/worker',
+            otlpEndpoint,
+          }),
+        ),
+      )
+    }),
+  ),
+).catch((error) => {
   console.error('Worker failed:', error)
   process.exit(1)
 })

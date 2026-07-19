@@ -20,10 +20,10 @@ Keep this note short and current.
 
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-19._
-- Session in progress: none.
-- Current step: [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]] - status: planned - phase: [[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]
+- Session in progress: [[05_Sessions/2026-07-19-043816-automate-vertical-slice-tests-documentation-and-observability-step-01-06-execute|SESSION-2026-07-19-043816 STEP-01-06 execution]].
+- Current step: [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]] - status: in_progress - phase: [[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]
 - Active phase: [[02_Phases/Phase_01_walking_skeleton/Phase|PHASE-01 Walking Skeleton]] - status: in_progress - updated: 2026-07-19
-- Also active: 66 more additional steps.
+- Also active: 65 more additional steps.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -35,11 +35,11 @@ _Last refreshed: 2026-07-19._
 
 ## In Scope Right Now
 
-- Phase 01 walking skeleton: STEP-01-01 through STEP-01-05 are implemented; STEP-01-06 is the next planned step.
+- Phase 01 walking skeleton: STEP-01-01 through STEP-01-05 are merged; STEP-01-06 is implemented, independently reviewed, and awaiting publication.
 - Keep architecture notes aligned with the code as implementation progresses.
 - Record non-trivial decisions as dedicated notes.
 - STEP-01-04 provides tenant-scoped deterministic PostgreSQL retrieval, a bounded Fred workflow, exact citation validation, and atomic durable research execution.
-- STEP-01-05 persisted SSE progress and exact citation navigation are complete locally; root orchestration owns independent review, publication, and merge.
+- STEP-01-06 now supplies the complete PostgreSQL/Fred vertical-slice test, real Solid browser citation navigation, correlated telemetry, metrics, and setup documentation.
 
 ## Out Of Scope Right Now
 
@@ -72,6 +72,6 @@ _Last refreshed: 2026-07-19._
 
 ## Next Actions
 
-- Independently review, publish, and merge [[02_Phases/Phase_01_walking_skeleton/Steps/Step_05_stream-persisted-progress-and-render-navigable-citation|STEP-01-05 Stream Persisted Progress and Render Navigable Citation]].
-- After the merge gate, begin [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]] on its own branch.
+- Publish and merge [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]] after the final clean gate and bot review.
+- After the merge gate, refine [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]] before starting its first step.
 - Keep architecture notes aligned with the code as implementation progresses.

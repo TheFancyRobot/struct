@@ -12,6 +12,7 @@ export async function fetchCitation(
 ): Promise<CitationDetail> {
   const response = await fetch(
     `/api/projects/${projectId}/research/${threadId}/citation/${citationId}`,
+    { signal: AbortSignal.timeout(10_000) },
   )
   if (!response.ok) {
     throw new Error(

@@ -1,5 +1,9 @@
 import { Effect, Option, Schema } from 'effect'
 import {
+  logWalkingSlice,
+  withWalkingSliceSpan,
+} from '@struct/observability'
+import {
   EventJournalId,
   isCanonicalStagedArtifactRef,
   ProjectId,
@@ -284,11 +288,12 @@ function completeJob(
 function failJob(deps: IngestionWorkerDeps, job: typeof JobQueue.Type, reason: unknown): Effect.Effect<void, unknown, never> {
   const disposition = classifyIngestionFailure(reason)
   const retryable = disposition === 'retryable'
+  const failurePayload = sanitizedFailurePayload(reason, retryable)
   const failureEvent = makeEvent(
     deps,
     job,
     'ingestion-failed',
-    sanitizedFailurePayload(reason, retryable),
+    failurePayload,
   )
   return Effect.gen(function* () {
     if (
@@ -299,6 +304,17 @@ function failJob(deps: IngestionWorkerDeps, job: typeof JobQueue.Type, reason: u
     } else {
       yield* deps.jobs.markFailed(job, failureEvent)
     }
+    yield* logWalkingSlice({
+      event: retryable
+        ? 'source.ingestion.retry-scheduled'
+        : 'source.ingestion.failed',
+      identity: {
+        workspaceId: job.workspaceId,
+        sourceId: job.entityId,
+        jobId: job.id,
+      },
+      errorTag: String(failurePayload['errorTag']),
+    })
   }).pipe(
     Effect.catchTag('IngestionJobOwnershipLostError', () => Effect.void),
   )
@@ -325,22 +341,30 @@ export const processOneIngestionJob = (
     }
 
     const job = claimed.value
-    const executeClaimedJob = Effect.gen(function* () {
-      const payloadResult = yield* Effect.either(
-        decodePayload(job.payload, job.entityId as SourceId, deps),
-      )
-      if (payloadResult._tag === 'Left') {
-        yield* failJob(deps, job, payloadResult.left)
-        return
-      }
-      const completed = yield* Effect.either(
-        completeJob(deps, job, payloadResult.right),
-      )
-      if (completed._tag === 'Left') {
-        if (isOwnershipLost(completed.left)) return
-        yield* failJob(deps, job, completed.left)
-      }
-    })
+    const executeClaimedJob = withWalkingSliceSpan(
+      'worker-job',
+      {
+        workspaceId: job.workspaceId,
+        sourceId: job.entityId,
+        jobId: job.id,
+      },
+      Effect.gen(function* () {
+        const payloadResult = yield* Effect.either(
+          decodePayload(job.payload, job.entityId as SourceId, deps),
+        )
+        if (payloadResult._tag === 'Left') {
+          yield* failJob(deps, job, payloadResult.left)
+          return
+        }
+        const completed = yield* Effect.either(
+          completeJob(deps, job, payloadResult.right),
+        )
+        if (completed._tag === 'Left') {
+          if (isOwnershipLost(completed.left)) return
+          yield* failJob(deps, job, completed.left)
+        }
+      }),
+    )
     const renewLease = Effect.gen(function* () {
       while (true) {
         yield* deps.jobs.renewLease(job)
