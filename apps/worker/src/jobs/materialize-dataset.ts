@@ -77,7 +77,9 @@ function tagged(error: unknown): string {
 function retryable(error: unknown): boolean {
   if (error instanceof DataEngineTransportError) return true
   if (error instanceof DataEngineOperationError) {
-    return error.code === 'engine' || error.code === 'cancelled'
+    return error.code === 'engine'
+      || error.code === 'cancelled'
+      || error.code === 'busy'
   }
   return tagged(error) === 'StorageWriteError'
 }

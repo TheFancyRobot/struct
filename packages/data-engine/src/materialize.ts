@@ -91,6 +91,7 @@ export const materializeDataset = Effect.fn('materializeDataset')(
     const parquetBytes = yield* client.readArtifact(
       result.parquetDigest,
       input.limits.maxOutputBytes,
+      input.limits.timeoutMs,
     )
     if (parquetBytes.byteLength !== result.parquetByteLength) {
       return yield* new DataEngineProtocolError({

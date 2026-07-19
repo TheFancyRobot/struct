@@ -56,6 +56,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Updated local-development and security documentation with the implemented runtime pins, protocol boundary, mounts, isolation controls, and numeric resource limits.
 - Completed worker self-review and all repository, PostgreSQL, container, documentation, and vault handoff gates.
 - Root pre-publication review found and fixed uncapped request limits, unauthenticated health, non-portable host transport, whole-file allocation before size checks, nondeterministic sidecar dependency installation, missing production enqueue, and missing immediate failure transitions. The final topology keeps DuckDB internal/no-egress and uses a fixed-target loopback gateway; the sidecar is pinned to Node `24.18.0` LTS.
+- PR #19 Codex review raised three findings. Remediation keeps the step/vault in progress until merge, introduces an explicit retryable `busy` sidecar outcome without retrying hard resource-limit failures, and bounds both artifact response acquisition and body download with the configured timeout.
 
 ## Findings
 
@@ -94,6 +95,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Passed `bun run lint`, `bun run typecheck`, `bun run build`, `bun run lint:imports` (130 modules, 306 dependencies), `bun run docs:lint` (40 Markdown files), `bun run secrets:scan` (895 paths), and `docker compose config --quiet`.
 - Migration `0011` passed isolated up/down and clean sequential PostgreSQL integration coverage.
 - Final root candidate: default 391 pass / 141 skip / 1,532 assertions; PostgreSQL 92 pass / 1 skip / 726 assertions; real sidecar 1 pass / 12 assertions; focused protocol/client/worker 5 pass / 13 assertions; focused materialization persistence 1 pass / 14 assertions. Typecheck, lint, import boundaries, build, docs, secrets, Compose config, Node v24.18.0 runtime, hardening inspection, and migration down/up/up passed.
+- PR #19 remediation focused validation: protocol/client/worker 6 pass / 15 assertions; typecheck and ESLint passed; rebuilt Node 24.18.0 sidecar and real container integration passed 1 / 12.
 
 ## Bugs Encountered
 

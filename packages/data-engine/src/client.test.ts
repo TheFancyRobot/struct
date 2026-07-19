@@ -91,8 +91,27 @@ describe('DataEngineClient', () => {
     }, async () => new Response(new Uint8Array(20), {
       headers: { 'content-length': '20' },
     }))
-    const exit = await Effect.runPromiseExit(client.readArtifact(digest, 10))
+    const exit = await Effect.runPromiseExit(client.readArtifact(digest, 10, 1_000))
     expect(exit._tag).toBe('Failure')
     expect(String(exit)).toContain('resource-limit')
+  })
+
+  it('times out a stalled artifact body', async () => {
+    const body = new ReadableStream<Uint8Array>({
+      start() {
+        // Deliberately never produce or close the body.
+      },
+    })
+    const client = makeDataEngineClient({
+      baseUrl: 'http://data-engine',
+      credential: 'test-credential-value',
+    }, async () => new Response(body, {
+      headers: { 'content-length': '10' },
+    }))
+    const exit = await Effect.runPromiseExit(
+      client.readArtifact(digest, 10, 10),
+    )
+    expect(exit._tag).toBe('Failure')
+    expect(String(exit)).toContain('timed out')
   })
 })

@@ -318,7 +318,7 @@ const server = createServer(async (request, response) => {
   if (request.method !== 'POST' || url.pathname !== '/v1/materialize') {
     return fail(response, 404, 'protocol', 'Unknown operation')
   }
-  if (busy) return fail(response, 429, 'resource-limit', 'Materializer concurrency limit reached')
+  if (busy) return fail(response, 429, 'busy', 'Materializer concurrency limit reached')
   busy = true
   try {
     const result = await materialize(validateRequest(await body(request)), request)

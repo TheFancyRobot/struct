@@ -50,6 +50,7 @@ export interface DataEngineClientShape {
   readonly readArtifact: (
     digest: string,
     maxBytes: number,
+    timeoutMs: number,
   ) => Effect.Effect<
     Uint8Array,
     DataEngineTransportError | DataEngineProtocolError | DataEngineOperationError
@@ -118,24 +119,38 @@ export function makeDataEngineClient(
     },
   )
   const readArtifact = Effect.fn('DataEngineClient.readArtifact')(
-    function* (digest: string, maxBytes: number) {
+    function* (digest: string, maxBytes: number, timeoutMs: number) {
       if (!/^[a-f0-9]{64}$/.test(digest)) {
         return yield* new DataEngineProtocolError({
           message: 'Data-engine artifact digest is invalid',
+        })
+      }
+      if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1) {
+        return yield* new DataEngineProtocolError({
+          message: 'Data-engine artifact timeout is invalid',
         })
       }
       const response = yield* Effect.tryPromise({
         try: (signal) =>
           fetcher(`${config.baseUrl}/v1/artifacts/${digest}`, {
             headers: { authorization: `Bearer ${config.credential}` },
-            signal,
+            signal: AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]),
           }),
         catch: (cause) =>
           new DataEngineTransportError({
             reason: reason(cause),
             message: 'Data-engine artifact download failed',
           }),
-      })
+      }).pipe(
+        Effect.timeoutFail({
+          duration: timeoutMs,
+          onTimeout: () =>
+            new DataEngineTransportError({
+              reason: 'timeout',
+              message: 'Data-engine artifact download timed out',
+            }),
+        }),
+      )
       if (!response.ok) {
         return yield* new DataEngineOperationError({
           code: response.status === 404 ? 'not-found' : 'engine',
@@ -155,12 +170,21 @@ export function makeDataEngineClient(
       }
       const bytes = new Uint8Array(yield* Effect.tryPromise({
         try: () => response.arrayBuffer(),
-        catch: () =>
+        catch: (cause) =>
           new DataEngineTransportError({
-            reason: 'body',
+            reason: reason(cause),
             message: 'Data-engine artifact body could not be read',
           }),
-      }))
+      }).pipe(
+        Effect.timeoutFail({
+          duration: timeoutMs,
+          onTimeout: () =>
+            new DataEngineTransportError({
+              reason: 'timeout',
+              message: 'Data-engine artifact download timed out',
+            }),
+        }),
+      ))
       if (bytes.byteLength !== declaredLength) {
         return yield* new DataEngineProtocolError({
           message: 'Data-engine artifact length does not match its metadata',

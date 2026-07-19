@@ -81,6 +81,7 @@ export const DataEngineErrorCode = Schema.Literal(
   'not-found',
   'lineage',
   'resource-limit',
+  'busy',
   'cancelled',
   'engine',
 )

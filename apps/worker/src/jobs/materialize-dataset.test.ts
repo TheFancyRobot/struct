@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import {
-  DataEngineTransportError,
+  DataEngineOperationError,
   type DataEngineClientShape,
 } from '@struct/data-engine'
 import {
@@ -106,9 +106,9 @@ describe('processOneDatasetMaterialization', () => {
       materialize: () => {
         attempts += 1
         if (attempts === 1) {
-          return Effect.fail(new DataEngineTransportError({
-            reason: 'interrupted',
-            message: 'Data-engine request failed',
+          return Effect.fail(new DataEngineOperationError({
+            code: 'busy',
+            message: 'Materializer concurrency limit reached',
           }))
         }
         return Effect.succeed({
@@ -178,7 +178,7 @@ describe('processOneDatasetMaterialization', () => {
     expect(first).toEqual({ processed: true, snapshotId })
     expect(recordedFailure).toEqual({
       retryable: true,
-      errorCode: 'data-engine-transport-error',
+      errorCode: 'busy',
     })
     const replay = await Effect.runPromise(
       processOneDatasetMaterialization(dependencies),
