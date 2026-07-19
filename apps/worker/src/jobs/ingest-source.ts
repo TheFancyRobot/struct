@@ -288,6 +288,7 @@ function completeJob(
 function failJob(deps: IngestionWorkerDeps, job: typeof JobQueue.Type, reason: unknown): Effect.Effect<void, unknown, never> {
   const disposition = classifyIngestionFailure(reason)
   const retryable = disposition === 'retryable'
+  const willRetry = retryable && job.attempts < job.maxAttempts
   const failurePayload = sanitizedFailurePayload(reason, retryable)
   const failureEvent = makeEvent(
     deps,
@@ -297,15 +298,14 @@ function failJob(deps: IngestionWorkerDeps, job: typeof JobQueue.Type, reason: u
   )
   return Effect.gen(function* () {
     if (
-      retryable
-      && job.attempts < job.maxAttempts
+      willRetry
     ) {
       yield* deps.jobs.markPending(job, failureEvent)
     } else {
       yield* deps.jobs.markFailed(job, failureEvent)
     }
     yield* logWalkingSlice({
-      event: retryable
+      event: willRetry
         ? 'source.ingestion.retry-scheduled'
         : 'source.ingestion.failed',
       identity: {

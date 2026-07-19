@@ -2,8 +2,15 @@ const repositoryPaths = Bun.spawnSync([
   'rg',
   '--files',
   '--hidden',
+  '--no-ignore',
   '-g',
   '!.git/**',
+  '-g',
+  '!**/node_modules/**',
+  '-g',
+  '!**/dist/**',
+  '-g',
+  '!**/.local/**',
 ], {
   stdout: 'pipe',
 }).stdout.toString().split('\n').filter(Boolean)

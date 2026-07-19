@@ -21,11 +21,30 @@ The last command starts the web, API, and worker applications together.
 
 ## Walking-skeleton demo
 
-1. Create a project and register one UTF-8 text source.
-2. Let the worker ingest and index the immutable source version.
-3. Start a research run against that exact version.
-4. Watch persisted progress stream over SSE.
-5. Open the completed answer's citation and inspect its highlighted source lines.
+Set a real provider key in `.env`, then seed the Phase 01 project fixture:
+
+```sh
+docker compose exec -T postgres psql -U struct -d struct -c \
+  "INSERT INTO workspaces (id, name) VALUES ('310e8400-e29b-41d4-a716-446655440000', 'Demo') ON CONFLICT DO NOTHING; INSERT INTO projects (id, workspace_id, name) VALUES ('310e8400-e29b-41d4-a716-446655440001', '310e8400-e29b-41d4-a716-446655440000', 'Walking skeleton') ON CONFLICT DO NOTHING;"
+```
+
+Register one UTF-8 source and let the running worker ingest it:
+
+```sh
+curl -sS -X POST http://localhost:3001/api/projects/310e8400-e29b-41d4-a716-446655440001/sources \
+  -H 'content-type: application/json' \
+  -d '{"workspaceId":"310e8400-e29b-41d4-a716-446655440000","projectId":"310e8400-e29b-41d4-a716-446655440001","name":"launch.txt","mediaType":"text/plain","contentBase64":"VGhlIGxhdW5jaCBkYXRlIGlzIEp1bHkgMTgu"}'
+sleep 2
+SOURCE_VERSION_ID=$(docker compose exec -T postgres psql -U struct -d struct -Atc \
+  "SELECT sv.id FROM source_versions sv JOIN sources s ON s.id = sv.source_id WHERE s.project_id = '310e8400-e29b-41d4-a716-446655440001' ORDER BY sv.version DESC LIMIT 1" | tr -d '\r')
+curl -sS -X POST http://localhost:3001/api/projects/310e8400-e29b-41d4-a716-446655440001/research \
+  -H 'content-type: application/json' \
+  -d "{\"workspaceId\":\"310e8400-e29b-41d4-a716-446655440000\",\"projectId\":\"310e8400-e29b-41d4-a716-446655440001\",\"sourceVersionIds\":[\"$SOURCE_VERSION_ID\"],\"question\":\"What is the launch date?\"}"
+```
+
+Use the returned `runId` to stream
+`/api/projects/<projectId>/runs/<runId>/events`; the completed event supplies
+the thread and citation route rendered by the web app.
 
 The API, worker, Fred workflow, retrieval, citation validation, and SSE replay all
 correlate on persisted workspace/project/source/run/job identities. Logs never
