@@ -107,6 +107,9 @@ describe('Migration Runner', () => {
       expect(fakeSql.queries.join('\n')).toMatch(
         /CREATE TABLE directory_roots[\s\S]*CREATE TABLE directory_refresh_commits/i,
       )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /CREATE TABLE dataset_assets[\s\S]*CREATE TABLE dataset_snapshot_sources/i,
+      )
     })
 
     it('skips already-applied migrations', async () => {
@@ -148,7 +151,7 @@ describe('Migration Runner', () => {
       )
       expect(deleteQuery).toBeDefined()
       expect(fakeSql.queries.join('\n')).toMatch(
-        /DROP TABLE IF EXISTS directory_ingestion_commands[\s\S]*DROP COLUMN IF EXISTS directory_root_id/i,
+        /DROP TABLE IF EXISTS dataset_snapshot_sources[\s\S]*DROP TABLE IF EXISTS dataset_assets/i,
       )
     })
 

@@ -46,6 +46,11 @@ export {
   DirectorySourceVersionRepo,
   DirectoryControlRepo,
   DirectoryControlConflictError,
+  DatasetCatalogRepo,
+  DatasetCatalogScopeError,
+  DatasetCatalogConflictError,
+  DatasetCatalogDecodeError,
+  DatasetCatalogQueryError,
   // Persistence errors
   QueryError,
   EntityNotFoundError,
@@ -128,3 +133,8 @@ export type {
   DirectoryJournalEvent,
   RegisterDirectoryInput,
 } from './repositories/directory-controls.js'
+
+export type {
+  CatalogWriteResult,
+  DatasetCatalogError,
+} from './repositories/dataset-catalog.js'

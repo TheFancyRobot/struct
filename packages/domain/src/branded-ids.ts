@@ -72,6 +72,13 @@ export type DatasetId = Schema.Schema.Type<typeof DatasetId>
 export const DatasetSnapshotId = BrandedUUID.pipe(Schema.brand('DatasetSnapshotId'))
 export type DatasetSnapshotId = Schema.Schema.Type<typeof DatasetSnapshotId>
 
+/** DatasetSchemaFamilyId — identity of one compatible ordered field schema. */
+export const DatasetSchemaFamilyId = BrandedUUID.pipe(
+  Schema.brand('DatasetSchemaFamilyId'),
+)
+export type DatasetSchemaFamilyId =
+  Schema.Schema.Type<typeof DatasetSchemaFamilyId>
+
 /** QueryResultSnapshotId — identity of an immutable query result snapshot. */
 export const QueryResultSnapshotId = BrandedUUID.pipe(Schema.brand('QueryResultSnapshotId'))
 export type QueryResultSnapshotId = Schema.Schema.Type<typeof QueryResultSnapshotId>

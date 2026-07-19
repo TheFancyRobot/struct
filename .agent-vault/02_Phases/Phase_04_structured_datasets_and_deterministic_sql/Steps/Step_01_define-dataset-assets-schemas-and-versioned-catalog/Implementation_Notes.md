@@ -1,6 +1,12 @@
 # Implementation Notes
 
-- Capture durable findings learned during execution. Prefer short bullets with file paths, commands, and observed behavior.
+- Implemented the catalog in the existing domain and persistence packages; no new runtime or package was introduced.
+- Domain contracts brand dataset, schema-family, snapshot, source, and source-version identities; hashes reuse `Sha256Digest` and optional previous lineage uses `Option`.
+- Migration `0010_dataset_catalog` creates workspace-scoped dataset assets, schema families, ordered fields, immutable snapshots, and ordered source-version lineage. Composite foreign keys enforce project/workspace ownership and update triggers reject immutable metadata changes.
+- `DatasetCatalogRepo` uses `Effect.Service` and `Effect.fn`, decodes PostgreSQL rows through Effect Schema, performs aggregate writes transactionally, explicitly distinguishes exact replay from immutable conflict, and returns stable version ordering.
+- Root self-review fixed conflict classification for a reused schema-family or snapshot ID with changed immutable metadata: conflict lookup now checks the colliding ID as well as content-derived uniqueness keys, so these cases return `DatasetCatalogConflictError` rather than a misleading scope failure.
+- Repository failures expose bounded serializable catalog errors without SQL text, connection details, or credentials.
+- No DuckDB, Parquet, SQL execution, UI, legacy database, or compatibility work was added.
 
 ## Related Notes
 
