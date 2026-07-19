@@ -42,6 +42,7 @@ export {
   ResearchProjectionRepo,
   SourceTextReindexRepo,
   DocumentChunkRepo,
+  DirectoryIngestionJobRepo,
   // Persistence errors
   QueryError,
   EntityNotFoundError,

@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-19._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs|STEP-03-03 Build Resumable Idempotent Ingestion Jobs]] - status: planned - phase: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]]
+- Current step: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs|STEP-03-03 Build Resumable Idempotent Ingestion Jobs]] - status: pending PR review and merge - phase: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]]
 - Active phase: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|PHASE-03 Durable Directory Ingestion and Source Refresh]] - status: in_progress - owner: Codex - updated: 2026-07-19
-- Also active: 57 more additional steps.
+- Also active: 56 more additional steps.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -36,13 +36,14 @@ _Last refreshed: 2026-07-19._
 ## In Scope Right Now
 
 - Phase 02 is completed and merged through STEP-02-06 with deterministic retrieval, exact provenance, bounded core-Fred document research, SolidJS citation navigation, and injection-resistance evaluation.
-- Phase 03 refinement and STEP-03-01 are merged. STEP-03-02 is implemented and locally validated on its dedicated branch, pending PR review and merge.
-- STEP-03-02 remains package-only: contained recursive discovery, deterministic streamed hashing, explicit resource limits, and typed partial outcomes.
+- Phase 03 refinement and STEP-03-01 through STEP-03-02 are merged.
+- STEP-03-03 is independently reviewed and fully validated on its dedicated branch, pending PR review and merge.
+- STEP-03-03 extends the existing PostgreSQL job journal with resumable directory jobs, fenced leases, attempt budgets, atomic per-entry checkpoints, and exact idempotent replay.
 - Keep Bun as the sole host runtime and reuse the existing Effect, PostgreSQL, job-journal, SSE, artifact-storage, and SolidJS boundaries.
 
 ## Out Of Scope Right Now
 
-- STEP-03-03 implementation and later Phase 03 work until STEP-03-02 is reviewed and merged.
+- STEP-03-04 and later Phase 03 work until STEP-03-03 is reviewed and merged.
 - A second runtime, queue, database, filesystem service, client state framework, or Fred executor.
 - The 25,000-file corpus, structured dataset computation, and later-phase release work.
 
@@ -60,7 +61,7 @@ _Last refreshed: 2026-07-19._
 
 ## Open Questions
 
-- None blocking the STEP-03-02 PR gate.
+- None blocking the STEP-03-03 PR gate.
 
 ## Critical Bugs
 
@@ -70,6 +71,6 @@ _Last refreshed: 2026-07-19._
 
 ## Next Actions
 
-- Publish, review, and merge [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_02_implement-sandboxed-recursive-discovery-and-hashing|STEP-03-02 Implement Sandboxed Recursive Discovery and Hashing]].
-- After the merge, start [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs|STEP-03-03 Build Resumable Idempotent Ingestion Jobs]] in one fresh non-git worker on its own branch.
+- Publish, review, and merge [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs|STEP-03-03 Build Resumable Idempotent Ingestion Jobs]].
+- After the merge, start [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_04_process-changed-sources-and-preserve-version-lineage|STEP-03-04 Process Changed Sources and Preserve Version Lineage]] in one fresh non-git worker on its own branch.
 - Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.

@@ -101,6 +101,9 @@ describe('Migration Runner', () => {
       expect(fakeSql.queries.join('\n')).toMatch(
         /FOREIGN KEY \([\s\S]*chunk_id[\s\S]*source_version_id[\s\S]*REFERENCES document_chunks/i,
       )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /CREATE TABLE directory_ingestion_jobs[\s\S]*CREATE TABLE directory_ingestion_checkpoints/i,
+      )
     })
 
     it('skips already-applied migrations', async () => {
@@ -142,7 +145,7 @@ describe('Migration Runner', () => {
       )
       expect(deleteQuery).toBeDefined()
       expect(fakeSql.queries.join('\n')).toMatch(
-        /DROP TABLE IF EXISTS document_chunk_embeddings[\s\S]*DROP CONSTRAINT IF EXISTS uq_document_chunks_embedding_lineage/i,
+        /DROP TABLE IF EXISTS directory_ingestion_checkpoints[\s\S]*DROP COLUMN IF EXISTS lease_token/i,
       )
     })
 

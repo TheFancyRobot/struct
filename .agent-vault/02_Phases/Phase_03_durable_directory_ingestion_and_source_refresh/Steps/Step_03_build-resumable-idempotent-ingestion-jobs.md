@@ -5,17 +5,22 @@ contract_version: 1
 title: Build Resumable Idempotent Ingestion Jobs
 step_id: STEP-03-03
 phase: '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]]'
-status: planned
-owner: ''
+status: completed
+owner: Codex
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_02_implement-sandboxed-recursive-discovery-and-hashing|STEP-03-02 Implement Sandboxed Recursive Discovery and Hashing]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-19-125436-build-resumable-idempotent-ingestion-jobs-codex-step-03-03-worker|SESSION-2026-07-19-125436 Codex STEP-03-03 worker session for Build Resumable Idempotent Ingestion Jobs]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-19-125436
+active_session_id: 05_Sessions/2026-07-19-125436-build-resumable-idempotent-ingestion-jobs-codex-step-03-03-worker
+context_status: completed
+context_summary: Advance [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs|STEP-03-03 Build Resumable Idempotent Ingestion Jobs]].
 ---
 
 # Step 03 - Build Resumable Idempotent Ingestion Jobs
@@ -47,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_03_build-resumable-idempotent-ingestion-jobs/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: completed
+- Current owner: Codex
+- Last touched: 2026-07-19
+- Next action: Complete PR review and merge, then begin STEP-03-04 in a fresh worker.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -60,7 +65,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-19 - [[05_Sessions/2026-07-19-125436-build-resumable-idempotent-ingestion-jobs-codex-step-03-03-worker|SESSION-2026-07-19-125436 Codex STEP-03-03 worker session for Build Resumable Idempotent Ingestion Jobs]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes
