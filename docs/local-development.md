@@ -52,12 +52,12 @@ in-flight jobs before exit; the API must drain SSE streams.
 **Reset (clean local state):**
 
 ```bash
-# planned commands, created by STEP-01-01
+# local-only reset commands
 bun run dev:stop              # stop web/api/worker
 docker compose down -v        # stop and remove PG container + volume (or stop local PG)
 rm -rf ./.local               # remove host-visible pgdata and artifacts
 bun run local:prepare         # create the artifact root as the host user
-docker compose up -d postgres # start PG (or start local PG)
+docker compose up -d --wait   # start PostgreSQL, data engine, and loopback gateway
 bun run migrations:up         # apps/api rebuilds schema + pgvector extension
 bun run dev                   # start worker, api, web
 ```

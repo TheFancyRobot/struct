@@ -69,6 +69,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Closing Codex data-integrity remediation: artifact-handoff absence now has a distinct retryable protocol code while missing source inputs remain terminal; a child-delete trigger removes the parent materialization queue row when snapshot cascades delete the mapping; and the step Outcome evidence now matches the authoritative final session counts. Migration down/up, cascade regression, live sidecar, full suites, and all repository/vault gates passed.
 - Codex exact-decimal remediation: decimal validation now accepts exponent notation only when lexical precision/scale analysis proves the value is exactly representable as `DECIMAL(38,10)`. Live coverage verifies `1.25e-2` profiles as `0.0125`; existing over-scale rejection remains green.
 - Codex schema-ingress remediation: materialization responses must match requested profile column count, ordinals, and names before any artifact I/O; enqueue verifies `sourceFormats` count against persisted snapshot sources before creating the unique queue/mapping rows. Focused and aggregate suites, static gates, docs, secrets, Compose, diff, and vault checks passed.
+- Codex documentation remediation: the destructive local reset recipe now starts the complete Compose stack with health waiting before migrations and host apps, matching the implemented PostgreSQL → data-engine → worker startup contract.
 
 ## Findings
 
