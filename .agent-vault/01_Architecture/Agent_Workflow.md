@@ -30,6 +30,7 @@ tags:
 - Agents make judgments about planning, qualitative analysis, evidence sufficiency, and synthesis. Effect services perform authorization, source inspection, retrieval, SQL validation/execution, persistence, and citation checks.
 - Persist plans, tool requests/results, decisions, findings, and evidence assessments, but never private model chain-of-thought.
 - STEP-01-04 implements the first bounded workflow slice: deterministic PostgreSQL text retrieval feeds one Fred answer-synthesizer agent, exact citation validation gates persistence, and configured limits enforce at most five workflow steps, one tool call, one model call, and 60 seconds by default. Insufficient evidence terminates with a typed durable failure rather than an unsupported answer.
+- STEP-02-04 extends the walking slice with a seven-node core-Fred document workflow: typed planning, one deterministic hybrid-context call, agentic evidence assessment, a fail-closed sufficiency/contradiction gate, synthesis, and exact citation validation. Planner, critic, and synthesizer remain tool-free; every excerpt is labeled untrusted evidence, and known insufficiency, contradiction, and citation failures retain exact durable tags.
 
 ## Key Components
 

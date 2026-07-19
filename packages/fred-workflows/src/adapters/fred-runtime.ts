@@ -1,12 +1,28 @@
 import { Clock, Config, Effect, Runtime, Schema } from 'effect'
 import type * as Fred from '@fancyrobot/fred'
-import { ResearchWorkflowError } from '@struct/domain'
+import {
+  EvidenceContradictionError,
+  EvidenceInsufficientError,
+  ResearchCitationValidationError,
+  ResearchWorkflowError,
+  RetrievalQueryError,
+} from '@struct/domain'
 import { tracingOtlpEndpointConfig } from '@struct/observability'
 import {
+  DocumentResearchWorkflowResult,
   WalkingSkeletonWorkflowResult,
 } from '@struct/research-engine'
 // eslint-disable-next-line no-unused-vars -- Type-only namespace is consumed by TypeScript.
 import type * as Research from '@struct/research-engine'
+import {
+  documentPlannerAgent,
+  documentSynthesizerAgent,
+  evidenceCriticAgent,
+  makeDocumentResearchWorkflow,
+  makeHybridDocumentRetrievalTool,
+} from '../graphs/document-research.js'
+// eslint-disable-next-line no-unused-vars -- Type-only namespace is consumed by TypeScript.
+import type * as DocumentResearch from '../graphs/document-research.js'
 import {
   answerSynthesizerAgent,
   makeSearchTextTool,
@@ -40,10 +56,48 @@ export interface FredClientFactory {
   readonly execute: (
     fred: Fred.FredClient,
     workflow: Fred.WorkflowIR,
-    input: typeof Research.WalkingSkeletonResearchInput.Type,
+    input:
+      | typeof Research.WalkingSkeletonResearchInput.Type
+      | typeof Research.DocumentResearchInput.Type,
     maxElapsedMs: number,
     signal: AbortSignal,
   ) => Promise<Fred.WorkflowExecutionResult>
+}
+
+export type DocumentResearchFailure =
+  | EvidenceInsufficientError
+  | EvidenceContradictionError
+  | ResearchCitationValidationError
+  | RetrievalQueryError
+  | ResearchWorkflowError
+
+function documentResearchFailure(
+  cause: unknown,
+): DocumentResearchFailure {
+  let current = cause
+  for (let depth = 0; depth < 5; depth += 1) {
+    if (
+      current instanceof EvidenceInsufficientError
+      || current instanceof EvidenceContradictionError
+      || current instanceof ResearchCitationValidationError
+      || current instanceof RetrievalQueryError
+      || current instanceof ResearchWorkflowError
+    ) {
+      return current
+    }
+    if (
+      typeof current !== 'object'
+      || current === null
+      || !('cause' in current)
+    ) {
+      break
+    }
+    current = current.cause
+  }
+  return new ResearchWorkflowError({
+    stage: 'workflow-execution',
+    message: 'Fred document research workflow failed',
+  })
 }
 
 function assertActive(signal: AbortSignal): void {
@@ -312,6 +366,90 @@ export const runFredWalkingSkeleton = (
           new ResearchWorkflowError({
             stage: 'workflow-execution',
             message: 'Fred research workflow exceeded elapsed-time budget',
+          }),
+      }),
+    )
+  })
+
+export const runFredDocumentResearch = (
+  input: typeof Research.DocumentResearchInput.Type,
+  deps: DocumentResearch.DocumentResearchGraphDependencies,
+  config: FredRuntimeConfig,
+  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+): Effect.Effect<typeof DocumentResearchWorkflowResult.Type, DocumentResearchFailure, never> =>
+  Effect.flatMap(Clock.currentTimeMillis, (startedAtMs) => {
+    const deadlineMs = startedAtMs + config.maxElapsedMs
+    return Effect.acquireUseRelease(
+      Effect.tryPromise({
+        try: async (signal) => {
+          const fred = await createFredBeforeDeadline(
+            factory,
+            config.maxElapsedMs,
+            signal,
+          )
+          if (signal.aborted) {
+            void boundedShutdown(fred, EMERGENCY_SHUTDOWN_MS)
+            assertActive(signal)
+          }
+          return fred
+        },
+        catch: () =>
+          new ResearchWorkflowError({
+            stage: 'fred-runtime',
+            message: 'Fred runtime could not be created',
+          }),
+      }),
+      (fred) =>
+        Effect.tryPromise({
+          try: async (signal) => {
+            assertActive(signal)
+            const provider = await fred.providers.use(config.providerPackage)
+            assertActive(signal)
+            await fred.tools.register(
+              makeHybridDocumentRetrievalTool(deps.buildContext, signal),
+            )
+            assertActive(signal)
+            await fred.agents.register(
+              documentPlannerAgent(provider.id, config.model),
+            )
+            assertActive(signal)
+            await fred.agents.register(
+              evidenceCriticAgent(provider.id, config.model),
+            )
+            assertActive(signal)
+            await fred.agents.register(
+              documentSynthesizerAgent(provider.id, config.model),
+            )
+            assertActive(signal)
+            const workflow = makeDocumentResearchWorkflow(deps, signal)
+            await fred.workflows.define(workflow)
+            assertActive(signal)
+            const result = await factory.execute(
+              fred,
+              workflow,
+              input,
+              config.maxElapsedMs,
+              signal,
+            )
+            assertActive(signal)
+            if (!result.success || result.status !== 'completed') {
+              throw result.error
+                ?? new Error(`Fred workflow ended with ${result.status}`)
+            }
+            return Schema.decodeUnknownSync(DocumentResearchWorkflowResult)(
+              result.finalOutput,
+            )
+          },
+          catch: documentResearchFailure,
+        }),
+      (fred) => shutdownWithinDeadline(fred, deadlineMs),
+    ).pipe(
+      Effect.timeoutFail({
+        duration: config.maxElapsedMs,
+        onTimeout: () =>
+          new ResearchWorkflowError({
+            stage: 'workflow-execution',
+            message: 'Fred document research exceeded elapsed-time budget',
           }),
       }),
     )
