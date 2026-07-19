@@ -27,10 +27,10 @@ export { DIRECTORY_REFRESH_PREPARE_CONCURRENCY }
 export const directoryRefreshFailureBoundaries = [
   'discovery',
   'hashing',
-  'checkpoint',
   'artifact-persistence',
   'version-creation',
   'event-publication',
+  'checkpoint',
 ] as const
 
 export type DirectoryRefreshFailureBoundary =
@@ -43,11 +43,19 @@ interface RecoveryResult {
   readonly committedManifests: number
   readonly committedVersions: number
   readonly committedEvents: number
+  readonly committedCheckpoints: number
   readonly uniqueArtifacts: number
+  readonly duplicateArtifacts: number
   readonly duplicateManifests: number
   readonly duplicateVersions: number
   readonly duplicateEvents: number
+  readonly duplicateCheckpoints: number
   readonly converged: boolean
+}
+
+export interface DirectoryRecoveryModelPolicy {
+  readonly atomicDatabaseCommit: boolean
+  readonly replayIdempotent: boolean
 }
 
 export interface DirectoryRefreshEvaluationReport {
@@ -311,10 +319,20 @@ export function buildDirectoryRefreshFixture() {
   }
 }
 
-function recoveryResult(
+const safeRecoveryPolicy: DirectoryRecoveryModelPolicy = {
+  atomicDatabaseCommit: true,
+  replayIdempotent: true,
+}
+
+function duplicateCount(writes: ReadonlyArray<string>): number {
+  return writes.length - new Set(writes).size
+}
+
+export function evaluateDirectoryRecoveryBoundary(
   boundary: DirectoryRefreshFailureBoundary,
   initial: DirectoryManifest,
   refreshed: DirectoryManifest,
+  policy: DirectoryRecoveryModelPolicy = safeRecoveryPolicy,
 ): RecoveryResult {
   const plan = buildRefreshPlan(initial.entries, refreshed.entries)
   const changed = plan.filter((item) =>
@@ -322,63 +340,120 @@ function recoveryResult(
   const currentByPath = new Map(
     refreshed.entries.map((entry) => [entry.relativePath, entry]),
   )
-  const artifacts = new Set<string>()
-  const versions = new Set<string>()
-  const manifests = new Set<string>()
-  const events = new Set<string>()
+  const artifactKeys = changed.flatMap((item) => {
+    const entry = currentByPath.get(item.relativePath)
+    return entry?.contentHash === null || entry?.contentHash === undefined
+      ? []
+      : [entry.contentHash]
+  })
+  const versionKeys = changed.flatMap((item) => {
+    const entry = currentByPath.get(item.relativePath)
+    return entry?.contentHash === null || entry?.contentHash === undefined
+      ? []
+      : [`${item.relativePath}:${entry.contentHash}`]
+  })
+  const manifestKey = refreshed.digest
+  const eventKey = `directory-refresh-committed:${refreshed.digest}`
+  const checkpointKey = `checkpoint:${refreshed.digest}`
+  const artifactWrites: string[] = []
+  const manifestWrites: string[] = []
+  const versionWrites: string[] = []
+  const eventWrites: string[] = []
+  const checkpointWrites: string[] = []
+  const durableArtifacts = new Set<string>()
+  let committed = false
 
-  // The first attempt is interrupted at the selected boundary. Content
-  // addressed artifacts may survive that interruption, but database effects
-  // belong to one transaction and therefore remain empty.
-  if (boundary === 'artifact-persistence') {
-    for (const item of changed.slice(0, 1)) {
-      const entry = currentByPath.get(item.relativePath)
-      if (entry?.contentHash !== null && entry?.contentHash !== undefined) {
-        artifacts.add(entry.contentHash)
+  const writeArtifacts = (limit = artifactKeys.length) => {
+    for (const key of artifactKeys.slice(0, limit)) {
+      if (!durableArtifacts.has(key)) {
+        durableArtifacts.add(key)
+        artifactWrites.push(key)
       }
     }
   }
-
-  // A fresh retry deterministically replays preparation and crosses the atomic
-  // commit boundary once.
-  for (const item of changed) {
-    const entry = currentByPath.get(item.relativePath)
-    if (entry?.contentHash !== null && entry?.contentHash !== undefined) {
-      artifacts.add(entry.contentHash)
-      versions.add(`${item.relativePath}:${entry.contentHash}`)
+  const writeDatabaseStages = (
+    stopBefore: 'version-creation' | 'event-publication' | 'checkpoint' | null,
+  ) => {
+    if (stopBefore === 'version-creation') return
+    manifestWrites.push(manifestKey)
+    versionWrites.push(...versionKeys)
+    if (stopBefore === 'event-publication') return
+    eventWrites.push(eventKey)
+    if (stopBefore === 'checkpoint') return
+    checkpointWrites.push(checkpointKey)
+    committed = true
+  }
+  const rollbackDatabaseStages = (
+    lengths: readonly [number, number, number, number],
+  ) => {
+    manifestWrites.length = lengths[0]
+    versionWrites.length = lengths[1]
+    eventWrites.length = lengths[2]
+    checkpointWrites.length = lengths[3]
+  }
+  const attempt = (
+    failAt: DirectoryRefreshFailureBoundary | null,
+    replay: boolean,
+  ) => {
+    if (replay && committed && policy.replayIdempotent) return
+    if (failAt === 'discovery' || failAt === 'hashing') return
+    if (failAt === 'artifact-persistence') {
+      writeArtifacts(1)
+      return
+    }
+    writeArtifacts()
+    const beforeDatabase = [
+      manifestWrites.length,
+      versionWrites.length,
+      eventWrites.length,
+      checkpointWrites.length,
+    ] as const
+    writeDatabaseStages(failAt)
+    if (failAt !== null && policy.atomicDatabaseCommit) {
+      rollbackDatabaseStages(beforeDatabase)
     }
   }
-  manifests.add(refreshed.digest)
-  events.add(`directory-refresh-committed:${refreshed.digest}`)
 
-  // A post-success replay repeats the same Set writes and therefore cannot
-  // create another durable identity.
-  for (const item of changed) {
-    const entry = currentByPath.get(item.relativePath)
-    if (entry?.contentHash !== null && entry?.contentHash !== undefined) {
-      artifacts.add(entry.contentHash)
-      versions.add(`${item.relativePath}:${entry.contentHash}`)
-    }
-  }
-  manifests.add(refreshed.digest)
-  events.add(`directory-refresh-committed:${refreshed.digest}`)
+  attempt(boundary, false)
+  attempt(null, false)
+  attempt(null, true)
+
+  const duplicateManifests = duplicateCount(manifestWrites)
+  const duplicateVersions = duplicateCount(versionWrites)
+  const duplicateEvents = duplicateCount(eventWrites)
+  const duplicateCheckpoints = duplicateCount(checkpointWrites)
+  const duplicateArtifacts = duplicateCount(artifactWrites)
+  const committedManifests = new Set(manifestWrites).size
+  const committedVersions = new Set(versionWrites).size
+  const committedEvents = new Set(eventWrites).size
+  const committedCheckpoints = new Set(checkpointWrites).size
 
   return {
     boundary,
     attempts: 2,
     replayAttempts: 1,
-    committedManifests: manifests.size,
-    committedVersions: versions.size,
-    committedEvents: events.size,
-    uniqueArtifacts: artifacts.size,
-    duplicateManifests: 0,
-    duplicateVersions: 0,
-    duplicateEvents: 0,
+    committedManifests,
+    committedVersions,
+    committedEvents,
+    committedCheckpoints,
+    uniqueArtifacts: durableArtifacts.size,
+    duplicateArtifacts,
+    duplicateManifests,
+    duplicateVersions,
+    duplicateEvents,
+    duplicateCheckpoints,
     converged:
-      manifests.size === 1
-      && versions.size === changed.length
-      && events.size === 1
-      && artifacts.size === changed.length,
+      committed
+      && committedManifests === 1
+      && committedVersions === changed.length
+      && committedEvents === 1
+      && committedCheckpoints === 1
+      && durableArtifacts.size === changed.length
+      && duplicateArtifacts === 0
+      && duplicateManifests === 0
+      && duplicateVersions === 0
+      && duplicateEvents === 0
+      && duplicateCheckpoints === 0,
   }
 }
 
@@ -405,7 +480,11 @@ export const evaluateDirectoryRefreshRecovery = Effect.fn(
     unsupported: plan.filter((item) => item.disposition === 'unsupported').length,
   }
   const recovery = directoryRefreshFailureBoundaries.map((boundary) =>
-    recoveryResult(boundary, fixture.initial, fixture.refreshed))
+    evaluateDirectoryRecoveryBoundary(
+      boundary,
+      fixture.initial,
+      fixture.refreshed,
+    ))
   const processedEntries = fixture.refreshed.entries.filter((entry) =>
     entry.status === 'included').length
   const unsupportedEntries = fixture.refreshed.entries.filter((entry) =>
@@ -467,9 +546,11 @@ export const evaluateDirectoryRefreshRecovery = Effect.fn(
         recovery.length === directoryRefreshFailureBoundaries.length
         && recovery.every((result) =>
           result.converged
+          && result.duplicateArtifacts === 0
           && result.duplicateManifests === 0
           && result.duplicateVersions === 0
-          && result.duplicateEvents === 0),
+          && result.duplicateEvents === 0
+          && result.duplicateCheckpoints === 0),
     },
     {
       id: 'terminal-progress-is-exact',

@@ -4,6 +4,7 @@ import {
   DIRECTORY_REFRESH_FILE_COUNT,
   buildDirectoryRefreshFixture,
   directoryRefreshFailureBoundaries,
+  evaluateDirectoryRecoveryBoundary,
   evaluateDirectoryRefreshRecovery,
 } from '../src/directory-refresh.js'
 
@@ -34,5 +35,35 @@ describe('Phase 03 directory refresh evaluation', () => {
     expect(second.initial.digest).toBe(first.initial.digest)
     expect(second.refreshed.digest).toBe(first.refreshed.digest)
     expect(second.refreshed.entries).toEqual(first.refreshed.entries)
+  })
+
+  it('fails the recovery model when replay is not idempotent', () => {
+    const fixture = buildDirectoryRefreshFixture()
+    const result = evaluateDirectoryRecoveryBoundary(
+      'checkpoint',
+      fixture.initial,
+      fixture.refreshed,
+      { atomicDatabaseCommit: true, replayIdempotent: false },
+    )
+
+    expect(result.converged).toBe(false)
+    expect(result.duplicateManifests).toBeGreaterThan(0)
+    expect(result.duplicateVersions).toBeGreaterThan(0)
+    expect(result.duplicateEvents).toBeGreaterThan(0)
+    expect(result.duplicateCheckpoints).toBeGreaterThan(0)
+  })
+
+  it('fails the recovery model when a late database failure is not atomic', () => {
+    const fixture = buildDirectoryRefreshFixture()
+    const result = evaluateDirectoryRecoveryBoundary(
+      'event-publication',
+      fixture.initial,
+      fixture.refreshed,
+      { atomicDatabaseCommit: false, replayIdempotent: true },
+    )
+
+    expect(result.converged).toBe(false)
+    expect(result.duplicateManifests).toBeGreaterThan(0)
+    expect(result.duplicateVersions).toBeGreaterThan(0)
   })
 })

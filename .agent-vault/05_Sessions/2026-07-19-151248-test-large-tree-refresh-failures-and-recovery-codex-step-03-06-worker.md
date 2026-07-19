@@ -69,6 +69,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - The evaluator now reads the production `DIRECTORY_REFRESH_PREPARE_CONCURRENCY` constant instead of duplicating its value.
 - PR review remediation upgraded every injected recovery case from same-lease retry to a real restart: expire the original lease, recover it, reclaim with a new attempt and lease token, then retry and replay.
 - Terminal progress is now derived from decoded refreshed-manifest outcomes rather than hard-coded counts, and the step's agent-managed snapshot mirrors the in-progress PR state.
+- CodeRabbit delta review correctly identified that the first Set-based evaluator could not fail. It is replaced by explicit boundary stages with recorded durable writes and computed duplicate counts; negative policy tests prove non-atomic commit and non-idempotent replay fail closed.
 
 ## Context Handoff
 
@@ -102,13 +103,13 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `bun run typecheck` — pass.
 - `bun run lint` — pass with zero warnings.
 - `bun run lint:imports` — pass, 122 modules / 282 dependencies, zero violations.
-- `bun run test` — 381 pass, 0 fail, 1,501 assertions; 130 expected database-dependent skips.
+- `bun run test` — 383 pass, 0 fail, 1,509 assertions; 130 expected database-dependent skips.
 - `DATABASE_URL=postgres://struct:struct@localhost:5432/struct bun run test:integration` — 86 pass, 0 fail, 684 assertions.
 - `bun run test:e2e` — 4 pass, 0 fail, 9 assertions.
 - `bun run build` — web, API, and worker production builds pass.
 - Migration down/up/up, `docker compose config --quiet`, `bun run docs:lint`, `bun run secrets:scan`, and `bun run directory:eval` — pass.
-- Targeted evaluator — 9 pass, 0 fail, 32 assertions. Targeted recovery integration — 1 pass, 0 fail, 55 assertions.
-- Root post-remediation validation: 381 unit tests / 1,501 assertions; 86 real-PostgreSQL integration tests / 684 assertions; 4 browser E2E tests / 9 assertions.
+- Targeted evaluator — 11 pass, 0 fail, 40 assertions. Targeted recovery integration — 1 pass, 0 fail, 55 assertions.
+- Root post-remediation validation: 383 unit tests / 1,509 assertions; 86 real-PostgreSQL integration tests / 684 assertions; 4 browser E2E tests / 9 assertions.
 - Root post-remediation gates: typecheck, zero-warning lint, dependency/import boundaries, production builds, migration down/up/up, Compose config, docs lint, secrets scan, deterministic evaluator, diff check, and vault doctor all pass.
 - Targeted post-migration verification proves the scoped `directory_root_id` create contract and all six recovery boundaries against the current schema.
 

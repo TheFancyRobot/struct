@@ -47,10 +47,13 @@
       "committedManifests": 1,
       "committedVersions": 125,
       "committedEvents": 1,
+      "committedCheckpoints": 1,
       "uniqueArtifacts": 125,
+      "duplicateArtifacts": 0,
       "duplicateManifests": 0,
       "duplicateVersions": 0,
       "duplicateEvents": 0,
+      "duplicateCheckpoints": 0,
       "converged": true
     },
     {
@@ -60,23 +63,13 @@
       "committedManifests": 1,
       "committedVersions": 125,
       "committedEvents": 1,
+      "committedCheckpoints": 1,
       "uniqueArtifacts": 125,
+      "duplicateArtifacts": 0,
       "duplicateManifests": 0,
       "duplicateVersions": 0,
       "duplicateEvents": 0,
-      "converged": true
-    },
-    {
-      "boundary": "checkpoint",
-      "attempts": 2,
-      "replayAttempts": 1,
-      "committedManifests": 1,
-      "committedVersions": 125,
-      "committedEvents": 1,
-      "uniqueArtifacts": 125,
-      "duplicateManifests": 0,
-      "duplicateVersions": 0,
-      "duplicateEvents": 0,
+      "duplicateCheckpoints": 0,
       "converged": true
     },
     {
@@ -86,10 +79,13 @@
       "committedManifests": 1,
       "committedVersions": 125,
       "committedEvents": 1,
+      "committedCheckpoints": 1,
       "uniqueArtifacts": 125,
+      "duplicateArtifacts": 0,
       "duplicateManifests": 0,
       "duplicateVersions": 0,
       "duplicateEvents": 0,
+      "duplicateCheckpoints": 0,
       "converged": true
     },
     {
@@ -99,10 +95,13 @@
       "committedManifests": 1,
       "committedVersions": 125,
       "committedEvents": 1,
+      "committedCheckpoints": 1,
       "uniqueArtifacts": 125,
+      "duplicateArtifacts": 0,
       "duplicateManifests": 0,
       "duplicateVersions": 0,
       "duplicateEvents": 0,
+      "duplicateCheckpoints": 0,
       "converged": true
     },
     {
@@ -112,10 +111,29 @@
       "committedManifests": 1,
       "committedVersions": 125,
       "committedEvents": 1,
+      "committedCheckpoints": 1,
       "uniqueArtifacts": 125,
+      "duplicateArtifacts": 0,
       "duplicateManifests": 0,
       "duplicateVersions": 0,
       "duplicateEvents": 0,
+      "duplicateCheckpoints": 0,
+      "converged": true
+    },
+    {
+      "boundary": "checkpoint",
+      "attempts": 2,
+      "replayAttempts": 1,
+      "committedManifests": 1,
+      "committedVersions": 125,
+      "committedEvents": 1,
+      "committedCheckpoints": 1,
+      "uniqueArtifacts": 125,
+      "duplicateArtifacts": 0,
+      "duplicateManifests": 0,
+      "duplicateVersions": 0,
+      "duplicateEvents": 0,
+      "duplicateCheckpoints": 0,
       "converged": true
     }
   ],
