@@ -56,6 +56,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 2026-07-19: Exact-head Codex review identified two provenance defects. Remediated PDF parsing to infer paragraph boundaries from pdf.js line layout and emit page/paragraph locators, and remediated Markdown parsing to split ATX headings at block boundaries while ignoring heading-like content inside fenced code. Added focused regression coverage for both cases.
 - 2026-07-19: Exact-head CodeRabbit review found that a shorter or code-suffixed fence could prematurely close a longer Markdown fenced block. Fence tracking now preserves the opening marker and length and accepts only whitespace-only closing markers of the same character and equal-or-greater length; regression coverage added.
 - 2026-07-19: Exact-head Codex review found PDF.js could detach the staged raw-byte buffer before immutable persistence and that adjacent content hashes in ATX headings (for example `# C#`) were stripped. PDF parsing now receives a copied buffer, with raw byte-for-byte persistence coverage; ATX closing hashes are consumed only when whitespace-delimited, with provenance regression coverage.
+- 2026-07-19: Exact-head CodeRabbit review identified character-counted PDF fixture offsets. Both PDF test builders now calculate stream lengths, object offsets, and `startxref` in encoded bytes; non-ASCII ingestion input exercises the corrected fixture.
 
 ## Findings
 
