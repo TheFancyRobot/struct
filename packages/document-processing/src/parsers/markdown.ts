@@ -4,20 +4,70 @@ import { normalize, normalizeSourceDocument } from '../normalize-document.js'
 
 const decoder = new TextDecoder('utf-8', { fatal: true })
 
+interface MarkdownFragment {
+  readonly text: string
+  readonly section: string | null
+  readonly paragraph: number
+}
+
+const markdownFragments = (source: string): ReadonlyArray<MarkdownFragment> => {
+  const fragments: MarkdownFragment[] = []
+  let section: string | null = null
+  let paragraph = 0
+  let lines: string[] = []
+  let blockSection: string | null = null
+  let fence: '`' | '~' | null = null
+
+  const flush = () => {
+    const text = lines.join('\n').trim()
+    lines = []
+    if (!text) return
+    fragments.push({ text, section: blockSection, paragraph: ++paragraph })
+  }
+
+  for (const line of source.split('\n')) {
+    const fenceMatch = /^ {0,3}(`{3,}|~{3,})/.exec(line)
+    if (fence !== null) {
+      lines.push(line)
+      if (fenceMatch?.[1]?.startsWith(fence)) {
+        flush()
+        fence = null
+      }
+      continue
+    }
+    if (fenceMatch?.[1]) {
+      flush()
+      blockSection = section
+      fence = fenceMatch[1][0] === '`' ? '`' : '~'
+      lines.push(line)
+      continue
+    }
+    const heading = /^ {0,3}#{1,6}[ \t]+(.+?)[ \t]*#*[ \t]*$/.exec(line)
+    if (heading) {
+      flush()
+      section = heading[1]?.trim() ?? null
+      fragments.push({ text: line.trim(), section, paragraph: ++paragraph })
+      blockSection = section
+      continue
+    }
+    if (line.trim().length === 0) {
+      flush()
+      blockSection = section
+      continue
+    }
+    if (lines.length === 0) blockSection = section
+    lines.push(line)
+  }
+  flush()
+  return fragments
+}
+
 export const parseMarkdown = (bytes: Uint8Array) =>
   Effect.try({
     try: () => {
       const source = decoder.decode(bytes)
       const normalizedSource = normalize(source)
-      let section: string | null = null
-      let paragraph = 0
-      const fragments = normalizedSource.split(/\n{2,}/).filter((text) => text.trim().length > 0).map((text) => {
-        const heading = /^#{1,6}\s+(.+)$/m.exec(text)
-        if (heading) section = heading[1]?.trim() ?? null
-        paragraph += 1
-        return { text, section, paragraph }
-      })
-      return normalizeSourceDocument('markdown', source, fragments)
+      return normalizeSourceDocument('markdown', source, markdownFragments(normalizedSource))
     },
     catch: () => new DocumentProcessingError({ reason: 'invalid-utf8', message: 'Markdown document is not valid UTF-8' }),
   })

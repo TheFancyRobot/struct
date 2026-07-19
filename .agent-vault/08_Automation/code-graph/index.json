@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-19T07:13:24.832Z",
+  "generatedAt": "2026-07-19T07:21:21.548Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -1895,11 +1895,25 @@
           "endLine": 5
         },
         {
+          "name": "MarkdownFragment",
+          "kind": "interface",
+          "line": 7,
+          "exported": false,
+          "endLine": 7
+        },
+        {
+          "name": "markdownFragments",
+          "kind": "const",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        },
+        {
           "name": "parseMarkdown",
           "kind": "const",
-          "line": 7,
+          "line": 65,
           "exported": true,
-          "endLine": 7
+          "endLine": 65
         }
       ],
       "imports": [
@@ -1930,9 +1944,9 @@
         }
       ],
       "exports": [],
-      "hash": "c588f7e7e0ff192b7c993fc5f4cd9dce206dbfa874eb00af8cb3a406720a48ad",
-      "mtimeMs": 1784444780589.9539,
-      "size": 970,
+      "hash": "6d9318e1aee7825b27bec4fdc8b91ae771bddd23e1dbea6aba7a2abe2d218bc4",
+      "mtimeMs": 1784445606847.417,
+      "size": 2130,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1966,43 +1980,57 @@
           "name": "PdfTextItem",
           "kind": "interface",
           "line": 13,
-          "exported": false,
+          "exported": true,
           "endLine": 13
         },
         {
           "name": "PdfPage",
           "kind": "interface",
-          "line": 14,
+          "line": 19,
           "exported": false,
-          "endLine": 14
+          "endLine": 19
         },
         {
           "name": "PdfDocument",
           "kind": "interface",
-          "line": 15,
+          "line": 20,
           "exported": false,
-          "endLine": 15
+          "endLine": 20
         },
         {
           "name": "PdfLoadingTask",
           "kind": "interface",
-          "line": 16,
+          "line": 21,
           "exported": false,
-          "endLine": 16
+          "endLine": 21
         },
         {
           "name": "PdfJs",
           "kind": "interface",
-          "line": 17,
+          "line": 22,
           "exported": false,
-          "endLine": 17
+          "endLine": 22
+        },
+        {
+          "name": "PdfLine",
+          "kind": "interface",
+          "line": 24,
+          "exported": false,
+          "endLine": 24
+        },
+        {
+          "name": "extractPdfPageParagraphs",
+          "kind": "const",
+          "line": 30,
+          "exported": true,
+          "endLine": 30
         },
         {
           "name": "parsePdf",
           "kind": "const",
-          "line": 19,
+          "line": 82,
           "exported": true,
-          "endLine": 19
+          "endLine": 82
         }
       ],
       "imports": [
@@ -2037,9 +2065,9 @@
         }
       ],
       "exports": [],
-      "hash": "8d2126b1a59a3d7dffc7ecf170a9fdecdce7cae1d4bc7176471093636f98aa4c",
-      "mtimeMs": 1784444371545.019,
-      "size": 3058,
+      "hash": "ccea5eae17171de3dbb90bedf964f1ca92e493f5c2ca31e9b1c06f91b462abb0",
+      "mtimeMs": 1784445606847.966,
+      "size": 4932,
       "generated": false,
       "vendor": false,
       "parser": "regex"

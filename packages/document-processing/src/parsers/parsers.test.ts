@@ -3,7 +3,7 @@ import { Cause, Effect, Exit } from 'effect'
 import { parseHtml } from './html.js'
 import { parseMarkdown } from './markdown.js'
 import { parseText } from './text.js'
-import { isOcrHeavyPdf, parsePdf } from './pdf.js'
+import { extractPdfPageParagraphs, isOcrHeavyPdf, parsePdf } from './pdf.js'
 
 const encode = (text: string): Uint8Array => new TextEncoder().encode(text)
 
@@ -59,6 +59,16 @@ describe('document parsers', () => {
     expect(text.fragments.map((fragment) => fragment.paragraph)).toEqual([1, 2])
   })
 
+  it('splits Markdown headings at block boundaries and ignores headings inside fences', async () => {
+    const document = await Effect.runPromise(parseMarkdown(encode('Intro\n# Details\nBody\n```\n# not a heading\n```')))
+    expect(document.fragments).toMatchObject([
+      { text: 'Intro', section: null, paragraph: 1 },
+      { text: '# Details', section: 'Details', paragraph: 2 },
+      { text: 'Body', section: 'Details', paragraph: 3 },
+      { text: '```\n# not a heading\n```', section: 'Details', paragraph: 4 },
+    ])
+  })
+
   it('extracts HTML blocks while excluding nested script content', async () => {
     const document = await Effect.runPromise(parseHtml(encode('<h1>Guide</h1><p>Safe<br><script>secret()</script>text</p><p>More</p>')))
     expect(document.text).toBe('Guide\n\nSafe text\n\nMore')
@@ -97,6 +107,14 @@ describe('document parsers', () => {
     expect(isOcrHeavyPdf(['Hi', ''])).toBe(false)
     expect(isOcrHeavyPdf(['Hi', '', ''])).toBe(true)
     expect(isOcrHeavyPdf(['Hi'])).toBe(false)
+  })
+
+  it('preserves PDF paragraph boundaries inferred from page layout', () => {
+    expect(extractPdfPageParagraphs([
+      { str: 'First line', hasEOL: true, height: 12, transform: [1, 0, 0, 12, 72, 720] },
+      { str: 'continues', hasEOL: true, height: 12, transform: [1, 0, 0, 12, 72, 706] },
+      { str: 'Second paragraph', height: 12, transform: [1, 0, 0, 12, 72, 670] },
+    ])).toEqual(['First line continues', 'Second paragraph'])
   })
 
   it('extracts a real embedded-text PDF through pdfjs with page provenance', async () => {

@@ -53,6 +53,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 06:47 - Implemented typed document-processing workspace and extended the existing ingestion worker boundary without adding queues, APIs, storage systems, or host sidecars.
 - 06:47 - Completed final code gates: lint, root typecheck, focused 39-test suite, import boundaries, docs lint, and secret scan.
 <!-- AGENT-END:session-execution-log -->
+- 2026-07-19: Exact-head Codex review identified two provenance defects. Remediated PDF parsing to infer paragraph boundaries from pdf.js line layout and emit page/paragraph locators, and remediated Markdown parsing to split ATX headings at block boundaries while ignoring heading-like content inside fenced code. Added focused regression coverage for both cases.
 
 ## Findings
 
@@ -82,6 +83,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Root validation before the exact-head Codex fixes: real PDF parser tests, v2 reindex regression, focused 20-test suite, real PostgreSQL vertical slice, full 293-test suite, typecheck, lint, import boundaries, builds, docs links, and history-aware secret scan all passed.
 - Final CodeRabbit-remediation validation: 10/10 focused parser tests, 304/304 full PostgreSQL-backed tests with 1,647 assertions, 1/1 browser E2E, root typecheck, zero-warning lint, import boundaries, builds, Compose config, docs links, history-aware secrets, and diff hygiene passed. A fresh independent exact-diff audit found no actionable issue.
 <!-- AGENT-END:session-validation-run -->
+- 2026-07-19 exact-head remediation gate: focused document parser tests 12/12; PostgreSQL-backed repository suite 306/306 with 1,649 assertions; repository typecheck, zero-warning lint, import boundaries, production builds, docs links, history-aware secret scan, Compose config, and `git diff --check` all passed.
 
 ## Bugs Encountered
 
