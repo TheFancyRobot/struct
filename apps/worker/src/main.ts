@@ -239,7 +239,15 @@ const program = Effect.gen(function* () {
                 ),
               validate: (answer, evidence, question, signal) =>
                 Runtime.runPromise(effectRuntime)(
-                  validateAnswerCitations(answer, evidence, question),
+                  withWalkingSliceSpan(
+                    'citation-validation',
+                    {
+                      workspaceId,
+                      projectId,
+                      runId: run.id,
+                    },
+                    validateAnswerCitations(answer, evidence, question),
+                  ),
                   { signal },
                 ),
             },

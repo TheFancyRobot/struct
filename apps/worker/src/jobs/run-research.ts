@@ -212,20 +212,11 @@ export const processOneResearchJob = (
               ),
           }),
         )
-        yield* withWalkingSliceSpan(
-          'citation-validation',
-          {
-            workspaceId: job.workspaceId,
-            projectId: payload.projectId,
-            runId: run.id,
-            jobId: job.id,
-          },
-          deps.jobs.appendInProgressEvent(
-            job,
-            event(deps, job, 'citations-validated', {
-              citationCount: result.answer.citations.length,
-            }),
-          ),
+        yield* deps.jobs.appendInProgressEvent(
+          job,
+          event(deps, job, 'citations-validated', {
+            citationCount: result.answer.citations.length,
+          }),
         )
         yield* deps.jobs.complete({
           runId: run.id,
