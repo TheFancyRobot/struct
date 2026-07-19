@@ -25,8 +25,11 @@
   multi-chunk PostgreSQL coverage exercises multibyte text and inter-chunk gaps.
 - Grouped chunk provenance is accumulated across every included fragment; page,
   section, and paragraph locators clear when any intermediate fragment differs.
-- Final PostgreSQL-backed suite after review remediation: 370 passed, 0
-  failed, 2,107 assertions across 61 files.
+- Chunker and persistence validation reject non-safe-integer locator metadata
+  before JavaScript `slice()` coercion or SQL writes, including fractional and
+  `NaN` offsets.
+- Final PostgreSQL-backed suite after review remediation: 371 passed, 0
+  failed, 2,116 assertions across 61 files.
 
 ## Related Notes
 

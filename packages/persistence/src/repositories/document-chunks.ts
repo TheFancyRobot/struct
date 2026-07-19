@@ -105,9 +105,33 @@ function validateAggregate(
         chunk.ordinal,
       )
       || chunk.textHash !== hashDocumentChunkText(chunk.text)
+      || !Number.isSafeInteger(chunk.locator.charStart)
+      || !Number.isSafeInteger(chunk.locator.charEnd)
+      || !Number.isSafeInteger(chunk.locator.byteStart)
+      || !Number.isSafeInteger(chunk.locator.byteEnd)
+      || (
+        chunk.locator.page !== null
+        && (
+          !Number.isSafeInteger(chunk.locator.page)
+          || chunk.locator.page <= 0
+        )
+      )
+      || (
+        chunk.locator.paragraph !== null
+        && (
+          !Number.isSafeInteger(chunk.locator.paragraph)
+          || chunk.locator.paragraph <= 0
+        )
+      )
+      || (
+        chunk.locator.section !== null
+        && chunk.locator.section.length === 0
+      )
       || chunk.locator.charStart < 0
       || chunk.locator.charEnd <= chunk.locator.charStart
       || chunk.locator.charEnd > input.document.normalizedText.length
+      || chunk.locator.byteStart < 0
+      || chunk.locator.byteEnd <= chunk.locator.byteStart
       || (
         previousChunk !== undefined
         && chunk.locator.charStart < previousChunk.locator.charEnd

@@ -57,9 +57,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Self-review added hard bounds for oversized fragments, surrogate-pair-safe splitting, exact format identity, range/overlap validation, and immutable timestamp comparison.
 - Updated historical migration tests whose latest-migration assumptions changed when `0005` was added.
 - Root pre-PR review found and remediated two uncovered chunker edge defects: exclusive-end adjacent fragments were incorrectly rejected as overlapping, and a one-character boundary inside a UTF-16 surrogate pair could fail to advance. Added regressions for both cases.
-- Root reran the full PostgreSQL-backed repository suite after remediation: 370 passed, 0 failed, 2,107 assertions across 61 files; browser E2E included. Typecheck, zero-warning lint, import boundaries, production builds, docs links, history-aware secrets scan, Compose config, and `git diff --check` passed.
+- Root reran the full PostgreSQL-backed repository suite after remediation: 371 passed, 0 failed, 2,116 assertions across 61 files; browser E2E included. Typecheck, zero-warning lint, import boundaries, production builds, docs links, history-aware secrets scan, Compose config, and `git diff --check` passed.
 - Codex exact-head review on `a018b23` found quadratic UTF-8 prefix rescans in fragment and repository locator validation plus a stale generated step snapshot. Validation now advances byte offsets linearly from the previous boundary, the PostgreSQL fixture covers multiple chunks with multibyte text and gaps, and the snapshot is completed/current.
-- Post-remediation exact-head gates: 370 PostgreSQL-backed tests passed, 0 failed, 2,107 assertions across 61 files; focused provenance/schema tests 9/9; browser E2E, typecheck, zero-warning lint, import boundaries, builds, docs, secrets, Compose, diff check, and Vault doctor passed.
+- Post-remediation exact-head gates: 371 PostgreSQL-backed tests passed, 0 failed, 2,116 assertions across 61 files; focused chunk/domain/repository tests 14/14; browser E2E, typecheck, zero-warning lint, import boundaries, builds, docs, secrets, Compose, diff check, and Vault doctor passed.
 
 ## Findings
 
@@ -69,6 +69,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Migration integration fixtures that target a historical latest migration must explicitly step over newer migrations before asserting the historical down state.
 - Independent pre-PR review confirmed two boundary gaps: locator schemas lacked cross-field range checks, and persistence trusted caller-provided chunk IDs/hashes. Both were remediated with regression coverage before PR creation.
 - A proposed Phase-03-style `SourceVersion -> N Document` redesign was not adopted in STEP-02-02: the refined Phase-02 slice models one uploaded document source/version, while directory `FileEntry` identity is explicitly owned by later directory-ingestion refinement. This avoids prematurely inventing an ambiguous per-file identity in the current migration.
+- Final-head fallback review (used because the GitHub Codex review quota was exhausted) found that JavaScript `slice()` coercion could admit fractional or `NaN` locator offsets before typed output validation. Chunker and repository boundaries now require safe-integer offsets and valid nullable page/paragraph metadata; focused regressions cover fractional/`NaN` rejection and no SQL write.
 
 ## Context Handoff
 

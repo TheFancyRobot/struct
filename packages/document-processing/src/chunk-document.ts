@@ -29,14 +29,41 @@ function validateFragment(
   index: number,
   previous: DocumentFragment | undefined,
 ): Effect.Effect<void, DocumentChunkingError> {
-  const text = document.text.slice(fragment.charStart, fragment.charEnd)
   if (
-    fragment.charStart < 0
+    !Number.isSafeInteger(fragment.charStart)
+    || !Number.isSafeInteger(fragment.charEnd)
+    || !Number.isSafeInteger(fragment.byteStart)
+    || !Number.isSafeInteger(fragment.byteEnd)
+    || (
+      fragment.page !== null
+      && (!Number.isSafeInteger(fragment.page) || fragment.page <= 0)
+    )
+    || (
+      fragment.paragraph !== null
+      && (
+        !Number.isSafeInteger(fragment.paragraph)
+        || fragment.paragraph <= 0
+      )
+    )
+    || (
+      fragment.section !== null
+      && fragment.section.length === 0
+    )
+    || fragment.charStart < 0
     || fragment.charEnd <= fragment.charStart
     || fragment.charEnd > document.text.length
-    || fragment.text !== text
+    || fragment.byteStart < 0
+    || fragment.byteEnd <= fragment.byteStart
     || (previous !== undefined && fragment.charStart < previous.charEnd)
   ) {
+    return Effect.fail(new DocumentChunkingError({
+      reason: 'invalid-locator',
+      fragment: index,
+      message: 'Normalized fragment locators must be ordered and round-trip exactly',
+    }))
+  }
+  const text = document.text.slice(fragment.charStart, fragment.charEnd)
+  if (fragment.text !== text) {
     return Effect.fail(new DocumentChunkingError({
       reason: 'invalid-locator',
       fragment: index,

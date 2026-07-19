@@ -282,4 +282,51 @@ describe('chunkDocument', () => {
       }
     }
   })
+
+  it('rejects fractional and NaN offsets before slice coercion', async () => {
+    const document: Document = {
+      id: documentId,
+      sourceVersionId,
+      format: 'text',
+      normalizedText: 'Body',
+      contentHash: 'sha256:document',
+      parserVersion: 'text-v1',
+      createdAt: 1n,
+    }
+
+    for (const [charStart, charEnd] of [
+      [0.5, 4.5],
+      [Number.NaN, 4],
+    ]) {
+      const result = await Effect.runPromiseExit(chunkDocument({
+        document,
+        normalized: {
+          format: 'text',
+          text: 'Body',
+          fragments: [{
+            text: 'Body',
+            page: null,
+            section: null,
+            paragraph: 1,
+            charStart,
+            charEnd,
+            byteStart: 0,
+            byteEnd: 4,
+          }],
+        },
+      }))
+
+      expect(Exit.isFailure(result)).toBe(true)
+      if (Exit.isFailure(result)) {
+        const failure = Cause.failureOption(result.cause)
+        expect(failure._tag).toBe('Some')
+        if (failure._tag === 'Some') {
+          expect(failure.value).toMatchObject({
+            _tag: 'DocumentChunkingError',
+            reason: 'invalid-locator',
+          })
+        }
+      }
+    }
+  })
 })

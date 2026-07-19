@@ -246,6 +246,13 @@ describeIf('DocumentChunkRepo immutable storage (PostgreSQL)', () => {
         ...chunks[0] as DocumentChunk,
         textHash: 'sha256:forged',
       },
+      {
+        ...chunks[0] as DocumentChunk,
+        locator: {
+          ...(chunks[0] as DocumentChunk).locator,
+          charStart: Number.NaN,
+        },
+      },
     ]) {
       const result = await Effect.runPromiseExit(
         DocumentChunkRepo.storeForIngestionAttempt({
