@@ -285,7 +285,7 @@ suite('data-engine sidecar', () => {
           FROM records
           GROUP BY active
         )
-        SELECT active, total FROM totals ORDER BY active
+        SELECT active, total FROM totals ORDER BY ALL
       `,
       snapshots: [{
         alias: 'records',
@@ -341,7 +341,7 @@ suite('data-engine sidecar', () => {
               FROM records left_rows
               JOIN records right_rows ON right_rows.id = left_rows.id
               WHERE left_rows.active = true
-              ORDER BY left_rows.id`,
+              ORDER BY ALL`,
       },
     })
     expect(joinedQuery.status).toBe(200)
@@ -355,7 +355,7 @@ suite('data-engine sidecar', () => {
       credential: token,
       body: {
         ...query,
-        sql: 'SELECT id FROM records ORDER BY id',
+        sql: 'SELECT id FROM records ORDER BY ALL',
       },
     })
     expect(projectedQuery.status).toBe(200)
@@ -376,21 +376,22 @@ suite('data-engine sidecar', () => {
       'INSTALL httpfs',
       'LOAD httpfs',
       'SELECT * FROM records',
-      'SELECT * FROM records; SELECT * FROM records ORDER BY id',
-      "SELECT read_csv_auto('/etc/passwd') FROM records ORDER BY id",
-      "SELECT read_json_auto('../secret.json') FROM records ORDER BY id",
-      "SELECT read_parquet('relative/file.parquet') FROM records ORDER BY id",
-      "SELECT glob('*.csv') FROM records ORDER BY id",
+      'SELECT id FROM records ORDER BY id',
+      'SELECT * FROM records; SELECT * FROM records ORDER BY ALL',
+      "SELECT read_csv_auto('/etc/passwd') FROM records ORDER BY ALL",
+      "SELECT read_json_auto('../secret.json') FROM records ORDER BY ALL",
+      "SELECT read_parquet('relative/file.parquet') FROM records ORDER BY ALL",
+      "SELECT glob('*.csv') FROM records ORDER BY ALL",
       'PRAGMA version',
-      'SELECT * FROM unknown ORDER BY id',
-      'SELECT * FROM records -- bypass\nORDER BY id',
-      'SELECT * FROM records /* bypass */ ORDER BY id',
-      "SELECT * FROM records WHERE name = 'https://example.com/x' ORDER BY id",
-      'SELECT CURRENT_TIMESTAMP FROM records ORDER BY id',
-      'SELECT CURRENT_DATE FROM records ORDER BY id',
-      'SELECT LOCALTIME FROM records ORDER BY id',
-      'SELECT * FROM records TABLESAMPLE 10% ORDER BY id',
-      'SELECT * FROM records USING SAMPLE 1 ROWS ORDER BY id',
+      'SELECT * FROM unknown ORDER BY ALL',
+      'SELECT * FROM records -- bypass\nORDER BY ALL',
+      'SELECT * FROM records /* bypass */ ORDER BY ALL',
+      "SELECT * FROM records WHERE name = 'https://example.com/x' ORDER BY ALL",
+      'SELECT CURRENT_TIMESTAMP FROM records ORDER BY ALL',
+      'SELECT CURRENT_DATE FROM records ORDER BY ALL',
+      'SELECT LOCALTIME FROM records ORDER BY ALL',
+      'SELECT * FROM records TABLESAMPLE 10% ORDER BY ALL',
+      'SELECT * FROM records USING SAMPLE 1 ROWS ORDER BY ALL',
     ]
     for (const sql of rejectedQueries) {
       const rejected = await hostRequest({
@@ -410,7 +411,7 @@ suite('data-engine sidecar', () => {
       credential: token,
       body: {
         ...query,
-        sql: 'SELECT id FROM records ORDER BY id',
+        sql: 'SELECT id FROM records ORDER BY ALL',
         limits: { ...query.limits, maxRows: 1 },
       },
     })
@@ -440,7 +441,7 @@ suite('data-engine sidecar', () => {
         (_, index) =>
           `CROSS JOIN records r${String(index + 2).padStart(2, '0')}`,
       ).join('\n')}
-      ORDER BY 1`
+      ORDER BY ALL`
     const timedOutQuery = await hostRequest({
       path: '/v1/query',
       method: 'POST',
@@ -469,7 +470,7 @@ suite('data-engine sidecar', () => {
         credential: token,
         body: {
           ...query,
-          sql: 'SELECT id FROM records ORDER BY id',
+          sql: 'SELECT id FROM records ORDER BY ALL',
         },
       })
       if (recovered.status === 200) break

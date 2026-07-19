@@ -10,9 +10,12 @@
   and again with DuckDB statement/table introspection, then binds only verified
   content-addressed Parquet artifacts with external access disabled.
 - The allowlist is intentionally conservative: one SELECT/CTE statement,
-  top-level ORDER BY, catalog aliases only, and a bounded scalar/aggregate
+  top-level `ORDER BY ALL`, catalog aliases only, and a bounded scalar/aggregate
   function set. Unsafe statements, comments, paths, URLs, attachments,
   extensions, arbitrary table functions, and catalog escape fail closed.
+- Deterministic snapshots require top-level `ORDER BY ALL`; ordering by a
+  non-unique subset is rejected because tied rows could otherwise destabilize
+  truncation and result hashes.
 - `ReadOnlySqlService` is the Bun-side boundary: it authenticates and
   authorizes a user before resolving workspace/project-scoped aliases through
   `DatasetMaterializationRepo.resolveQuerySnapshots`, then sends only the

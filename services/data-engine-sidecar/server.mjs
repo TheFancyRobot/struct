@@ -392,7 +392,7 @@ function validateSqlSubset(sql) {
     }
   }
   let depth = 0
-  let ordered = false
+  let totallyOrdered = false
   for (let index = 0; index < tokens.length - 1; index += 1) {
     const token = tokens[index]
     if (token.value === '(') depth += 1
@@ -403,12 +403,17 @@ function validateSqlSubset(sql) {
       && token.value.toLowerCase() === 'order'
       && tokens[index + 1]?.kind === 'identifier'
       && tokens[index + 1]?.value.toLowerCase() === 'by'
+      && tokens[index + 2]?.kind === 'identifier'
+      && tokens[index + 2]?.value.toLowerCase() === 'all'
     ) {
-      ordered = true
+      totallyOrdered = true
     }
   }
-  if (!ordered) {
-    throw new RequestFailure('invalid-query', 'Deterministic queries require a top-level ORDER BY')
+  if (!totallyOrdered) {
+    throw new RequestFailure(
+      'invalid-query',
+      'Deterministic queries require a top-level ORDER BY ALL',
+    )
   }
   return canonicalSql
 }

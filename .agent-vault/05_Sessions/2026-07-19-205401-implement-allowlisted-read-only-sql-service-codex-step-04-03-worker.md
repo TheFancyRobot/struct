@@ -56,6 +56,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Root self-review remediation completed: shared client deadline budgets, safe artifact failure classification, volatile/sampling SQL rejection, projection-sensitive schema hashing, decoded result-shape invariants, Bun-side auth/catalog orchestration, and scoped materialization resolution.
 - Kept the boundary service-only: no public HTTP endpoint was added because real user-auth middleware does not yet exist.
 - PR #21 Codex review remediation: unreadable/malformed artifact 404 responses now fall back to retryable `handoff-not-found`; generated Active Context and the STEP-04-03 Agent-Managed Snapshot now consistently reflect the active in-progress review state.
+- PR #21 CodeRabbit remediation: session managed blocks now carry authoritative changed paths and validation; SQL execution requires top-level `ORDER BY ALL`, giving a total order across every projected value before truncation and hashing while byte-identical duplicate rows remain interchangeable.
 
 ## Findings
 
@@ -71,7 +72,11 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Changed Paths
 
 <!-- AGENT-START:session-changed-paths -->
-- None yet.
+- Data-engine protocol/client/query service and tests.
+- Sidecar SQL policy/execution and live integration coverage.
+- Scoped dataset materialization resolver and PostgreSQL coverage.
+- Worker materialization client-shape updates.
+- STEP-04-03 step, companion, outcome, and session notes.
 <!-- AGENT-END:session-changed-paths -->
 - `packages/data-engine/src/protocol.ts`
 - `packages/data-engine/src/protocol.test.ts`
@@ -90,17 +95,20 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Validation Run
 
 <!-- AGENT-START:session-validation-run -->
-- Command: not run yet
-- Result: not run
-- Notes: 
+- Command: default and PostgreSQL/live aggregate suites plus static, container,
+  documentation, secrets, and vault gates.
+- Result: passed.
+- Notes: 404 default tests passed with 144 expected skips and 1,588 assertions;
+  499 PostgreSQL/live tests passed with 2,490 assertions; live sidecar passed
+  2 tests with 165 assertions.
 <!-- AGENT-END:session-validation-run -->
 - `bun run test`: 404 pass, 144 skip, 0 fail, 1,588 assertions.
-- `DATABASE_URL=postgres://struct:struct@127.0.0.1:5432/struct DATA_ENGINE_INTEGRATION=1 bun run test`: 499 pass, 0 fail, 2,486 assertions.
-- `DATA_ENGINE_INTEGRATION=1 bun test packages/data-engine/test/sidecar.integration.test.ts`: 2 pass, 0 fail, 161 assertions.
+- `DATABASE_URL=postgres://struct:struct@127.0.0.1:5432/struct DATA_ENGINE_INTEGRATION=1 bun run test`: 499 pass, 0 fail, 2,490 assertions.
+- `DATA_ENGINE_INTEGRATION=1 bun test packages/data-engine/test/sidecar.integration.test.ts`: 2 pass, 0 fail, 165 assertions.
 - Focused service/client, PostgreSQL resolver, and live-sidecar suites passed.
 - `bun run typecheck`, `bun run lint`, `bun run lint:imports`, `bun run build`, `bun run docs:lint`, `bun run secrets:scan`, `docker compose config --quiet`, `node --check services/data-engine-sidecar/server.mjs`, image rebuild/health, and Agent Vault doctor: passed.
 - Root-review remediation focused suite: 22 passed, 0 failed, 258 assertions.
-- Live rebuilt sidecar: 2 passed, 0 failed, 161 assertions; covers join/filter, timeout, disconnect recovery, volatile/sampling rejection, and result-schema hashing.
+- Live rebuilt sidecar: 2 passed, 0 failed, 165 assertions; covers total ordering, join/filter, timeout, disconnect recovery, volatile/sampling rejection, and result-schema hashing.
 - Scoped PostgreSQL materialization resolver: 3 passed, 0 failed, 29 assertions; covers exact scope, cross-workspace rejection, and missing materialization.
 - Root typecheck, ESLint, dependency/import boundaries, Compose image rebuild/health, and manual sanitized 500 artifact-engine classification passed.
 
