@@ -158,7 +158,7 @@ Threats:
 
 Controls:
 
-- isolate DuckDB in a Phase-04 container/sidecar; never load its native adapter
+- isolate DuckDB in a container/sidecar; never load its native adapter
   into the maintained Bun worker;
 - permit the adapter's runtime only inside the pinned image; require no host
   Node or other fallback runtime;
@@ -166,9 +166,12 @@ Controls:
   `packages/data-engine` client;
 - mount only approved sandbox/artifact roots; do not mount the source tree,
   home directory, Docker socket, or unrelated host paths;
-- disable network egress and run as a non-root user with a read-only root
+- keep the DuckDB sidecar on an internal no-egress network with no host port;
+  use only a fixed-target, no-mount loopback gateway for the authenticated
+  protocol; run both as non-root with read-only roots
   filesystem where practical and explicit CPU/memory/process limits;
-- read-only allowlisted SQL subset;
+- expose only the versioned materialization operation; no arbitrary SQL
+  endpoint (the later query surface must remain read-only and allowlisted);
 - no attach of arbitrary databases;
 - no extension installation;
 - no unsafe pragmas;
@@ -503,7 +506,7 @@ Columns: **Boundary** · **Crossing data** · **Actor** · **Enforcing component
 | 3. Worker | durable job records, checkpoint records, journal events, typed DuckDB sidecar requests/results, artifact refs | `apps/worker` Bun runtime; replayed/duplicated jobs; crashed process | `apps/worker` durable execution + `packages/persistence` journal/checkpoint appender (product-owned, not Fred-internal — DEC-0007/0012) | `apps/worker` (lifecycle, budgets, cancellation, typed data-engine client); `packages/persistence` (checkpoint/journal records) | explicit workspace/project identity on every job; cancel-winner rule (persisted intent wins only before terminal commit); duplicate side-effect rate `0`; sidecar requests carry authenticated scoped capability/identity | `job.started`, `job.cancelled`, `job.restart`, `checkpoint.persisted`, `cancel.late_noop`, `duplicate_cancel` | terminal state `completed`/`failed`/`cancelled`/`partial`; reconcile terminal journal events (no duplicate terminal); checkpoints < 64 KiB (STEP-00-02) |
 | 4. Registered filesystem | directory roots, file paths, manifests, file contents, artifact refs | `apps/worker` ingestion; model-proposed paths (must be rejected); hostile symlinks/files | `packages/ingestion` path-safety (`packages/ingestion/src/path-safety.ts` — spec-only) + `packages/source-storage` content-addressed refs | `packages/ingestion` (finalizing owner, repository-contract §3.2); `packages/source-storage` | only explicitly registered canonical roots eligible; tool calls refer to root IDs / source-version IDs, never arbitrary paths; canonicalize + reject traversal/symlink/devices | `root.registered`, `root.refresh`, `path.traversal_rejected`, `symlink.rejected`, `file.skipped`, `file.failed` | typed `PathSafetyViolation`; sanitized error (no absolute host path); file-level partial state |
 | 5. Model | bounded context (system/developer instructions, tool results, untrusted source excerpts); model proposals/synthesis | Fred agents (planner, SQL planner, corpus analyst, evidence critic, synthesizer); model-generated unsafe actions | `packages/fred-workflows` tool gates (tool authorization re-checks) + `packages/research-engine` citation/synthesis gates | `packages/fred-workflows` (tool gates, prompts); `packages/research-engine` (evidence/citation gates) | tools re-check workspace/project/source permissions independently of prompts (§6.3); models never receive raw authority; source content framed as evidence; budgets/cancellation enforced outside prompts | `tool.invocation`, `tool.authorization_failure`, `citation.validation_failure`, `budget.exceeded`, `plan.revised` | typed tool/citation failure; fail closed on schema mismatch; no broadened permissions |
-| 6. Data-engine | dataset catalogs, schema profiles, validated SQL, result snapshots, Parquet files | SQL planner (model) proposes SQL; `packages/data-engine` validates and calls the planned isolated DuckDB sidecar | `packages/data-engine` SQL policy + typed authenticated client; container hardening and engine policy inside the sidecar (planned Phase 04; current Compose has PostgreSQL only) | `packages/data-engine` (policy/protocol); Phase-04 Compose/service owner (container lifecycle) | read-only allowlisted SQL subset; parameter binding; no `ATTACH`/`INSTALL`/`LOAD`/`COPY`-out/DDL/DML/unsafe pragma; approved mounts only; no egress/Docker socket; DuckDB `allowed_directories` carve-out then `enable_external_access=false`; query timeouts/memory/CPU/process/row/byte/concurrency limits; cancellation | `query.validated`, `query.validation_failure`, `query.completed`, `query.cancelled`, `query.resource_limit`, `parquet.promote`, `sidecar.restart` | typed `SqlPolicyViolation`; result snapshot truncated at limits; atomic Parquet promote (no partial); sidecar crash cannot terminate the Bun worker; restart/reconcile before retry |
+| 6. Data-engine | dataset catalogs, schema profiles, typed materialization requests/results, Parquet files | worker submits catalog-derived materialization requests; a later SQL planner may propose read-only queries | `packages/data-engine` typed authenticated client; container hardening and engine policy inside `services/data-engine-sidecar` | `packages/data-engine` (protocol); Compose/service owner (container lifecycle) | version-1 materialization operation only; derived content-addressed input paths; approved mounts only; no egress/Docker socket; time/memory/CPU/process/row/byte/concurrency limits; cancellation; any later query endpoint must add parser/allowlist enforcement | `query.validation_failure`, `query.cancelled`, `query.resource_limit`, `parquet.promote`, `sidecar.restart` | typed protocol/transport/resource failure; no partial artifact promotion; sidecar crash cannot terminate the Bun worker; durable attempt ownership fences late completion |
 
 ## 20. Threat register (STRIDE)
 
@@ -637,14 +640,14 @@ Resource budgets are security controls. Each limit is numeric where measured by 
 
 | Limit | Value | Owner | Evidence | Fail-closed default | Calibration phase |
 | --- | --- | --- | --- | --- | --- |
-| DuckDB `memory_limit` | ~244 MiB (probe) | `packages/data-engine` | STEP-00-03 `current_setting` confirmed | deny query if unset | Phase 04 |
-| DuckDB `threads` | 2 (probe) | `packages/data-engine` | STEP-00-03 | 1 thread | Phase 04 |
-| DuckDB wall-clock `timeoutMs` | ~255 ms reject; pathological query bounded ~10393 ms | `packages/data-engine` | STEP-00-03 | reject on timeout + terminate/restart sidecar | Phase 04 |
-| DuckDB cancellation latency | ~93 ms (`conn.interrupt()`) | `packages/data-engine` | STEP-00-03 | sidecar termination/restart hard fallback | Phase 04 |
-| DuckDB output byte cap (`maxOutputBytes`) | TBD (probe exercised 8 B cap) | `packages/data-engine` | STEP-00-03 byte-cap probe | reject + remove partial; never promote partial | Phase 04 |
-| DuckDB read row cap (`maxRows`) | TBD | `packages/data-engine` | STEP-00-03 (field present) | truncate + flag truncation | Phase 04 |
+| DuckDB `memory_limit` | `192MB` | `packages/data-engine` | STEP-04-02 container integration | reject materialization if engine setup fails | Phase 04 |
+| DuckDB `threads` | `1` | `packages/data-engine` | STEP-04-02 container integration | 1 thread | Phase 04 |
+| DuckDB wall-clock `timeoutMs` | `60000` worker default | `packages/data-engine` | STEP-04-02 timeout/cancellation tests | interrupt and reject on timeout | Phase 04 |
+| DuckDB input byte cap (`maxInputBytes`) | `64 MiB` worker default | `packages/data-engine` | STEP-04-02 protocol/client tests | reject before materialization | Phase 04 |
+| DuckDB output byte cap (`maxOutputBytes`) | `128 MiB` worker default | `packages/data-engine` | STEP-04-02 protocol/client tests | reject + remove partial; never promote partial | Phase 04 |
+| DuckDB read row cap (`maxRows`) | `1,000,000` worker default | `packages/data-engine` | STEP-04-02 protocol/client tests | reject materialization | Phase 04 |
 | Parquet atomic promote | `<dest>.tmp-<pid>-<ts>` then `rename` (same fs) | `packages/data-engine` | STEP-00-03 | no partial ever promoted | Phase 04 |
-| Query concurrency limit | TBD | `packages/data-engine` | load test | queue / reject | Phase 04 |
+| Materialization concurrency limit | `1` per sidecar | `packages/data-engine` | STEP-04-02 sidecar integration | HTTP 503 while busy | Phase 04 |
 | Max upload size | TBD | `apps/api` | load test | reject > limit (413) | Phase 02 |
 | Max registered file count per source version | TBD | `packages/ingestion` | 25k corpus (DEC-0011) | reject + partial status | Phase 03 |
 | Max bytes scanned per job | TBD | `packages/ingestion` | 25k corpus | stop + partial | Phase 03 |
@@ -705,7 +708,7 @@ Accepted residual risks with severity, owner, due phase, and compensating contro
 | --- | --- | --- | --- | --- | --- |
 | DEF-01 | Archive expansion / zip-slip unsupported | Medium | `packages/ingestion` | Phase 03 (design) | archives unsupported by default; size/count caps; explicit unsupported outcome; no parsing until designed |
 | DEF-02 | OCR-heavy scanned PDFs unsupported | Low | `packages/document-processing` | Phase 02+ (design) | identify + report as unsupported/partial; no silent inclusion |
-| DEF-03 | Planned DuckDB container isolation is not implemented or proven yet | Medium | `packages/data-engine` + Phase-04 Compose/service owner | Phase 04 | DuckDB features remain unavailable; current Compose provisions PostgreSQL only. Phase-04 acceptance requires approved mounts only, no egress/Docker socket, non-root execution, resource limits, and sidecar crash containment before readiness. |
+| DEF-03 | DuckDB container isolation for materialization | Resolved in STEP-04-02 | `packages/data-engine` + Compose/service owner | Phase 04 | Internal-only network, approved read-only artifact mount, isolated scratch, non-root/read-only root, capability drop, resource limits, authenticated bounded protocol, and container integration evidence. |
 | DEF-04 | Adapter cancellation may be cooperative before hard termination | Low | `packages/data-engine` | Phase 04 | wall-clock timeout + sidecar termination/restart fallback; in-process `direct` topology remains rejected by STEP-00-03 |
 | DEF-05 | Gate-tier numeric thresholds unset | Medium | STEP-00-06 | STEP-00-06 | repository-contract §2 fixes the check set + ownership now; STEP-00-06 finalizes thresholds (downstream of this step) |
 | DEF-06 | Retention/deletion policy tuning | Medium | `apps/worker` + `packages/persistence` | Phase 09 | append-only journal; audit must not depend on ephemeral logs only (§12); fail closed on retention |

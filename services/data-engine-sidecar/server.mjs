@@ -1,0 +1,337 @@
+/* global Buffer, URL, clearTimeout, process, setTimeout */
+import { createHash, timingSafeEqual } from 'node:crypto'
+import { createReadStream } from 'node:fs'
+import {
+  mkdir,
+  readFile,
+  rename,
+  rm,
+  stat,
+} from 'node:fs/promises'
+import { createServer } from 'node:http'
+import { join } from 'node:path'
+import { DuckDBInstance } from '@duckdb/node-api'
+
+const PROTOCOL_VERSION = '1'
+const ARTIFACT_ROOT = '/artifacts'
+const SCRATCH_ROOT = '/scratch'
+const OUTPUT_ROOT = join(SCRATCH_ROOT, 'output')
+const TOKEN = process.env.DATA_ENGINE_TOKEN ?? ''
+const MEMORY_LIMIT = '192MB'
+const THREADS = 1
+const MAX_REQUEST_BYTES = 256 * 1024
+const MAX_INPUT_BYTES = 64 * 1024 * 1024
+const MAX_ROWS = 1_000_000
+const MAX_OUTPUT_BYTES = 128 * 1024 * 1024
+const MAX_TIMEOUT_MS = 60_000
+let busy = false
+
+function json(response, status, body) {
+  const encoded = JSON.stringify(body)
+  response.writeHead(status, {
+    'content-type': 'application/json',
+    'content-length': Buffer.byteLength(encoded),
+  })
+  response.end(encoded)
+}
+
+function fail(response, status, code, message) {
+  json(response, status, { ok: false, error: { code, message } })
+}
+
+function authenticated(request) {
+  if (TOKEN.length < 16) return false
+  const supplied = request.headers.authorization?.replace(/^Bearer /, '') ?? ''
+  const left = Buffer.from(TOKEN)
+  const right = Buffer.from(supplied)
+  return left.length === right.length && timingSafeEqual(left, right)
+}
+
+async function body(request) {
+  const chunks = []
+  let length = 0
+  for await (const chunk of request) {
+    length += chunk.length
+    if (length > MAX_REQUEST_BYTES) throw new RequestFailure('resource-limit', 'Request body exceeds 256 KiB')
+    chunks.push(chunk)
+  }
+  return JSON.parse(Buffer.concat(chunks).toString('utf8'))
+}
+
+class RequestFailure extends Error {
+  constructor(code, message) {
+    super(message)
+    this.code = code
+  }
+}
+
+function exactKeys(value, keys) {
+  return value !== null
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && Object.keys(value).sort().join(',') === [...keys].sort().join(',')
+}
+
+function validateRequest(value) {
+  if (!exactKeys(value, ['protocolVersion', 'operation', 'snapshotId', 'inputs', 'fields', 'limits'])) {
+    throw new RequestFailure('protocol', 'Request fields do not match protocol version 1')
+  }
+  if (value.protocolVersion !== PROTOCOL_VERSION || value.operation !== 'materialize') {
+    throw new RequestFailure('protocol', 'Unsupported protocol version or operation')
+  }
+  if (!/^[0-9a-f-]{36}$/.test(value.snapshotId)) {
+    throw new RequestFailure('invalid-input', 'Snapshot ID is invalid')
+  }
+  if (!Array.isArray(value.inputs) || value.inputs.length === 0 || !Array.isArray(value.fields) || value.fields.length === 0) {
+    throw new RequestFailure('invalid-input', 'Inputs and fields must be non-empty')
+  }
+  for (const [ordinal, input] of value.inputs.entries()) {
+    if (
+      !exactKeys(input, ['ordinal', 'format', 'artifactDigest', 'contentHash'])
+      || input.ordinal !== ordinal
+      || !['json', 'jsonl', 'csv'].includes(input.format)
+      || !/^[a-f0-9]{64}$/.test(input.artifactDigest)
+      || input.contentHash !== `sha256:${input.artifactDigest}`
+    ) {
+      throw new RequestFailure('lineage', 'Input lineage is invalid')
+    }
+  }
+  const names = new Set()
+  for (const [ordinal, field] of value.fields.entries()) {
+    if (
+      !exactKeys(field, ['ordinal', 'name', 'sourceType', 'logicalType', 'nullable'])
+      || field.ordinal !== ordinal
+      || typeof field.name !== 'string'
+      || field.name.length === 0
+      || field.name.length > 255
+      || names.has(field.name)
+      || !['boolean', 'integer', 'decimal', 'string', 'date', 'timestamp', 'json'].includes(field.logicalType)
+      || typeof field.nullable !== 'boolean'
+    ) {
+      throw new RequestFailure('invalid-input', 'Field schema is invalid')
+    }
+    names.add(field.name)
+  }
+  if (
+    !exactKeys(value.limits, ['maxInputBytes', 'maxRows', 'maxOutputBytes', 'timeoutMs'])
+    || !Object.values(value.limits).every((limit) => Number.isSafeInteger(limit) && limit > 0)
+    || value.limits.maxInputBytes > MAX_INPUT_BYTES
+    || value.limits.maxRows > MAX_ROWS
+    || value.limits.maxOutputBytes > MAX_OUTPUT_BYTES
+    || value.limits.timeoutMs > MAX_TIMEOUT_MS
+  ) {
+    throw new RequestFailure('resource-limit', 'Materialization limits exceed sidecar policy')
+  }
+  return value
+}
+
+function quoteIdentifier(value) {
+  return `"${value.replaceAll('"', '""')}"`
+}
+
+function sourcePath(input) {
+  return join(
+    ARTIFACT_ROOT,
+    'objects',
+    'sha256',
+    input.artifactDigest.slice(0, 2),
+    input.artifactDigest,
+  )
+}
+
+function sourceSql(input) {
+  const path = sourcePath(input).replaceAll("'", "''")
+  if (input.format === 'csv') {
+    return `read_csv_auto('${path}', header=true, all_varchar=true, strict_mode=true)`
+  }
+  return `read_json_auto('${path}', format='auto', union_by_name=true, maximum_object_size=16777216)`
+}
+
+function duckType(logicalType) {
+  switch (logicalType) {
+    case 'boolean': return 'BOOLEAN'
+    case 'integer': return 'BIGINT'
+    case 'decimal': return 'DECIMAL(38,10)'
+    case 'date': return 'DATE'
+    case 'timestamp': return 'TIMESTAMP'
+    case 'json': return 'JSON'
+    default: return 'VARCHAR'
+  }
+}
+
+function normalize(value) {
+  if (value === null || value === undefined) return null
+  if (typeof value === 'bigint') return value.toString()
+  return String(value)
+}
+
+async function materialize(request, httpRequest) {
+  await mkdir(OUTPUT_ROOT, { recursive: true })
+  let inputBytes = 0
+  for (const input of request.inputs) {
+    let metadata
+    try {
+      metadata = await stat(sourcePath(input))
+    } catch {
+      throw new RequestFailure('not-found', 'Input artifact was not found')
+    }
+    if (!metadata.isFile()) {
+      throw new RequestFailure('invalid-input', 'Input artifact is not a regular file')
+    }
+    inputBytes += metadata.size
+    if (inputBytes > request.limits.maxInputBytes) {
+      throw new RequestFailure('resource-limit', 'Input bytes exceed configured limit')
+    }
+    const hasher = createHash('sha256')
+    for await (const chunk of createReadStream(sourcePath(input))) {
+      hasher.update(chunk)
+    }
+    const digest = hasher.digest('hex')
+    if (digest !== input.artifactDigest) {
+      throw new RequestFailure('lineage', 'Input artifact hash does not match catalog lineage')
+    }
+  }
+
+  const instance = await DuckDBInstance.create(':memory:', {
+    memory_limit: MEMORY_LIMIT,
+    threads: THREADS,
+    temp_directory: join(SCRATCH_ROOT, 'tmp'),
+    allow_community_extensions: 'false',
+    allow_unsigned_extensions: 'false',
+  })
+  const connection = await instance.connect()
+  const interrupt = () => connection.interrupt()
+  httpRequest.once('aborted', interrupt)
+  const timeout = setTimeout(() => connection.interrupt(), request.limits.timeoutMs)
+  const temporary = join(OUTPUT_ROOT, `${request.snapshotId}.parquet.tmp`)
+  try {
+    await connection.run(`SET allowed_directories=['${ARTIFACT_ROOT}','${SCRATCH_ROOT}']`)
+    await connection.run('SET enable_external_access=false')
+    const union = request.inputs.map((input) => `SELECT * FROM ${sourceSql(input)}`).join(' UNION ALL BY NAME ')
+    const projection = request.fields.map((field) => {
+      const name = quoteIdentifier(field.name)
+      return `CAST(${name} AS ${duckType(field.logicalType)}) AS ${name}`
+    }).join(', ')
+    await connection.run(`CREATE TABLE materialized AS SELECT ${projection} FROM (${union})`)
+    const countReader = await connection.runAndReadAll('SELECT count(*) AS row_count FROM materialized')
+    await countReader.readAll()
+    const rowCount = Number(countReader.getRowObjectsJS()[0].row_count)
+    if (rowCount === 0) throw new RequestFailure('invalid-input', 'Structured input contains no rows')
+    if (rowCount > request.limits.maxRows) {
+      throw new RequestFailure('resource-limit', 'Input rows exceed configured limit')
+    }
+    const profileColumns = []
+    for (const field of request.fields) {
+      const name = quoteIdentifier(field.name)
+      const orderable = field.logicalType === 'json'
+        ? `TRY_CAST(${name} AS VARCHAR)`
+        : name
+      const reader = await connection.runAndReadAll(
+        `SELECT
+           count(*) - count(${name}) AS null_count,
+           count(DISTINCT ${name}) AS distinct_count,
+           min(${orderable}) AS minimum,
+           max(${orderable}) AS maximum
+         FROM materialized`,
+      )
+      await reader.readAll()
+      const profile = reader.getRowObjectsJS()[0]
+      if (!field.nullable && Number(profile.null_count) > 0) {
+        throw new RequestFailure(
+          'invalid-input',
+          `Non-nullable field contains null values: ${field.name}`,
+        )
+      }
+      profileColumns.push({
+        ordinal: field.ordinal,
+        name: field.name,
+        nullCount: Number(profile.null_count),
+        distinctCount: Number(profile.distinct_count),
+        minimum: normalize(profile.minimum),
+        maximum: normalize(profile.maximum),
+      })
+    }
+    const profile = { rowCount, columns: profileColumns }
+    await rm(temporary, { force: true })
+    await connection.run(
+      `COPY (SELECT * FROM materialized ORDER BY ALL) TO '${temporary}' (FORMAT PARQUET, COMPRESSION ZSTD)`,
+    )
+    const outputMetadata = await stat(temporary)
+    if (outputMetadata.size > request.limits.maxOutputBytes) {
+      throw new RequestFailure('resource-limit', 'Parquet output exceeds configured limit')
+    }
+    const output = await readFile(temporary)
+    const parquetDigest = createHash('sha256').update(output).digest('hex')
+    const destination = join(OUTPUT_ROOT, parquetDigest)
+    try {
+      const existing = await readFile(destination)
+      if (!existing.equals(output)) throw new Error('digest collision')
+      await rm(temporary, { force: true })
+    } catch (error) {
+      if (error.code === 'ENOENT') await rename(temporary, destination)
+      else if (error.message === 'digest collision') throw error
+    }
+    const profileHash = `sha256:${createHash('sha256').update(`${JSON.stringify(profile)}\n`).digest('hex')}`
+    return {
+      protocolVersion: PROTOCOL_VERSION,
+      snapshotId: request.snapshotId,
+      parquetDigest,
+      parquetByteLength: output.byteLength,
+      profileHash,
+      profile,
+    }
+  } catch (error) {
+    if (String(error?.message).toLowerCase().includes('interrupt')) {
+      throw new RequestFailure('cancelled', 'Materialization was interrupted')
+    }
+    throw error
+  } finally {
+    clearTimeout(timeout)
+    httpRequest.off('aborted', interrupt)
+    await rm(temporary, { force: true })
+    connection.disconnectSync()
+    instance.closeSync()
+  }
+}
+
+const server = createServer(async (request, response) => {
+  const url = new URL(request.url ?? '/', 'http://data-engine')
+  if (!authenticated(request)) return fail(response, 401, 'authentication', 'Authentication failed')
+  if (url.pathname === '/healthz') {
+    if (TOKEN.length < 16) return fail(response, 503, 'authentication', 'Service credential is not configured')
+    return json(response, 200, { ok: true, protocolVersion: PROTOCOL_VERSION })
+  }
+  const artifactMatch = /^\/v1\/artifacts\/([a-f0-9]{64})$/.exec(url.pathname)
+  if (request.method === 'GET' && artifactMatch !== null) {
+    const path = join(OUTPUT_ROOT, artifactMatch[1])
+    try {
+      const metadata = await stat(path)
+      response.writeHead(200, {
+        'content-type': 'application/vnd.apache.parquet',
+        'content-length': metadata.size,
+      })
+      return createReadStream(path).pipe(response)
+    } catch {
+      return fail(response, 404, 'not-found', 'Materialized artifact was not found')
+    }
+  }
+  if (request.method !== 'POST' || url.pathname !== '/v1/materialize') {
+    return fail(response, 404, 'protocol', 'Unknown operation')
+  }
+  if (busy) return fail(response, 429, 'resource-limit', 'Materializer concurrency limit reached')
+  busy = true
+  try {
+    const result = await materialize(validateRequest(await body(request)), request)
+    return json(response, 200, { ok: true, result })
+  } catch (error) {
+    const code = error instanceof RequestFailure ? error.code : 'engine'
+    const status = code === 'not-found' ? 404 : code === 'resource-limit' ? 413 : 400
+    return fail(response, status, code, error instanceof RequestFailure ? error.message : 'Materialization failed')
+  } finally {
+    busy = false
+  }
+})
+
+await mkdir(join(SCRATCH_ROOT, 'tmp'), { recursive: true })
+await mkdir(OUTPUT_ROOT, { recursive: true })
+server.listen(4300, '0.0.0.0')

@@ -1,0 +1,4 @@
+[
+  {"active":true,"amount":12.5,"id":1,"name":"alpha"},
+  {"active":false,"amount":7.25,"id":2,"name":"beta"}
+]
