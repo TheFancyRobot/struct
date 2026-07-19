@@ -80,6 +80,7 @@ function retryable(error: unknown): boolean {
     return error.code === 'engine'
       || error.code === 'cancelled'
       || error.code === 'busy'
+      || error.code === 'handoff-not-found'
   }
   return [
     'DatasetCatalogQueryError',

@@ -84,6 +84,7 @@ export const DataEngineErrorCode = Schema.Literal(
   'protocol',
   'invalid-input',
   'not-found',
+  'handoff-not-found',
   'lineage',
   'resource-limit',
   'busy',

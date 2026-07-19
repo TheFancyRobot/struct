@@ -611,7 +611,7 @@ const server = createServer(async (request, response) => {
       return
     } catch {
       if (response.headersSent) return response.destroy()
-      return fail(response, 404, 'not-found', 'Materialized artifact was not found')
+      return fail(response, 404, 'handoff-not-found', 'Materialized artifact handoff was not found')
     } finally {
       await artifact?.close()
     }

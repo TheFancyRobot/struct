@@ -352,5 +352,13 @@ describeIf('DatasetMaterializationRepo (PostgreSQL)', () => {
       retryable: true,
       willRetry: false,
     })
+    await sql.unsafe('DELETE FROM dataset_snapshots WHERE id = $1', [
+      terminalSnapshotId,
+    ])
+    const orphanedQueueRows = await sql.unsafe(
+      'SELECT count(*) AS count FROM job_queue WHERE id = $1',
+      [terminalJobId],
+    )
+    expect(Number(orphanedQueueRows[0]?.['count'])).toBe(0)
   })
 })

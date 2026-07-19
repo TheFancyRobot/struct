@@ -230,8 +230,8 @@ suite('data-engine sidecar', () => {
     expect(consumedArtifact.json).toEqual({
       ok: false,
       error: {
-        code: 'not-found',
-        message: 'Materialized artifact was not found',
+        code: 'handoff-not-found',
+        message: 'Materialized artifact handoff was not found',
       },
     })
     expect(firstArtifact.digest).toBe(first.parquetDigest)

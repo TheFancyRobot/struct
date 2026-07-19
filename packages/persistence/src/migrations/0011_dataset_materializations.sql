@@ -39,6 +39,20 @@ CREATE INDEX idx_dataset_materialization_jobs_lease_expiry
   ON dataset_materialization_jobs (lease_expires_at)
   WHERE lease_token IS NOT NULL;
 
+CREATE FUNCTION delete_dataset_materialization_queue_row()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  DELETE FROM job_queue WHERE id = OLD.job_id;
+  RETURN OLD;
+END;
+$$;
+
+CREATE TRIGGER dataset_materialization_jobs_delete_queue_row
+  AFTER DELETE ON dataset_materialization_jobs
+  FOR EACH ROW EXECUTE FUNCTION delete_dataset_materialization_queue_row();
+
 CREATE TRIGGER dataset_materializations_immutable
   BEFORE UPDATE ON dataset_materializations
   FOR EACH ROW EXECUTE FUNCTION reject_dataset_catalog_update();
