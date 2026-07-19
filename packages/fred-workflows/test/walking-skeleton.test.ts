@@ -19,7 +19,10 @@ import {
   makeSearchTextTool,
   makeWalkingSkeletonWorkflow,
 } from '../src/graphs/walking-skeleton'
-import { runFredWalkingSkeleton } from '../src/adapters/fred-runtime'
+import {
+  preflightFredRuntime,
+  runFredWalkingSkeleton,
+} from '../src/adapters/fred-runtime'
 import { MockModelProvider } from './fixtures/mock-provider'
 
 const input = {
@@ -40,6 +43,55 @@ const evidence = [{
 }]
 
 describe('Fred walking-skeleton workflow', () => {
+  it('bounds preflight when Fred client creation never resolves', async () => {
+    const startedAt = performance.now()
+    const exit = await Effect.runPromiseExit(
+      preflightFredRuntime(
+        { providerPackage: 'mock', model: 'fixed', maxElapsedMs: 15 },
+        {
+          create: async () => await new Promise<FredClient>(() => undefined),
+          execute: async () => {
+            throw new Error('preflight never executes workflows')
+          },
+        },
+      ),
+    )
+    const elapsedMs = performance.now() - startedAt
+
+    expect(Exit.isFailure(exit)).toBe(true)
+    expect(elapsedMs).toBeLessThan(70)
+  })
+
+  it('bounds preflight provider setup and performs deadline-capped cleanup', async () => {
+    let shutdownCalls = 0
+    const client = {
+      providers: {
+        use: async () => await new Promise<never>(() => undefined),
+      },
+      shutdown: async () => {
+        shutdownCalls += 1
+        await new Promise<never>(() => undefined)
+      },
+    } as unknown as FredClient
+    const startedAt = performance.now()
+    const exit = await Effect.runPromiseExit(
+      preflightFredRuntime(
+        { providerPackage: 'blocked', model: 'fixed', maxElapsedMs: 15 },
+        {
+          create: async () => client,
+          execute: async () => {
+            throw new Error('preflight never executes workflows')
+          },
+        },
+      ),
+    )
+    const elapsedMs = performance.now() - startedAt
+
+    expect(Exit.isFailure(exit)).toBe(true)
+    expect(shutdownCalls).toBe(1)
+    expect(elapsedMs).toBeLessThan(70)
+  })
+
   it('defines one deterministic search node, one answer agent, and one citation gate', () => {
     const workflow = makeWalkingSkeletonWorkflow({
       searchText: async () => evidence,
@@ -501,5 +553,43 @@ describe('Fred walking-skeleton workflow', () => {
     expect(calls).not.toContain('model-completed')
     expect(calls).not.toContain('validation')
     expect(calls).not.toContain('non-cancellable-run')
+  })
+
+  it('does not grant hanging cleanup a fresh workflow-sized deadline', async () => {
+    let shutdownCalls = 0
+    const client = {
+      providers: { use: async () => MockModelProvider },
+      tools: { register: async () => undefined },
+      agents: { register: async () => undefined },
+      workflows: { define: async () => undefined },
+      shutdown: async () => {
+        shutdownCalls += 1
+        await new Promise<never>(() => undefined)
+      },
+    } as unknown as FredClient
+    const startedAt = performance.now()
+    const exit = await Effect.runPromiseExit(
+      runFredWalkingSkeleton(
+        input,
+        {
+          searchText: async () => evidence,
+          onRetrievalCompleted: async () => undefined,
+          validate: async (answer) => answer,
+        },
+        { providerPackage: 'mock', model: 'fixed', maxElapsedMs: 20 },
+        {
+          create: async () => client,
+          execute: async (_fred, _workflow, _input, _maxElapsedMs, signal) =>
+            await new Promise<WorkflowExecutionResult>((_resolve, reject) => {
+              signal.addEventListener('abort', () => reject(signal.reason), { once: true })
+            }),
+        },
+      ),
+    )
+    const elapsedMs = performance.now() - startedAt
+
+    expect(Exit.isFailure(exit)).toBe(true)
+    expect(shutdownCalls).toBe(1)
+    expect(elapsedMs).toBeLessThan(75)
   })
 })

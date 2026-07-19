@@ -7,6 +7,9 @@
 - Added `POST /research/runs`, durable worker claim/stale-recovery execution, atomic completion/failure persistence, and `research-started`, `retrieval-completed`, `citations-validated`, `research-completed`, and `research-failed` journal events.
 - Extended source ingestion to carry `projectId` and index normalized text only after immutable source-version creation.
 - Added mock-provider, unit, migration, route, and real PostgreSQL integration coverage for grounded completion, exact citations, insufficient evidence, scope isolation, durable terminal state, and stale recovery.
+- Second independent-review remediation preserves positional evidence only in contiguous original-source windows, retains repeated lexeme occurrences and exact cross-line character locators, and limits omission-separated multi-range evidence to non-positional queries.
+- Exhausted stale ingestion recovery owns its sanitized terminal journal event in the same PostgreSQL transaction as the status transition, with deterministic event identity and fault-injected rollback/idempotency coverage.
+- Bun is the canonical test runtime for subsequent validation; this bounded pass did not remove existing test tooling or scripts.
 
 ## Related Notes
 

@@ -7,7 +7,6 @@
 import { Effect, Layer } from 'effect'
 import postgres from 'postgres'
 import {
-  EventJournalRepo,
   JobQueueRepo,
   QueryError,
   ResearchExecutionRepo,
@@ -55,7 +54,6 @@ const program = Effect.gen(function* () {
   const jobLayer = Layer.provide(JobQueueRepo.Default, sqlLayer)
   const sourceVersionLayer = Layer.provide(SourceVersionRepo.Default, sqlLayer)
   const sourceLayer = Layer.provide(SourceRepo.Default, sqlLayer)
-  const eventLayer = Layer.provide(EventJournalRepo.Default, sqlLayer)
   const retrievalLayer = Layer.provide(TextRetrieval.Default, sqlLayer)
   const researchExecutionLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
   const researchRunLayer = Layer.provide(ResearchRunRepo.Default, sqlLayer)
@@ -76,13 +74,21 @@ const program = Effect.gen(function* () {
     jobs: {
       recoverStaleIngestionJobs: (staleBeforeMs) => JobQueueRepo.recoverStaleIngestionJobs(staleBeforeMs).pipe(Effect.provide(jobLayer)),
       claimNextIngestionJob: () => JobQueueRepo.claimNextIngestionJob().pipe(Effect.provide(jobLayer)),
-      markCompleted: (id) => JobQueueRepo.markCompleted(id).pipe(Effect.provide(jobLayer)),
-      markPending: (id) => JobQueueRepo.markPending(id).pipe(Effect.provide(jobLayer)),
-      markFailed: (id) => JobQueueRepo.markFailed(id).pipe(Effect.provide(jobLayer)),
+      appendInProgressEvent: (job, event) =>
+        JobQueueRepo.appendInProgressEvent(job, event).pipe(Effect.provide(jobLayer)),
+      markCompleted: (job, event) =>
+        JobQueueRepo.markCompleted(job, event).pipe(Effect.provide(jobLayer)),
+      markPending: (job, event) =>
+        JobQueueRepo.markPending(job, event).pipe(Effect.provide(jobLayer)),
+      markFailed: (job, event) =>
+        JobQueueRepo.markFailed(job, event).pipe(Effect.provide(jobLayer)),
     },
     sourceVersions: {
       findBySourceId: (sourceId) => SourceVersionRepo.findBySourceId(sourceId).pipe(Effect.provide(sourceVersionLayer)),
-      create: (version) => SourceVersionRepo.create(version).pipe(Effect.provide(sourceVersionLayer)),
+      createForIngestionAttempt: (job, version) =>
+        SourceVersionRepo.createForIngestionAttempt(job, version).pipe(
+          Effect.provide(sourceVersionLayer),
+        ),
     },
     sources: {
       findProjectId: (sourceId) =>
@@ -93,9 +99,6 @@ const program = Effect.gen(function* () {
     },
     textIndex: {
       indexText: (input) => TextRetrieval.indexText(input).pipe(Effect.provide(retrievalLayer)),
-    },
-    events: {
-      append: (event) => EventJournalRepo.append(event).pipe(Effect.provide(eventLayer)),
     },
     ingestion: {
       ingestTextSource: (input) => ingestTextSource({ store: storage, ...input }),
@@ -114,10 +117,6 @@ const program = Effect.gen(function* () {
         ),
       claimNext: () =>
         ResearchExecutionRepo.claimNext().pipe(Effect.provide(researchExecutionLayer)),
-      appendEvent: (event) =>
-        ResearchExecutionRepo.appendEvent(event).pipe(
-          Effect.provide(researchExecutionLayer),
-        ),
       appendInProgressEvent: (jobId, event) =>
         ResearchExecutionRepo.appendInProgressEvent(jobId, event).pipe(
           Effect.provide(researchExecutionLayer),

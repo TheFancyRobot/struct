@@ -4,11 +4,14 @@ import {
   ProjectId,
   SourceVersionId,
   ValidationError,
-  type EventJournal,
   type JobQueue,
   type SourceId,
   type SourceVersion,
 } from '@struct/domain'
+import {
+  IngestionJobOwnershipLostError,
+  type PersistenceError,
+} from '@struct/persistence'
 import type { ArtifactRef, StagedArtifactRef } from '@struct/source-storage'
 
 export interface WorkerIngestionResult {
@@ -20,6 +23,8 @@ export interface WorkerIngestionResult {
   readonly normalizedText: string
 }
 
+type EventJournalType = typeof import('@struct/domain').EventJournal.Type
+
 export interface IngestionWorkerDeps {
   readonly now: () => bigint
   readonly randomSourceVersionId: () => typeof SourceVersionId.Type
@@ -27,13 +32,17 @@ export interface IngestionWorkerDeps {
   readonly jobs: {
     readonly recoverStaleIngestionJobs: (staleBeforeMs: number) => Effect.Effect<{ readonly requeued: ReadonlyArray<typeof JobQueue.Type>; readonly failed: ReadonlyArray<typeof JobQueue.Type> }, unknown, never>
     readonly claimNextIngestionJob: () => Effect.Effect<Option.Option<typeof JobQueue.Type>, unknown, never>
-    readonly markCompleted: (id: typeof JobQueue.Type['id']) => Effect.Effect<void, unknown, never>
-    readonly markPending: (id: typeof JobQueue.Type['id']) => Effect.Effect<void, unknown, never>
-    readonly markFailed: (id: typeof JobQueue.Type['id']) => Effect.Effect<void, unknown, never>
+    readonly appendInProgressEvent: (job: typeof JobQueue.Type, event: EventJournalType) => Effect.Effect<void, PersistenceError, never>
+    readonly markCompleted: (job: typeof JobQueue.Type, event: EventJournalType) => Effect.Effect<void, PersistenceError, never>
+    readonly markPending: (job: typeof JobQueue.Type, event: EventJournalType) => Effect.Effect<void, PersistenceError, never>
+    readonly markFailed: (job: typeof JobQueue.Type, event: EventJournalType) => Effect.Effect<void, PersistenceError, never>
   }
   readonly sourceVersions: {
     readonly findBySourceId: (sourceId: SourceId) => Effect.Effect<ReadonlyArray<typeof SourceVersion.Type>, unknown, never>
-    readonly create: (version: typeof SourceVersion.Type) => Effect.Effect<typeof SourceVersion.Type, unknown, never>
+    readonly createForIngestionAttempt: (
+      job: typeof JobQueue.Type,
+      version: typeof SourceVersion.Type,
+    ) => Effect.Effect<typeof SourceVersion.Type, PersistenceError, never>
   }
   readonly sources: {
     readonly findProjectId: (
@@ -47,9 +56,6 @@ export interface IngestionWorkerDeps {
       readonly sourceVersionId: typeof SourceVersion.Type['id']
       readonly content: string
     }) => Effect.Effect<unknown, unknown, never>
-  }
-  readonly events: {
-    readonly append: (event: typeof EventJournal.Type) => Effect.Effect<typeof EventJournal.Type, unknown, never>
   }
   readonly ingestion: {
     readonly ingestTextSource: (input: { readonly stagedRef: StagedArtifactRef; readonly name: string; readonly mediaType: string }) => Effect.Effect<WorkerIngestionResult, unknown, never>
@@ -116,13 +122,13 @@ function sanitizedFailurePayload(reason: unknown): Record<string, unknown> {
   return { errorTag: tag, message: 'Ingestion failed' }
 }
 
-function appendEvent(
+function makeEvent(
   deps: IngestionWorkerDeps,
   job: typeof JobQueue.Type,
   eventType: string,
   payload: Record<string, unknown>,
-): Effect.Effect<void, unknown, never> {
-  const event: typeof EventJournal.Type = {
+): EventJournalType {
+  return {
     id: EventJournalId.make(crypto.randomUUID()),
     workspaceId: job.workspaceId,
     entityType: 'ingestion',
@@ -132,7 +138,15 @@ function appendEvent(
     cursor: 0n,
     createdAt: deps.now(),
   }
-  return deps.events.append(event).pipe(Effect.asVoid)
+}
+
+function appendOwnedEvent(
+  deps: IngestionWorkerDeps,
+  job: typeof JobQueue.Type,
+  eventType: string,
+  payload: Record<string, unknown>,
+): Effect.Effect<void, PersistenceError, never> {
+  return deps.jobs.appendInProgressEvent(job, makeEvent(deps, job, eventType, payload))
 }
 
 function completeJob(
@@ -156,7 +170,7 @@ function completeJob(
         contentHash: artifactResult.contentHash,
         createdAt: deps.now(),
       }
-      return yield* deps.sourceVersions.create(candidate)
+      return yield* deps.sourceVersions.createForIngestionAttempt(job, candidate)
     }))
     yield* deps.textIndex.indexText({
       workspaceId: job.workspaceId,
@@ -164,59 +178,72 @@ function completeJob(
       sourceVersionId: sourceVersion.id,
       content: artifactResult.normalizedText,
     })
-    yield* appendEvent(deps, job, 'file-processed', {
+    yield* appendOwnedEvent(deps, job, 'file-processed', {
       sourceVersionId: sourceVersion.id,
       rawRef: artifactResult.rawRef,
       normalizedRef: artifactResult.normalizedRef,
       contentHash: artifactResult.contentHash,
       byteLength: artifactResult.byteLength,
     })
-    yield* appendEvent(deps, job, 'ingestion-completed', {
+    const completionEvent = makeEvent(deps, job, 'ingestion-completed', {
       sourceVersionId: sourceVersion.id,
       manifestRef: artifactResult.manifestRef,
       contentHash: artifactResult.contentHash,
     })
-    yield* deps.jobs.markCompleted(job.id)
+    yield* deps.jobs.markCompleted(job, completionEvent)
   })
 }
 
 function failJob(deps: IngestionWorkerDeps, job: typeof JobQueue.Type, reason: unknown): Effect.Effect<void, unknown, never> {
+  const failureEvent = makeEvent(deps, job, 'ingestion-failed', sanitizedFailurePayload(reason))
   return Effect.gen(function* () {
-    yield* appendEvent(deps, job, 'ingestion-failed', sanitizedFailurePayload(reason))
     if (job.attempts < job.maxAttempts) {
-      yield* deps.jobs.markPending(job.id)
+      yield* deps.jobs.markPending(job, failureEvent)
     } else {
-      yield* deps.jobs.markFailed(job.id)
+      yield* deps.jobs.markFailed(job, failureEvent)
     }
-  })
+  }).pipe(
+    Effect.catchTag('IngestionJobOwnershipLostError', () => Effect.void),
+  )
 }
 
 export const processOneIngestionJob = (
   deps: IngestionWorkerDeps,
 ): Effect.Effect<ProcessOneResult, unknown, never> =>
   Effect.gen(function* () {
-    const recovered = yield* deps.jobs.recoverStaleIngestionJobs(deps.staleBeforeMs)
-    yield* Effect.forEach(
-      recovered.failed,
-      (job) => appendEvent(deps, job, 'ingestion-failed', { errorTag: 'StaleIngestionJobExhausted', message: 'Ingestion failed' }),
-      { discard: true },
-    )
+    yield* deps.jobs.recoverStaleIngestionJobs(deps.staleBeforeMs)
     const claimed = yield* deps.jobs.claimNextIngestionJob()
     if (Option.isNone(claimed)) {
       return { processed: false }
     }
 
     const job = claimed.value
-    const payload = yield* decodePayload(job.payload, job.entityId as SourceId, deps).pipe(
-      Effect.map(Option.some),
-      Effect.catchAll((error) => failJob(deps, job, error).pipe(Effect.as(Option.none<IngestionPayload>()))),
+    const payloadResult = yield* Effect.either(
+      decodePayload(job.payload, job.entityId as SourceId, deps),
     )
+    if (payloadResult._tag === 'Left') {
+      yield* failJob(deps, job, payloadResult.left)
+      return { processed: true, jobId: job.id }
+    }
+    const payload = Option.some(payloadResult.right)
     if (Option.isNone(payload)) {
       return { processed: true, jobId: job.id }
     }
 
-    yield* completeJob(deps, job, payload.value).pipe(
-      Effect.catchAll((error) => failJob(deps, job, error)),
-    )
+    const completed = yield* Effect.either(completeJob(deps, job, payload.value))
+    if (completed._tag === 'Left') {
+      if (
+        completed.left instanceof IngestionJobOwnershipLostError
+        || (
+          typeof completed.left === 'object'
+          && completed.left !== null
+          && '_tag' in completed.left
+          && completed.left._tag === 'IngestionJobOwnershipLostError'
+        )
+      ) {
+        return { processed: true, jobId: job.id }
+      }
+      yield* failJob(deps, job, completed.left)
+    }
     return { processed: true, jobId: job.id }
   })

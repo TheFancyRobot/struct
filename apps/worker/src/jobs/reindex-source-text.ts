@@ -1,26 +1,38 @@
 import { createHash } from 'node:crypto'
-import { Effect, Option } from 'effect'
-import type { SourceTextReindexJob } from '@struct/persistence'
-import type { ArtifactRef, ArtifactStoreShape } from '@struct/source-storage'
+import { Effect, Option, Schema } from 'effect'
+import {
+  SourceTextReindexOwnershipLostError,
+  type PersistenceError,
+  type SourceTextReindexJob,
+} from '@struct/persistence'
+import {
+  type ArtifactRef,
+  type ArtifactStoreShape,
+} from '@struct/source-storage'
+import type { RetrievalQueryError } from '@struct/domain'
 
-class ReindexArtifactError extends Error {
-  readonly code: string
+const ReindexArtifactErrorCode = Schema.Literal(
+  'manifest-ref-invalid',
+  'manifest-invalid',
+  'normalized-hash-mismatch',
+  'normalized-invalid-utf8',
+)
 
-  constructor(code: string) {
-    super(code)
-    this.code = code
-  }
-}
+class ReindexArtifactError
+  extends Schema.TaggedError<ReindexArtifactError>()('ReindexArtifactError', {
+    code: ReindexArtifactErrorCode,
+    message: Schema.String,
+  }) {}
 
 export interface SourceTextReindexWorkerDeps {
   readonly staleBeforeMs: number
   readonly jobs: {
-    readonly recoverStale: (staleBeforeMs: number) => Effect.Effect<void, unknown, never>
-    readonly claimNext: () => Effect.Effect<Option.Option<SourceTextReindexJob>, unknown, never>
+    readonly recoverStale: (staleBeforeMs: number) => Effect.Effect<void, PersistenceError, never>
+    readonly claimNext: () => Effect.Effect<Option.Option<SourceTextReindexJob>, PersistenceError, never>
     readonly recordFailure: (
       job: SourceTextReindexJob,
       errorCode: string,
-    ) => Effect.Effect<void, unknown, never>
+    ) => Effect.Effect<void, PersistenceError, never>
   }
   readonly store: Pick<ArtifactStoreShape, 'readObject'>
   readonly textIndex: {
@@ -30,7 +42,7 @@ export interface SourceTextReindexWorkerDeps {
       readonly sourceVersionId: SourceTextReindexJob['sourceVersionId']
       readonly content: string
       readonly reindexAttempt: number
-    }) => Effect.Effect<void, unknown, never>
+    }) => Effect.Effect<void, RetrievalQueryError | SourceTextReindexOwnershipLostError, never>
   }
 }
 
@@ -40,6 +52,11 @@ interface StoredManifest {
   readonly normalizedRef: ArtifactRef
   readonly contentHash: string
 }
+
+type ArtifactReadError =
+  ReturnType<ArtifactStoreShape['readObject']> extends Effect.Effect<unknown, infer Error, never>
+    ? Error
+    : never
 
 const decoder = new TextDecoder('utf-8', { fatal: true })
 
@@ -52,10 +69,10 @@ function decodeManifest(bytes: Uint8Array, job: SourceTextReindexJob): StoredMan
   try {
     value = JSON.parse(decoder.decode(bytes))
   } catch {
-    throw new ReindexArtifactError('manifest-invalid')
+    throw new ReindexArtifactError({ code: 'manifest-invalid', message: 'Stored source manifest is invalid' })
   }
   if (typeof value !== 'object' || value === null) {
-    throw new ReindexArtifactError('manifest-invalid')
+    throw new ReindexArtifactError({ code: 'manifest-invalid', message: 'Stored source manifest is invalid' })
   }
   const record = value as Record<string, unknown>
   if (
@@ -64,7 +81,7 @@ function decodeManifest(bytes: Uint8Array, job: SourceTextReindexJob): StoredMan
     || !artifactRef(record['normalizedRef'])
     || record['contentHash'] !== job.contentHash
   ) {
-    throw new ReindexArtifactError('manifest-invalid')
+    throw new ReindexArtifactError({ code: 'manifest-invalid', message: 'Stored source manifest is invalid' })
   }
   return {
     kind: 'text-source-manifest',
@@ -77,12 +94,12 @@ function decodeManifest(bytes: Uint8Array, job: SourceTextReindexJob): StoredMan
 function decodeNormalized(bytes: Uint8Array, expectedHash: string): string {
   const actualHash = `sha256:${createHash('sha256').update(bytes).digest('hex')}`
   if (actualHash !== expectedHash) {
-    throw new ReindexArtifactError('normalized-hash-mismatch')
+    throw new ReindexArtifactError({ code: 'normalized-hash-mismatch', message: 'Normalized source hash did not match its manifest' })
   }
   try {
     return decoder.decode(bytes)
   } catch {
-    throw new ReindexArtifactError('normalized-invalid-utf8')
+    throw new ReindexArtifactError({ code: 'normalized-invalid-utf8', message: 'Normalized source is not valid UTF-8' })
   }
 }
 
@@ -102,20 +119,42 @@ function failureCode(error: unknown): string {
 function processClaimed(
   deps: SourceTextReindexWorkerDeps,
   job: SourceTextReindexJob,
-): Effect.Effect<void, unknown, never> {
+): Effect.Effect<
+  void,
+  | ReindexArtifactError
+  | ArtifactReadError
+  | RetrievalQueryError
+  | SourceTextReindexOwnershipLostError,
+  never
+> {
   return Effect.gen(function* () {
     if (!artifactRef(job.artifactRef)) {
-      return yield* Effect.fail(new ReindexArtifactError('manifest-ref-invalid'))
+      return yield* Effect.fail(new ReindexArtifactError({
+        code: 'manifest-ref-invalid',
+        message: 'Stored source manifest reference is invalid',
+      }))
     }
     const manifestObject = yield* deps.store.readObject(job.artifactRef)
     const manifest = yield* Effect.try({
       try: () => decodeManifest(manifestObject.bytes, job),
-      catch: (error) => error,
+      catch: (error) =>
+        error instanceof ReindexArtifactError
+          ? error
+          : new ReindexArtifactError({
+              code: 'manifest-invalid',
+              message: 'Stored source manifest is invalid',
+            }),
     })
     const normalizedObject = yield* deps.store.readObject(manifest.normalizedRef)
     const content = yield* Effect.try({
       try: () => decodeNormalized(normalizedObject.bytes, manifest.contentHash),
-      catch: (error) => error,
+      catch: (error) =>
+        error instanceof ReindexArtifactError
+          ? error
+          : new ReindexArtifactError({
+              code: 'normalized-invalid-utf8',
+              message: 'Normalized source is not valid UTF-8',
+            }),
     })
     yield* deps.textIndex.indexText({
       workspaceId: job.workspaceId,
@@ -136,9 +175,25 @@ export const processOneSourceTextReindex = (
     if (Option.isNone(claimed)) return { processed: false }
     const job = claimed.value
     yield* processClaimed(deps, job).pipe(
-      Effect.catchAll((error) =>
-        deps.jobs.recordFailure(job, failureCode(error)),
-      ),
+      Effect.catchTag('SourceTextReindexOwnershipLostError', () => Effect.void),
+      Effect.catchTags({
+        ReindexArtifactError: (error) =>
+          deps.jobs.recordFailure(job, failureCode(error)).pipe(
+            Effect.catchTag('SourceTextReindexOwnershipLostError', () => Effect.void),
+          ),
+        StoragePathError: (error) =>
+          deps.jobs.recordFailure(job, failureCode(error)).pipe(
+            Effect.catchTag('SourceTextReindexOwnershipLostError', () => Effect.void),
+          ),
+        StorageReadError: (error) =>
+          deps.jobs.recordFailure(job, failureCode(error)).pipe(
+            Effect.catchTag('SourceTextReindexOwnershipLostError', () => Effect.void),
+          ),
+        RetrievalQueryError: (error) =>
+          deps.jobs.recordFailure(job, failureCode(error)).pipe(
+            Effect.catchTag('SourceTextReindexOwnershipLostError', () => Effect.void),
+          ),
+      }),
     )
     return { processed: true, sourceVersionId: job.sourceVersionId }
   })

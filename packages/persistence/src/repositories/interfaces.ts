@@ -10,7 +10,11 @@ import { Effect, Option } from 'effect'
 import type * as Domain from '@struct/domain'
 import type { PersistenceError } from '../errors.js'
 import { SqlClient } from '../sql-client.js'
-import { QueryError, EntityNotFoundError } from '../errors.js'
+import {
+  EntityNotFoundError,
+  IngestionJobOwnershipLostError,
+  QueryError,
+} from '../errors.js'
 import {
   decodeWorkspaceRow,
   decodeProjectRow,
@@ -291,6 +295,10 @@ function makeSourceRepositoryImpl(sql: import('../sql-client.js').SqlClientShape
 
 export interface SourceVersionRepository {
   readonly create: (version: typeof Domain.SourceVersion.Type) => Effect.Effect<typeof Domain.SourceVersion.Type, PersistenceError, never>
+  readonly createForIngestionAttempt: (
+    job: typeof Domain.JobQueue.Type,
+    version: typeof Domain.SourceVersion.Type,
+  ) => Effect.Effect<typeof Domain.SourceVersion.Type, PersistenceError, never>
   readonly findById: (id: typeof Domain.SourceVersionId.Type) => Effect.Effect<typeof Domain.SourceVersion.Type, PersistenceError, never>
   readonly findBySourceId: (sourceId: typeof Domain.SourceId.Type) => Effect.Effect<ReadonlyArray<typeof Domain.SourceVersion.Type>, PersistenceError, never>
 }
@@ -328,6 +336,59 @@ function makeSourceVersionRepositoryImpl(sql: import('../sql-client.js').SqlClie
             ),
           ) as Effect.Effect<SourceVersionType, RepoError, never>,
         ),
+      ),
+
+    createForIngestionAttempt: (job, version) =>
+      Effect.tryPromise({
+        try: () =>
+          sql.transaction(async (transaction) => {
+            const ownership = await transaction.unsafe(
+              `SELECT id
+               FROM job_queue
+               WHERE id = $1
+                 AND entity_type = 'ingestion'
+                 AND entity_id = $2
+                 AND status = 'in-progress'
+                 AND attempts = $3
+               FOR UPDATE`,
+              [job.id, version.sourceId, job.attempts],
+            )
+            if (ownership.length !== 1) return []
+            return transaction.unsafe(
+              `INSERT INTO source_versions (id, source_id, version, artifact_ref, content_hash, created_at)
+               VALUES ($1, $2, $3, $4, $5, to_timestamp($6 / 1000.0))
+               RETURNING *`,
+              [version.id, version.sourceId, version.version, version.artifactRef, version.contentHash, Number(version.createdAt)],
+            )
+          }),
+        catch: (err) =>
+          new QueryError({
+            operation: 'createForIngestionAttempt',
+            entity: 'SourceVersion',
+            message: String(err),
+          }),
+      }).pipe(
+        Effect.flatMap((rows) => {
+          if (rows.length !== 1) {
+            return Effect.fail(new IngestionJobOwnershipLostError({
+              jobId: job.id,
+              attempt: job.attempts,
+              transition: 'create-version',
+              message: 'Ingestion job attempt no longer owns the in-progress lease',
+            }))
+          }
+          return decodeSourceVersionRow(rows[0] as unknown as SourceVersionRow).pipe(
+            Effect.mapError((err) =>
+              err instanceof DecodeError
+                ? new QueryError({
+                    operation: 'createForIngestionAttempt',
+                    entity: 'SourceVersion',
+                    message: err.message,
+                  })
+                : err,
+            ),
+          ) as Effect.Effect<SourceVersionType, RepoError, never>
+        }),
       ),
 
     findById: (id: typeof Domain.SourceVersionId.Type) =>
@@ -677,9 +738,10 @@ export interface JobQueueRepository {
   readonly enqueue: (job: typeof Domain.JobQueue.Type) => Effect.Effect<typeof Domain.JobQueue.Type, PersistenceError, never>
   readonly claimNextIngestionJob: () => Effect.Effect<Option.Option<typeof Domain.JobQueue.Type>, PersistenceError, never>
   readonly recoverStaleIngestionJobs: (staleBeforeMs: number) => Effect.Effect<{ readonly requeued: ReadonlyArray<typeof Domain.JobQueue.Type>; readonly failed: ReadonlyArray<typeof Domain.JobQueue.Type> }, PersistenceError, never>
-  readonly markCompleted: (id: typeof Domain.JobQueue.Type['id']) => Effect.Effect<void, PersistenceError, never>
-  readonly markPending: (id: typeof Domain.JobQueue.Type['id']) => Effect.Effect<void, PersistenceError, never>
-  readonly markFailed: (id: typeof Domain.JobQueue.Type['id']) => Effect.Effect<void, PersistenceError, never>
+  readonly appendInProgressEvent: (job: typeof Domain.JobQueue.Type, event: typeof Domain.EventJournal.Type) => Effect.Effect<void, PersistenceError, never>
+  readonly markCompleted: (job: typeof Domain.JobQueue.Type, event: typeof Domain.EventJournal.Type) => Effect.Effect<void, PersistenceError, never>
+  readonly markPending: (job: typeof Domain.JobQueue.Type, event: typeof Domain.EventJournal.Type) => Effect.Effect<void, PersistenceError, never>
+  readonly markFailed: (job: typeof Domain.JobQueue.Type, event: typeof Domain.EventJournal.Type) => Effect.Effect<void, PersistenceError, never>
   readonly findById: (id: typeof Domain.JobQueue.Type['id']) => Effect.Effect<typeof Domain.JobQueue.Type, PersistenceError, never>
 }
 
@@ -709,6 +771,74 @@ function makeJobQueueRepositoryImpl(sql: import('../sql-client.js').SqlClientSha
       try: () => sql.unsafe(query, params),
       catch: (err) => new QueryError({ operation, entity: 'JobQueue', message: String(err) }),
     })
+
+  const ownedTransition = (
+    operation: string,
+    transition: 'append-event' | 'complete' | 'pending' | 'fail',
+    job: typeof Domain.JobQueue.Type,
+    event: typeof Domain.EventJournal.Type,
+    nextStatus?: 'completed' | 'pending' | 'failed',
+  ): Effect.Effect<void, PersistenceError, never> =>
+    Effect.tryPromise({
+      try: () =>
+        sql.transaction(async (transaction) => {
+          const ownership = nextStatus === undefined
+            ? await transaction.unsafe(
+                `SELECT id
+                 FROM job_queue
+                 WHERE id = $1
+                   AND entity_type = 'ingestion'
+                   AND status = 'in-progress'
+                   AND attempts = $2
+                 FOR UPDATE`,
+                [job.id, job.attempts],
+              )
+            : await transaction.unsafe(
+                `UPDATE job_queue
+                 SET status = $3, updated_at = NOW()
+                 WHERE id = $1
+                   AND entity_type = 'ingestion'
+                   AND status = 'in-progress'
+                   AND attempts = $2
+                 RETURNING id`,
+                [job.id, job.attempts, nextStatus],
+              )
+          if (ownership.length !== 1) return false
+          await transaction.unsafe(
+            `INSERT INTO event_journal (id, workspace_id, entity_type, entity_id, event_type, payload, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6::jsonb, to_timestamp($7 / 1000.0))`,
+            [
+              event.id,
+              job.workspaceId,
+              'ingestion',
+              job.entityId,
+              event.eventType,
+              JSON.stringify(event.payload),
+              Number(event.createdAt),
+            ],
+          )
+          return true
+        }),
+      catch: (err) =>
+        new QueryError({
+          operation,
+          entity: 'JobQueue',
+          message: 'Ingestion job transition could not be persisted',
+          cause: String(err),
+        }),
+    }).pipe(
+      Effect.flatMap((owned) =>
+        owned
+          ? Effect.void
+          : Effect.fail(
+              new IngestionJobOwnershipLostError({
+                jobId: job.id,
+                attempt: job.attempts,
+                transition,
+                message: 'Ingestion job attempt no longer owns the in-progress lease',
+              }),
+            )),
+    )
 
   return {
     enqueue: (job) =>
@@ -743,42 +873,94 @@ function makeJobQueueRepositoryImpl(sql: import('../sql-client.js').SqlClientSha
       ),
 
     recoverStaleIngestionJobs: (staleBeforeMs) =>
-      Effect.gen(function* () {
-        const requeuedRows = yield* executeRows(
-          'recoverStaleIngestionJobs.requeue',
-          `UPDATE job_queue
-           SET status = 'pending', updated_at = NOW()
-           WHERE entity_type = 'ingestion'
-             AND status = 'in-progress'
-             AND updated_at < to_timestamp($1 / 1000.0)
-             AND attempts < max_attempts
-           RETURNING *`,
-          [staleBeforeMs],
-        )
-        const failedRows = yield* executeRows(
-          'recoverStaleIngestionJobs.fail',
-          `UPDATE job_queue
-           SET status = 'failed', updated_at = NOW()
-           WHERE entity_type = 'ingestion'
-             AND status = 'in-progress'
-             AND updated_at < to_timestamp($1 / 1000.0)
-             AND attempts >= max_attempts
-           RETURNING *`,
-          [staleBeforeMs],
-        )
-        const requeued = yield* decodeJobRows(requeuedRows, 'recoverStaleIngestionJobs.requeue')
-        const failed = yield* decodeJobRows(failedRows, 'recoverStaleIngestionJobs.fail')
-        return { requeued, failed }
-      }),
+      Effect.tryPromise({
+        try: () =>
+          sql.transaction(async (transaction) => {
+            const requeuedRows = await transaction.unsafe(
+              `UPDATE job_queue
+               SET status = 'pending', updated_at = NOW()
+               WHERE entity_type = 'ingestion'
+                 AND status = 'in-progress'
+                 AND updated_at < to_timestamp($1 / 1000.0)
+                 AND attempts < max_attempts
+               RETURNING *`,
+              [staleBeforeMs],
+            )
+            const failedRows = await transaction.unsafe(
+              `UPDATE job_queue
+               SET status = 'failed', updated_at = NOW()
+               WHERE entity_type = 'ingestion'
+                 AND status = 'in-progress'
+                 AND updated_at < to_timestamp($1 / 1000.0)
+                 AND attempts >= max_attempts
+               RETURNING *`,
+              [staleBeforeMs],
+            )
+            if (failedRows.length > 0) {
+              const terminalEvents = await transaction.unsafe(
+                `INSERT INTO event_journal (
+                   id, workspace_id, entity_type, entity_id,
+                   event_type, payload, created_at
+                 )
+                 SELECT
+                   md5(
+                     job.id::text
+                     || ':ingestion-stale-exhausted:'
+                     || job.attempts::text
+                   )::uuid,
+                   job.workspace_id,
+                   'ingestion',
+                   job.entity_id,
+                   'ingestion-failed',
+                   '{"errorTag":"StaleIngestionJobExhausted","message":"Ingestion failed"}'::jsonb,
+                   NOW()
+                 FROM job_queue job
+                 WHERE job.id = ANY($1::uuid[])
+                   AND job.entity_type = 'ingestion'
+                   AND job.status = 'failed'
+                 ON CONFLICT (id) DO NOTHING
+                 RETURNING id`,
+                [failedRows.map((row) => row['id'])],
+              )
+              if (terminalEvents.length !== failedRows.length) {
+                throw new Error('stale-ingestion-terminal-event-conflict')
+              }
+            }
+            return { requeuedRows, failedRows }
+          }),
+        catch: (err) =>
+          new QueryError({
+            operation: 'recoverStaleIngestionJobs',
+            entity: 'JobQueue',
+            message: 'Stale ingestion recovery could not be persisted atomically',
+            cause: String(err),
+          }),
+      }).pipe(
+        Effect.flatMap(({ requeuedRows, failedRows }) =>
+          Effect.gen(function* () {
+            const requeued = yield* decodeJobRows(
+              requeuedRows,
+              'recoverStaleIngestionJobs.requeue',
+            )
+            const failed = yield* decodeJobRows(
+              failedRows,
+              'recoverStaleIngestionJobs.fail',
+            )
+            return { requeued, failed }
+          })),
+      ),
 
-    markCompleted: (id) =>
-      executeRows('markCompleted', `UPDATE job_queue SET status = 'completed', updated_at = NOW() WHERE id = $1`, [id]).pipe(Effect.asVoid),
+    appendInProgressEvent: (job, event) =>
+      ownedTransition('appendInProgressEvent', 'append-event', job, event),
 
-    markPending: (id) =>
-      executeRows('markPending', `UPDATE job_queue SET status = 'pending', updated_at = NOW() WHERE id = $1`, [id]).pipe(Effect.asVoid),
+    markCompleted: (job, event) =>
+      ownedTransition('markCompleted', 'complete', job, event, 'completed'),
 
-    markFailed: (id) =>
-      executeRows('markFailed', `UPDATE job_queue SET status = 'failed', updated_at = NOW() WHERE id = $1`, [id]).pipe(Effect.asVoid),
+    markPending: (job, event) =>
+      ownedTransition('markPending', 'pending', job, event, 'pending'),
+
+    markFailed: (job, event) =>
+      ownedTransition('markFailed', 'fail', job, event, 'failed'),
 
     findById: (id) =>
       executeRows('findById', `SELECT * FROM job_queue WHERE id = $1`, [id]).pipe(

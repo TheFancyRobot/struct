@@ -44,6 +44,9 @@ export {
   QueryError,
   EntityNotFoundError,
   UniqueConstraintError,
+  ResearchJobOwnershipLostError,
+  IngestionJobOwnershipLostError,
+  SourceTextReindexOwnershipLostError,
   // SQL Client
   SqlClient,
   SqlClientLive,
@@ -75,6 +78,8 @@ export type {
   JobQueueRepository,
   EventJournalRepository,
 } from './repositories/interfaces.js'
+
+export type { PersistenceError } from './errors.js'
 
 export type {
   SourceRegistrationInput,

@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { Effect, Layer } from 'effect'
+import { Effect, Layer, Option } from 'effect'
 import postgres from 'postgres'
 import type postgresTypes from 'postgres'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import {
-  EventJournalRepo,
+  IngestionJobOwnershipLostError,
   JobQueueRepo,
   ProjectRepo,
   SourceRegistrationRepo,
@@ -30,6 +30,7 @@ const sourceVersionId = SourceVersionId.make('950e8400-e29b-41d4-a716-4466554400
 const rollbackSourceId = SourceId.make('950e8400-e29b-41d4-a716-446655440020')
 const rollbackJobId = JobQueueId.make('950e8400-e29b-41d4-a716-446655440021')
 const rollbackEventId = EventJournalId.make('950e8400-e29b-41d4-a716-446655440022')
+const staleJobId = JobQueueId.make('950e8400-e29b-41d4-a716-446655440030')
 
 async function cleanup(sql: postgresTypes.Sql): Promise<void> {
   await sql.unsafe(`DELETE FROM event_journal WHERE workspace_id = '${workspaceId}'`)
@@ -68,7 +69,6 @@ describeIf('single text source ingestion real DB integration', () => {
     const registrationLayer = Layer.provide(SourceRegistrationRepo.Default, sqlLayer)
     const jobLayer = Layer.provide(JobQueueRepo.Default, sqlLayer)
     const sourceVersionLayer = Layer.provide(SourceVersionRepo.Default, sqlLayer)
-    const eventLayer = Layer.provide(EventJournalRepo.Default, sqlLayer)
     const retrievalLayer = Layer.provide(TextRetrieval.Default, sqlLayer)
 
     await Effect.runPromise(registerTextSource({
@@ -97,22 +97,27 @@ describeIf('single text source ingestion real DB integration', () => {
       jobs: {
         recoverStaleIngestionJobs: (staleBeforeMs) => JobQueueRepo.recoverStaleIngestionJobs(staleBeforeMs).pipe(Effect.provide(jobLayer)),
         claimNextIngestionJob: () => JobQueueRepo.claimNextIngestionJob().pipe(Effect.provide(jobLayer)),
-        markCompleted: (id) => JobQueueRepo.markCompleted(id).pipe(Effect.provide(jobLayer)),
-        markPending: (id) => JobQueueRepo.markPending(id).pipe(Effect.provide(jobLayer)),
-        markFailed: (id) => JobQueueRepo.markFailed(id).pipe(Effect.provide(jobLayer)),
+        appendInProgressEvent: (job, event) =>
+          JobQueueRepo.appendInProgressEvent(job, event).pipe(Effect.provide(jobLayer)),
+        markCompleted: (job, event) =>
+          JobQueueRepo.markCompleted(job, event).pipe(Effect.provide(jobLayer)),
+        markPending: (job, event) =>
+          JobQueueRepo.markPending(job, event).pipe(Effect.provide(jobLayer)),
+        markFailed: (job, event) =>
+          JobQueueRepo.markFailed(job, event).pipe(Effect.provide(jobLayer)),
       },
       sourceVersions: {
         findBySourceId: (id) => SourceVersionRepo.findBySourceId(id).pipe(Effect.provide(sourceVersionLayer)),
-        create: (version) => SourceVersionRepo.create(version).pipe(Effect.provide(sourceVersionLayer)),
+        createForIngestionAttempt: (job, version) =>
+          SourceVersionRepo.createForIngestionAttempt(job, version).pipe(
+            Effect.provide(sourceVersionLayer),
+          ),
       },
       sources: {
         findProjectId: () => Effect.succeed(projectId),
       },
       textIndex: {
         indexText: (input) => TextRetrieval.indexText(input).pipe(Effect.provide(retrievalLayer)),
-      },
-      events: {
-        append: (event) => EventJournalRepo.append(event).pipe(Effect.provide(eventLayer)),
       },
       ingestion: {
         ingestTextSource: (input) => ingestTextSource({ store: storage, ...input, maxBytes: 1024 }),
@@ -149,6 +154,130 @@ describeIf('single text source ingestion real DB integration', () => {
     expect(events.map((event) => event['event_type'])).toEqual(['ingestion-requested', 'file-processed', 'ingestion-completed'])
     expect(JSON.stringify(events)).not.toContain('# Title')
     expect(JSON.stringify(events)).not.toContain('/Users/')
+  })
+
+  it('fences stale ingestion attempts from events and every terminal transition', async () => {
+    const jobLayer = Layer.provide(JobQueueRepo.Default, SqlClientLive(sql))
+    await Effect.runPromise(
+      JobQueueRepo.enqueue({
+        id: staleJobId,
+        workspaceId,
+        entityType: 'ingestion',
+        entityId: sourceId,
+        status: 'pending',
+        payload: { test: 'stale-attempt-fencing' },
+        attempts: 0,
+        maxAttempts: 3,
+        createdAt: 1n,
+        updatedAt: 1n,
+      }).pipe(Effect.provide(jobLayer)),
+    )
+    const first = await Effect.runPromise(
+      JobQueueRepo.claimNextIngestionJob().pipe(Effect.provide(jobLayer)),
+    )
+    if (Option.isNone(first)) throw new Error('first ingestion attempt was not claimed')
+    await Effect.runPromise(
+      JobQueueRepo.recoverStaleIngestionJobs(Date.now() + 60_000).pipe(
+        Effect.provide(jobLayer),
+      ),
+    )
+    const second = await Effect.runPromise(
+      JobQueueRepo.claimNextIngestionJob().pipe(Effect.provide(jobLayer)),
+    )
+    if (Option.isNone(second)) throw new Error('second ingestion attempt was not claimed')
+
+    const event = (id: string, eventType: string) => ({
+      id: EventJournalId.make(id),
+      workspaceId,
+      entityType: 'ingestion',
+      entityId: sourceId,
+      eventType,
+      payload: { attempt: 1 },
+      cursor: 0n,
+      createdAt: 2n,
+    })
+    const fencedVersion = {
+      id: SourceVersionId.make('950e8400-e29b-41d4-a716-446655440037'),
+      sourceId,
+      version: 99,
+      artifactRef: 'artifact://sha256/attempt-fenced',
+      contentHash: 'sha256:attempt-fenced',
+      createdAt: 2n,
+    }
+    const staleCreate = await Effect.runPromiseExit(
+      SourceVersionRepo.createForIngestionAttempt(
+        first.value,
+        fencedVersion,
+      ).pipe(Effect.provide(Layer.provide(SourceVersionRepo.Default, SqlClientLive(sql)))),
+    )
+    expect(staleCreate._tag).toBe('Failure')
+    await Effect.runPromise(
+      SourceVersionRepo.createForIngestionAttempt(
+        second.value,
+        fencedVersion,
+      ).pipe(Effect.provide(Layer.provide(SourceVersionRepo.Default, SqlClientLive(sql)))),
+    )
+    const staleEffects = [
+      JobQueueRepo.appendInProgressEvent(
+        first.value,
+        event('950e8400-e29b-41d4-a716-446655440031', 'file-processed'),
+      ),
+      JobQueueRepo.markCompleted(
+        first.value,
+        event('950e8400-e29b-41d4-a716-446655440032', 'ingestion-completed'),
+      ),
+      JobQueueRepo.markPending(
+        first.value,
+        event('950e8400-e29b-41d4-a716-446655440033', 'ingestion-failed'),
+      ),
+      JobQueueRepo.markFailed(
+        first.value,
+        event('950e8400-e29b-41d4-a716-446655440034', 'ingestion-failed'),
+      ),
+    ]
+    for (const effect of staleEffects) {
+      const exit = await Effect.runPromiseExit(effect.pipe(Effect.provide(jobLayer)))
+      expect(exit._tag).toBe('Failure')
+      if (exit._tag === 'Failure') {
+        expect(String(exit.cause)).toContain(IngestionJobOwnershipLostError.name)
+      }
+    }
+
+    await Effect.runPromise(
+      JobQueueRepo.appendInProgressEvent(
+        second.value,
+        event('950e8400-e29b-41d4-a716-446655440035', 'file-processed'),
+      ).pipe(Effect.provide(jobLayer)),
+    )
+    await Effect.runPromise(
+      JobQueueRepo.markCompleted(
+        second.value,
+        event('950e8400-e29b-41d4-a716-446655440036', 'ingestion-completed'),
+      ).pipe(Effect.provide(jobLayer)),
+    )
+
+    const [stored] = await sql.unsafe(
+      `SELECT status, attempts FROM job_queue WHERE id = $1`,
+      [staleJobId],
+    )
+    const events = await sql.unsafe(
+      `SELECT event_type, payload FROM event_journal
+       WHERE id = ANY($1::uuid[])
+       ORDER BY cursor`,
+      [[
+        '950e8400-e29b-41d4-a716-446655440031',
+        '950e8400-e29b-41d4-a716-446655440032',
+        '950e8400-e29b-41d4-a716-446655440033',
+        '950e8400-e29b-41d4-a716-446655440034',
+        '950e8400-e29b-41d4-a716-446655440035',
+        '950e8400-e29b-41d4-a716-446655440036',
+      ]],
+    )
+    expect(stored).toMatchObject({ status: 'completed', attempts: 2 })
+    expect(events.map((row) => row['event_type'])).toEqual([
+      'file-processed',
+      'ingestion-completed',
+    ])
   })
 
   it('rolls back Source and job creation when ingestion-requested persistence fails', async () => {

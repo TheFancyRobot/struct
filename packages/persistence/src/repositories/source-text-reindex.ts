@@ -4,7 +4,10 @@ import {
   SourceVersionId,
   WorkspaceId,
 } from '@struct/domain'
-import { QueryError } from '../errors.js'
+import {
+  QueryError,
+  SourceTextReindexOwnershipLostError,
+} from '../errors.js'
 import { SqlClient } from '../sql-client.js'
 
 export const SourceTextReindexStatus = Schema.Union(
@@ -160,10 +163,11 @@ export class SourceTextReindexRepo extends Effect.Service<SourceTextReindexRepo>
               }),
           })
           if (rows.length !== 1) {
-            return yield* new QueryError({
-              operation: 'recordFailure.transition',
-              entity: 'SourceTextReindexJob',
-              message: 'Source text reindex job was no longer in progress',
+            return yield* new SourceTextReindexOwnershipLostError({
+              sourceVersionId: job.sourceVersionId,
+              attempt: job.attempts,
+              transition: 'record-failure',
+              message: 'Source text reindex attempt no longer owns the in-progress lease',
             })
           }
         },

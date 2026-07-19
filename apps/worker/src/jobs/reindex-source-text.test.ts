@@ -6,7 +6,11 @@ import {
   SourceVersionId,
   WorkspaceId,
 } from '@struct/domain'
-import type { SourceTextReindexJob } from '@struct/persistence'
+import {
+  QueryError,
+  SourceTextReindexOwnershipLostError,
+  type SourceTextReindexJob,
+} from '@struct/persistence'
 import {
   processOneSourceTextReindex,
   type SourceTextReindexWorkerDeps,
@@ -128,5 +132,80 @@ describe('processOneSourceTextReindex', () => {
 
     expect(testDeps.indexed).toEqual([])
     expect(testDeps.failures).toEqual(['normalized-hash-mismatch'])
+  })
+
+  it('treats expected index completion lease loss as a stale-worker no-op', async () => {
+    const testDeps = deps()
+    const stale: SourceTextReindexWorkerDeps = {
+      ...testDeps,
+      textIndex: {
+        indexText: () =>
+          Effect.fail(new SourceTextReindexOwnershipLostError({
+            sourceVersionId,
+            attempt: 1,
+            transition: 'index-text',
+            message: 'lease moved',
+          })),
+      },
+    }
+
+    await expect(
+      Effect.runPromise(processOneSourceTextReindex(stale)),
+    ).resolves.toEqual({ processed: true, sourceVersionId })
+    expect(testDeps.failures).toEqual([])
+  })
+
+  it('treats expected failure-recording lease loss as a stale-worker no-op', async () => {
+    const testDeps = deps()
+    const stale: SourceTextReindexWorkerDeps = {
+      ...testDeps,
+      store: {
+        readObject: () =>
+          Effect.fail({
+            _tag: 'StorageReadError',
+            message: 'Artifact could not be read',
+          } as never),
+      },
+      jobs: {
+        ...testDeps.jobs,
+        recordFailure: () =>
+          Effect.fail(new SourceTextReindexOwnershipLostError({
+            sourceVersionId,
+            attempt: 1,
+            transition: 'record-failure',
+            message: 'lease moved',
+          })),
+      },
+    }
+
+    await expect(
+      Effect.runPromise(processOneSourceTextReindex(stale)),
+    ).resolves.toEqual({ processed: true, sourceVersionId })
+  })
+
+  it('keeps real failure-recording infrastructure faults fatal', async () => {
+    const testDeps = deps()
+    const broken: SourceTextReindexWorkerDeps = {
+      ...testDeps,
+      store: {
+        readObject: () =>
+          Effect.fail({
+            _tag: 'StorageReadError',
+            message: 'Artifact could not be read',
+          } as never),
+      },
+      jobs: {
+        ...testDeps.jobs,
+        recordFailure: () =>
+          Effect.fail(new QueryError({
+            operation: 'recordFailure',
+            entity: 'SourceTextReindexJob',
+            message: 'database unavailable',
+          })),
+      },
+    }
+
+    const exit = await Effect.runPromiseExit(processOneSourceTextReindex(broken))
+    expect(exit._tag).toBe('Failure')
   })
 })

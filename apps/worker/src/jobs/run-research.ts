@@ -7,6 +7,7 @@ import {
   ValidationError,
 } from '@struct/domain'
 import type * as Domain from '@struct/domain'
+import { ResearchJobOwnershipLostError } from '@struct/persistence'
 import type * as Research from '@struct/research-engine'
 
 interface ResearchPayload {
@@ -24,9 +25,6 @@ export interface ResearchWorkerDeps {
       staleBeforeMs: number,
     ) => Effect.Effect<ReadonlyArray<typeof Domain.JobQueue.Type>, unknown, never>
     readonly claimNext: () => Effect.Effect<Option.Option<typeof Domain.JobQueue.Type>, unknown, never>
-    readonly appendEvent: (
-      event: typeof Domain.EventJournal.Type,
-    ) => Effect.Effect<unknown, unknown, never>
     readonly appendInProgressEvent: (
       jobId: typeof Domain.JobQueue.Type['id'],
       event: typeof Domain.EventJournal.Type,
@@ -136,6 +134,16 @@ function safeFailureTag(error: unknown): string {
     : 'ResearchWorkflowError'
 }
 
+function isOwnershipLost(error: unknown): boolean {
+  return error instanceof ResearchJobOwnershipLostError
+    || (
+      typeof error === 'object'
+      && error !== null
+      && '_tag' in error
+      && error._tag === 'ResearchJobOwnershipLostError'
+    )
+}
+
 export const processOneResearchJob = (
   deps: ResearchWorkerDeps,
 ): Effect.Effect<{ readonly processed: boolean; readonly jobId?: string }, unknown, never> =>
@@ -163,7 +171,8 @@ export const processOneResearchJob = (
             }),
           ),
       })
-      yield* deps.jobs.appendEvent(
+      yield* deps.jobs.appendInProgressEvent(
+        job.id,
         event(deps, job, 'citations-validated', {
           citationCount: result.answer.citations.length,
         }),
@@ -180,14 +189,20 @@ export const processOneResearchJob = (
     }).pipe(Effect.either)
 
     if (executed._tag === 'Left') {
-      yield* deps.jobs.fail({
+      if (isOwnershipLost(executed.left)) {
+        return { processed: true, jobId: job.id }
+      }
+      const failed = yield* deps.jobs.fail({
         runId: job.entityId as typeof Domain.ResearchRun.Type['id'],
         jobId: job.id,
         event: event(deps, job, 'research-failed', {
           errorTag: safeFailureTag(executed.left),
           message: 'Research failed',
         }),
-      })
+      }).pipe(Effect.either)
+      if (failed._tag === 'Left' && !isOwnershipLost(failed.left)) {
+        return yield* Effect.fail(failed.left)
+      }
     }
     return { processed: true, jobId: job.id }
   })

@@ -36,6 +36,46 @@ export class UniqueConstraintError extends Schema.TaggedError<UniqueConstraintEr
 }) {}
 
 /**
+ * Expected lease-loss outcome when a stale research worker no longer owns the
+ * in-progress job row needed for an event or terminal transition.
+ */
+export class ResearchJobOwnershipLostError
+  extends Schema.TaggedError<ResearchJobOwnershipLostError>()('ResearchJobOwnershipLostError', {
+    transition: Schema.Literal('append-event', 'complete', 'fail'),
+    message: Schema.String,
+  }) {}
+
+/**
+ * Expected lease-loss outcome when an ingestion worker's claimed attempt no
+ * longer owns the in-progress job row.
+ */
+export class IngestionJobOwnershipLostError
+  extends Schema.TaggedError<IngestionJobOwnershipLostError>()('IngestionJobOwnershipLostError', {
+    jobId: Schema.String,
+    attempt: Schema.Number,
+    transition: Schema.Literal('create-version', 'append-event', 'complete', 'pending', 'fail'),
+    message: Schema.String,
+  }) {}
+
+/**
+ * Expected lease-loss outcome when a source-text reindex worker's claimed
+ * attempt no longer owns the in-progress reindex row.
+ */
+export class SourceTextReindexOwnershipLostError
+  extends Schema.TaggedError<SourceTextReindexOwnershipLostError>()('SourceTextReindexOwnershipLostError', {
+    sourceVersionId: Schema.String,
+    attempt: Schema.Number,
+    transition: Schema.Literal('index-text', 'record-failure'),
+    message: Schema.String,
+  }) {}
+
+/**
  * Union of all persistence errors.
  */
-export type PersistenceError = QueryError | EntityNotFoundError | UniqueConstraintError
+export type PersistenceError =
+  | QueryError
+  | EntityNotFoundError
+  | UniqueConstraintError
+  | ResearchJobOwnershipLostError
+  | IngestionJobOwnershipLostError
+  | SourceTextReindexOwnershipLostError

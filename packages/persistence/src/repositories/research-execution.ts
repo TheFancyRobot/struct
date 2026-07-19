@@ -11,7 +11,11 @@ import type {
   WorkspaceId,
 } from '@struct/domain'
 import { AuthorizationError } from '@struct/domain'
-import { QueryError, type PersistenceError } from '../errors.js'
+import {
+  QueryError,
+  ResearchJobOwnershipLostError,
+  type PersistenceError,
+} from '../errors.js'
 import { SqlClient } from '../sql-client.js'
 import {
   decodeEventJournalRow,
@@ -56,6 +60,15 @@ export interface FailResearchInput {
 }
 
 class ResearchScopeMismatchError extends Error {}
+
+function ownershipLost(
+  transition: 'append-event' | 'complete' | 'fail',
+): ResearchJobOwnershipLostError {
+  return new ResearchJobOwnershipLostError({
+    transition,
+    message: 'Research job no longer has in-progress ownership',
+  })
+}
 
 function persistenceDecodeError(
   operation: string,
@@ -338,7 +351,7 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
               [jobId, event.entityId],
             )
             if (ownership.length !== 1) {
-              throw new Error('research-event-ownership-lost')
+              throw ownershipLost('append-event')
             }
             await transaction.unsafe(
               `INSERT INTO event_journal
@@ -354,12 +367,14 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
               ],
             )
           }),
-        catch: () =>
-          new QueryError({
-            operation: 'appendInProgressResearchEvent',
-            entity: 'ResearchExecution',
-            message: 'Research event append lost in-progress ownership',
-          }),
+        catch: (error) =>
+          error instanceof ResearchJobOwnershipLostError
+            ? error
+            : new QueryError({
+                operation: 'appendInProgressResearchEvent',
+                entity: 'ResearchExecution',
+                message: 'Research event append failed',
+              }),
       })
     })
 
@@ -380,7 +395,7 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
               [input.jobId, input.runId],
             )
             if (jobRows.length !== 1) {
-              throw new Error('research-job-completion-ownership-lost')
+              throw ownershipLost('complete')
             }
             const runRows = await transaction.unsafe(
               `UPDATE research_runs
@@ -425,12 +440,14 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
               ],
             )
           }),
-        catch: () =>
-          new QueryError({
-            operation: 'completeResearch',
-            entity: 'ResearchExecution',
-            message: 'Atomic research completion failed',
-          }),
+        catch: (error) =>
+          error instanceof ResearchJobOwnershipLostError
+            ? error
+            : new QueryError({
+                operation: 'completeResearch',
+                entity: 'ResearchExecution',
+                message: 'Atomic research completion failed',
+              }),
       })
     })
 
@@ -449,7 +466,7 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
               [input.jobId, input.runId],
             )
             if (jobRows.length !== 1) {
-              throw new Error('research-job-failure-ownership-lost')
+              throw ownershipLost('fail')
             }
             const runRows = await transaction.unsafe(
               `UPDATE research_runs
@@ -474,12 +491,14 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
               ],
             )
           }),
-        catch: () =>
-          new QueryError({
-            operation: 'failResearch',
-            entity: 'ResearchExecution',
-            message: 'Atomic research failure persistence failed',
-          }),
+        catch: (error) =>
+          error instanceof ResearchJobOwnershipLostError
+            ? error
+            : new QueryError({
+                operation: 'failResearch',
+                entity: 'ResearchExecution',
+                message: 'Atomic research failure persistence failed',
+              }),
       })
     })
 

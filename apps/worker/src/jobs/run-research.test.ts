@@ -12,6 +12,7 @@ import {
   type JobQueue,
   type ResearchRun,
 } from '@struct/domain'
+import { ResearchJobOwnershipLostError } from '@struct/persistence'
 import { processOneResearchJob, type ResearchWorkerDeps } from './run-research'
 
 const workspaceId = WorkspaceId.make('e50e8400-e29b-41d4-a716-446655440000')
@@ -65,11 +66,6 @@ function deps(failWorkflow = false) {
     jobs: {
       recoverStale: () => Effect.succeed([]),
       claimNext: () => Effect.succeed(Option.some(job)),
-      appendEvent: (journalEvent) => {
-        events.push(journalEvent.eventType)
-        eventPayloads.push(journalEvent.payload)
-        return Effect.void
-      },
       appendInProgressEvent: (_jobId, journalEvent) => {
         events.push(journalEvent.eventType)
         eventPayloads.push(journalEvent.payload)
@@ -230,5 +226,76 @@ describe('processOneResearchJob', () => {
     expect(terminal).toBe(true)
     expect(Exit.isFailure(lateExit)).toBe(true)
     expect(base.calls.events).toEqual(['research-failed'])
+  })
+
+  it('stops safely when stale recovery takes ownership before citations are appended', async () => {
+    const base = deps()
+    let appendCount = 0
+    const ownershipLost = new ResearchJobOwnershipLostError({
+      transition: 'append-event',
+      message: 'Research job no longer has in-progress ownership',
+    })
+    const testDeps: ResearchWorkerDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        appendInProgressEvent: (_jobId, journalEvent) => {
+          appendCount += 1
+          return appendCount === 1
+            ? base.jobs.appendInProgressEvent(job.id, journalEvent)
+            : Effect.fail(ownershipLost)
+        },
+      },
+    }
+
+    const result = await Effect.runPromise(processOneResearchJob(testDeps))
+
+    expect(result).toEqual({ processed: true, jobId: job.id })
+    expect(base.calls.events).toEqual(['retrieval-completed'])
+    expect(base.calls.completed).toHaveLength(0)
+    expect(base.calls.failed).toHaveLength(0)
+  })
+
+  it('stops safely when stale recovery takes ownership before completion', async () => {
+    const base = deps()
+    const ownershipLost = new ResearchJobOwnershipLostError({
+      transition: 'complete',
+      message: 'Research job no longer has in-progress ownership',
+    })
+    const testDeps: ResearchWorkerDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        complete: () => Effect.fail(ownershipLost),
+      },
+    }
+
+    const result = await Effect.runPromise(processOneResearchJob(testDeps))
+
+    expect(result).toEqual({ processed: true, jobId: job.id })
+    expect(base.calls.events).toEqual([
+      'retrieval-completed',
+      'citations-validated',
+    ])
+    expect(base.calls.completed).toHaveLength(0)
+    expect(base.calls.failed).toHaveLength(0)
+  })
+
+  it('keeps non-ownership terminal persistence failures fatal to the poll loop', async () => {
+    const base = deps(true)
+    const persistenceFailure = new Error('database unavailable')
+    const testDeps: ResearchWorkerDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        fail: () => Effect.fail(persistenceFailure),
+      },
+    }
+
+    const exit = await Effect.runPromiseExit(processOneResearchJob(testDeps))
+
+    expect(Exit.isFailure(exit)).toBe(true)
+    expect(base.calls.completed).toHaveLength(0)
+    expect(base.calls.failed).toHaveLength(0)
   })
 })

@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-18T23:21:58.524Z",
+  "generatedAt": "2026-07-19T00:32:50.407Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -508,74 +508,88 @@
         {
           "name": "WorkerIngestionResult",
           "kind": "interface",
-          "line": 14,
+          "line": 17,
           "exported": true,
-          "endLine": 14
+          "endLine": 17
+        },
+        {
+          "name": "EventJournalType",
+          "kind": "type",
+          "line": 26,
+          "exported": false,
+          "endLine": 26
         },
         {
           "name": "IngestionWorkerDeps",
           "kind": "interface",
-          "line": 23,
+          "line": 28,
           "exported": true,
-          "endLine": 23
+          "endLine": 28
         },
         {
           "name": "ProcessOneResult",
           "kind": "interface",
-          "line": 66,
+          "line": 72,
           "exported": true,
-          "endLine": 66
+          "endLine": 72
         },
         {
           "name": "IngestionPayload",
           "kind": "interface",
-          "line": 71,
+          "line": 77,
           "exported": false,
-          "endLine": 71
+          "endLine": 77
         },
         {
           "name": "decodePayload",
           "kind": "function",
-          "line": 78,
+          "line": 84,
           "exported": false,
-          "endLine": 78
+          "endLine": 84
         },
         {
           "name": "sanitizedFailurePayload",
           "kind": "function",
-          "line": 114,
+          "line": 120,
           "exported": false,
-          "endLine": 114,
+          "endLine": 120,
           "signature": "(reason: unknown)"
         },
         {
-          "name": "appendEvent",
+          "name": "makeEvent",
           "kind": "function",
-          "line": 119,
+          "line": 125,
           "exported": false,
-          "endLine": 119
+          "endLine": 125
+        },
+        {
+          "name": "appendOwnedEvent",
+          "kind": "function",
+          "line": 143,
+          "exported": false,
+          "endLine": 143
         },
         {
           "name": "completeJob",
           "kind": "function",
-          "line": 138,
+          "line": 152,
           "exported": false,
-          "endLine": 138
+          "endLine": 152
         },
         {
           "name": "failJob",
           "kind": "function",
-          "line": 183,
+          "line": 197,
           "exported": false,
-          "endLine": 183,
+          "endLine": 197,
           "signature": "(deps: IngestionWorkerDeps, job: typeof JobQueue.Type, reason: unknown)"
         },
         {
           "name": "processOneIngestionJob",
           "kind": "const",
-          "line": 194,
+          "line": 210,
           "exported": true,
-          "endLine": 194
+          "endLine": 210
         }
       ],
       "imports": [
@@ -612,12 +626,17 @@
           "source": "",
           "specifier": "@struct/domain",
           "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
         }
       ],
       "exports": [],
-      "hash": "553392ab00f879bd9e3b3f568349f962ef6d40efbbdab38668ae91914f2d60f7",
-      "mtimeMs": 1784409635963.4338,
-      "size": 8452,
+      "hash": "f6e87de5c08c5958f72e10ce284d174bfb712b08a4288487d83a4318a877d0bb",
+      "mtimeMs": 1784420896432.891,
+      "size": 9367,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -627,78 +646,92 @@
       "language": "TypeScript",
       "symbols": [
         {
+          "name": "ReindexArtifactErrorCode",
+          "kind": "const",
+          "line": 14,
+          "exported": false,
+          "endLine": 14
+        },
+        {
           "name": "ReindexArtifactError",
           "kind": "class",
-          "line": 6,
+          "line": 21,
           "exported": false,
-          "endLine": 6
+          "endLine": 21
         },
         {
           "name": "SourceTextReindexWorkerDeps",
           "kind": "interface",
-          "line": 15,
+          "line": 27,
           "exported": true,
-          "endLine": 15
+          "endLine": 27
         },
         {
           "name": "StoredManifest",
           "kind": "interface",
-          "line": 37,
+          "line": 49,
           "exported": false,
-          "endLine": 37
+          "endLine": 49
+        },
+        {
+          "name": "ArtifactReadError",
+          "kind": "type",
+          "line": 56,
+          "exported": false,
+          "endLine": 56
         },
         {
           "name": "decoder",
           "kind": "const",
-          "line": 44,
+          "line": 61,
           "exported": false,
-          "endLine": 44
+          "endLine": 61
         },
         {
           "name": "artifactRef",
           "kind": "function",
-          "line": 46,
+          "line": 63,
           "exported": false,
-          "endLine": 46,
+          "endLine": 63,
           "signature": "(value: unknown)"
         },
         {
           "name": "decodeManifest",
           "kind": "function",
-          "line": 50,
+          "line": 67,
           "exported": false,
-          "endLine": 50,
+          "endLine": 67,
           "signature": "(bytes: Uint8Array, job: SourceTextReindexJob)"
         },
         {
           "name": "decodeNormalized",
           "kind": "function",
-          "line": 77,
+          "line": 94,
           "exported": false,
-          "endLine": 77,
+          "endLine": 94,
           "signature": "(bytes: Uint8Array, expectedHash: string)"
         },
         {
           "name": "failureCode",
           "kind": "function",
-          "line": 89,
+          "line": 106,
           "exported": false,
-          "endLine": 89,
+          "endLine": 106,
           "signature": "(error: unknown)"
         },
         {
           "name": "processClaimed",
           "kind": "function",
-          "line": 102,
+          "line": 119,
           "exported": false,
-          "endLine": 102
+          "endLine": 119
         },
         {
           "name": "processOneSourceTextReindex",
           "kind": "const",
-          "line": 130,
+          "line": 169,
           "exported": true,
-          "endLine": 130
+          "endLine": 169
         }
       ],
       "imports": [
@@ -711,36 +744,28 @@
           "kind": "static"
         },
         {
-          "source": "Effect, Option",
+          "source": "Effect, Option, Schema",
           "specifier": "effect",
           "imported": [
             "Effect",
-            "Option"
+            "Option",
+            "Schema"
           ],
           "kind": "static"
         },
         {
-          "source": "SourceTextReindexJob",
-          "specifier": "@struct/persistence",
+          "source": "RetrievalQueryError",
+          "specifier": "@struct/domain",
           "imported": [
-            "SourceTextReindexJob"
-          ],
-          "kind": "type"
-        },
-        {
-          "source": "ArtifactRef, ArtifactStoreShape",
-          "specifier": "@struct/source-storage",
-          "imported": [
-            "ArtifactRef",
-            "ArtifactStoreShape"
+            "RetrievalQueryError"
           ],
           "kind": "type"
         }
       ],
       "exports": [],
-      "hash": "d8b7ccaa7c58cd82f493ea46c1b11ce52afe031edfed58bc6b54c1788e96d4c4",
-      "mtimeMs": 1784415615107.9412,
-      "size": 4710,
+      "hash": "da128bd8bc51b86e3222a241af01c3d28ffc0247d78b38302a754ce55c142924",
+      "mtimeMs": 1784419587358.5972,
+      "size": 7036,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -752,52 +777,60 @@
         {
           "name": "ResearchPayload",
           "kind": "interface",
-          "line": 12,
+          "line": 13,
           "exported": false,
-          "endLine": 12
+          "endLine": 13
         },
         {
           "name": "ResearchWorkerDeps",
           "kind": "interface",
-          "line": 17,
+          "line": 18,
           "exported": true,
-          "endLine": 17
+          "endLine": 18
         },
         {
           "name": "decodePayload",
           "kind": "function",
-          "line": 65,
+          "line": 63,
           "exported": false,
-          "endLine": 65
+          "endLine": 63
         },
         {
           "name": "event",
           "kind": "function",
-          "line": 100,
+          "line": 98,
           "exported": false,
-          "endLine": 100
+          "endLine": 98
         },
         {
           "name": "citationsFor",
           "kind": "function",
-          "line": 118,
+          "line": 116,
           "exported": false,
-          "endLine": 118
+          "endLine": 116
         },
         {
           "name": "safeFailureTag",
           "kind": "function",
-          "line": 133,
+          "line": 131,
           "exported": false,
-          "endLine": 133,
+          "endLine": 131,
+          "signature": "(error: unknown)"
+        },
+        {
+          "name": "isOwnershipLost",
+          "kind": "function",
+          "line": 137,
+          "exported": false,
+          "endLine": 137,
           "signature": "(error: unknown)"
         },
         {
           "name": "processOneResearchJob",
           "kind": "const",
-          "line": 139,
+          "line": 147,
           "exported": true,
-          "endLine": 139
+          "endLine": 147
         }
       ],
       "imports": [
@@ -810,12 +843,20 @@
             "Schema"
           ],
           "kind": "static"
+        },
+        {
+          "source": "ResearchJobOwnershipLostError",
+          "specifier": "@struct/persistence",
+          "imported": [
+            "ResearchJobOwnershipLostError"
+          ],
+          "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "1691c0aadf9cbdb40914c8643134f7a5257da31c5beaedc6dfff173328ce9b49",
-      "mtimeMs": 1784414820617.089,
-      "size": 6489,
+      "hash": "7db591d84f4b9ed06dc85777f340b6fae224ef9cb089ac499f5a87d3cdc0a7ee",
+      "mtimeMs": 1784417628271.2778,
+      "size": 6985,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -827,9 +868,9 @@
         {
           "name": "program",
           "kind": "const",
-          "line": 42,
+          "line": 41,
           "exported": false,
-          "endLine": 42
+          "endLine": 41
         }
       ],
       "imports": [
@@ -926,9 +967,9 @@
         }
       ],
       "exports": [],
-      "hash": "49bf7d670f56e5967338e37c83e29aae2f356a33ae7d1363776ded8d143e046a",
-      "mtimeMs": 1784414824192.095,
-      "size": 8175,
+      "hash": "37f5bf15235542b8a3ac0f796e65290c95007e4e05cf97f8b36b5994bae9f55f",
+      "mtimeMs": 1784420572656.6167,
+      "size": 8108,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1583,39 +1624,61 @@
           "signature": "(signal: AbortSignal)"
         },
         {
+          "name": "EMERGENCY_SHUTDOWN_MS",
+          "kind": "const",
+          "line": 57,
+          "exported": false,
+          "endLine": 57
+        },
+        {
           "name": "boundedShutdown",
           "kind": "function",
-          "line": 54,
+          "line": 59,
           "exported": false,
-          "endLine": 54
+          "endLine": 59
+        },
+        {
+          "name": "createFredBeforeDeadline",
+          "kind": "function",
+          "line": 78,
+          "exported": false,
+          "endLine": 78
+        },
+        {
+          "name": "shutdownWithinDeadline",
+          "kind": "function",
+          "line": 130,
+          "exported": false,
+          "endLine": 130
         },
         {
           "name": "defaultFactory",
           "kind": "const",
-          "line": 73,
+          "line": 146,
           "exported": false,
-          "endLine": 73
+          "endLine": 146
         },
         {
           "name": "preflightFredRuntime",
           "kind": "const",
-          "line": 105,
+          "line": 178,
           "exported": true,
-          "endLine": 105
+          "endLine": 178
         },
         {
           "name": "runFredWalkingSkeleton",
           "kind": "const",
-          "line": 132,
+          "line": 230,
           "exported": true,
-          "endLine": 132
+          "endLine": 230
         }
       ],
       "imports": [
         {
-          "source": "Config, Effect, Runtime, Schema",
+          "source": "Clock, Config, Effect, Runtime, Schema",
           "specifier": "effect",
           "imported": [
+            "Clock",
             "Config",
             "Effect",
             "Runtime",
@@ -1643,9 +1706,9 @@
         }
       ],
       "exports": [],
-      "hash": "2703cad8ced424e1a7e8a7a6861865f3cde1fa1f23b54ffbf09d1933e51c4e4c",
-      "mtimeMs": 1784415596778.114,
-      "size": 6577,
+      "hash": "41bf75a3450887935719ff5cef4fb672d8d0fed1b87e221b4a8a4b1e613ec0d8",
+      "mtimeMs": 1784419311180.3796,
+      "size": 10007,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2014,11 +2077,35 @@
           "doc": "Error when a unique constraint is violated (e.g., duplicate insert)."
         },
         {
+          "name": "ResearchJobOwnershipLostError",
+          "kind": "class",
+          "line": 42,
+          "exported": true,
+          "endLine": 42,
+          "doc": "Expected lease-loss outcome when a stale research worker no longer owns the\nin-progress job row needed for an event or terminal transition."
+        },
+        {
+          "name": "IngestionJobOwnershipLostError",
+          "kind": "class",
+          "line": 52,
+          "exported": true,
+          "endLine": 52,
+          "doc": "Expected lease-loss outcome when an ingestion worker's claimed attempt no\nlonger owns the in-progress job row."
+        },
+        {
+          "name": "SourceTextReindexOwnershipLostError",
+          "kind": "class",
+          "line": 64,
+          "exported": true,
+          "endLine": 64,
+          "doc": "Expected lease-loss outcome when a source-text reindex worker's claimed\nattempt no longer owns the in-progress reindex row."
+        },
+        {
           "name": "PersistenceError",
           "kind": "type",
-          "line": 41,
+          "line": 75,
           "exported": true,
-          "endLine": 41,
+          "endLine": 75,
           "doc": "Union of all persistence errors."
         }
       ],
@@ -2033,9 +2120,9 @@
         }
       ],
       "exports": [],
-      "hash": "fbc51adc6dc41fe1c4e3e5c56f5ab304d5fefdc1916dab989364530c9ae2f27a",
-      "mtimeMs": 1784353507016.2988,
-      "size": 1127,
+      "hash": "f0e379c7b83aa07ed4d61827464243fabdf6c0befdee5f7bec770ac9242549ae",
+      "mtimeMs": 1784419451255.2312,
+      "size": 2560,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2079,9 +2166,9 @@
           "kind": "reexport"
         }
       ],
-      "hash": "a449760ffa1b80e5f460edc654f5433346b9c83d64649806b39c333d240f523e",
-      "mtimeMs": 1784414703668.8984,
-      "size": 2403,
+      "hash": "716e00020300e378e8ccacac501391ebb14156eaff69f944d074b50f95a83f35",
+      "mtimeMs": 1784418644529.9114,
+      "size": 2562,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2541,215 +2628,215 @@
         {
           "name": "WorkspaceRepository",
           "kind": "interface",
-          "line": 40,
+          "line": 44,
           "exported": true,
-          "endLine": 40
+          "endLine": 44
         },
         {
           "name": "WorkspaceRepo",
           "kind": "class",
-          "line": 46,
+          "line": 50,
           "exported": true,
-          "endLine": 46
+          "endLine": 50
         },
         {
           "name": "makeWorkspaceRepositoryImpl",
           "kind": "function",
-          "line": 54,
+          "line": 58,
           "exported": false,
-          "endLine": 54,
+          "endLine": 58,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "ProjectRepository",
           "kind": "interface",
-          "line": 124,
+          "line": 128,
           "exported": true,
-          "endLine": 124
+          "endLine": 128
         },
         {
           "name": "ProjectRepo",
           "kind": "class",
-          "line": 130,
+          "line": 134,
           "exported": true,
-          "endLine": 130
+          "endLine": 134
         },
         {
           "name": "makeProjectRepositoryImpl",
           "kind": "function",
-          "line": 138,
+          "line": 142,
           "exported": false,
-          "endLine": 138,
+          "endLine": 142,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "SourceRepository",
           "kind": "interface",
-          "line": 208,
+          "line": 212,
           "exported": true,
-          "endLine": 208
+          "endLine": 212
         },
         {
           "name": "SourceRepo",
           "kind": "class",
-          "line": 214,
+          "line": 218,
           "exported": true,
-          "endLine": 214
+          "endLine": 218
         },
         {
           "name": "makeSourceRepositoryImpl",
           "kind": "function",
-          "line": 222,
+          "line": 226,
           "exported": false,
-          "endLine": 222,
+          "endLine": 226,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "SourceVersionRepository",
           "kind": "interface",
-          "line": 292,
+          "line": 296,
           "exported": true,
-          "endLine": 292
+          "endLine": 296
         },
         {
           "name": "SourceVersionRepo",
           "kind": "class",
-          "line": 298,
+          "line": 306,
           "exported": true,
-          "endLine": 298
+          "endLine": 306
         },
         {
           "name": "makeSourceVersionRepositoryImpl",
           "kind": "function",
-          "line": 306,
+          "line": 314,
           "exported": false,
-          "endLine": 306,
+          "endLine": 314,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "ResearchThreadRepository",
           "kind": "interface",
-          "line": 376,
+          "line": 437,
           "exported": true,
-          "endLine": 376
+          "endLine": 437
         },
         {
           "name": "ResearchThreadRepo",
           "kind": "class",
-          "line": 382,
+          "line": 443,
           "exported": true,
-          "endLine": 382
+          "endLine": 443
         },
         {
           "name": "makeResearchThreadRepositoryImpl",
           "kind": "function",
-          "line": 390,
+          "line": 451,
           "exported": false,
-          "endLine": 390,
+          "endLine": 451,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "ResearchRunRepository",
           "kind": "interface",
-          "line": 460,
+          "line": 521,
           "exported": true,
-          "endLine": 460
+          "endLine": 521
         },
         {
           "name": "ResearchRunRepo",
           "kind": "class",
-          "line": 467,
+          "line": 528,
           "exported": true,
-          "endLine": 467
+          "endLine": 528
         },
         {
           "name": "makeResearchRunRepositoryImpl",
           "kind": "function",
-          "line": 475,
+          "line": 536,
           "exported": false,
-          "endLine": 475,
+          "endLine": 536,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "CitationRepository",
           "kind": "interface",
-          "line": 568,
+          "line": 629,
           "exported": true,
-          "endLine": 568
+          "endLine": 629
         },
         {
           "name": "CitationRepo",
           "kind": "class",
-          "line": 575,
+          "line": 636,
           "exported": true,
-          "endLine": 575
+          "endLine": 636
         },
         {
           "name": "makeCitationRepositoryImpl",
           "kind": "function",
-          "line": 583,
+          "line": 644,
           "exported": false,
-          "endLine": 583,
+          "endLine": 644,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "JobQueueRepository",
           "kind": "interface",
-          "line": 676,
+          "line": 737,
           "exported": true,
-          "endLine": 676
+          "endLine": 737
         },
         {
           "name": "JobQueueRepo",
           "kind": "class",
-          "line": 686,
+          "line": 748,
           "exported": true,
-          "endLine": 686
+          "endLine": 748
         },
         {
           "name": "decodeJobRows",
           "kind": "function",
-          "line": 694,
+          "line": 756,
           "exported": false,
-          "endLine": 694,
+          "endLine": 756,
           "signature": "(rows: readonly Record<string, unknown>[], operation: string)"
         },
         {
           "name": "makeJobQueueRepositoryImpl",
           "kind": "function",
-          "line": 706,
+          "line": 768,
           "exported": false,
-          "endLine": 706,
+          "endLine": 768,
           "signature": "(sql: import('../sql-client.js')"
         },
         {
           "name": "EventJournalRepository",
           "kind": "interface",
-          "line": 801,
+          "line": 983,
           "exported": true,
-          "endLine": 801
+          "endLine": 983
         },
         {
           "name": "EventJournalRepo",
           "kind": "class",
-          "line": 806,
+          "line": 988,
           "exported": true,
-          "endLine": 806
+          "endLine": 988
         },
         {
           "name": "decodeEventRows",
           "kind": "function",
-          "line": 814,
+          "line": 996,
           "exported": false,
-          "endLine": 814,
+          "endLine": 996,
           "signature": "(rows: readonly Record<string, unknown>[], operation: string)"
         },
         {
           "name": "makeEventJournalRepositoryImpl",
           "kind": "function",
-          "line": 826,
+          "line": 1008,
           "exported": false,
-          "endLine": 826,
+          "endLine": 1008,
           "signature": "(sql: import('../sql-client.js')"
         }
       ],
@@ -2780,15 +2867,6 @@
           "kind": "static"
         },
         {
-          "source": "QueryError, EntityNotFoundError",
-          "specifier": "../errors.js",
-          "imported": [
-            "QueryError",
-            "EntityNotFoundError"
-          ],
-          "kind": "static"
-        },
-        {
           "source": "",
           "specifier": "../sql-client.js",
           "kind": "dynamic"
@@ -2835,9 +2913,9 @@
         }
       ],
       "exports": [],
-      "hash": "c901caa3e041a7897b641b48ac3d8769d7e835b36709a60419d5ef28a191e8de",
-      "mtimeMs": 1784394237605.0413,
-      "size": 38108,
+      "hash": "a04834fea0b2ea8b296669ece5b55b0d8757235e6e58f971da0a0209a603d47c",
+      "mtimeMs": 1784420934511.6946,
+      "size": 44847,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2849,58 +2927,65 @@
         {
           "name": "ResearchRegistrationInput",
           "kind": "interface",
-          "line": 27,
+          "line": 31,
           "exported": true,
-          "endLine": 27
+          "endLine": 31
         },
         {
           "name": "ResearchRegistrationResult",
           "kind": "interface",
-          "line": 37,
+          "line": 41,
           "exported": true,
-          "endLine": 37
+          "endLine": 41
         },
         {
           "name": "CompleteResearchInput",
           "kind": "interface",
-          "line": 44,
+          "line": 48,
           "exported": true,
-          "endLine": 44
+          "endLine": 48
         },
         {
           "name": "FailResearchInput",
           "kind": "interface",
-          "line": 52,
+          "line": 56,
           "exported": true,
-          "endLine": 52
+          "endLine": 56
         },
         {
           "name": "ResearchScopeMismatchError",
           "kind": "class",
-          "line": 58,
+          "line": 62,
           "exported": false,
-          "endLine": 58
+          "endLine": 62
+        },
+        {
+          "name": "ownershipLost",
+          "kind": "function",
+          "line": 64,
+          "exported": false,
+          "endLine": 64
         },
         {
           "name": "persistenceDecodeError",
           "kind": "function",
-          "line": 60,
+          "line": 73,
           "exported": false,
-          "endLine": 60
+          "endLine": 73
         },
         {
           "name": "ResearchExecutionRepo",
           "kind": "class",
-          "line": 71,
+          "line": 84,
           "exported": true,
-          "endLine": 71
+          "endLine": 84
         },
         {
           "name": "ResearchExecutionError",
           "kind": "type",
-          "line": 498,
+          "line": 517,
           "exported": true,
-          "endLine": 498
+          "endLine": 517
         }
       ],
       "imports": [
@@ -2922,15 +3007,6 @@
           "kind": "static"
         },
         {
-          "source": "QueryError, type PersistenceError",
-          "specifier": "../errors.js",
-          "imported": [
-            "QueryError",
-            "typePersistenceError"
-          ],
-          "kind": "static"
-        },
-        {
           "source": "SqlClient",
           "specifier": "../sql-client.js",
           "imported": [
@@ -2945,9 +3021,9 @@
         }
       ],
       "exports": [],
-      "hash": "786574ebb637edec67b0c3f9808cfdecc4a969d04a04143cf40c9ae25aa0e4df",
-      "mtimeMs": 1784414820616.8062,
-      "size": 18600,
+      "hash": "420c65ab96ab09f9867b719bfec957f394644299d77a6af680730849544d512d",
+      "mtimeMs": 1784417628270.9387,
+      "size": 19103,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3037,38 +3113,38 @@
         {
           "name": "SourceTextReindexStatus",
           "kind": "const",
-          "line": 10,
+          "line": 13,
           "exported": true,
-          "endLine": 10
+          "endLine": 13
         },
         {
           "name": "SourceTextReindexJob",
           "kind": "interface",
-          "line": 17,
+          "line": 20,
           "exported": true,
-          "endLine": 17
+          "endLine": 20
         },
         {
           "name": "SourceTextReindexRow",
           "kind": "const",
-          "line": 28,
+          "line": 31,
           "exported": false,
-          "endLine": 28
+          "endLine": 31
         },
         {
           "name": "decodeJob",
           "kind": "function",
-          "line": 39,
+          "line": 42,
           "exported": false,
-          "endLine": 39,
+          "endLine": 42,
           "signature": "(row: unknown)"
         },
         {
           "name": "SourceTextReindexRepo",
           "kind": "class",
-          "line": 61,
+          "line": 64,
           "exported": true,
-          "endLine": 61
+          "endLine": 64
         }
       ],
       "imports": [
@@ -3083,14 +3159,6 @@
           "kind": "static"
         },
         {
-          "source": "QueryError",
-          "specifier": "../errors.js",
-          "imported": [
-            "QueryError"
-          ],
-          "kind": "static"
-        },
-        {
           "source": "SqlClient",
           "specifier": "../sql-client.js",
           "imported": [
@@ -3100,9 +3168,9 @@
         }
       ],
       "exports": [],
-      "hash": "4c4bcc8a80921696e80d59ca13d599875dcab75ae8795635f737bb78e867ce8b",
-      "mtimeMs": 1784415615108.2407,
-      "size": 6282,
+      "hash": "e9d9c655d3bce53ed2761084f6634a5e4d7aa9dca71507fb4b8a80e2f45b8742",
+      "mtimeMs": 1784418595746.637,
+      "size": 6398,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3266,145 +3334,189 @@
         {
           "name": "TextSearchRequest",
           "kind": "const",
-          "line": 11,
+          "line": 14,
           "exported": true,
-          "endLine": 11
+          "endLine": 14
         },
         {
           "name": "TextSearchRequest",
           "kind": "type",
-          "line": 18,
+          "line": 21,
           "exported": true,
-          "endLine": 18
+          "endLine": 21
         },
         {
           "name": "TextSearchResult",
           "kind": "const",
-          "line": 20,
-          "exported": true,
-          "endLine": 20
-        },
-        {
-          "name": "TextSearchResult",
-          "kind": "type",
           "line": 23,
           "exported": true,
           "endLine": 23
         },
         {
+          "name": "TextSearchResult",
+          "kind": "type",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
           "name": "IndexTextInput",
           "kind": "interface",
-          "line": 25,
+          "line": 28,
           "exported": true,
-          "endLine": 25
+          "endLine": 28
         },
         {
           "name": "SearchRow",
           "kind": "interface",
-          "line": 38,
+          "line": 41,
           "exported": false,
-          "endLine": 38
+          "endLine": 41
         },
         {
           "name": "MAX_EXCERPT_CHARS",
-          "kind": "const",
-          "line": 46,
-          "exported": false,
-          "endLine": 46
-        },
-        {
-          "name": "MAX_CONTEXT_CHARS_PER_SIDE",
-          "kind": "const",
-          "line": 47,
-          "exported": false,
-          "endLine": 47
-        },
-        {
-          "name": "MATCH_START",
-          "kind": "const",
-          "line": 48,
-          "exported": false,
-          "endLine": 48
-        },
-        {
-          "name": "MATCH_END",
-          "kind": "const",
-          "line": 49,
-          "exported": false,
-          "endLine": 49
-        },
-        {
-          "name": "OMITTED_SOURCE",
           "kind": "const",
           "line": 50,
           "exported": false,
           "endLine": 50
         },
         {
-          "name": "MatchPassage",
-          "kind": "interface",
+          "name": "MAX_CONTEXT_CHARS_PER_SIDE",
+          "kind": "const",
+          "line": 51,
+          "exported": false,
+          "endLine": 51
+        },
+        {
+          "name": "MATCH_START",
+          "kind": "const",
           "line": 52,
           "exported": false,
           "endLine": 52
         },
         {
+          "name": "MATCH_END",
+          "kind": "const",
+          "line": 53,
+          "exported": false,
+          "endLine": 53
+        },
+        {
+          "name": "OMITTED_SOURCE",
+          "kind": "const",
+          "line": 54,
+          "exported": false,
+          "endLine": 54
+        },
+        {
+          "name": "MatchPassage",
+          "kind": "interface",
+          "line": 56,
+          "exported": false,
+          "endLine": 56
+        },
+        {
           "name": "MatchRange",
           "kind": "interface",
-          "line": 57,
+          "line": 61,
           "exported": false,
-          "endLine": 57
+          "endLine": 61
         },
         {
           "name": "SourceRange",
           "kind": "interface",
-          "line": 64,
+          "line": 68,
           "exported": false,
-          "endLine": 64
+          "endLine": 68
         },
         {
           "name": "fallbackExcerpt",
           "kind": "function",
-          "line": 70,
+          "line": 74,
           "exported": false,
-          "endLine": 70,
+          "endLine": 74,
           "signature": "(content: string, matchLine: number)"
         },
         {
           "name": "decodeMatchPassages",
           "kind": "function",
-          "line": 85,
+          "line": 89,
           "exported": false,
-          "endLine": 85,
+          "endLine": 89,
           "signature": "(value: unknown)"
         },
         {
           "name": "matchRanges",
           "kind": "function",
-          "line": 98,
+          "line": 102,
           "exported": false,
-          "endLine": 98
+          "endLine": 102
         },
         {
           "name": "mergeRanges",
           "kind": "function",
-          "line": 155,
+          "line": 167,
           "exported": false,
-          "endLine": 155,
+          "endLine": 167,
           "signature": "(ranges: ReadonlyArray<SourceRange>)"
         },
         {
-          "name": "matchedExcerpt",
-          "kind": "function",
-          "line": 172,
+          "name": "LocatedExcerpt",
+          "kind": "interface",
+          "line": 184,
           "exported": false,
-          "endLine": 172
+          "endLine": 184
+        },
+        {
+          "name": "compactCandidate",
+          "kind": "function",
+          "line": 190,
+          "exported": false,
+          "endLine": 190
+        },
+        {
+          "name": "lineOffsets",
+          "kind": "function",
+          "line": 229,
+          "exported": false,
+          "endLine": 229,
+          "signature": "(lines: ReadonlyArray<string>)"
+        },
+        {
+          "name": "contiguousLocator",
+          "kind": "function",
+          "line": 239,
+          "exported": false,
+          "endLine": 239
+        },
+        {
+          "name": "boundedSourceWindow",
+          "kind": "function",
+          "line": 272,
+          "exported": false,
+          "endLine": 272
+        },
+        {
+          "name": "boundedLineWindow",
+          "kind": "function",
+          "line": 294,
+          "exported": false,
+          "endLine": 294,
+          "signature": "(line: string, lineIndex: number, match: MatchRange)"
+        },
+        {
+          "name": "matchedExcerptCandidates",
+          "kind": "function",
+          "line": 308,
+          "exported": false,
+          "endLine": 308
         },
         {
           "name": "TextRetrieval",
           "kind": "class",
-          "line": 233,
+          "line": 396,
           "exported": true,
-          "endLine": 233
+          "endLine": 396
         }
       ],
       "imports": [
@@ -3416,20 +3528,12 @@
             "Schema"
           ],
           "kind": "static"
-        },
-        {
-          "source": "SqlClient",
-          "specifier": "@struct/persistence",
-          "imported": [
-            "SqlClient"
-          ],
-          "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "9e2d1db1921b122085ce618c5cc4c7b92346343e204981afd7b992439cb40758",
-      "mtimeMs": 1784416916026.2102,
-      "size": 17024,
+      "hash": "3b96025e0912805247474e778c8a59f7557cb2a0617aeb65a5450589fc2c9511",
+      "mtimeMs": 1784420934511.2268,
+      "size": 25697,
       "generated": false,
       "vendor": false,
       "parser": "regex"

@@ -38,6 +38,23 @@ const distantTermsSourceId = SourceId.make('f50e8400-e29b-41d4-a716-446655440006
 const distantTermsSourceVersionId = SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440007')
 const longLineSourceId = SourceId.make('f50e8400-e29b-41d4-a716-446655440008')
 const longLineSourceVersionId = SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440009')
+const repeatedPhraseSourceId = SourceId.make('f50e8400-e29b-41d4-a716-44665544000a')
+const repeatedPhraseSourceVersionId =
+  SourceVersionId.make('f50e8400-e29b-41d4-a716-44665544000b')
+const frequentTermSourceId = SourceId.make('f50e8400-e29b-41d4-a716-44665544000c')
+const frequentTermSourceVersionId =
+  SourceVersionId.make('f50e8400-e29b-41d4-a716-44665544000d')
+const frequentPhraseSourceId = SourceId.make('f50e8400-e29b-41d4-a716-44665544000e')
+const frequentPhraseSourceVersionId =
+  SourceVersionId.make('f50e8400-e29b-41d4-a716-44665544000f')
+const adversarialPhraseSourceId =
+  SourceId.make('f50e8400-e29b-41d4-a716-446655440010')
+const adversarialPhraseSourceVersionId =
+  SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440011')
+const repeatedCrossLineSourceId =
+  SourceId.make('f50e8400-e29b-41d4-a716-446655440012')
+const repeatedCrossLineSourceVersionId =
+  SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440013')
 const distantTermsContent = [
   'Prologue',
   'alpha',
@@ -52,6 +69,18 @@ const distantTermsContent = [
   'Epilogue',
 ].join('\n')
 const longLineContent = `${'prefix '.repeat(220)}lateanchor trailing context`
+const adversarialPhraseContent = [
+  'alpha isolated early',
+  ...Array.from({ length: 9 }, (_, index) => `filler ${index} ${'x'.repeat(36)}`),
+  'omega isolated early',
+  ...Array.from({ length: 18 }, (_, index) => `bridge ${index} ${'y'.repeat(36)}`),
+  'alpha',
+  'omega',
+].join('\n')
+const repeatedCrossLineFirst = `${'x'.repeat(1300)} alpha`
+const repeatedCrossLineSecond = `alpha ${'y'.repeat(1300)}`
+const repeatedCrossLineContent =
+  `${repeatedCrossLineFirst}\n${repeatedCrossLineSecond}`
 
 async function cleanup(sql: postgresTypes.Sql): Promise<void> {
   await sql.unsafe(`DELETE FROM event_journal WHERE workspace_id = $1`, [workspaceId])
@@ -61,10 +90,20 @@ async function cleanup(sql: postgresTypes.Sql): Promise<void> {
     [projectId],
   )
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [longLineSourceId])
+  await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [repeatedCrossLineSourceId])
+  await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [adversarialPhraseSourceId])
+  await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [frequentPhraseSourceId])
+  await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [frequentTermSourceId])
+  await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [repeatedPhraseSourceId])
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [distantTermsSourceId])
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [crossLineSourceId])
   await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [sourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [longLineSourceId])
+  await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [repeatedCrossLineSourceId])
+  await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [adversarialPhraseSourceId])
+  await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [frequentPhraseSourceId])
+  await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [frequentTermSourceId])
+  await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [repeatedPhraseSourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [distantTermsSourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [crossLineSourceId])
   await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [sourceId])
@@ -148,6 +187,93 @@ describeIf('research walking slice real DB integration', () => {
       [longLineSourceVersionId, longLineContent],
     )
     await sql.unsafe(
+      `INSERT INTO sources (id, project_id, name, kind)
+       VALUES ($1, $2, 'repeated-phrase.txt', 'document')`,
+      [repeatedPhraseSourceId, projectId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_versions (id, source_id, version, artifact_ref, content_hash)
+       VALUES ($1, $2, 1, 'artifact://sha256/repeated-phrase', 'sha256:repeated-phrase')`,
+      [repeatedPhraseSourceVersionId, repeatedPhraseSourceId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_text_index (source_version_id, content)
+       VALUES ($1, $2)`,
+      [
+        repeatedPhraseSourceVersionId,
+        [
+          'alpha isolated',
+          'filler one',
+          'omega isolated',
+          'filler two',
+          'filler three',
+          'filler four',
+          'filler five',
+          'filler six',
+          'filler seven',
+          'alpha omega phrase',
+        ].join('\n'),
+      ],
+    )
+    await sql.unsafe(
+      `INSERT INTO sources (id, project_id, name, kind)
+       VALUES ($1, $2, 'frequent-term.txt', 'document'),
+              ($3, $2, 'frequent-phrase.txt', 'document')`,
+      [frequentTermSourceId, projectId, frequentPhraseSourceId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_versions (id, source_id, version, artifact_ref, content_hash)
+       VALUES ($1, $2, 1, 'artifact://sha256/frequent-term', 'sha256:frequent-term'),
+              ($3, $4, 1, 'artifact://sha256/frequent-phrase', 'sha256:frequent-phrase')`,
+      [
+        frequentTermSourceVersionId,
+        frequentTermSourceId,
+        frequentPhraseSourceVersionId,
+        frequentPhraseSourceId,
+      ],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_text_index (source_version_id, content)
+       VALUES ($1, $2), ($3, $4)`,
+      [
+        frequentTermSourceVersionId,
+        Array.from({ length: 400 }, () => 'alpha').join('\n'),
+        frequentPhraseSourceVersionId,
+        'alpha omega '.repeat(300).trim(),
+      ],
+    )
+    await sql.unsafe(
+      `INSERT INTO sources (id, project_id, name, kind)
+       VALUES
+         ($1, $3, 'adversarial-phrase.txt', 'document'),
+         ($2, $3, 'repeated-cross-line.txt', 'document')`,
+      [adversarialPhraseSourceId, repeatedCrossLineSourceId, projectId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_versions (
+         id, source_id, version, artifact_ref, content_hash
+       )
+       VALUES
+         ($1, $2, 1, 'artifact://sha256/adversarial-phrase', 'sha256:adversarial-phrase'),
+         ($3, $4, 1, 'artifact://sha256/repeated-cross-line', 'sha256:repeated-cross-line')`,
+      [
+        adversarialPhraseSourceVersionId,
+        adversarialPhraseSourceId,
+        repeatedCrossLineSourceVersionId,
+        repeatedCrossLineSourceId,
+      ],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_text_index (source_version_id, content)
+       VALUES ($1, $2), ($3, $4)`,
+      [
+        adversarialPhraseSourceVersionId,
+        adversarialPhraseContent,
+        repeatedCrossLineSourceVersionId,
+        repeatedCrossLineContent,
+      ],
+    )
+    await sql.unsafe(
       `UPDATE source_text_reindex_jobs
        SET status = 'completed', updated_at = NOW()
        WHERE project_id = $1`,
@@ -206,10 +332,6 @@ describeIf('research walking slice real DB integration', () => {
           ),
         claimNext: () =>
           ResearchExecutionRepo.claimNext().pipe(Effect.provide(executionLayer)),
-        appendEvent: (event) =>
-          ResearchExecutionRepo.appendEvent(event).pipe(
-            Effect.provide(executionLayer),
-          ),
         appendInProgressEvent: (jobId, event) =>
           ResearchExecutionRepo.appendInProgressEvent(jobId, event).pipe(
             Effect.provide(executionLayer),
@@ -387,6 +509,125 @@ describeIf('research walking slice real DB integration', () => {
     expect(result.evidence[0]?.excerpt).toContain('launch\nwindow')
   })
 
+  it('preserves the supported phrase occurrence after earlier isolated lexemes', async () => {
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, SqlClientLive(sql))
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [repeatedPhraseSourceVersionId],
+        query: '"alpha omega"',
+        limit: 1,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+
+    expect(result.evidence).toHaveLength(1)
+    expect(result.evidence[0]).toMatchObject({
+      sourceVersionId: repeatedPhraseSourceVersionId,
+      locator: 'lines:10-10',
+      excerpt: 'alpha omega phrase',
+    })
+  })
+
+  it('cites the real adjacent source coordinates instead of isolated earlier lexemes', async () => {
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, SqlClientLive(sql))
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [adversarialPhraseSourceVersionId],
+        query: '"alpha omega"',
+        limit: 1,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+
+    const evidence = result.evidence[0]!
+    expect(evidence.excerpt).toContain('alpha\nomega')
+    expect(evidence.locator).not.toMatch(/lines?:1(?:\D|$)/)
+    expect(evidence.locator).not.toMatch(/lines?:11(?:\D|$)/)
+    expect(evidence.locator).toMatch(/30/)
+    expect(evidence.locator).toMatch(/31/)
+  })
+
+  it('keeps a repeated-lexeme phrase across adjacent long lines bounded and exact', async () => {
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, SqlClientLive(sql))
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [repeatedCrossLineSourceVersionId],
+        query: '"alpha alpha"',
+        limit: 1,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+
+    const evidence = result.evidence[0]!
+    const locator =
+      /^line:1,chars:(\d+)-(\d+);line:2,chars:(\d+)-(\d+)$/.exec(evidence.locator)
+    expect(locator).not.toBeNull()
+    expect(evidence.excerpt).toBe([
+      repeatedCrossLineFirst.slice(Number(locator?.[1]) - 1, Number(locator?.[2])),
+      repeatedCrossLineSecond.slice(Number(locator?.[3]) - 1, Number(locator?.[4])),
+    ].join('\n'))
+    expect(evidence.excerpt).toContain('alpha\nalpha')
+    expect(evidence.excerpt.length).toBeLessThanOrEqual(1200)
+  })
+
+  it('bounds high-frequency single-term evidence while preserving exact grounding', async () => {
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, SqlClientLive(sql))
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [frequentTermSourceVersionId],
+        query: 'alpha',
+        limit: 1,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+
+    const evidence = result.evidence[0]!
+    expect(evidence.sourceVersionId).toBe(frequentTermSourceVersionId)
+    expect(evidence.excerpt).toContain('alpha')
+    expect(evidence.excerpt.length).toBeLessThanOrEqual(1200)
+    await expect(
+      Effect.runPromise(validateAnswerCitations({
+        answer: evidence.excerpt,
+        citations: [{
+          sourceVersionId: evidence.sourceVersionId,
+          locator: evidence.locator,
+        }],
+      }, result.evidence)),
+    ).resolves.toMatchObject({ citations: [{ locator: evidence.locator }] })
+  })
+
+  it('bounds high-frequency phrase evidence while preserving phrase support and exact grounding', async () => {
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, SqlClientLive(sql))
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [frequentPhraseSourceVersionId],
+        query: '"alpha omega"',
+        limit: 1,
+      }).pipe(Effect.provide(retrievalLayer)),
+    )
+
+    const evidence = result.evidence[0]!
+    expect(evidence.sourceVersionId).toBe(frequentPhraseSourceVersionId)
+    expect(evidence.excerpt).toContain('alpha omega')
+    expect(evidence.excerpt.length).toBeLessThanOrEqual(1200)
+    expect(evidence.locator).toMatch(/^line:1,chars:/)
+    await expect(
+      Effect.runPromise(validateAnswerCitations({
+        answer: evidence.excerpt,
+        citations: [{
+          sourceVersionId: evidence.sourceVersionId,
+          locator: evidence.locator,
+        }],
+      }, result.evidence)),
+    ).resolves.toMatchObject({ citations: [{ locator: evidence.locator }] })
+  })
+
   it('keeps every distant required term in one bounded evidence row with exact citation grounding', async () => {
     const retrievalLayer = Layer.provide(TextRetrieval.Default, SqlClientLive(sql))
     const result = await Effect.runPromise(
@@ -437,7 +678,8 @@ describeIf('research walking slice real DB integration', () => {
     expect(locator).not.toBeNull()
     const start = Number(locator?.[1])
     const end = Number(locator?.[2])
-    expect(start).toBeGreaterThan(1200)
+    expect(start).toBeGreaterThan(0)
+    expect(end).toBeGreaterThan(1200)
     expect(evidence.excerpt).toContain('lateanchor')
     expect(evidence.excerpt).toBe(longLineContent.slice(start - 1, end))
     expect(evidence.excerpt.length).toBeLessThanOrEqual(1200)
@@ -587,6 +829,135 @@ describeIf('research walking slice real DB integration', () => {
       'research-failed',
     ])
     expect(events[1]?.['payload']).toMatchObject({
+      errorTag: 'ResearchJobStaleError',
+      message: 'Research failed',
+    })
+  })
+
+  it('keeps polling after stale recovery fences citations and completion', async () => {
+    const sqlLayer = SqlClientLive(sql)
+    const executionLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
+    const runLayer = Layer.provide(ResearchRunRepo.Default, sqlLayer)
+    const staleRunId = ResearchRunId.make('f50e8400-e29b-41d4-a716-446655440015')
+    const staleJobId = JobQueueId.make('f50e8400-e29b-41d4-a716-446655440025')
+
+    await Effect.runPromise(startResearch({
+      workspaceId,
+      projectId,
+      sourceVersionIds: [sourceVersionId],
+      question: 'Can a stale worker append validated citations?',
+    }, {
+      now: () => BigInt(Date.now()),
+      randomThreadId: () =>
+        ResearchThreadId.make('f50e8400-e29b-41d4-a716-446655440035'),
+      randomRunId: () => staleRunId,
+      randomJobId: () => staleJobId,
+      randomEventId: () =>
+        EventJournalId.make('f50e8400-e29b-41d4-a716-446655440045'),
+      register: (input) =>
+        ResearchExecutionRepo.register(input).pipe(Effect.provide(executionLayer)),
+    }))
+
+    const process = () => processOneResearchJob({
+      now: () => BigInt(Date.now()),
+      staleBeforeMs: Date.now() - 300_000,
+      randomEventId: () => EventJournalId.make(crypto.randomUUID()),
+      randomCitationId: () => CitationId.make(crypto.randomUUID()),
+      jobs: {
+        recoverStale: (staleBeforeMs) =>
+          ResearchExecutionRepo.recoverStale(staleBeforeMs).pipe(
+            Effect.provide(executionLayer),
+          ),
+        claimNext: () =>
+          ResearchExecutionRepo.claimNext().pipe(Effect.provide(executionLayer)),
+        appendInProgressEvent: (jobId, researchEvent) =>
+          ResearchExecutionRepo.appendInProgressEvent(jobId, researchEvent).pipe(
+            Effect.provide(executionLayer),
+          ),
+        complete: (input) =>
+          ResearchExecutionRepo.complete(input).pipe(Effect.provide(executionLayer)),
+        fail: (input) =>
+          ResearchExecutionRepo.fail(input).pipe(Effect.provide(executionLayer)),
+      },
+      runs: {
+        findById: (id) => ResearchRunRepo.findById(id).pipe(Effect.provide(runLayer)),
+      },
+      workflow: {
+        run: ({ onRetrievalCompleted }) =>
+          Effect.gen(function* () {
+            const retrieved = [{
+              sourceVersionId,
+              locator: 'lines:1-1',
+              excerpt: 'The launch date is July 18.',
+              rank: 1,
+            }]
+            yield* onRetrievalCompleted(retrieved)
+            yield* Effect.promise(() =>
+              sql.unsafe(
+                `UPDATE job_queue
+                 SET updated_at = NOW() - INTERVAL '10 minutes'
+                 WHERE id = $1`,
+                [staleJobId],
+              ),
+            )
+            yield* ResearchExecutionRepo.recoverStale(Date.now() - 300_000).pipe(
+              Effect.provide(executionLayer),
+            )
+            return {
+              plan: {
+                query: 'Can a stale worker append validated citations?',
+                maxSteps: 5,
+                maxToolCalls: 1,
+                maxModelCalls: 1,
+              },
+              evidence: retrieved,
+              answer: {
+                answer: 'The launch date is July 18.',
+                citations: [{ sourceVersionId, locator: 'lines:1-1' }],
+              },
+            }
+          }),
+      },
+    })
+
+    await expect(Effect.runPromise(process())).resolves.toEqual({
+      processed: true,
+      jobId: staleJobId,
+    })
+    await expect(Effect.runPromise(process())).resolves.toEqual({
+      processed: false,
+    })
+
+    const [runRow] = await sql.unsafe(
+      `SELECT status FROM research_runs WHERE id = $1`,
+      [staleRunId],
+    )
+    const [jobRow] = await sql.unsafe(
+      `SELECT status FROM job_queue WHERE id = $1`,
+      [staleJobId],
+    )
+    const results = await sql.unsafe(
+      `SELECT run_id FROM research_run_results WHERE run_id = $1`,
+      [staleRunId],
+    )
+    const events = await sql.unsafe(
+      `SELECT event_type, payload
+       FROM event_journal
+       WHERE entity_id = $1
+       ORDER BY cursor`,
+      [staleRunId],
+    )
+
+    expect(runRow['status']).toBe('failed')
+    expect(jobRow['status']).toBe('failed')
+    expect(results).toHaveLength(0)
+    expect(events.map((item) => item['event_type'])).toEqual([
+      'research-started',
+      'retrieval-completed',
+      'research-failed',
+    ])
+    expect(JSON.stringify(events)).not.toContain('citations-validated')
+    expect(events[2]?.['payload']).toMatchObject({
       errorTag: 'ResearchJobStaleError',
       message: 'Research failed',
     })

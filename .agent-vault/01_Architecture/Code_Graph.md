@@ -6,9 +6,9 @@ title: Code Graph
 architecture_id: "ARCH-0006"
 status: active
 owner: ""
-reviewed_on: "2026-07-18"
-created: "2026-07-18"
-updated: "2026-07-18"
+reviewed_on: "2026-07-19"
+created: "2026-07-19"
+updated: "2026-07-19"
 related_notes:
   - "[[01_Architecture/Code_Map|Code Map]]"
   - "[[01_Architecture/System_Overview|System Overview]]"
@@ -29,7 +29,7 @@ tags:
 
 - Repository: struct
 - Files indexed: 57
-- Symbols found: 601
+- Symbols found: 619
 - Detailed index path: `.agent-vault/08_Automation/code-graph/index.json`
 
 ## Key Components
@@ -65,13 +65,13 @@ tags:
 ## Directory Hotspots
 
 - `spikes/research-durability/src`: 4 files, 31 exported symbols, 91 internal symbols
-- `packages/persistence/src/repositories`: 5 files, 50 exported symbols, 31 internal symbols
+- `packages/persistence/src/repositories`: 5 files, 50 exported symbols, 32 internal symbols
 - `packages/domain/src`: 3 files, 73 exported symbols, 0 internal symbols
 - `spikes/fred-runtime/src`: 2 files, 32 exported symbols, 26 internal symbols
 - `spikes/duckdb-topology/src/common`: 5 files, 33 exported symbols, 5 internal symbols
+- `apps/worker/src/jobs`: 3 files, 8 exported symbols, 24 internal symbols
 - `packages/source-storage/src`: 1 files, 14 exported symbols, 17 internal symbols
-- `apps/worker/src/jobs`: 3 files, 8 exported symbols, 19 internal symbols
-- `packages/retrieval/src`: 1 files, 6 exported symbols, 14 internal symbols
+- `packages/retrieval/src`: 1 files, 6 exported symbols, 20 internal symbols
 
 ## Related Notes
 

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { Effect, Exit, Option } from 'effect'
 import { IngestionFailureError, JobQueueId, ProjectId, SourceId, SourceVersionId, WorkspaceId } from '@struct/domain'
+import {
+  IngestionJobOwnershipLostError,
+  QueryError,
+} from '@struct/persistence'
 import { processOneIngestionJob, type IngestionWorkerDeps } from './ingest-source'
 
 const workspaceId = WorkspaceId.make('850e8400-e29b-41d4-a716-446655440000')
@@ -49,22 +53,33 @@ function deps(overrides: Partial<Omit<IngestionWorkerDeps, 'calls'>> = {}): Inge
         createdAt: 0n,
         updatedAt: 0n,
       })),
-      markCompleted: (id) => {
-        calls.completed.push(id)
+      appendInProgressEvent: (_job, event) => {
+        calls.events.push(event.eventType)
+        calls.eventPayloads.push(event.payload)
         return Effect.void
       },
-      markPending: (id) => {
-        calls.pending.push(id)
+      markCompleted: (job, event) => {
+        calls.completed.push(job.id)
+        calls.events.push(event.eventType)
+        calls.eventPayloads.push(event.payload)
         return Effect.void
       },
-      markFailed: (id) => {
-        calls.failed.push(id)
+      markPending: (job, event) => {
+        calls.pending.push(job.id)
+        calls.events.push(event.eventType)
+        calls.eventPayloads.push(event.payload)
+        return Effect.void
+      },
+      markFailed: (job, event) => {
+        calls.failed.push(job.id)
+        calls.events.push(event.eventType)
+        calls.eventPayloads.push(event.payload)
         return Effect.void
       },
     },
     sourceVersions: {
       findBySourceId: () => Effect.succeed([]),
-      create: (version) => {
+      createForIngestionAttempt: (_job, version) => {
         calls.versions.push(version)
         return Effect.succeed(version)
       },
@@ -76,13 +91,6 @@ function deps(overrides: Partial<Omit<IngestionWorkerDeps, 'calls'>> = {}): Inge
       indexText: (input) => {
         calls.indexedInputs.push(input)
         return Effect.void
-      },
-    },
-    events: {
-      append: (event) => {
-        calls.events.push(event.eventType)
-        calls.eventPayloads.push(event.payload)
-        return Effect.succeed(event)
       },
     },
     ingestion: {
@@ -233,7 +241,7 @@ describe('processOneIngestionJob', () => {
     expect(testDeps.calls.pending).toEqual([])
   })
 
-  it('emits sanitized ingestion-failed events for stale exhausted jobs recovered before polling', async () => {
+  it('relies on atomic repository recovery for stale exhausted terminal events', async () => {
     const staleJob = {
       id: jobId,
       workspaceId,
@@ -257,8 +265,8 @@ describe('processOneIngestionJob', () => {
     const result = await Effect.runPromise(processOneIngestionJob(testDeps))
 
     expect(result).toEqual({ processed: false })
-    expect(testDeps.calls.events).toEqual(['ingestion-failed'])
-    expect(JSON.stringify(testDeps.calls.eventPayloads)).not.toContain('/Users/')
+    expect(testDeps.calls.events).toEqual([])
+    expect(testDeps.calls.eventPayloads).toEqual([])
   })
 
   it('propagates stale-recovery repository failures instead of silently reporting no work', async () => {
@@ -316,7 +324,7 @@ describe('processOneIngestionJob', () => {
       },
       sourceVersions: {
         findBySourceId: () => Effect.succeed([existing]),
-        create: (version) => {
+        createForIngestionAttempt: (_job, version) => {
           testDeps.calls.versions.push(version)
           return Effect.succeed(version)
         },
@@ -328,5 +336,76 @@ describe('processOneIngestionJob', () => {
     expect(testDeps.calls.versions).toEqual([])
     expect(testDeps.calls.events).toEqual(['file-processed', 'ingestion-completed'])
     expect(testDeps.calls.completed).toEqual(['850e8400-e29b-41d4-a716-446655440010'])
+  })
+
+  it('stops a stale attempt before it can append file or terminal events', async () => {
+    const base = deps()
+    const testDeps: IngestionWorkerTestDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        appendInProgressEvent: (job) =>
+          Effect.fail(new IngestionJobOwnershipLostError({
+            jobId: job.id,
+            attempt: job.attempts,
+            transition: 'append-event',
+            message: 'lease moved',
+          })),
+      },
+    }
+
+    await expect(
+      Effect.runPromise(processOneIngestionJob(testDeps)),
+    ).resolves.toEqual({ processed: true, jobId })
+    expect(testDeps.calls.events).toEqual([])
+    expect(testDeps.calls.completed).toEqual([])
+    expect(testDeps.calls.pending).toEqual([])
+    expect(testDeps.calls.failed).toEqual([])
+  })
+
+  it('does not append failure after a stale attempt loses completion ownership', async () => {
+    const base = deps()
+    const testDeps: IngestionWorkerTestDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        markCompleted: (job) =>
+          Effect.fail(new IngestionJobOwnershipLostError({
+            jobId: job.id,
+            attempt: job.attempts,
+            transition: 'complete',
+            message: 'lease moved',
+          })),
+      },
+    }
+
+    await Effect.runPromise(processOneIngestionJob(testDeps))
+
+    expect(testDeps.calls.events).toEqual(['file-processed'])
+    expect(testDeps.calls.pending).toEqual([])
+    expect(testDeps.calls.failed).toEqual([])
+  })
+
+  it('keeps non-ownership failure-transition infrastructure faults fatal', async () => {
+    const base = deps({
+      ingestion: {
+        ingestTextSource: () => Effect.fail(new Error('storage unavailable')),
+      },
+    })
+    const testDeps: IngestionWorkerTestDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        markPending: () =>
+          Effect.fail(new QueryError({
+            operation: 'markPending',
+            entity: 'JobQueue',
+            message: 'database unavailable',
+          })),
+      },
+    }
+
+    const exit = await Effect.runPromiseExit(processOneIngestionJob(testDeps))
+    expect(exit._tag).toBe('Failure')
   })
 })

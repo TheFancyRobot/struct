@@ -18,6 +18,9 @@ describe('TextRetrieval', () => {
     const sqlLayer = SqlClientTest(async (query, params) => {
       calls.push({ query, params })
       if (query.includes('AS ready_count')) return [{ ready_count: 1 }]
+      if (query.includes('AS candidates(excerpt, candidate_number)')) {
+        return [{ candidate_number: 1 }]
+      }
       return [{
         source_version_id: sourceVersionId,
         content: 'Alpha\nThe launch date is July 18.\nOmega',
@@ -49,6 +52,7 @@ describe('TextRetrieval', () => {
     expect(calls[1]?.query).toMatch(/WITH ORDINALITY/)
     expect(calls[1]?.query).toMatch(/LEFT JOIN LATERAL/)
     expect(calls[1]?.query).toMatch(/locator_query/)
+    expect(calls[1]?.query).toMatch(/has_query_match/)
     expect(calls[1]?.query).toMatch(/ts_headline/)
     expect(calls[0]?.params?.slice(0, 3)).toEqual([
       workspaceId,
@@ -165,9 +169,10 @@ describe('TextRetrieval', () => {
   })
 
   it('anchors a stem-only match after the first six lines to the PostgreSQL match line', async () => {
-    const sqlLayer = SqlClientTest(async (query) => query.includes('AS ready_count')
-      ? [{ ready_count: 1 }]
-      : [{
+    const sqlLayer = SqlClientTest(async (query) => {
+      if (query.includes('AS ready_count')) return [{ ready_count: 1 }]
+      if (query.includes('AS candidates(excerpt, candidate_number)')) return [{ candidate_number: 1 }]
+      return [{
       source_version_id: sourceVersionId,
       content: [
         'Unrelated one',
@@ -185,7 +190,8 @@ describe('TextRetrieval', () => {
         line_number: 7,
         highlighted_line: `The service \uE000runs\uE001 nightly.`,
       }],
-      }])
+      }]
+    })
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
 
     const result = await Effect.runPromise(
@@ -218,9 +224,10 @@ describe('TextRetrieval', () => {
       'omega',
       'Epilogue',
     ].join('\n')
-    const sqlLayer = SqlClientTest(async (query) => query.includes('AS ready_count')
-      ? [{ ready_count: 1 }]
-      : [{
+    const sqlLayer = SqlClientTest(async (query) => {
+      if (query.includes('AS ready_count')) return [{ ready_count: 1 }]
+      if (query.includes('AS candidates(excerpt, candidate_number)')) return [{ candidate_number: 3 }]
+      return [{
       source_version_id: sourceVersionId,
       content,
       rank: 0.4,
@@ -229,7 +236,8 @@ describe('TextRetrieval', () => {
         { line_number: 2, highlighted_line: `\uE000alpha\uE001` },
         { line_number: 10, highlighted_line: `\uE000omega\uE001` },
       ],
-      }])
+      }]
+    })
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
 
     const result = await Effect.runPromise(
@@ -250,18 +258,250 @@ describe('TextRetrieval', () => {
     }])
   })
 
+  it('preserves a later phrase match when the same lexemes occur earlier in isolation', async () => {
+    const content = [
+      'alpha isolated',
+      'filler one',
+      'omega isolated',
+      'filler two',
+      'filler three',
+      'filler four',
+      'filler five',
+      'filler six',
+      'filler seven',
+      'alpha omega phrase',
+    ].join('\n')
+    const sqlLayer = SqlClientTest(async (query) => {
+      if (query.includes('AS ready_count')) return [{ ready_count: 1 }]
+      if (query.includes('AS candidates(excerpt, candidate_number)')) return [{ candidate_number: 3 }]
+      return [{
+      source_version_id: sourceVersionId,
+      content,
+      rank: 0.6,
+      match_line: 1,
+      query_is_positional: true,
+      match_passages: [
+        {
+          line_number: 1,
+          highlighted_line: `\uE000alpha\uE001 isolated`,
+        },
+        {
+          line_number: 3,
+          highlighted_line: `\uE000omega\uE001 isolated`,
+        },
+        {
+          line_number: 10,
+          highlighted_line: `\uE000alpha\uE001 \uE000omega\uE001 phrase`,
+        },
+      ],
+      }]
+    })
+    const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
+
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [sourceVersionId],
+        query: '"alpha omega"',
+        limit: 1,
+      }).pipe(Effect.provide(layer)),
+    )
+
+    expect(result.evidence).toEqual([{
+      sourceVersionId,
+      locator: 'lines:10-10',
+      excerpt: 'alpha omega phrase',
+      rank: 0.6,
+    }])
+  })
+
+  it('never manufactures positional support by joining distant source ranges', async () => {
+    const lines = [
+      'alpha isolated early',
+      ...Array.from({ length: 9 }, (_, index) => `filler ${index} ${'x'.repeat(36)}`),
+      'omega isolated early',
+      ...Array.from({ length: 18 }, (_, index) => `bridge ${index} ${'y'.repeat(36)}`),
+      'alpha',
+      'omega',
+    ]
+    const content = lines.join('\n')
+    const sqlLayer = SqlClientTest(async (query, params) => {
+      if (query.includes('AS ready_count')) return [{ ready_count: 1 }]
+      if (query.includes('AS candidates(excerpt, candidate_number)')) {
+        const excerpts = params?.[0] as ReadonlyArray<string>
+        expect(excerpts.every((excerpt) => !excerpt.includes('\n…\n'))).toBe(true)
+        const candidate = excerpts.findIndex((excerpt) => excerpt.includes('alpha\nomega'))
+        return candidate === -1 ? [] : [{ candidate_number: candidate + 1 }]
+      }
+      return [{
+        source_version_id: sourceVersionId,
+        content,
+        rank: 0.65,
+        match_line: 1,
+        query_is_positional: true,
+        match_passages: [
+          { line_number: 1, highlighted_line: `\uE000alpha\uE001 isolated early` },
+          { line_number: 11, highlighted_line: `\uE000omega\uE001 isolated early` },
+          { line_number: 30, highlighted_line: `\uE000alpha\uE001` },
+          { line_number: 31, highlighted_line: `\uE000omega\uE001` },
+        ],
+      }]
+    })
+    const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
+
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [sourceVersionId],
+        query: '"alpha omega"',
+        limit: 1,
+      }).pipe(Effect.provide(layer)),
+    )
+
+    const evidence = result.evidence[0]!
+    expect(evidence.excerpt).toContain('alpha\nomega')
+    expect(evidence.locator).not.toMatch(/lines?:1(?:\D|$)/)
+    expect(evidence.locator).not.toMatch(/lines?:11(?:\D|$)/)
+    expect(evidence.locator).toMatch(/30/)
+    expect(evidence.locator).toMatch(/31/)
+  })
+
+  it('preserves repeated positional lexeme multiplicity across adjacent long lines', async () => {
+    const firstLine = `${'x'.repeat(1300)} alpha`
+    const secondLine = `alpha ${'y'.repeat(1300)}`
+    const content = `${firstLine}\n${secondLine}`
+    const sqlLayer = SqlClientTest(async (query, params) => {
+      if (query.includes('AS ready_count')) return [{ ready_count: 1 }]
+      if (query.includes('AS candidates(excerpt, candidate_number)')) {
+        const excerpts = params?.[0] as ReadonlyArray<string>
+        const candidate = excerpts.findIndex((excerpt) => excerpt.includes('alpha\nalpha'))
+        return candidate === -1 ? [] : [{ candidate_number: candidate + 1 }]
+      }
+      return [{
+        source_version_id: sourceVersionId,
+        content,
+        rank: 0.66,
+        match_line: 1,
+        query_is_positional: true,
+        match_passages: [
+          {
+            line_number: 1,
+            highlighted_line: `${'x'.repeat(1300)} \uE000alpha\uE001`,
+          },
+          {
+            line_number: 2,
+            highlighted_line: `\uE000alpha\uE001 ${'y'.repeat(1300)}`,
+          },
+        ],
+      }]
+    })
+    const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
+
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [sourceVersionId],
+        query: '"alpha alpha"',
+        limit: 1,
+      }).pipe(Effect.provide(layer)),
+    )
+
+    const evidence = result.evidence[0]!
+    const locator =
+      /^line:1,chars:(\d+)-(\d+);line:2,chars:(\d+)-(\d+)$/.exec(evidence.locator)
+    expect(locator).not.toBeNull()
+    const reconstructed = [
+      firstLine.slice(Number(locator?.[1]) - 1, Number(locator?.[2])),
+      secondLine.slice(Number(locator?.[3]) - 1, Number(locator?.[4])),
+    ].join('\n')
+    expect(evidence.excerpt).toBe(reconstructed)
+    expect(evidence.excerpt).toContain('alpha\nalpha')
+    expect(evidence.excerpt.length).toBeLessThanOrEqual(1200)
+  })
+
+  it('selects bounded supported evidence for a high-frequency single-term match', async () => {
+    const content = Array.from({ length: 400 }, () => 'alpha').join('\n')
+    const matchPassages = Array.from({ length: 400 }, (_, index) => ({
+      line_number: index + 1,
+      highlighted_line: `\uE000alpha\uE001`,
+    }))
+    const sqlLayer = SqlClientTest(async (query) => {
+      if (query.includes('AS ready_count')) return [{ ready_count: 1 }]
+      if (query.includes('AS candidates(excerpt, candidate_number)')) return [{ candidate_number: 1 }]
+      return [{
+        source_version_id: sourceVersionId,
+        content,
+        rank: 0.8,
+        match_line: 1,
+        match_passages: matchPassages,
+      }]
+    })
+    const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
+
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [sourceVersionId],
+        query: 'alpha',
+        limit: 1,
+      }).pipe(Effect.provide(layer)),
+    )
+
+    expect(result.evidence[0]?.excerpt).toContain('alpha')
+    expect(result.evidence[0]?.excerpt.length).toBeLessThanOrEqual(1200)
+    expect(result.evidence[0]?.locator).toBe('lines:1-1')
+  })
+
+  it('selects bounded supported evidence for a high-frequency phrase match', async () => {
+    const content = 'alpha omega '.repeat(300).trim()
+    const highlightedLine = '\uE000alpha\uE001 \uE000omega\uE001 '.repeat(300).trim()
+    const sqlLayer = SqlClientTest(async (query) => {
+      if (query.includes('AS ready_count')) return [{ ready_count: 1 }]
+      if (query.includes('AS candidates(excerpt, candidate_number)')) return [{ candidate_number: 1 }]
+      return [{
+        source_version_id: sourceVersionId,
+        content,
+        rank: 0.7,
+        match_line: 1,
+        query_is_positional: true,
+        match_passages: [{ line_number: 1, highlighted_line: highlightedLine }],
+      }]
+    })
+    const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
+
+    const result = await Effect.runPromise(
+      TextRetrieval.searchText({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [sourceVersionId],
+        query: '"alpha omega"',
+        limit: 1,
+      }).pipe(Effect.provide(layer)),
+    )
+
+    expect(result.evidence[0]?.excerpt).toContain('alpha omega')
+    expect(result.evidence[0]?.excerpt.length).toBeLessThanOrEqual(1200)
+    expect(result.evidence[0]?.locator).toMatch(/^line:1,chars:/)
+  })
+
   it('centers a long-line excerpt on a late PostgreSQL match and locates its exact characters', async () => {
     const content = `${'prefix '.repeat(220)}lateanchor trailing context`
     const highlightedLine = `${'prefix '.repeat(220)}\uE000lateanchor\uE001 trailing context`
-    const sqlLayer = SqlClientTest(async (query) => query.includes('AS ready_count')
-      ? [{ ready_count: 1 }]
-      : [{
+    const sqlLayer = SqlClientTest(async (query) => {
+      if (query.includes('AS ready_count')) return [{ ready_count: 1 }]
+      if (query.includes('AS candidates(excerpt, candidate_number)')) return [{ candidate_number: 1 }]
+      return [{
       source_version_id: sourceVersionId,
       content,
       rank: 0.3,
       match_line: 1,
       match_passages: [{ line_number: 1, highlighted_line: highlightedLine }],
-      }])
+      }]
+    })
     const layer = Layer.provide(TextRetrieval.Default, sqlLayer)
 
     const result = await Effect.runPromise(
@@ -279,7 +519,8 @@ describe('TextRetrieval', () => {
     expect(locator).not.toBeNull()
     const start = Number(locator?.[1])
     const end = Number(locator?.[2])
-    expect(start).toBeGreaterThan(1200)
+    expect(start).toBeGreaterThan(0)
+    expect(end).toBeGreaterThan(1200)
     expect(evidence.excerpt).toContain('lateanchor')
     expect(evidence.excerpt).toBe(content.slice(start - 1, end))
     expect(evidence.excerpt.length).toBeLessThanOrEqual(1200)

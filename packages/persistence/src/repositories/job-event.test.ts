@@ -73,6 +73,23 @@ describe('JobQueueRepo', () => {
     const queries: string[] = []
     const sqlLayer = SqlClientTest(async (query) => {
       queries.push(query)
+      if (query.includes('attempts >= max_attempts')) {
+        return [{
+          id: '650e8400-e29b-41d4-a716-446655440010',
+          workspace_id: '650e8400-e29b-41d4-a716-446655440000',
+          entity_type: 'ingestion',
+          entity_id: '650e8400-e29b-41d4-a716-446655440002',
+          status: 'failed',
+          payload: {},
+          attempts: 3,
+          max_attempts: 3,
+          created_at: new Date('2026-01-01T00:00:00Z'),
+          updated_at: new Date('2026-01-01T00:00:01Z'),
+        }]
+      }
+      if (query.includes('INSERT INTO event_journal')) {
+        return [{ id: '650e8400-e29b-41d4-a716-446655440011' }]
+      }
       return []
     })
     const layer = Layer.provide(JobQueueRepo.Default, sqlLayer)
@@ -84,6 +101,10 @@ describe('JobQueueRepo', () => {
     expect(queries.join('\n')).toMatch(/status = 'pending'/i)
     expect(queries.join('\n')).toMatch(/attempts >= max_attempts/i)
     expect(queries.join('\n')).toMatch(/status = 'failed'/i)
+    expect(queries.join('\n')).toMatch(/INSERT INTO event_journal/i)
+    expect(queries.join('\n')).toMatch(/StaleIngestionJobExhausted/)
+    expect(queries.join('\n')).toMatch(/md5\(/i)
+    expect(queries.join('\n')).toMatch(/ON CONFLICT \(id\) DO NOTHING/i)
   })
 })
 

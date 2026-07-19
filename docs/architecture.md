@@ -360,6 +360,11 @@ A journal solves several problems at once:
 - `ingestion-failed`
 - `ingestion-cancelled`
 
+Exhausted stale ingestion recovery changes the job to `failed` and inserts one
+sanitized `ingestion-failed` event in the same PostgreSQL transaction. The
+event ID is deterministic for the job attempt, so restart/recovery replay is
+idempotent; an event-insert failure rolls back the status change.
+
 **Research events**
 
 - `research-started`
@@ -398,13 +403,13 @@ Ingestion is a resumable workflow, not a single request.
 1. Accept a source registration command.
 2. Validate workspace ownership and registered root permissions.
 3. Create the logical `Source` record, stage accepted upload bytes under `ARTIFACT_STORAGE_ROOT`, enqueue an `ingestion` `job_queue` row, and append `ingestion-requested` without storing raw source text or host paths in payloads.
-4. Let workers atomically claim pending ingestion jobs with `FOR UPDATE SKIP LOCKED`; retry stale `in-progress` jobs through the existing status/attempt columns.
+4. Let workers atomically claim pending ingestion jobs with `FOR UPDATE SKIP LOCKED`; retry stale `in-progress` jobs through the existing status/attempt columns. Every claimed-worker write is fenced by the exact incremented attempt: stale workers cannot create a `SourceVersion`, append progress, or move job state after recovery gives ownership to a newer attempt.
 5. Hash and classify files with bounded concurrency.
 6. Route by type: document extraction, structured-data staging, or direct file indexing.
 7. Build a deterministic source-version manifest after raw and normalized artifacts are written.
-8. Create immutable `SourceVersion` records only after the manifest artifact ref and normalized `sha256:<hex>` content hash exist; source-version failure state lives in `job_queue` plus `event_journal`, not in placeholder pending rows.
+8. Create immutable `SourceVersion` records only after the manifest artifact ref and normalized `sha256:<hex>` content hash exist and while the creating ingestion attempt still owns its row lock; source-version failure state lives in `job_queue` plus `event_journal`, not in placeholder pending rows.
 9. Create document chunks, dataset snapshots, embeddings, and retrieval metadata.
-10. Persist progress to checkpoints and the event journal, including sanitized `ingestion-failed` events for exhausted jobs.
+10. Persist progress to checkpoints and the event journal. Progress events lock and verify the current attempt; completion/retry/failure transitions append their corresponding terminal attempt event in the same transaction. Expected typed ownership loss is a stale-worker no-op, while infrastructure failure remains fatal to polling.
 
 ### 8.2 Ingestion design rules
 
@@ -473,6 +478,13 @@ Bound every run by:
 - duplicate-action detection;
 - no-progress detection.
 
+The Fred walking-slice elapsed-time limit is end-to-end: client creation,
+provider setup, registration, workflow execution, and cleanup share one absolute
+deadline. Cleanup receives only the remaining budget; after expiry it receives
+a fixed 10 ms emergency release cap so a hanging finalizer cannot start a fresh
+workflow-sized timeout. Clients that resolve after their creation deadline are
+still released through that capped path.
+
 ### 10.3 Failure handling
 
 The architecture assumes failures are normal:
@@ -516,7 +528,7 @@ The first implementation slice should prove the architecture rather than chase b
 STEP-01-04 implements the research half of this slice with:
 
 - `source_text_index`, a PostgreSQL generated-`tsvector` index keyed by immutable `SourceVersion`;
-- `packages/retrieval`, which enforces workspace/project/source-version scope and bounded lexical results;
+- `packages/retrieval`, which enforces workspace/project/source-version scope and bounded lexical results; phrase/proximity candidates are revalidated only as byte-for-byte contiguous source windows, preserving original coordinates, distance, order, and repeated-lexeme multiplicity, while non-positional distributed terms may use exact multi-range locators; all selected evidence is at most 1200 characters;
 - `packages/research-engine`, which owns the fixed one-tool/one-model plan and citation sufficiency gates;
 - `packages/fred-workflows`, pinned to `@fancyrobot/fred@2.0.0`, with one search function node, one answer-synthesizer agent, and one citation-validation node;
 - `POST /research/runs` plus a durable worker job that persists answers, citations, run state, and replayable research events.
