@@ -620,6 +620,22 @@ export class DatasetCatalogRepo extends Effect.Service<DatasetCatalogRepo>()(
         },
       )
 
+      const getSchemaFamily = Effect.fn('DatasetCatalogRepo.getSchemaFamily')(
+        function* (
+          workspaceId: typeof WorkspaceId.Type,
+          projectId: typeof ProjectId.Type,
+          datasetId: typeof DatasetId.Type,
+          familyId: typeof DatasetSchemaFamilyId.Type,
+        ) {
+          const loaded = yield* Effect.tryPromise({
+            try: () => loadFamily(sql, workspaceId, projectId, datasetId, familyId),
+            catch: () => queryError('schema-family lookup'),
+          })
+          if (loaded === undefined) return Option.none<typeof DatasetSchemaFamily.Type>()
+          return Option.some(yield* decodeFamily(loaded[0], loaded[1]))
+        },
+      )
+
       const listSnapshots = Effect.fn('DatasetCatalogRepo.listSnapshots')(
         function* (
           workspaceId: typeof WorkspaceId.Type,
@@ -655,7 +671,13 @@ export class DatasetCatalogRepo extends Effect.Service<DatasetCatalogRepo>()(
         },
       )
 
-      return { createDataset, createSchemaFamily, createSnapshot, listSnapshots }
+      return {
+        createDataset,
+        createSchemaFamily,
+        createSnapshot,
+        getSchemaFamily,
+        listSnapshots,
+      }
     }),
   },
 ) {}

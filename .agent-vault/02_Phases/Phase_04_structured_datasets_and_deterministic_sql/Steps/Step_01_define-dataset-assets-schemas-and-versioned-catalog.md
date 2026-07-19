@@ -54,10 +54,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
+- Status: in_progress
+- Current owner: Codex
 - Last touched: 2026-07-19
-- Next action: After the Phase 04 refinement PR merges, execute the refined [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_01_define-dataset-assets-schemas-and-versioned-catalog/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_01_define-dataset-assets-schemas-and-versioned-catalog/Validation_Plan|Validation Plan]] with a fresh non-git worker.
+- Next action: Complete PR review and merge after all findings are resolved; then mark the step completed before advancing to STEP-04-02.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

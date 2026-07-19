@@ -145,6 +145,9 @@ describeIf('DatasetCatalogRepo (PostgreSQL)', () => {
     expect(createdFamily.value).toEqual(family)
     expect(createdFamily.replayed).toBe(false)
     expect((await run(DatasetCatalogRepo.createSchemaFamily(family))).replayed).toBe(true)
+    expect(Option.getOrUndefined(await run(
+      DatasetCatalogRepo.getSchemaFamily(workspaceId, projectId, datasetId, familyId),
+    ))).toEqual(family)
 
     const conflictingFamily = await Effect.runPromiseExit(
       DatasetCatalogRepo.createSchemaFamily({
@@ -282,6 +285,14 @@ describeIf('DatasetCatalogRepo (PostgreSQL)', () => {
   })
 
   it('returns empty results for cross-workspace reads', async () => {
+    expect(Option.isNone(await run(
+      DatasetCatalogRepo.getSchemaFamily(
+        foreignWorkspaceId,
+        foreignProjectId,
+        datasetId,
+        familyId,
+      ),
+    ))).toBe(true)
     expect(await run(
       DatasetCatalogRepo.listSnapshots(foreignWorkspaceId, foreignProjectId, datasetId),
     )).toEqual([])

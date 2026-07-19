@@ -5,6 +5,7 @@
 - Migration `0010_dataset_catalog` creates workspace-scoped dataset assets, schema families, ordered fields, immutable snapshots, and ordered source-version lineage. Composite foreign keys enforce project/workspace ownership and update triggers reject immutable metadata changes.
 - `DatasetCatalogRepo` uses `Effect.Service` and `Effect.fn`, decodes PostgreSQL rows through Effect Schema, performs aggregate writes transactionally, explicitly distinguishes exact replay from immutable conflict, and returns stable version ordering.
 - Root self-review fixed conflict classification for a reused schema-family or snapshot ID with changed immutable metadata: conflict lookup now checks the colliding ID as well as content-derived uniqueness keys, so these cases return `DatasetCatalogConflictError` rather than a misleading scope failure.
+- PR review added a workspace/project/dataset-scoped `getSchemaFamily` operation so restarted STEP-04-02 workers can reconstruct ordered fields and logical types from a persisted snapshot's `schemaFamilyId`.
 - Repository failures expose bounded serializable catalog errors without SQL text, connection details, or credentials.
 - No DuckDB, Parquet, SQL execution, UI, legacy database, or compatibility work was added.
 
