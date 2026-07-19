@@ -25,6 +25,19 @@ describe('fetchCitation', () => {
     ).rejects.toThrow('The citation could not be loaded. Try again.')
   })
 
+  it('normalizes abort failures for the citation viewer', async () => {
+    globalThis.fetch = Object.assign(
+      async () => {
+        throw new DOMException('Aborted', 'AbortError')
+      },
+      { preconnect: originalFetch.preconnect },
+    )
+
+    await expect(
+      fetchCitation(projectId, threadId, citationId),
+    ).rejects.toThrow('The citation could not be loaded. Try again.')
+  })
+
   it('preserves unrelated network failures', async () => {
     const networkFailure = new TypeError('Network unavailable')
     globalThis.fetch = Object.assign(
