@@ -93,6 +93,19 @@ export const materializeDataset = Effect.fn('materializeDataset')(
         message: 'Materialization response does not match the requested snapshot',
       })
     }
+    if (
+      result.profile.columns.length !== input.schemaFamily.fields.length
+      || result.profile.columns.some((column, index) => {
+        const field = input.schemaFamily.fields[index]
+        return field === undefined
+          || column.ordinal !== field.ordinal
+          || column.name !== field.name
+      })
+    ) {
+      return yield* new DataEngineProtocolError({
+        message: 'Materialization profile does not match the requested schema',
+      })
+    }
     const parquetBytes = yield* client.readArtifact(
       result.artifactToken,
       result.parquetDigest,

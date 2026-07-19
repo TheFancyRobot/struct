@@ -141,9 +141,14 @@ export class DatasetMaterializationRepo
             return yield* Effect.tryPromise({
               try: () => sql.transaction(async (transaction) => {
                 const snapshots = await transaction.unsafe(
-                  `SELECT id
-                   FROM dataset_snapshots
-                   WHERE id = $1 AND workspace_id = $2
+                  `SELECT snapshot.id,
+                          (
+                            SELECT count(*)
+                            FROM dataset_snapshot_sources source
+                            WHERE source.snapshot_id = snapshot.id
+                          ) AS source_count
+                   FROM dataset_snapshots snapshot
+                   WHERE snapshot.id = $1 AND snapshot.workspace_id = $2
                    FOR SHARE`,
                   [decoded.snapshotId, decoded.workspaceId],
                 )
@@ -151,6 +156,15 @@ export class DatasetMaterializationRepo
                   throw new DatasetMaterializationScopeError({
                     snapshotId: decoded.snapshotId,
                     message: 'Dataset snapshot was not found in this workspace',
+                  })
+                }
+                if (
+                  Number(snapshots[0]?.['source_count'])
+                  !== decoded.sourceFormats.length
+                ) {
+                  throw new DatasetMaterializationScopeError({
+                    snapshotId: decoded.snapshotId,
+                    message: 'Source formats do not match the dataset snapshot sources',
                   })
                 }
                 const existing = await transaction.unsafe(

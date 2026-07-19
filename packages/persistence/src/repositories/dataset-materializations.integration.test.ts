@@ -118,6 +118,18 @@ describeIf('DatasetMaterializationRepo (PostgreSQL)', () => {
       Effect.runPromise(
         DatasetMaterializationRepo.enqueue(input).pipe(Effect.provide(layer)),
       )
+    const wrongFormatCount = await Effect.runPromiseExit(
+      DatasetMaterializationRepo.enqueue({
+        jobId: conflictingJobId,
+        workspaceId,
+        snapshotId,
+        sourceFormats: ['json', 'csv'],
+        maxAttempts: 3,
+      }).pipe(Effect.provide(layer)),
+    )
+    expect(String(wrongFormatCount)).toContain(
+      'DatasetMaterializationScopeError',
+    )
     expect(await enqueue({
       jobId,
       workspaceId,

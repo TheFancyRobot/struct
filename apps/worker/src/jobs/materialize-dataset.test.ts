@@ -132,6 +132,41 @@ describe('processOneDatasetMaterialization', () => {
     ))
     expect(String(exit)).toContain('DataEngineProtocolError')
     expect(String(exit)).toContain('requested snapshot')
+
+    const profileMismatchClient: DataEngineClientShape = {
+      materialize: () => Effect.succeed({
+        protocolVersion: '1',
+        snapshotId,
+        artifactToken: '00000000-0000-4000-8000-000000000002',
+        parquetDigest,
+        parquetByteLength: parquetBytes.byteLength,
+        profileHash: Sha256Digest.make(`sha256:${profileDigest}`),
+        profile: {
+          ...profile,
+          columns: [{ ...profile.columns[0]!, name: 'wrong' }],
+        },
+      }),
+      readArtifact: () => Effect.die('artifact read must not run'),
+    }
+    const profileExit = await Effect.runPromiseExit(materializeDataset(
+      {
+        client: profileMismatchClient,
+        store: { writeObject: () => Effect.die('artifact write must not run') },
+      },
+      {
+        snapshot,
+        schemaFamily: family,
+        sourceFormats: ['json'],
+        limits: {
+          maxInputBytes: 1_024,
+          maxRows: 100,
+          maxOutputBytes: 1_024,
+          timeoutMs: 1_000,
+        },
+      },
+    ))
+    expect(String(profileExit)).toContain('DataEngineProtocolError')
+    expect(String(profileExit)).toContain('requested schema')
   })
 
   it('recovers an interrupted attempt and commits one immutable result', async () => {
