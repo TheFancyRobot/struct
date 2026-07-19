@@ -7,7 +7,7 @@ export interface UnnormalizedFragment {
   readonly paragraph?: number | null
 }
 
-const normalize = (text: string): string => text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/^\uFEFF/, '')
+export const normalize = (text: string): string => text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/^\uFEFF/, '')
 
 export const normalizeDocument = (
   format: 'pdf' | 'html' | 'markdown' | 'text',

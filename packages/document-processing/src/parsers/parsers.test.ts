@@ -52,11 +52,35 @@ describe('document parsers', () => {
     expect(encode(document.text.slice(0, fragment.charEnd)).byteLength).toBe(fragment.byteEnd)
   })
 
+  it('numbers only non-empty Markdown and text paragraphs', async () => {
+    const markdown = await Effect.runPromise(parseMarkdown(encode('\n\n# Intro\n\nBody\n\n')))
+    const text = await Effect.runPromise(parseText(encode('\n\nFirst\n\nSecond\n\n')))
+    expect(markdown.fragments.map((fragment) => fragment.paragraph)).toEqual([1, 2])
+    expect(text.fragments.map((fragment) => fragment.paragraph)).toEqual([1, 2])
+  })
+
   it('extracts HTML blocks while excluding nested script content', async () => {
     const document = await Effect.runPromise(parseHtml(encode('<h1>Guide</h1><p>Safe<br><script>secret()</script>text</p><p>More</p>')))
     expect(document.text).toBe('Guide\n\nSafe text\n\nMore')
     expect(document.fragments).toEqual(expect.arrayContaining([expect.objectContaining({ section: 'Guide', paragraph: 2, text: 'Safe text' })]))
     expect(document.text).not.toContain('secret')
+  })
+
+  it('extracts loose inline HTML text without splitting word boundaries', async () => {
+    const document = await Effect.runPromise(parseHtml(encode('<div>loose <span>inline</span> text</div>')))
+    expect(document.text).toBe('loose inline text')
+    expect(document.fragments).toMatchObject([{ paragraph: 1, text: 'loose inline text' }])
+  })
+
+  it('rejects adversarial HTML nesting through the typed parser error', async () => {
+    const nested = `${'<div>'.repeat(300)}text${'</div>'.repeat(300)}`
+    const result = await Effect.runPromiseExit(parseHtml(encode(nested)))
+    expect(Exit.isFailure(result)).toBe(true)
+    if (Exit.isFailure(result)) {
+      const failure = Cause.failureOption(result.cause)
+      expect(failure._tag).toBe('Some')
+      if (failure._tag === 'Some') expect(failure.value).toMatchObject({ reason: 'invalid-html' })
+    }
   })
 
   it('rejects malformed UTF-8 rather than replacing invalid bytes', async () => {

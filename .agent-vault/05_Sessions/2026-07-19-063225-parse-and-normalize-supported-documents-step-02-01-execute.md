@@ -50,9 +50,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-START:session-execution-log -->
 - 06:32 - Created session note.
 - 06:32 - Linked related step [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_01_parse-and-normalize-supported-documents|STEP-02-01 Parse and Normalize Supported Documents]].
-<!-- AGENT-END:session-execution-log -->
 - 06:47 - Implemented typed document-processing workspace and extended the existing ingestion worker boundary without adding queues, APIs, storage systems, or host sidecars.
 - 06:47 - Completed final code gates: lint, root typecheck, focused 39-test suite, import boundaries, docs lint, and secret scan.
+<!-- AGENT-END:session-execution-log -->
 
 ## Findings
 
@@ -60,6 +60,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Root pre-PR review found and fixed a Markdown trailing-newline compatibility regression, nested HTML ignored-content leakage, unbounded concurrent PDF expansion, an over-eager OCR heuristic, incomplete PDF cleanup, missing real-PDF/v2-manifest coverage, and an unused worker dependency.
 - Source-backed Markdown/text normalization now preserves line endings, indentation, and multibyte locator round-trips. PDF parsing is sequential with explicit page and extracted-character caps.
 - Codex exact-head review found and root fixed four additional issues: upload/persistence format gating, quadratic byte-locator calculation, short embedded-text PDF false rejection, and HTML line-break collapse. Final full suite increased to 301 passing tests.
+- CodeRabbit review remediation synchronized generated Vault blocks, centralized source normalization, added bounded HTML traversal and loose inline-text extraction, and made Markdown/text paragraph numbering contiguous. Its TypeScript downgrade suggestion was rejected because TS 7.0.2 is the repository-wide runtime/compiler contract and ESLint deliberately uses the Babel parser rather than typescript-eslint.
 
 ## Context Handoff
 
@@ -69,21 +70,18 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Changed Paths
 
 <!-- AGENT-START:session-changed-paths -->
-- None yet.
-<!-- AGENT-END:session-changed-paths -->
 - `packages/document-processing/**`, `packages/ingestion/src/{file-classifier.ts,ingest-text-source.ts}`, `apps/worker/src/jobs/reindex-source-text.ts`, workspace manifests and `bun.lock`.
+<!-- AGENT-END:session-changed-paths -->
 
 ## Validation Run
 
 <!-- AGENT-START:session-validation-run -->
-- Command: not run yet
-- Result: not run
-- Notes: 
-<!-- AGENT-END:session-validation-run -->
 - Command: `bun run lint && bun run typecheck && bun test packages/document-processing packages/ingestion apps/worker/src/jobs/ingest-source.test.ts apps/worker/src/jobs/reindex-source-text.test.ts`; plus `bun run lint:imports`, `bun run docs:lint`, `bun run secrets:scan`.
 - Result: pass.
 - Notes: 39 focused tests passed; full lint and root typecheck passed.
 - Root validation after remediation: real PDF parser tests, v2 reindex regression, focused 20-test suite, real PostgreSQL vertical slice, full 293-test suite, typecheck, lint, import boundaries, builds, docs links, and history-aware secret scan all passed.
+- Final CodeRabbit-remediation validation: 10/10 focused parser tests, 304/304 full PostgreSQL-backed tests with 1,647 assertions, 1/1 browser E2E, root typecheck, zero-warning lint, import boundaries, builds, Compose config, docs links, history-aware secrets, and diff hygiene passed. A fresh independent exact-diff audit found no actionable issue.
+<!-- AGENT-END:session-validation-run -->
 
 ## Bugs Encountered
 
