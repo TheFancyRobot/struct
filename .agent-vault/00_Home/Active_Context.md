@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-19._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_05_expose-directory-status-recovery-and-controls|STEP-03-05 Expose Directory Status Recovery and Controls]] - status: in_progress - phase: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]] - owner: Codex
+- Current step: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_06_test-large-tree-refresh-failures-and-recovery|STEP-03-06 Test Large-Tree Refresh Failures and Recovery]] - status: in_progress - phase: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]] - owner: Codex
 - Active phase: [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|PHASE-03 Durable Directory Ingestion and Source Refresh]] - status: in_progress - owner: Codex - updated: 2026-07-19
-- Also active: 55 more additional steps.
+- Also active: 54 more additional steps.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -36,15 +36,14 @@ _Last refreshed: 2026-07-19._
 ## In Scope Right Now
 
 - Phase 02 is completed and merged through STEP-02-06 with deterministic retrieval, exact provenance, bounded core-Fred document research, SolidJS citation navigation, and injection-resistance evaluation.
-- Phase 03 refinement and STEP-03-01 through STEP-03-03 are merged.
-- STEP-03-04 is merged.
-- STEP-03-05 is implemented and independently validated on its dedicated branch, pending PR review and merge.
-- STEP-03-05 adds scoped directory registration/status, persisted failure projections, atomic idempotent controls, cursor-based SSE replay, and SolidJS recovery states.
+- Phase 03 refinement and STEP-03-01 through STEP-03-05 are merged.
+- STEP-03-06 is implemented and independently validated on its dedicated branch, pending PR review and merge.
+- STEP-03-06 adds deterministic 1,000-file correctness evidence, six-boundary PostgreSQL restart/replay fault injection, and durable directory-recovery operations and benchmark guidance.
 - Keep Bun as the sole host runtime and reuse the existing Effect, PostgreSQL, job-journal, SSE, artifact-storage, and SolidJS boundaries.
 
 ## Out Of Scope Right Now
 
-- STEP-03-06 and later Phase 03 work until STEP-03-05 is reviewed and merged.
+- Phase 04 implementation until STEP-03-06 is reviewed and merged, Phase 03 is closed out, and Phase 04 is refined against the resulting repository state.
 - A second runtime, queue, database, filesystem service, client state framework, or Fred executor.
 - The 25,000-file corpus, structured dataset computation, and later-phase release work.
 
@@ -62,7 +61,7 @@ _Last refreshed: 2026-07-19._
 
 ## Open Questions
 
-- None blocking the STEP-03-05 PR gate.
+- None blocking the STEP-03-06 PR gate.
 
 ## Critical Bugs
 
@@ -72,6 +71,6 @@ _Last refreshed: 2026-07-19._
 
 ## Next Actions
 
-- Publish, review, and merge [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_05_expose-directory-status-recovery-and-controls|STEP-03-05 Expose Directory Status Recovery and Controls]].
-- After the merge, start [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_06_test-large-tree-refresh-failures-and-recovery|STEP-03-06 Test Large-Tree Refresh Failures and Recovery]] in one fresh non-git worker on its own branch.
+- Publish, review, and merge [[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_06_test-large-tree-refresh-failures-and-recovery|STEP-03-06 Test Large-Tree Refresh Failures and Recovery]].
+- After the merge, close Phase 03 and refine [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]] before starting STEP-04-01.
 - Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.

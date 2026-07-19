@@ -5,17 +5,22 @@ contract_version: 1
 title: Test Large-Tree Refresh Failures and Recovery
 step_id: STEP-03-06
 phase: '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|Phase 03 durable directory ingestion and source refresh]]'
-status: planned
-owner: ''
+status: in_progress
+owner: Codex
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_05_expose-directory-status-recovery-and-controls|STEP-03-05 Expose Directory Status Recovery and Controls]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-19-151248-test-large-tree-refresh-failures-and-recovery-codex-step-03-06-worker|SESSION-2026-07-19-151248 Codex STEP-03-06 worker session for Test Large-Tree Refresh Failures and Recovery]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-19-151248
+active_session_id: 05_Sessions/2026-07-19-151248-test-large-tree-refresh-failures-and-recovery-codex-step-03-06-worker
+context_status: in_progress
+context_summary: Implementation and root validation are complete; configured-limit and canonical permission behavior are exercised, the migration-0009 scoped create defect is fixed, and PR review/merge remain pending.
 ---
 
 # Step 06 - Test Large-Tree Refresh Failures and Recovery
@@ -60,7 +65,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-19 - [[05_Sessions/2026-07-19-151248-test-large-tree-refresh-failures-and-recovery-codex-step-03-06-worker|SESSION-2026-07-19-151248 Codex STEP-03-06 worker session for Test Large-Tree Refresh Failures and Recovery]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

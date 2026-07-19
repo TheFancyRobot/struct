@@ -23,6 +23,7 @@
     "migrations:create": "bun run --filter @struct/persistence migrations:create",
     "corpus:smoke": "bun run --filter @struct/evaluation corpus:smoke",
     "corpus:eval": "bun run --filter @struct/evaluation corpus:eval",
+    "directory:eval": "bun run --filter @struct/evaluation directory:eval",
     "bench": "bun run --filter @struct/evaluation bench",
     "secrets:scan": "bun run scripts/secrets-scan.ts",
     "docs:lint": "bun run scripts/docs-lint.ts"

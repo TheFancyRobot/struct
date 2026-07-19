@@ -16,6 +16,8 @@ import {
 import { Effect, Option } from 'effect'
 import { diffManifest } from './diff-manifest.js'
 
+export const DIRECTORY_REFRESH_PREPARE_CONCURRENCY = 4 as const
+
 export interface PreparedRefreshEntry {
   readonly entryId: DirectoryManifestEntry['id']
   readonly sourceId: typeof SourceId.Type
@@ -94,7 +96,7 @@ export const applyDirectoryRefresh = Effect.fn('applyDirectoryRefresh')(
           })
           return yield* deps.prepareChangedEntry(entry, artifact)
         }),
-      { concurrency: 4 },
+      { concurrency: DIRECTORY_REFRESH_PREPARE_CONCURRENCY },
     )
     return yield* deps.commit({ ...input, prepared })
   },

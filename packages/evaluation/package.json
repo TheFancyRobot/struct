@@ -8,6 +8,7 @@
   "scripts": {
     "corpus:smoke": "bun src/phase-02-smoke.ts",
     "corpus:eval": "bun src/corpus-eval.ts",
+    "directory:eval": "bun src/directory-refresh-smoke.ts",
     "bench": "bun src/benchmarks/run.ts",
     "typecheck": "bun --bun tsc --noEmit --project tsconfig.json",
     "test": "bun test --max-concurrency 1 --pass-with-no-tests ."
@@ -15,6 +16,7 @@
   "dependencies": {
     "@struct/domain": "workspace:*",
     "@struct/fred-workflows": "workspace:*",
+    "@struct/ingestion": "workspace:*",
     "@struct/research-engine": "workspace:*",
     "@struct/retrieval": "workspace:*",
     "effect": "3.22.0"
