@@ -90,6 +90,14 @@ function citationKey(citation: typeof ResearchCitation.Type): string {
   return `${citation.sourceVersionId}:${citation.locator}`
 }
 
+function contextCitationKeys(context: DocumentResearchContext): Set<string> {
+  return new Set(
+    context.evidence.map(
+      (item) => `${item.sourceVersionId}:${item.citationLocator}`,
+    ),
+  )
+}
+
 export const requireSufficientEvidence = Effect.fn(
   'EvidenceSufficiency.require',
 )(function* (
@@ -107,10 +115,7 @@ export const requireSufficientEvidence = Effect.fn(
       }),
     ),
   )
-  const validCitations = new Set(
-    context.evidence.map((item) =>
-      `${item.sourceVersionId}:${item.citationLocator}`),
-  )
+  const validCitations = contextCitationKeys(context)
   const allCitations = [
     ...decoded.citedEvidence,
     ...decoded.contradictions.flatMap((conflict) => conflict.citations),
@@ -159,10 +164,7 @@ export const validateDocumentAnswerCitations = Effect.fn(
   context: DocumentResearchContext,
   assessment: EvidenceAssessment,
 ) {
-  const contextCitations = new Set(
-    context.evidence.map((item) =>
-      `${item.sourceVersionId}:${item.citationLocator}`),
-  )
+  const contextCitations = contextCitationKeys(context)
   const validCitations = new Set(
     assessment.citedEvidence
       .map(citationKey)

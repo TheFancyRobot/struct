@@ -165,6 +165,7 @@ describe('processOneResearchJob', () => {
 
   it.each([
     [
+      'EvidenceInsufficientError',
       new EvidenceInsufficientError({
         question: run.question,
         message: 'Evidence was insufficient',
@@ -172,6 +173,7 @@ describe('processOneResearchJob', () => {
       'EvidenceInsufficientError',
     ],
     [
+      'EvidenceContradictionError',
       new EvidenceContradictionError({
         question: run.question,
         conflictCount: 1,
@@ -180,6 +182,7 @@ describe('processOneResearchJob', () => {
       'EvidenceContradictionError',
     ],
     [
+      'ResearchCitationValidationError',
       new ResearchCitationValidationError({
         sourceVersionId,
         locator: evidence[0].locator,
@@ -187,7 +190,8 @@ describe('processOneResearchJob', () => {
       }),
       'ResearchCitationValidationError',
     ],
-  ])('durably records the exact typed document-research failure tag', async (
+  ])('durably records the exact typed document-research failure tag: %s', async (
+    _label,
     failure,
     expectedTag,
   ) => {

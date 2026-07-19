@@ -551,7 +551,7 @@ describe('Fred document research workflow', () => {
       runFredDocumentResearch(
         input,
         dependencies(),
-        { providerPackage: 'mock', model: 'fixed', maxElapsedMs: 15 },
+        { providerPackage: 'mock', model: 'fixed', maxElapsedMs: 30 },
         {
           create: async () => client,
           execute: async () => {
@@ -560,7 +560,7 @@ describe('Fred document research workflow', () => {
         },
       ),
     )
-    await new Promise((resolve) => setTimeout(resolve, 25))
+    await new Promise((resolve) => setTimeout(resolve, 60))
     releasePlanner()
     const exit = await execution
     await new Promise((resolve) => setTimeout(resolve, 0))

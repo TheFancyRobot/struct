@@ -6,7 +6,7 @@ title: Build Document Research and Evidence Sufficiency Workflow
 step_id: STEP-02-04
 phase: '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|Phase 02 document research and hybrid retrieval]]'
 status: completed
-owner: ''
+owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
 depends_on:
