@@ -51,6 +51,13 @@ export {
   DatasetCatalogConflictError,
   DatasetCatalogDecodeError,
   DatasetCatalogQueryError,
+  DatasetMaterializationRepo,
+  DatasetMaterialization,
+  DatasetMaterializationEnqueueInput,
+  DatasetMaterializationPersistenceError,
+  DatasetMaterializationOwnershipLostError,
+  DatasetMaterializationScopeError,
+  DatasetMaterializationConflictError,
   // Persistence errors
   QueryError,
   EntityNotFoundError,
@@ -138,3 +145,7 @@ export type {
   CatalogWriteResult,
   DatasetCatalogError,
 } from './repositories/dataset-catalog.js'
+
+export type {
+  DatasetMaterializationJob,
+} from './repositories/dataset-materializations.js'

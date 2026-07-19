@@ -14,6 +14,7 @@
   "dependencies": {
     "effect": "3.22.0",
     "@struct/domain": "workspace:*",
+    "@struct/data-engine": "workspace:*",
     "@struct/ingestion": "workspace:*",
     "@struct/fred-workflows": "workspace:*",
     "@struct/observability": "workspace:*",

@@ -15,3 +15,71 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+  data-engine:
+    build:
+      context: ./services/data-engine-sidecar
+      dockerfile: Dockerfile
+    image: struct-data-engine:local
+    container_name: struct-data-engine
+    environment:
+      DATA_ENGINE_TOKEN: "${DATA_ENGINE_TOKEN:-struct-local-data-engine-token}"
+    networks:
+      - data-engine
+    volumes:
+      - type: bind
+        source: "${ARTIFACT_STORAGE_ROOT:-./.local/artifacts}"
+        target: /artifacts
+        read_only: true
+        bind:
+          create_host_path: false
+      - data-engine-scratch:/scratch:rw
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 256m
+    cpus: 1.0
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4300/healthz',{headers:{authorization:'Bearer '+process.env.DATA_ENGINE_TOKEN}}).then(r=>process.exit(r.ok?0:1),()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  data-engine-gateway:
+    image: struct-data-engine:local
+    container_name: struct-data-engine-gateway
+    command: ["node", "gateway.mjs"]
+    depends_on:
+      data-engine:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:4300:4300"
+    networks:
+      - default
+      - data-engine
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 32
+    mem_limit: 64m
+    cpus: 0.25
+    restart: unless-stopped
+
+networks:
+  data-engine:
+    internal: true
+
+volumes:
+  data-engine-scratch:

@@ -71,6 +71,37 @@ describe('runWorkerPollLoops', () => {
     expect(counts).toEqual({ ingestion: 1, research: 2 })
   })
 
+  it('does not let a long-running reindex poll delay dataset materialization polls', async () => {
+    const count = await Effect.runPromise(
+      Effect.scoped(
+        Effect.gen(function* () {
+          const datasetCount = yield* Ref.make(0)
+          const reindexStarted = yield* Deferred.make<void>()
+          const releaseReindex = yield* Deferred.make<void>()
+          const reindexPoll = Deferred.succeed(reindexStarted, undefined).pipe(
+            Effect.zipRight(Deferred.await(releaseReindex)),
+          )
+          const datasetPoll = Ref.update(datasetCount, (current) => current + 1)
+
+          yield* runWorkerPollLoops(
+            Effect.void,
+            Effect.void,
+            pollInterval,
+            reindexPoll,
+            datasetPoll,
+          ).pipe(Effect.forkScoped)
+          yield* Deferred.await(reindexStarted)
+          yield* Effect.yieldNow()
+          yield* TestClock.adjust(pollInterval)
+
+          return yield* Ref.get(datasetCount)
+        }),
+      ).pipe(Effect.provide(TestContext.TestContext)),
+    )
+
+    expect(count).toBe(2)
+  })
+
   it('propagates a poll failure and interrupts the sibling loop', async () => {
     const result = await Effect.runPromise(
       Effect.gen(function* () {

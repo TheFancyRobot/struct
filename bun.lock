@@ -64,6 +64,7 @@
       "name": "@struct/worker",
       "version": "0.0.1",
       "dependencies": {
+        "@struct/data-engine": "workspace:*",
         "@struct/domain": "workspace:*",
         "@struct/fred-workflows": "workspace:*",
         "@struct/ingestion": "workspace:*",
@@ -74,6 +75,18 @@
         "@struct/source-storage": "workspace:*",
         "effect": "3.22.0",
         "postgres": "^3.4.9",
+      },
+      "devDependencies": {
+        "typescript": "7.0.2",
+      },
+    },
+    "packages/data-engine": {
+      "name": "@struct/data-engine",
+      "version": "0.0.1",
+      "dependencies": {
+        "@struct/domain": "workspace:*",
+        "@struct/source-storage": "workspace:*",
+        "effect": "3.22.0",
       },
       "devDependencies": {
         "typescript": "7.0.2",
@@ -108,6 +121,7 @@
       "dependencies": {
         "@struct/domain": "workspace:*",
         "@struct/fred-workflows": "workspace:*",
+        "@struct/ingestion": "workspace:*",
         "@struct/research-engine": "workspace:*",
         "@struct/retrieval": "workspace:*",
         "effect": "3.22.0",
@@ -596,6 +610,8 @@
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 
     "@struct/api": ["@struct/api@workspace:apps/api"],
+
+    "@struct/data-engine": ["@struct/data-engine@workspace:packages/data-engine"],
 
     "@struct/document-processing": ["@struct/document-processing@workspace:packages/document-processing"],
 

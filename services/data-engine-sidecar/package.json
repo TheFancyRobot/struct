@@ -1,0 +1,14 @@
+{
+  "name": "struct-data-engine-sidecar",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": "24.18.0"
+  },
+  "dependencies": {
+    "@duckdb/node-api": "1.5.4-r.1",
+    "@duckdb/node-bindings": "1.5.4-r.1",
+    "stream-json": "1.9.1"
+  }
+}

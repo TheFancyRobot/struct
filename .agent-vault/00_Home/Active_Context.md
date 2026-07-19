@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-19._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_01_define-dataset-assets-schemas-and-versioned-catalog|STEP-04-01 Define Dataset Assets Schemas and Versioned Catalog]] - status: in_progress - phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]] - owner: Codex
+- Current step: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_02_implement-parquet-materialization-and-data-profiling|STEP-04-02 Implement Parquet Materialization and Data Profiling]] - status: in_progress - phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]] - owner: Codex
 - Active phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]] - status: in_progress - owner: Codex - updated: 2026-07-19
-- Also active: 53 more additional steps.
+- Also active: 52 more additional steps.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -38,13 +38,13 @@ _Last refreshed: 2026-07-19._
 - Phase 02 is completed and merged through STEP-02-06 with deterministic retrieval, exact provenance, bounded core-Fred document research, SolidJS citation navigation, and injection-resistance evaluation.
 - Phase 03 and STEP-03-01 through STEP-03-06 are completed and merged.
 - Phase 04 is refined into six linear steps with concrete execution and validation contracts.
-- STEP-04-01 is the next implementation target after the Phase 04 refinement PR merges.
+- STEP-04-01 is merged. STEP-04-02 is implemented on its dedicated branch and is undergoing PR review and remediation.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 
 ## Out Of Scope Right Now
 
 - A second runtime, queue, database, filesystem service, client state framework, or Fred executor.
-- STEP-04-02 and later work until each preceding Phase 04 step is reviewed and merged.
+- STEP-04-03 and later work until STEP-04-02 is reviewed and merged.
 - Later-phase release work.
 
 ## Working Assumptions
@@ -61,7 +61,7 @@ _Last refreshed: 2026-07-19._
 
 ## Open Questions
 
-- None blocking STEP-04-01 after the refinement PR merges.
+- No unresolved design question blocks STEP-04-02 review and merge.
 
 ## Critical Bugs
 
@@ -71,6 +71,6 @@ _Last refreshed: 2026-07-19._
 
 ## Next Actions
 
-- Publish, review, and merge the Phase 03 closeout and [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]] refinement.
-- Execute [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_01_define-dataset-assets-schemas-and-versioned-catalog|STEP-04-01 Define Dataset Assets Schemas and Versioned Catalog]] with a fresh non-git worker on its dedicated branch.
+- Complete review remediation and merge [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_02_implement-parquet-materialization-and-data-profiling|STEP-04-02 Implement Parquet Materialization and Data Profiling]].
+- Do not begin STEP-04-03 until STEP-04-02 is merged and the zero-defect gate is green.
 - Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.

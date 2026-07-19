@@ -101,6 +101,8 @@ describe('Worker entrypoint config validation', () => {
         ARTIFACT_STORAGE_ROOT: root,
         FRED_PROVIDER_PACKAGE: '@fancyrobot/fred-openai',
         FRED_MODEL: 'gpt-4o-mini',
+        DATA_ENGINE_URL: 'http://data-engine:4300',
+        DATA_ENGINE_TOKEN: 'entrypoint-test-data-engine-token',
       })
     } finally {
       rmSync(root, { recursive: true, force: true })
@@ -126,6 +128,8 @@ describe('Worker entrypoint config validation', () => {
           ARTIFACT_STORAGE_ROOT: tmpdir(),
           FRED_PROVIDER_PACKAGE: '@fancyrobot/fred-openai',
           FRED_MODEL: 'gpt-4o-mini',
+          DATA_ENGINE_URL: 'http://data-engine:4300',
+          DATA_ENGINE_TOKEN: 'entrypoint-test-data-engine-token',
         },
       },
     )

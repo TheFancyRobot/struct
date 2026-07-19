@@ -7,6 +7,8 @@
 import { Effect, Layer, Runtime } from 'effect'
 import postgres from 'postgres'
 import {
+  DatasetCatalogRepo,
+  DatasetMaterializationRepo,
   JobQueueRepo,
   QueryError,
   ResearchExecutionRepo,
@@ -16,6 +18,7 @@ import {
   SourceVersionRepo,
   SqlClientLive,
 } from '@struct/persistence'
+import { DataEngineClient } from '@struct/data-engine'
 import { CitationId, EventJournalId, SourceVersionId } from '@struct/domain'
 import { LocalArtifactStore } from '@struct/source-storage'
 import { ingestTextSource } from '@struct/ingestion'
@@ -45,6 +48,7 @@ import {
 import { processOneIngestionJob } from './jobs/ingest-source'
 import { processOneResearchJob } from './jobs/run-research'
 import { processOneSourceTextReindex } from './jobs/reindex-source-text'
+import { processOneDatasetMaterialization } from './jobs/materialize-dataset'
 import { runWorkerPollLoops } from './polling'
 
 const program = Effect.gen(function* () {
@@ -59,6 +63,11 @@ const program = Effect.gen(function* () {
     staleMs,
   })
   const sourceTextReindexHeartbeatIntervalMs =
+    deriveSourceTextReindexHeartbeatIntervalMs({
+      pollIntervalMs: pollMs,
+      staleMs,
+    })
+  const datasetMaterializationHeartbeatIntervalMs =
     deriveSourceTextReindexHeartbeatIntervalMs({
       pollIntervalMs: pollMs,
       staleMs,
@@ -81,6 +90,14 @@ const program = Effect.gen(function* () {
   const researchExecutionLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
   const researchRunLayer = Layer.provide(ResearchRunRepo.Default, sqlLayer)
   const sourceTextReindexLayer = Layer.provide(SourceTextReindexRepo.Default, sqlLayer)
+  const datasetCatalogLayer = Layer.provide(DatasetCatalogRepo.Default, sqlLayer)
+  const datasetMaterializationLayer = Layer.provide(
+    DatasetMaterializationRepo.Default,
+    sqlLayer,
+  )
+  const dataEngineClient = yield* DataEngineClient.pipe(
+    Effect.provide(DataEngineClient.Default),
+  )
   const effectRuntime = yield* Effect.runtime<never>()
   let ready = false
   yield* Effect.acquireRelease(
@@ -283,7 +300,66 @@ const program = Effect.gen(function* () {
     },
   }))
 
-  yield* runWorkerPollLoops(poll, researchPoll, pollMs, reindexPoll)
+  const datasetMaterializationPoll = Effect.suspend(() =>
+    processOneDatasetMaterialization({
+      leaseMs: staleMs,
+      heartbeatIntervalMs: datasetMaterializationHeartbeatIntervalMs,
+      limits: {
+        maxInputBytes: 64 * 1024 * 1024,
+        maxRows: 1_000_000,
+        maxOutputBytes: 128 * 1024 * 1024,
+        timeoutMs: 60_000,
+      },
+      jobs: {
+        recoverExpired: () =>
+          DatasetMaterializationRepo.recoverExpired().pipe(
+            Effect.provide(datasetMaterializationLayer),
+          ),
+        claimNext: (leaseMs) =>
+          DatasetMaterializationRepo.claimNext(leaseMs).pipe(
+            Effect.provide(datasetMaterializationLayer),
+          ),
+        renewLease: (job, leaseMs) =>
+          DatasetMaterializationRepo.renewLease(job, leaseMs).pipe(
+            Effect.provide(datasetMaterializationLayer),
+          ),
+        complete: (job, materialization) =>
+          DatasetMaterializationRepo.complete(job, materialization).pipe(
+            Effect.provide(datasetMaterializationLayer),
+          ),
+        recordFailure: (job, retryable, errorCode) =>
+          DatasetMaterializationRepo.recordFailure(
+            job,
+            retryable,
+            errorCode,
+          ).pipe(Effect.provide(datasetMaterializationLayer)),
+      },
+      catalog: {
+        listSnapshots: (job) =>
+          DatasetCatalogRepo.listSnapshots(
+            job.workspaceId,
+            job.projectId,
+            job.datasetId,
+          ).pipe(Effect.provide(datasetCatalogLayer)),
+        getSchemaFamily: (job, familyId) =>
+          DatasetCatalogRepo.getSchemaFamily(
+            job.workspaceId,
+            job.projectId,
+            job.datasetId,
+            familyId,
+          ).pipe(Effect.provide(datasetCatalogLayer)),
+      },
+      client: dataEngineClient,
+      store: storage,
+    }))
+
+  yield* runWorkerPollLoops(
+    poll,
+    researchPoll,
+    pollMs,
+    reindexPoll,
+    datasetMaterializationPoll,
+  )
 })
 
 Effect.runPromise(

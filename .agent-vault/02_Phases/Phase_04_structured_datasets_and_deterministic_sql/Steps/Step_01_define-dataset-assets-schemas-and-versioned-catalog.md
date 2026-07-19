@@ -5,7 +5,7 @@ contract_version: 1
 title: Define Dataset Assets Schemas and Versioned Catalog
 step_id: STEP-04-01
 phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]'
-status: in_progress
+status: completed
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
@@ -22,7 +22,7 @@ tags:
 context_id: SESSION-2026-07-19-162624
 active_session_id: 05_Sessions/2026-07-19-162624-define-dataset-assets-schemas-and-versioned-catalog-codex-step-04-01-worker
 context_status: completed
-context_summary: STEP-04-01 implementation and all validation are complete; awaiting root self-review, commit, PR review, and merge before marking the step completed.
+context_summary: 'Implemented, root-reviewed, independently validated, reviewed with all findings resolved, and merged to main in PR #18 at c328cfa.'
 ---
 
 # Step 01 - Define Dataset Assets Schemas and Versioned Catalog
@@ -54,16 +54,16 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: in_progress
+- Status: completed
 - Current owner: Codex
 - Last touched: 2026-07-19
-- Next action: Complete PR review and merge after all findings are resolved; then mark the step completed before advancing to STEP-04-02.
+- Next action: Use the merged catalog contracts and scoped schema-family reader in STEP-04-02.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
 
 - Keep this step narrow and explicit; planned paths may not exist yet and should be created only when execution begins.
-- Implementation complete in SESSION-2026-07-19-162624. The catalog-only slice is green and awaits root review/PR/merge; STEP-04-02 remains out of scope until this step merges.
+- Implementation completed in SESSION-2026-07-19-162624 and merged to `main` through PR #18. Its catalog contracts are the foundation for the active STEP-04-02 work.
 
 ## Session History
 
