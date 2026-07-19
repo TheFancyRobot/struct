@@ -1,8 +1,14 @@
 import { Effect } from 'effect'
-import type { EventJournal, JobQueue, Source } from '@struct/domain'
+import type {
+  EventJournal,
+  JobQueue,
+  Source,
+  SourceUploadMediaType,
+} from '@struct/domain'
 import {
   AuthorizationError,
   isCanonicalStagedArtifactRef,
+  isSupportedSourceUpload,
   ValidationError,
 } from '@struct/domain'
 import { QueryError, type PersistenceError } from '../errors.js'
@@ -22,10 +28,12 @@ export interface SourceRegistrationInput {
   readonly event: typeof EventJournal.Type
 }
 
+export type SourceRegistrationMediaType = SourceUploadMediaType
+
 export interface SourceRegistrationJobPayload {
   readonly stagedRef: `staged://${string}/${string}`
   readonly name: string
-  readonly mediaType: 'text/plain' | 'text/markdown'
+  readonly mediaType: SourceRegistrationMediaType
   readonly byteLength: number
   readonly sourceId: typeof Source.Type['id']
   readonly projectId: typeof Source.Type['projectId']
@@ -35,7 +43,7 @@ export interface SourceRegistrationEventPayload {
   readonly sourceId: typeof Source.Type['id']
   readonly jobId: typeof JobQueue.Type['id']
   readonly stagedRef: `staged://${string}/${string}`
-  readonly mediaType: 'text/plain' | 'text/markdown'
+  readonly mediaType: SourceRegistrationMediaType
   readonly byteLength: number
 }
 
@@ -214,7 +222,7 @@ function validateRegistrationAggregate(
     [jobPayload['name'] === input.source.name, 'job.payload.name'],
     [isCanonicalStagedArtifactRef(stagedRef), 'job.payload.stagedRef'],
     [
-      mediaType === 'text/plain' || mediaType === 'text/markdown',
+      isSupportedSourceUpload(jobPayload['name'], mediaType),
       'job.payload.mediaType',
     ],
     [

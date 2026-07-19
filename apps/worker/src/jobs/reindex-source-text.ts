@@ -61,7 +61,7 @@ export interface SourceTextReindexWorkerDeps {
 
 interface StoredManifest {
   readonly kind: 'text-source-manifest'
-  readonly version: 1
+  readonly version: 1 | 2
   readonly normalizedRef: ArtifactRef
   readonly contentHash: string
 }
@@ -90,7 +90,7 @@ function decodeManifest(bytes: Uint8Array, job: SourceTextReindexJob): StoredMan
   const record = value as Record<string, unknown>
   if (
     record['kind'] !== 'text-source-manifest'
-    || record['version'] !== 1
+    || (record['version'] !== 1 && record['version'] !== 2)
     || !artifactRef(record['normalizedRef'])
     || record['contentHash'] !== job.contentHash
   ) {
@@ -98,7 +98,7 @@ function decodeManifest(bytes: Uint8Array, job: SourceTextReindexJob): StoredMan
   }
   return {
     kind: 'text-source-manifest',
-    version: 1,
+    version: record['version'],
     normalizedRef: record['normalizedRef'],
     contentHash: record['contentHash'],
   }

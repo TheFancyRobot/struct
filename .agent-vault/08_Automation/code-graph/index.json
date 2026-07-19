@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-19T04:35:45.886Z",
+  "generatedAt": "2026-07-19T07:21:21.548Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -68,66 +68,67 @@
         {
           "name": "RegisterRequestBody",
           "kind": "interface",
-          "line": 46,
-          "exported": false,
-          "endLine": 46
-        },
-        {
-          "name": "ResearchRequestBody",
-          "kind": "interface",
           "line": 54,
           "exported": false,
           "endLine": 54
         },
         {
+          "name": "ResearchRequestBody",
+          "kind": "interface",
+          "line": 62,
+          "exported": false,
+          "endLine": 62
+        },
+        {
           "name": "jsonResponse",
           "kind": "function",
-          "line": 61,
+          "line": 69,
           "exported": false,
-          "endLine": 61,
+          "endLine": 69,
           "signature": "(body: unknown, status = 200)"
         },
         {
           "name": "parseBody",
           "kind": "function",
-          "line": 68,
+          "line": 76,
           "exported": false,
-          "endLine": 68,
+          "endLine": 76,
           "signature": "(body: RegisterRequestBody): Effect.Effect<{"
         },
         {
           "name": "parseResearchBody",
           "kind": "function",
-          "line": 92,
+          "line": 100,
           "exported": false,
-          "endLine": 92,
+          "endLine": 100,
           "signature": "(body: ResearchRequestBody): Effect.Effect<{"
         },
         {
           "name": "researchFailureResponse",
           "kind": "function",
-          "line": 127,
+          "line": 135,
           "exported": false,
-          "endLine": 127,
+          "endLine": 135,
           "signature": "(cause: Cause.Cause<unknown>)"
         },
         {
           "name": "server",
           "kind": "const",
-          "line": 138,
+          "line": 146,
           "exported": false,
-          "endLine": 138
+          "endLine": 146
         }
       ],
       "imports": [
         {
-          "source": "Cause, Effect, Layer, Option, Schema",
+          "source": "Cause, Effect, Layer, Option, Runtime, Schema",
           "specifier": "effect",
           "imported": [
             "Cause",
             "Effect",
             "Layer",
             "Option",
+            "Runtime",
             "Schema"
           ],
           "kind": "static"
@@ -174,9 +175,9 @@
         }
       ],
       "exports": [],
-      "hash": "d180fc433559ca096c80f0625e3deae2f84dbe6bb668384785983386ac5685e4",
-      "mtimeMs": 1784435731348.9868,
-      "size": 12701,
+      "hash": "dcfdb9718dacdf008091146d4bbe206d1b1fded4319ad56506b06d0755a780be",
+      "mtimeMs": 1784442089971.162,
+      "size": 17242,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -321,7 +322,7 @@
       ],
       "exports": [],
       "hash": "92f6366767b9baa2849e8fbfcd520e439a2b69c7fe9c4a3eca7102d35d685c76",
-      "mtimeMs": 1784435083070.8708,
+      "mtimeMs": 1784435777323.1477,
       "size": 6552,
       "generated": false,
       "vendor": false,
@@ -433,7 +434,7 @@
       ],
       "exports": [],
       "hash": "148aff87ceec5b11769218471c83f3ac0b8096abe885cec8a60440e6549a2027",
-      "mtimeMs": 1784435187385.0652,
+      "mtimeMs": 1784435777323.411,
       "size": 5664,
       "generated": false,
       "vendor": false,
@@ -498,67 +499,59 @@
         {
           "name": "ValidationError",
           "kind": "const",
-          "line": 21,
+          "line": 22,
           "exported": true,
-          "endLine": 21
+          "endLine": 22
         },
         {
           "name": "AuthorizationError",
           "kind": "const",
-          "line": 21,
+          "line": 22,
           "exported": true,
-          "endLine": 21
+          "endLine": 22
         },
         {
           "name": "RegisterTextSourceInput",
           "kind": "interface",
-          "line": 23,
+          "line": 24,
           "exported": true,
-          "endLine": 23
+          "endLine": 24
         },
         {
           "name": "RegisterTextSourceResult",
           "kind": "interface",
-          "line": 31,
+          "line": 32,
           "exported": true,
-          "endLine": 31
+          "endLine": 32
         },
         {
           "name": "RegisterTextSourceDeps",
           "kind": "interface",
-          "line": 37,
+          "line": 38,
           "exported": true,
-          "endLine": 37
+          "endLine": 38
         },
         {
           "name": "isSafeUploadName",
           "kind": "function",
-          "line": 60,
+          "line": 61,
           "exported": false,
-          "endLine": 60,
+          "endLine": 61,
           "signature": "(name: string)"
-        },
-        {
-          "name": "isSupportedTextUpload",
-          "kind": "function",
-          "line": 69,
-          "exported": false,
-          "endLine": 69,
-          "signature": "(name: string, mediaType: string)"
         },
         {
           "name": "mapUnknown",
           "kind": "const",
-          "line": 74,
+          "line": 70,
           "exported": false,
-          "endLine": 74
+          "endLine": 70
         },
         {
           "name": "registerTextSource",
           "kind": "const",
-          "line": 79,
+          "line": 75,
           "exported": true,
-          "endLine": 79
+          "endLine": 75
         }
       ],
       "imports": [
@@ -580,9 +573,9 @@
         }
       ],
       "exports": [],
-      "hash": "6b7079ff247f6bf17f5794d8bb8928ed7aa66a9b8113df5d7ead0eac2e6c10e5",
-      "mtimeMs": 1784433778767.7107,
-      "size": 5195,
+      "hash": "ff88ae25d8cec0de36d1351c919903edda1f386668c7dbc489a3cf3e01af0d2a",
+      "mtimeMs": 1784445173805.4937,
+      "size": 4972,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -611,9 +604,9 @@
         }
       ],
       "exports": [],
-      "hash": "e11a74a37fb725cfb8d929e74f065b8741129a9bd5949b44680f132d5a8806e8",
-      "mtimeMs": 1784434522286.6946,
-      "size": 840,
+      "hash": "7bfc83227894dae0b425dbcf5c764db903b5e0d5ad18b8c14ff7b32053996d2a",
+      "mtimeMs": 1784442089972.0447,
+      "size": 1161,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -654,7 +647,7 @@
         }
       ],
       "hash": "c14322e4dcfa1620b542660273931767fe7b2ebb49585c62dcdbb3163846e5bb",
-      "mtimeMs": 1784434227238.8093,
+      "mtimeMs": 1784435777323.734,
       "size": 3734,
       "generated": false,
       "vendor": false,
@@ -710,7 +703,7 @@
       ],
       "exports": [],
       "hash": "ac464fda67133ec60dccd98c6110af68dd4fdc8b451f387c8c62eca50af5001e",
-      "mtimeMs": 1784434625750.5085,
+      "mtimeMs": 1784435777324.0212,
       "size": 2863,
       "generated": false,
       "vendor": false,
@@ -797,7 +790,7 @@
       ],
       "exports": [],
       "hash": "d2013242a31e15866fde5d478cecb6f3c507f77896c3ffbfd0ef8e7f9242db3d",
-      "mtimeMs": 1784434506483.1357,
+      "mtimeMs": 1784435777324.1392,
       "size": 3685,
       "generated": false,
       "vendor": false,
@@ -871,7 +864,7 @@
       ],
       "exports": [],
       "hash": "8e819863ec83ba528a0d395b68c2c708900f9e0466cbc30fce4f184f0eddf58d",
-      "mtimeMs": 1784435247262.336,
+      "mtimeMs": 1784435777324.3667,
       "size": 4044,
       "generated": false,
       "vendor": false,
@@ -917,7 +910,7 @@
       ],
       "exports": [],
       "hash": "2dd7050ae99ce4ef97736c709795c737e179aa30aa951f1912cfcc26341e290e",
-      "mtimeMs": 1784434506483.3755,
+      "mtimeMs": 1784435777324.6116,
       "size": 633,
       "generated": false,
       "vendor": false,
@@ -963,7 +956,7 @@
       ],
       "exports": [],
       "hash": "ab060da33b24f5fb1d53f92001e17fd51bd3a5dd87a144c88c722337f486b52d",
-      "mtimeMs": 1784434506483.6028,
+      "mtimeMs": 1784435777324.7036,
       "size": 629,
       "generated": false,
       "vendor": false,
@@ -1122,147 +1115,147 @@
         {
           "name": "WorkerIngestionResult",
           "kind": "interface",
-          "line": 18,
+          "line": 22,
           "exported": true,
-          "endLine": 18
+          "endLine": 22
         },
         {
           "name": "EventJournalType",
           "kind": "type",
-          "line": 27,
+          "line": 31,
           "exported": false,
-          "endLine": 27
+          "endLine": 31
         },
         {
           "name": "IngestionWorkerDeps",
           "kind": "interface",
-          "line": 29,
+          "line": 33,
           "exported": true,
-          "endLine": 29
+          "endLine": 33
         },
         {
           "name": "ProcessOneResult",
           "kind": "interface",
-          "line": 75,
+          "line": 79,
           "exported": true,
-          "endLine": 75
+          "endLine": 79
         },
         {
           "name": "IngestionPayload",
           "kind": "interface",
-          "line": 80,
+          "line": 84,
           "exported": false,
-          "endLine": 80
+          "endLine": 84
         },
         {
           "name": "IngestionLeaseHeartbeatError",
           "kind": "class",
-          "line": 87,
+          "line": 91,
           "exported": false,
-          "endLine": 87
+          "endLine": 91
         },
         {
           "name": "DeclaredRetryableIngestionError",
           "kind": "class",
-          "line": 101,
+          "line": 105,
           "exported": true,
-          "endLine": 101,
+          "endLine": 105,
           "doc": "Explicit escape hatch for adapters that can prove a failure is transient.\nUnknown errors fail closed as terminal; callers must not infer retryability\nfrom an arbitrary message."
         },
         {
           "name": "IngestionFailureDisposition",
           "kind": "type",
-          "line": 111,
+          "line": 115,
           "exported": true,
-          "endLine": 111
+          "endLine": 115
         },
         {
           "name": "retryableFailureTags",
           "kind": "const",
-          "line": 113,
+          "line": 117,
           "exported": false,
-          "endLine": 113
+          "endLine": 117
         },
         {
           "name": "retryableIngestionFailureReasons",
           "kind": "const",
-          "line": 122,
+          "line": 126,
           "exported": false,
-          "endLine": 122
+          "endLine": 126
         },
         {
           "name": "taggedFailure",
           "kind": "function",
-          "line": 128,
+          "line": 132,
           "exported": false,
-          "endLine": 128,
+          "endLine": 132,
           "signature": "(error: unknown): {"
         },
         {
           "name": "classifyIngestionFailure",
           "kind": "function",
-          "line": 142,
+          "line": 146,
           "exported": true,
-          "endLine": 142,
+          "endLine": 146,
           "doc": "Retry only failures whose type explicitly denotes transient infrastructure.\nValidation, authorization, unsupported input, path/ref, schema, hash,\nintegrity, conflict, and unknown failures are terminal by default."
         },
         {
           "name": "decodePayload",
           "kind": "function",
-          "line": 158,
+          "line": 162,
           "exported": false,
-          "endLine": 158
+          "endLine": 162
         },
         {
           "name": "sanitizedFailurePayload",
           "kind": "function",
-          "line": 194,
+          "line": 198,
           "exported": false,
-          "endLine": 194
+          "endLine": 198
         },
         {
           "name": "makeEvent",
           "kind": "function",
-          "line": 209,
+          "line": 213,
           "exported": false,
-          "endLine": 209
+          "endLine": 213
         },
         {
           "name": "appendOwnedEvent",
           "kind": "function",
-          "line": 231,
+          "line": 235,
           "exported": false,
-          "endLine": 231
+          "endLine": 235
         },
         {
           "name": "completeJob",
           "kind": "function",
-          "line": 240,
+          "line": 244,
           "exported": false,
-          "endLine": 240
+          "endLine": 244
         },
         {
           "name": "failJob",
           "kind": "function",
-          "line": 284,
+          "line": 288,
           "exported": false,
-          "endLine": 284,
+          "endLine": 288,
           "signature": "(deps: IngestionWorkerDeps, job: typeof JobQueue.Type, reason: unknown)"
         },
         {
           "name": "isOwnershipLost",
           "kind": "function",
-          "line": 307,
+          "line": 323,
           "exported": false,
-          "endLine": 307,
+          "endLine": 323,
           "signature": "(error: unknown)"
         },
         {
           "name": "processOneIngestionJob",
           "kind": "const",
-          "line": 317,
+          "line": 333,
           "exported": true,
-          "endLine": 317
+          "endLine": 333
         }
       ],
       "imports": [
@@ -1307,9 +1300,9 @@
         }
       ],
       "exports": [],
-      "hash": "7b7be8114ba3f89e5a82b44b9b2335b62b55f83226586e531ca5c805e54936c7",
-      "mtimeMs": 1784433778769.035,
-      "size": 12664,
+      "hash": "2d572f915504f54c0e2d070169ddb49714d11e5b077ea58540efbde02b37cfbb",
+      "mtimeMs": 1784442089972.3184,
+      "size": 13319,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1451,9 +1444,9 @@
         }
       ],
       "exports": [],
-      "hash": "933c21d17d456d4d6574d6ed9778fbb688d16c26eac38510ebc20a8a7a77e404",
-      "mtimeMs": 1784433778769.4346,
-      "size": 8700,
+      "hash": "1492a7e7e8e3467f2a259ab53995e42ae788a010bf07f455659896746f215a59",
+      "mtimeMs": 1784443499802.3347,
+      "size": 8749,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1465,67 +1458,67 @@
         {
           "name": "ResearchPayload",
           "kind": "interface",
-          "line": 13,
+          "line": 18,
           "exported": false,
-          "endLine": 13
+          "endLine": 18
         },
         {
           "name": "ResearchWorkerDeps",
           "kind": "interface",
-          "line": 18,
+          "line": 23,
           "exported": true,
-          "endLine": 18
+          "endLine": 23
         },
         {
           "name": "ResearchLeaseHeartbeatError",
           "kind": "class",
-          "line": 67,
+          "line": 72,
           "exported": false,
-          "endLine": 67
+          "endLine": 72
         },
         {
           "name": "decodePayload",
           "kind": "function",
-          "line": 76,
+          "line": 81,
           "exported": false,
-          "endLine": 76
+          "endLine": 81
         },
         {
           "name": "event",
           "kind": "function",
-          "line": 111,
+          "line": 116,
           "exported": false,
-          "endLine": 111
+          "endLine": 116
         },
         {
           "name": "citationsFor",
           "kind": "function",
-          "line": 129,
+          "line": 134,
           "exported": false,
-          "endLine": 129
+          "endLine": 134
         },
         {
           "name": "safeFailureTag",
           "kind": "function",
-          "line": 144,
+          "line": 149,
           "exported": false,
-          "endLine": 144,
+          "endLine": 149,
           "signature": "(error: unknown)"
         },
         {
           "name": "isOwnershipLost",
           "kind": "function",
-          "line": 153,
+          "line": 158,
           "exported": false,
-          "endLine": 153,
+          "endLine": 158,
           "signature": "(error: unknown)"
         },
         {
           "name": "processOneResearchJob",
           "kind": "const",
-          "line": 163,
+          "line": 168,
           "exported": true,
-          "endLine": 163
+          "endLine": 168
         }
       ],
       "imports": [
@@ -1549,9 +1542,9 @@
         }
       ],
       "exports": [],
-      "hash": "9ef2b9014ab580d0f02669aececaa2006fac3c3c117373539d6be5e52a1dcbd8",
-      "mtimeMs": 1784433778769.7024,
-      "size": 8137,
+      "hash": "7f1f8986b00aeefbe507f8dccdb17577ee6b49d8636be63ed5e84dfa0cb5864a",
+      "mtimeMs": 1784442089972.8499,
+      "size": 10554,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1563,18 +1556,19 @@
         {
           "name": "program",
           "kind": "const",
-          "line": 44,
+          "line": 50,
           "exported": false,
-          "endLine": 44
+          "endLine": 50
         }
       ],
       "imports": [
         {
-          "source": "Effect, Layer",
+          "source": "Effect, Layer, Runtime",
           "specifier": "effect",
           "imported": [
             "Effect",
-            "Layer"
+            "Layer",
+            "Runtime"
           ],
           "kind": "static"
         },
@@ -1662,9 +1656,9 @@
         }
       ],
       "exports": [],
-      "hash": "b62c1039e1a056c0613131ca88287dc5bb4e9b357601ef8c5fc9c6e240e9a10e",
-      "mtimeMs": 1784433778769.8772,
-      "size": 9210,
+      "hash": "66125df9085b1509d8941677a7da8068f2c9fd546c2a37458f50251a353a1d1b",
+      "mtimeMs": 1784442089973.1924,
+      "size": 11297,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1696,6 +1690,480 @@
       "hash": "72861682ff6ff54245b76dfbea85c7f39da16b2372ddde66aa39f0a049c5319c",
       "mtimeMs": 1784433778770.0542,
       "size": 929,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/document-processing/src/errors.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DocumentProcessingError",
+          "kind": "class",
+          "line": 3,
+          "exported": true,
+          "endLine": 3
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "31f3af8bfc7ba75e9d795e42dfe17434c5a78cf402d86033e858d6a10e61c1b9",
+      "mtimeMs": 1784443474920.9514,
+      "size": 212,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/document-processing/src/normalize-document.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "encoder",
+          "kind": "const",
+          "line": 1,
+          "exported": false,
+          "endLine": 1
+        },
+        {
+          "name": "UnnormalizedFragment",
+          "kind": "interface",
+          "line": 3,
+          "exported": true,
+          "endLine": 3
+        },
+        {
+          "name": "normalize",
+          "kind": "const",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        },
+        {
+          "name": "normalizeDocument",
+          "kind": "const",
+          "line": 12,
+          "exported": true,
+          "endLine": 12
+        },
+        {
+          "name": "normalizeSourceDocument",
+          "kind": "const",
+          "line": 51,
+          "exported": true,
+          "endLine": 51
+        }
+      ],
+      "imports": [],
+      "exports": [],
+      "hash": "bec33e924ea7fb9936dbdadeba56be87f7b3a253b7949e157d7b3ab31e4c6578",
+      "mtimeMs": 1784444780588.7527,
+      "size": 2636,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/document-processing/src/parsers/html.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "decoder",
+          "kind": "const",
+          "line": 6,
+          "exported": false,
+          "endLine": 6
+        },
+        {
+          "name": "MAX_HTML_DEPTH",
+          "kind": "const",
+          "line": 7,
+          "exported": false,
+          "endLine": 7
+        },
+        {
+          "name": "blockTags",
+          "kind": "const",
+          "line": 8,
+          "exported": false,
+          "endLine": 8
+        },
+        {
+          "name": "ignoredTags",
+          "kind": "const",
+          "line": 9,
+          "exported": false,
+          "endLine": 9
+        },
+        {
+          "name": "HtmlNode",
+          "kind": "interface",
+          "line": 11,
+          "exported": false,
+          "endLine": 11
+        },
+        {
+          "name": "assertSupportedDepth",
+          "kind": "const",
+          "line": 12,
+          "exported": false,
+          "endLine": 12
+        },
+        {
+          "name": "nodeText",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "containsBlock",
+          "kind": "const",
+          "line": 23,
+          "exported": false,
+          "endLine": 23
+        },
+        {
+          "name": "parseHtml",
+          "kind": "const",
+          "line": 31,
+          "exported": true,
+          "endLine": 31
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "parse",
+          "specifier": "parse5",
+          "imported": [
+            "parse"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DocumentProcessingError",
+          "specifier": "../errors.js",
+          "imported": [
+            "DocumentProcessingError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "normalizeDocument",
+          "specifier": "../normalize-document.js",
+          "imported": [
+            "normalizeDocument"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "b6e6524e375d7852b811cba5ebd8f2a761716cb84b5f00889f78e821db3e7d2f",
+      "mtimeMs": 1784444780589.3892,
+      "size": 2697,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/document-processing/src/parsers/markdown.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "decoder",
+          "kind": "const",
+          "line": 5,
+          "exported": false,
+          "endLine": 5
+        },
+        {
+          "name": "MarkdownFragment",
+          "kind": "interface",
+          "line": 7,
+          "exported": false,
+          "endLine": 7
+        },
+        {
+          "name": "markdownFragments",
+          "kind": "const",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        },
+        {
+          "name": "parseMarkdown",
+          "kind": "const",
+          "line": 65,
+          "exported": true,
+          "endLine": 65
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DocumentProcessingError",
+          "specifier": "../errors.js",
+          "imported": [
+            "DocumentProcessingError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "normalize, normalizeSourceDocument",
+          "specifier": "../normalize-document.js",
+          "imported": [
+            "normalize",
+            "normalizeSourceDocument"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "6d9318e1aee7825b27bec4fdc8b91ae771bddd23e1dbea6aba7a2abe2d218bc4",
+      "mtimeMs": 1784445606847.417,
+      "size": 2130,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/document-processing/src/parsers/pdf.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "MAX_PDF_PAGES",
+          "kind": "const",
+          "line": 5,
+          "exported": false,
+          "endLine": 5
+        },
+        {
+          "name": "MAX_EXTRACTED_CHARACTERS",
+          "kind": "const",
+          "line": 6,
+          "exported": false,
+          "endLine": 6
+        },
+        {
+          "name": "isOcrHeavyPdf",
+          "kind": "const",
+          "line": 8,
+          "exported": true,
+          "endLine": 8
+        },
+        {
+          "name": "PdfTextItem",
+          "kind": "interface",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "PdfPage",
+          "kind": "interface",
+          "line": 19,
+          "exported": false,
+          "endLine": 19
+        },
+        {
+          "name": "PdfDocument",
+          "kind": "interface",
+          "line": 20,
+          "exported": false,
+          "endLine": 20
+        },
+        {
+          "name": "PdfLoadingTask",
+          "kind": "interface",
+          "line": 21,
+          "exported": false,
+          "endLine": 21
+        },
+        {
+          "name": "PdfJs",
+          "kind": "interface",
+          "line": 22,
+          "exported": false,
+          "endLine": 22
+        },
+        {
+          "name": "PdfLine",
+          "kind": "interface",
+          "line": 24,
+          "exported": false,
+          "endLine": 24
+        },
+        {
+          "name": "extractPdfPageParagraphs",
+          "kind": "const",
+          "line": 30,
+          "exported": true,
+          "endLine": 30
+        },
+        {
+          "name": "parsePdf",
+          "kind": "const",
+          "line": 82,
+          "exported": true,
+          "endLine": 82
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DocumentProcessingError",
+          "specifier": "../errors.js",
+          "imported": [
+            "DocumentProcessingError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "normalizeDocument",
+          "specifier": "../normalize-document.js",
+          "imported": [
+            "normalizeDocument"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "pdfjs-dist/legacy/build/pdf.mjs",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "ccea5eae17171de3dbb90bedf964f1ca92e493f5c2ca31e9b1c06f91b462abb0",
+      "mtimeMs": 1784445606847.966,
+      "size": 4932,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/document-processing/src/parsers/text.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "decoder",
+          "kind": "const",
+          "line": 5,
+          "exported": false,
+          "endLine": 5
+        },
+        {
+          "name": "parseText",
+          "kind": "const",
+          "line": 7,
+          "exported": true,
+          "endLine": 7
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DocumentProcessingError",
+          "specifier": "../errors.js",
+          "imported": [
+            "DocumentProcessingError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "normalize, normalizeSourceDocument",
+          "specifier": "../normalize-document.js",
+          "imported": [
+            "normalize",
+            "normalizeSourceDocument"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "7911f622855f4a7f9d7648ee2b0e6cc990592382ffd99e6dd5c5ed4341cf7e46",
+      "mtimeMs": 1784444780590.3586,
+      "size": 724,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/document-processing/src/types.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "SupportedDocumentFormat",
+          "kind": "type",
+          "line": 1,
+          "exported": true,
+          "endLine": 1
+        },
+        {
+          "name": "DocumentLocator",
+          "kind": "interface",
+          "line": 3,
+          "exported": true,
+          "endLine": 3
+        },
+        {
+          "name": "DocumentFragment",
+          "kind": "interface",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "NormalizedDocument",
+          "kind": "interface",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        }
+      ],
+      "imports": [],
+      "exports": [],
+      "hash": "8679e0ac213cf60b8b40c31c4569bfe72b34df305d89f5525d6c13fc9216b12f",
+      "mtimeMs": 1784443474920.5618,
+      "size": 575,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2055,7 +2523,7 @@
       ],
       "exports": [],
       "hash": "516515e75bd599d5af370c84ad6e26cbfe95e909fb1ad19f9ffa7b7e6ff4dd23",
-      "mtimeMs": 1784434625749.5051,
+      "mtimeMs": 1784435777326.087,
       "size": 2877,
       "generated": false,
       "vendor": false,
@@ -2279,6 +2747,41 @@
       "parser": "regex"
     },
     {
+      "path": "packages/domain/src/source-uploads.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "uploadRules",
+          "kind": "const",
+          "line": 1,
+          "exported": false,
+          "endLine": 1
+        },
+        {
+          "name": "SourceUploadMediaType",
+          "kind": "type",
+          "line": 11,
+          "exported": true,
+          "endLine": 11
+        },
+        {
+          "name": "isSupportedSourceUpload",
+          "kind": "function",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        }
+      ],
+      "imports": [],
+      "exports": [],
+      "hash": "5655f3c4b2007ec54a6e91ecc85ca4fcb13977aafaea43b374f2a3ad09fe8214",
+      "mtimeMs": 1784445173804.7395,
+      "size": 944,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/domain/src/typed-errors.ts",
       "language": "TypeScript",
       "symbols": [
@@ -2421,86 +2924,114 @@
       "parser": "regex"
     },
     {
+      "path": "packages/evaluation/src/index.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "CorpusSpec",
+          "kind": "interface",
+          "line": 1,
+          "exported": true,
+          "endLine": 1
+        },
+        {
+          "name": "walkingSkeletonCorpus",
+          "kind": "const",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        }
+      ],
+      "imports": [],
+      "exports": [],
+      "hash": "4f4b3267fdfaffaab2c2d5b96d680089769f1683d1181db80a562555c4c80f7c",
+      "mtimeMs": 1784442089975.188,
+      "size": 452,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/fred-workflows/src/adapters/fred-runtime.ts",
       "language": "TypeScript",
       "symbols": [
         {
           "name": "FredRuntimeConfig",
           "kind": "interface",
-          "line": 17,
+          "line": 18,
           "exported": true,
-          "endLine": 17
+          "endLine": 18
         },
         {
           "name": "fredRuntimeConfig",
           "kind": "const",
-          "line": 23,
+          "line": 25,
           "exported": true,
-          "endLine": 23
+          "endLine": 25
         },
         {
           "name": "FredClientFactory",
           "kind": "interface",
-          "line": 35,
+          "line": 38,
           "exported": true,
-          "endLine": 35
+          "endLine": 38
         },
         {
           "name": "assertActive",
           "kind": "function",
-          "line": 46,
+          "line": 49,
           "exported": false,
-          "endLine": 46,
+          "endLine": 49,
           "signature": "(signal: AbortSignal)"
         },
         {
           "name": "EMERGENCY_SHUTDOWN_MS",
           "kind": "const",
-          "line": 57,
+          "line": 60,
           "exported": false,
-          "endLine": 57
+          "endLine": 60
         },
         {
           "name": "boundedShutdown",
           "kind": "function",
-          "line": 59,
+          "line": 62,
           "exported": false,
-          "endLine": 59
+          "endLine": 62
         },
         {
           "name": "createFredBeforeDeadline",
           "kind": "function",
-          "line": 78,
+          "line": 81,
           "exported": false,
-          "endLine": 78
+          "endLine": 81
         },
         {
           "name": "shutdownWithinDeadline",
           "kind": "function",
-          "line": 130,
+          "line": 133,
           "exported": false,
-          "endLine": 130
+          "endLine": 133
         },
         {
-          "name": "defaultFactory",
+          "name": "makeDefaultFactory",
           "kind": "const",
-          "line": 146,
+          "line": 149,
           "exported": false,
-          "endLine": 146
+          "endLine": 149
         },
         {
           "name": "preflightFredRuntime",
           "kind": "const",
-          "line": 178,
+          "line": 195,
           "exported": true,
-          "endLine": 178
+          "endLine": 195
         },
         {
           "name": "runFredWalkingSkeleton",
           "kind": "const",
-          "line": 230,
+          "line": 247,
           "exported": true,
-          "endLine": 230
+          "endLine": 247
         }
       ],
       "imports": [
@@ -2525,6 +3056,14 @@
           "kind": "static"
         },
         {
+          "source": "tracingOtlpEndpointConfig",
+          "specifier": "@struct/observability",
+          "imported": [
+            "tracingOtlpEndpointConfig"
+          ],
+          "kind": "static"
+        },
+        {
           "source": "",
           "specifier": "@fancyrobot/fred",
           "kind": "dynamic"
@@ -2536,9 +3075,9 @@
         }
       ],
       "exports": [],
-      "hash": "41bf75a3450887935719ff5cef4fb672d8d0fed1b87e221b4a8a4b1e613ec0d8",
-      "mtimeMs": 1784433778775.0383,
-      "size": 10007,
+      "hash": "9bfb8e90b36846161e023038894f7e8a8761360e286233e84b45b831f9b857fc",
+      "mtimeMs": 1784442089975.6914,
+      "size": 10548,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2721,9 +3260,9 @@
         {
           "name": "classifyTextSource",
           "kind": "const",
-          "line": 32,
+          "line": 36,
           "exported": true,
-          "endLine": 32
+          "endLine": 36
         }
       ],
       "imports": [
@@ -2737,9 +3276,9 @@
         }
       ],
       "exports": [],
-      "hash": "354eec92d2d4251b36f9f513316c9561d292cbf63212616bf19e5cd8cc829534",
-      "mtimeMs": 1784394536525.637,
-      "size": 2121,
+      "hash": "cd39c00e0648d52474341cb1b8197523e4da702216467a0106eb7ea1ef469867",
+      "mtimeMs": 1784443499800.781,
+      "size": 3572,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2751,79 +3290,79 @@
         {
           "name": "IngestionFailureError",
           "kind": "const",
-          "line": 7,
+          "line": 8,
           "exported": true,
-          "endLine": 7
+          "endLine": 8
         },
         {
           "name": "NormalizedText",
           "kind": "interface",
-          "line": 9,
+          "line": 10,
           "exported": true,
-          "endLine": 9
+          "endLine": 10
         },
         {
           "name": "IngestTextSourceInput",
           "kind": "interface",
-          "line": 14,
+          "line": 15,
           "exported": true,
-          "endLine": 14
+          "endLine": 15
         },
         {
           "name": "TextSourceManifest",
           "kind": "interface",
-          "line": 22,
+          "line": 23,
           "exported": true,
-          "endLine": 22
+          "endLine": 23
         },
         {
           "name": "IngestTextSourceResult",
           "kind": "interface",
-          "line": 34,
+          "line": 37,
           "exported": true,
-          "endLine": 34
+          "endLine": 37
         },
         {
           "name": "textDecoder",
-          "kind": "const",
-          "line": 43,
-          "exported": false,
-          "endLine": 43
-        },
-        {
-          "name": "textEncoder",
-          "kind": "const",
-          "line": 44,
-          "exported": false,
-          "endLine": 44
-        },
-        {
-          "name": "hashBytes",
           "kind": "const",
           "line": 46,
           "exported": false,
           "endLine": 46
         },
         {
-          "name": "normalizeTextBytes",
+          "name": "textEncoder",
+          "kind": "const",
+          "line": 47,
+          "exported": false,
+          "endLine": 47
+        },
+        {
+          "name": "hashBytes",
           "kind": "const",
           "line": 49,
-          "exported": true,
+          "exported": false,
           "endLine": 49
+        },
+        {
+          "name": "normalizeTextBytes",
+          "kind": "const",
+          "line": 52,
+          "exported": true,
+          "endLine": 52
         },
         {
           "name": "manifestBytes",
           "kind": "const",
-          "line": 61,
+          "line": 64,
           "exported": false,
-          "endLine": 61
+          "endLine": 64
         },
         {
           "name": "ingestTextSource",
           "kind": "const",
-          "line": 64,
+          "line": 67,
           "exported": true,
-          "endLine": 64
+          "endLine": 67
         }
       ],
       "imports": [
@@ -2868,12 +3407,156 @@
             "classifyTextSource"
           ],
           "kind": "static"
+        },
+        {
+          "source": "parseHtml, parseMarkdown, parsePdf, parseText, type DocumentLocator",
+          "specifier": "@struct/document-processing",
+          "imported": [
+            "parseHtml",
+            "parseMarkdown",
+            "parsePdf",
+            "parseText",
+            "typeDocumentLocator"
+          ],
+          "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "5812735eb9b1e647c2221e7af2c006176040841b74ce11f3f3931aebeee4f474",
-      "mtimeMs": 1784433778776.0437,
-      "size": 4149,
+      "hash": "25919df9ca71be1be21244d84cdc08b49a5f1d56be2f2c605be72f3ff330593d",
+      "mtimeMs": 1784443546560.1177,
+      "size": 5074,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/observability/src/tracing.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "WalkingSliceStage",
+          "kind": "type",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        },
+        {
+          "name": "WalkingSliceMetric",
+          "kind": "type",
+          "line": 20,
+          "exported": true,
+          "endLine": 20
+        },
+        {
+          "name": "TraceIdentity",
+          "kind": "interface",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
+          "name": "StructuredLog",
+          "kind": "interface",
+          "line": 34,
+          "exported": true,
+          "endLine": 34
+        },
+        {
+          "name": "traceAttributes",
+          "kind": "const",
+          "line": 42,
+          "exported": false,
+          "endLine": 42
+        },
+        {
+          "name": "withWalkingSliceSpan",
+          "kind": "const",
+          "line": 60,
+          "exported": true,
+          "endLine": 60
+        },
+        {
+          "name": "logWalkingSlice",
+          "kind": "const",
+          "line": 73,
+          "exported": true,
+          "endLine": 73
+        },
+        {
+          "name": "walkingSliceMetrics",
+          "kind": "const",
+          "line": 87,
+          "exported": true,
+          "endLine": 87
+        },
+        {
+          "name": "incrementWalkingSliceMetric",
+          "kind": "const",
+          "line": 103,
+          "exported": true,
+          "endLine": 103
+        },
+        {
+          "name": "renderWalkingSliceMetrics",
+          "kind": "const",
+          "line": 116,
+          "exported": true,
+          "endLine": 116
+        },
+        {
+          "name": "TracingSdkOptions",
+          "kind": "interface",
+          "line": 136,
+          "exported": true,
+          "endLine": 136
+        },
+        {
+          "name": "tracingOtlpEndpointConfig",
+          "kind": "const",
+          "line": 142,
+          "exported": true,
+          "endLine": 142
+        },
+        {
+          "name": "makeTracingLayer",
+          "kind": "const",
+          "line": 146,
+          "exported": true,
+          "endLine": 146
+        }
+      ],
+      "imports": [
+        {
+          "source": "Config, Effect, Layer, Logger, Metric, Option",
+          "specifier": "effect",
+          "imported": [
+            "Config",
+            "Effect",
+            "Layer",
+            "Logger",
+            "Metric",
+            "Option"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "NodeSdk",
+          "specifier": "@effect/opentelemetry/NodeSdk",
+          "kind": "static"
+        },
+        {
+          "source": "OTLPTraceExporter",
+          "specifier": "@opentelemetry/exporter-trace-otlp-http",
+          "imported": [
+            "OTLPTraceExporter"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "8e3dd8b02a0014e8bc16a85d23c6eafa1672d89b908a15cbd8397cbb929149d9",
+      "mtimeMs": 1784442089976.2434,
+      "size": 4794,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3005,7 +3688,7 @@
         }
       ],
       "hash": "980ee47adb76cde8e225f574898d2f2f2bbd4e73eebf2644a0ff4d408c1da514",
-      "mtimeMs": 1784434246106.488,
+      "mtimeMs": 1784435777326.2122,
       "size": 2842,
       "generated": false,
       "vendor": false,
@@ -4071,7 +4754,7 @@
       ],
       "exports": [],
       "hash": "9ed8848ccfcbe1867afc13d50284e745aaa6221176584a8ace705cc8963ccaec",
-      "mtimeMs": 1784435731348.0327,
+      "mtimeMs": 1784435777326.6213,
       "size": 8956,
       "generated": false,
       "vendor": false,
@@ -4084,172 +4767,179 @@
         {
           "name": "SourceRegistrationInput",
           "kind": "interface",
-          "line": 19,
-          "exported": true,
-          "endLine": 19
-        },
-        {
-          "name": "SourceRegistrationJobPayload",
-          "kind": "interface",
           "line": 25,
           "exported": true,
           "endLine": 25
         },
         {
-          "name": "SourceRegistrationEventPayload",
-          "kind": "interface",
-          "line": 34,
+          "name": "SourceRegistrationMediaType",
+          "kind": "type",
+          "line": 31,
           "exported": true,
-          "endLine": 34
+          "endLine": 31
         },
         {
-          "name": "SourceRegistrationResult",
+          "name": "SourceRegistrationJobPayload",
+          "kind": "interface",
+          "line": 33,
+          "exported": true,
+          "endLine": 33
+        },
+        {
+          "name": "SourceRegistrationEventPayload",
           "kind": "interface",
           "line": 42,
           "exported": true,
           "endLine": 42
         },
         {
+          "name": "SourceRegistrationResult",
+          "kind": "interface",
+          "line": 50,
+          "exported": true,
+          "endLine": 50
+        },
+        {
           "name": "SourceRegistrationRepository",
           "kind": "interface",
-          "line": 48,
+          "line": 56,
           "exported": true,
-          "endLine": 48
+          "endLine": 56
         },
         {
           "name": "SourceRegistrationScopeMismatchError",
           "kind": "class",
-          "line": 54,
+          "line": 62,
           "exported": false,
-          "endLine": 54
+          "endLine": 62
         },
         {
           "name": "SourceRegistrationAggregateMismatchError",
           "kind": "class",
-          "line": 55,
-          "exported": false,
-          "endLine": 55
-        },
-        {
-          "name": "uuidPattern",
-          "kind": "const",
-          "line": 61,
-          "exported": false,
-          "endLine": 61
-        },
-        {
-          "name": "inputKeys",
-          "kind": "const",
           "line": 63,
           "exported": false,
           "endLine": 63
         },
         {
-          "name": "sourceKeys",
+          "name": "uuidPattern",
           "kind": "const",
-          "line": 64,
+          "line": 69,
           "exported": false,
-          "endLine": 64
+          "endLine": 69
         },
         {
-          "name": "jobKeys",
+          "name": "inputKeys",
+          "kind": "const",
+          "line": 71,
+          "exported": false,
+          "endLine": 71
+        },
+        {
+          "name": "sourceKeys",
           "kind": "const",
           "line": 72,
           "exported": false,
           "endLine": 72
         },
         {
+          "name": "jobKeys",
+          "kind": "const",
+          "line": 80,
+          "exported": false,
+          "endLine": 80
+        },
+        {
           "name": "eventKeys",
           "kind": "const",
-          "line": 84,
+          "line": 92,
           "exported": false,
-          "endLine": 84
+          "endLine": 92
         },
         {
           "name": "jobPayloadKeys",
-          "kind": "const",
-          "line": 94,
-          "exported": false,
-          "endLine": 94
-        },
-        {
-          "name": "eventPayloadKeys",
           "kind": "const",
           "line": 102,
           "exported": false,
           "endLine": 102
         },
         {
-          "name": "MAX_SOURCE_NAME_LENGTH",
-          "kind": "const",
-          "line": 109,
-          "exported": false,
-          "endLine": 109
-        },
-        {
-          "name": "MAX_SOURCE_REGISTRATION_BYTES",
+          "name": "eventPayloadKeys",
           "kind": "const",
           "line": 110,
           "exported": false,
           "endLine": 110
         },
         {
-          "name": "MAX_SOURCE_REGISTRATION_ATTEMPTS",
+          "name": "MAX_SOURCE_NAME_LENGTH",
           "kind": "const",
-          "line": 111,
+          "line": 117,
           "exported": false,
-          "endLine": 111
+          "endLine": 117
         },
         {
-          "name": "ValidatedRegistrationAggregate",
-          "kind": "interface",
-          "line": 113,
-          "exported": false,
-          "endLine": 113
-        },
-        {
-          "name": "hasExactKeys",
-          "kind": "function",
+          "name": "MAX_SOURCE_REGISTRATION_BYTES",
+          "kind": "const",
           "line": 118,
           "exported": false,
           "endLine": 118
         },
         {
+          "name": "MAX_SOURCE_REGISTRATION_ATTEMPTS",
+          "kind": "const",
+          "line": 119,
+          "exported": false,
+          "endLine": 119
+        },
+        {
+          "name": "ValidatedRegistrationAggregate",
+          "kind": "interface",
+          "line": 121,
+          "exported": false,
+          "endLine": 121
+        },
+        {
+          "name": "hasExactKeys",
+          "kind": "function",
+          "line": 126,
+          "exported": false,
+          "endLine": 126
+        },
+        {
           "name": "isSafeTimestamp",
           "kind": "function",
-          "line": 131,
+          "line": 139,
           "exported": false,
-          "endLine": 131,
+          "endLine": 139,
           "signature": "(value: unknown)"
         },
         {
           "name": "isSafeSourceName",
           "kind": "function",
-          "line": 137,
+          "line": 145,
           "exported": false,
-          "endLine": 137,
+          "endLine": 145,
           "signature": "(value: unknown)"
         },
         {
           "name": "validateRegistrationAggregate",
           "kind": "function",
-          "line": 151,
+          "line": 159,
           "exported": false,
-          "endLine": 151
+          "endLine": 159
         },
         {
           "name": "SourceRegistrationRepo",
           "kind": "class",
-          "line": 268,
+          "line": 276,
           "exported": true,
-          "endLine": 268
+          "endLine": 276
         },
         {
           "name": "SourceRegistrationError",
           "kind": "type",
-          "line": 375,
+          "line": 383,
           "exported": true,
-          "endLine": 375
+          "endLine": 383
         }
       ],
       "imports": [
@@ -4260,16 +4950,6 @@
             "Effect"
           ],
           "kind": "static"
-        },
-        {
-          "source": "EventJournal, JobQueue, Source",
-          "specifier": "@struct/domain",
-          "imported": [
-            "EventJournal",
-            "JobQueue",
-            "Source"
-          ],
-          "kind": "type"
         },
         {
           "source": "QueryError, type PersistenceError",
@@ -4290,9 +4970,9 @@
         }
       ],
       "exports": [],
-      "hash": "9bab002a4cbad6d948eeea8cb88e1e029bbcc3c9b6d04896ca10005d8a0d262a",
-      "mtimeMs": 1784433778781.2507,
-      "size": 13379,
+      "hash": "506ed085a508a6fafadb5e4355f4f4278755418ba172124ae07c909a06754589",
+      "mtimeMs": 1784445173805.756,
+      "size": 13492,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -5118,6 +5798,159 @@
       "hash": "f094966746791b75b441a12116294ac0c9f7810c3c29441d7795abfe7fc67b1a",
       "mtimeMs": 1784339181909.1494,
       "size": 5500,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "scripts/docs-lint.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "rg",
+          "kind": "const",
+          "line": 4,
+          "exported": false,
+          "endLine": 4
+        },
+        {
+          "name": "discovery",
+          "kind": "const",
+          "line": 9,
+          "exported": false,
+          "endLine": 9
+        },
+        {
+          "name": "markdownFiles",
+          "kind": "const",
+          "line": 19,
+          "exported": false,
+          "endLine": 19
+        },
+        {
+          "name": "missing",
+          "kind": "const",
+          "line": 20,
+          "exported": false,
+          "endLine": 20
+        },
+        {
+          "name": "headingCache",
+          "kind": "const",
+          "line": 21,
+          "exported": false,
+          "endLine": 21
+        },
+        {
+          "name": "headingIds",
+          "kind": "const",
+          "line": 23,
+          "exported": false,
+          "endLine": 23
+        }
+      ],
+      "imports": [
+        {
+          "source": "existsSync",
+          "specifier": "node:fs",
+          "imported": [
+            "existsSync"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "dirname, resolve",
+          "specifier": "node:path",
+          "imported": [
+            "dirname",
+            "resolve"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "2f8525b53becf0699cddbc26e05b00e72f9a6204a53af66455eadb5cc7d441ec",
+      "mtimeMs": 1784442089976.3696,
+      "size": 2403,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "scripts/secrets-scan.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "git",
+          "kind": "const",
+          "line": 1,
+          "exported": false,
+          "endLine": 1
+        },
+        {
+          "name": "discovery",
+          "kind": "const",
+          "line": 6,
+          "exported": false,
+          "endLine": 6
+        },
+        {
+          "name": "repositoryPaths",
+          "kind": "const",
+          "line": 23,
+          "exported": false,
+          "endLine": 23
+        },
+        {
+          "name": "findings",
+          "kind": "const",
+          "line": 32,
+          "exported": false,
+          "endLine": 32
+        },
+        {
+          "name": "isForbiddenEnvironmentPath",
+          "kind": "function",
+          "line": 34,
+          "exported": false,
+          "endLine": 34,
+          "signature": "(file: string)"
+        },
+        {
+          "name": "scanText",
+          "kind": "function",
+          "line": 43,
+          "exported": false,
+          "endLine": 43,
+          "signature": "(file: string, text: string)"
+        },
+        {
+          "name": "baseCandidates",
+          "kind": "const",
+          "line": 68,
+          "exported": false,
+          "endLine": 68
+        },
+        {
+          "name": "commits",
+          "kind": "const",
+          "line": 91,
+          "exported": false,
+          "endLine": 91
+        },
+        {
+          "name": "scannedHistoricalBlobs",
+          "kind": "const",
+          "line": 99,
+          "exported": false,
+          "endLine": 99
+        }
+      ],
+      "imports": [],
+      "exports": [],
+      "hash": "8a0c4a3b237b63ecafca680ae3331f0ea8cb390cf5ac299e26b7e755e5e4e37f",
+      "mtimeMs": 1784442089976.4863,
+      "size": 4672,
       "generated": false,
       "vendor": false,
       "parser": "regex"

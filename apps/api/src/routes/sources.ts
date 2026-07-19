@@ -5,6 +5,7 @@ import {
   EventJournalId,
   ValidationError,
   AuthorizationError,
+  isSupportedSourceUpload,
   type ProjectId,
   type WorkspaceId,
   type Source,
@@ -66,11 +67,6 @@ function isSafeUploadName(name: string): boolean {
     && name !== '..'
 }
 
-function isSupportedTextUpload(name: string, mediaType: string): boolean {
-  const lower = name.toLowerCase()
-  return (lower.endsWith('.txt') && mediaType === 'text/plain') || (lower.endsWith('.md') && mediaType === 'text/markdown')
-}
-
 const mapUnknown = (operation: string) => (cause: unknown): ValidationError => {
   const tag = typeof cause === 'object' && cause !== null && '_tag' in cause ? String(cause._tag) : 'failed'
   return new ValidationError({ field: operation, reason: tag, message: `${operation} failed` })
@@ -87,8 +83,8 @@ export const registerTextSource = (
     if (!isSafeUploadName(input.name)) {
       return yield* new ValidationError({ field: 'name', reason: 'unsafe-name', message: 'Text source name must be a simple file name' })
     }
-    if (!isSupportedTextUpload(input.name, input.mediaType)) {
-      return yield* new ValidationError({ field: 'mediaType', reason: 'unsupported-source-type', message: 'Only .txt text/plain and .md text/markdown uploads are supported' })
+    if (!isSupportedSourceUpload(input.name, input.mediaType)) {
+      return yield* new ValidationError({ field: 'mediaType', reason: 'unsupported-source-type', message: 'Source extension and media type are not supported' })
     }
 
     const project = yield* deps.projects.findById(input.projectId).pipe(Effect.mapError(mapUnknown('project lookup')))

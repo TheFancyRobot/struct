@@ -29,6 +29,22 @@ const manifestBytes = new TextEncoder().encode(JSON.stringify({
   normalizedRef,
   contentHash,
 }))
+const manifestBytesV2 = new TextEncoder().encode(JSON.stringify({
+  kind: 'text-source-manifest',
+  version: 2,
+  normalizedRef,
+  contentHash,
+  format: 'markdown',
+  fragments: [{
+    page: null,
+    section: 'Launch',
+    paragraph: 1,
+    charStart: 0,
+    charEnd: 18,
+    byteStart: 0,
+    byteEnd: 18,
+  }],
+}))
 const job: SourceTextReindexJob = {
   sourceVersionId,
   workspaceId,
@@ -112,6 +128,30 @@ describe('processOneSourceTextReindex', () => {
       reindexAttempt: 1,
     }])
     expect(testDeps.failures).toEqual([])
+  })
+
+  it('rebuilds from a v2 provenance manifest without indexing manifest metadata', async () => {
+    const testDeps = deps()
+    const v2Deps: SourceTextReindexWorkerDeps = {
+      ...testDeps,
+      store: {
+        readObject: (ref) =>
+          Effect.succeed({
+            bytes: ref === manifestRef ? manifestBytesV2 : normalizedBytes,
+            byteLength: ref === manifestRef
+              ? manifestBytesV2.byteLength
+              : normalizedBytes.byteLength,
+          }),
+      },
+    }
+
+    await Effect.runPromise(processOneSourceTextReindex(v2Deps))
+
+    expect(testDeps.indexed).toEqual([expect.objectContaining({
+      sourceVersionId,
+      content: 'Launch is July 18.\n',
+    })])
+    expect(JSON.stringify(testDeps.indexed)).not.toContain('fragments')
   })
 
   it('records an explicit retryable state when deployment artifacts are unavailable', async () => {

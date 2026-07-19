@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import type { ArtifactRef, ArtifactStoreShape, StagedArtifactRef } from '@struct/source-storage'
 import { IngestionFailureError } from '@struct/domain'
 import { classifyTextSource } from './file-classifier.js'
+import { parseHtml, parseMarkdown, parsePdf, parseText, type DocumentLocator } from '@struct/document-processing'
 
 export { IngestionFailureError }
 
@@ -21,7 +22,7 @@ export interface IngestTextSourceInput {
 
 export interface TextSourceManifest {
   readonly kind: 'text-source-manifest'
-  readonly version: 1
+  readonly version: 2
   readonly originalName: string
   readonly mediaType: string
   readonly rawRef: ArtifactRef
@@ -29,6 +30,8 @@ export interface TextSourceManifest {
   readonly contentHash: `sha256:${string}`
   readonly byteLength: number
   readonly normalizedByteLength: number
+  readonly format: 'pdf' | 'html' | 'markdown' | 'text'
+  readonly fragments: ReadonlyArray<DocumentLocator>
 }
 
 export interface IngestTextSourceResult {
@@ -42,6 +45,7 @@ export interface IngestTextSourceResult {
 
 const textDecoder = new TextDecoder('utf-8', { fatal: true })
 const textEncoder = new TextEncoder()
+const MAX_MANIFEST_FRAGMENTS = 10_000
 
 const hashBytes = (bytes: Uint8Array): `sha256:${string}` =>
   `sha256:${createHash('sha256').update(bytes).digest('hex')}`
@@ -66,13 +70,29 @@ export const ingestTextSource = (input: IngestTextSourceInput) =>
     const staged = yield* input.store.readStagedObject(input.stagedRef).pipe(
       Effect.mapError((error) => new IngestionFailureError({ reason: error._tag, message: 'Staged artifact could not be read' })),
     )
-    yield* classifyTextSource({
+    const classification = yield* classifyTextSource({
       name: input.name,
       mediaType: input.mediaType,
       byteLength: staged.byteLength,
       maxBytes: input.maxBytes,
     })
-    const normalized = yield* normalizeTextBytes(staged.bytes)
+    const document = yield* (classification.extension === '.pdf'
+      ? parsePdf(staged.bytes.slice())
+      : classification.extension === '.html' || classification.extension === '.htm'
+        ? parseHtml(staged.bytes)
+        : classification.extension === '.md'
+          ? parseMarkdown(staged.bytes)
+          : parseText(staged.bytes)).pipe(
+      Effect.mapError((error) => new IngestionFailureError({ reason: error.reason, message: error.message })),
+    )
+    if (document.fragments.length > MAX_MANIFEST_FRAGMENTS) {
+      return yield* Effect.fail(new IngestionFailureError({
+        reason: 'document-too-large',
+        message: `Document exceeds the ${MAX_MANIFEST_FRAGMENTS} fragment limit`,
+      }))
+    }
+    const normalizedBytes = textEncoder.encode(document.text)
+    const normalized: NormalizedText = { bytes: normalizedBytes, contentHash: hashBytes(normalizedBytes) }
     const raw = yield* input.store.writeObject(staged.bytes, { mediaType: input.mediaType }).pipe(
       Effect.mapError((error) => new IngestionFailureError({ reason: error._tag, message: 'Raw artifact could not be stored' })),
     )
@@ -81,7 +101,7 @@ export const ingestTextSource = (input: IngestTextSourceInput) =>
     )
     const manifest: TextSourceManifest = {
       kind: 'text-source-manifest',
-      version: 1,
+      version: 2,
       originalName: input.name,
       mediaType: input.mediaType,
       rawRef: raw.ref,
@@ -89,6 +109,8 @@ export const ingestTextSource = (input: IngestTextSourceInput) =>
       contentHash: normalized.contentHash,
       byteLength: staged.byteLength,
       normalizedByteLength: normalized.bytes.byteLength,
+      format: document.format,
+      fragments: document.fragments.map(({ text: _text, ...locator }) => locator),
     }
     const manifestObject = yield* input.store.writeObject(manifestBytes(manifest), { mediaType: 'application/json' }).pipe(
       Effect.mapError((error) => new IngestionFailureError({ reason: error._tag, message: 'Manifest artifact could not be stored' })),
