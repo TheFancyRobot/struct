@@ -76,6 +76,7 @@ describe('directory status Solid components', () => {
       { expected: 'partial-failure', input: { status: status('running'), registering: false, reconnecting: false } },
       { expected: 'retrying', input: { status: status('ready', { counts: { total: 4, processed: 1, succeeded: 1, failed: 0, unsupported: 1, pending: 2 }, failures: [] }), registering: false, reconnecting: false, lastEventType: 'directory-retried' } },
       { expected: 'cancelled', input: { status: status('cancelled'), registering: false, reconnecting: false } },
+      { expected: 'exhausted', input: { status: status('exhausted', { counts: { total: 4, processed: 1, succeeded: 1, failed: 0, unsupported: 1, pending: 2 }, failures: [] }), registering: false, reconnecting: false } },
       { expected: 'completed', input: { status: status('completed'), registering: false, reconnecting: false } },
       { expected: 'reconnect-replay', input: { status: status(), registering: false, reconnecting: true } },
     ]

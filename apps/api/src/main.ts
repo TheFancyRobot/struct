@@ -246,10 +246,18 @@ const server = Effect.gen(function* () {
             && '_tag' in failure
             ? String(failure._tag)
             : ''
+          const reason = typeof failure === 'object'
+            && failure !== null
+            && 'reason' in failure
+            ? String(failure.reason)
+            : ''
           const status = failure instanceof ValidationError
             ? 400
             : tag === 'DirectoryControlConflictError'
+              && reason === 'scope-not-found'
               ? 404
+              : tag === 'DirectoryControlConflictError'
+                ? 409
               : 503
           return jsonResponse({ error: 'DirectoryRegistrationFailed' }, status)
         }

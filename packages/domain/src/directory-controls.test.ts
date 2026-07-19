@@ -3,6 +3,7 @@ import { Schema } from 'effect'
 import {
   DirectoryRootId,
   DirectorySnapshotId,
+  EventJournalId,
   JobQueueId,
   ManifestEntryId,
   ProjectId,
@@ -10,6 +11,7 @@ import {
   WorkspaceId,
 } from './branded-ids.js'
 import {
+  DirectoryProgressEvent,
   DirectoryProgressCounts,
   DirectoryStatusProjection,
 } from './directory-controls.js'
@@ -53,6 +55,43 @@ describe('directory control projections', () => {
     expect(() => Schema.decodeUnknownSync(DirectoryProgressCounts)({
       ...counts,
       pending: 2,
+    })).toThrow()
+  })
+
+  it('accepts canonical event cursors and rejects ambiguous replay cursors', () => {
+    const status = Schema.decodeUnknownSync(DirectoryStatusProjection)({
+      jobId: JobQueueId.make('e10e8400-e29b-41d4-a716-446655440001'),
+      workspaceId: WorkspaceId.make('e10e8400-e29b-41d4-a716-446655440002'),
+      projectId: ProjectId.make('e10e8400-e29b-41d4-a716-446655440003'),
+      sourceId: SourceId.make('e10e8400-e29b-41d4-a716-446655440004'),
+      directoryRootId: DirectoryRootId.make('e10e8400-e29b-41d4-a716-446655440005'),
+      snapshotId: DirectorySnapshotId.make('e10e8400-e29b-41d4-a716-446655440006'),
+      name: 'notes',
+      status: 'running',
+      attempts: 1,
+      maxAttempts: 3,
+      counts,
+      failures: [],
+      updatedAt: 1_700_000_000_000,
+    })
+    const event = {
+      id: EventJournalId.make('e10e8400-e29b-41d4-a716-446655440008'),
+      cursor: '42',
+      type: 'directory-entry-checkpointed',
+      jobId: status.jobId,
+      createdAt: status.updatedAt,
+      status,
+    }
+    expect(
+      Schema.decodeUnknownSync(DirectoryProgressEvent)(event).cursor,
+    ).toBe('42')
+    expect(() => Schema.decodeUnknownSync(DirectoryProgressEvent)({
+      ...event,
+      cursor: '042',
+    })).toThrow()
+    expect(() => Schema.decodeUnknownSync(DirectoryProgressEvent)({
+      ...event,
+      cursor: 'next',
     })).toThrow()
   })
 })

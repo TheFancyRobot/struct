@@ -93,14 +93,14 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `bun run typecheck` — passed.
 - `bun run lint` — passed with zero warnings.
 - `bun run test` — 378 passed, 126 expected DB skips, 0 failed, 1487 assertions.
-- `DATABASE_URL=postgres://struct:struct@localhost:5432/struct bun run test:integration` — 84 passed, 0 failed, 625 assertions.
+- `DATABASE_URL=postgres://struct:struct@localhost:5432/struct bun run test:integration` — 84 passed, 0 failed, 627 assertions.
 - `bun run lint:imports` — dependency-cruiser and boundary checks passed.
 - `bun run build` — Solid/Vite web, Bun API, and Bun worker builds passed.
 - `bun run docs:lint` — 38 Markdown files validated.
 - `bun run secrets:scan` — 857 repository paths, zero findings.
 - Migration 0009 up/down/up — passed against PostgreSQL.
 - Targeted Solid/API/domain/migration suite — 14 passed; targeted directory PostgreSQL suites — 4 passed, 39 assertions.
-- Root authoritative validation: `bun run test` — 378 passed, 126 expected database skips, 0 failed, 1487 assertions.
+- Root authoritative validation after review remediation: `bun run test` — 379 passed, 126 expected database skips, 0 failed, 1492 assertions.
 - Root authoritative validation: PostgreSQL `bun run test:integration` — 84 passed, 0 failed, 627 assertions.
 - Root authoritative validation: typecheck, zero-warning lint, dependency boundaries, production builds, docs lint, and secrets scan all passed.
 <!-- AGENT-END:session-validation-run -->

@@ -1,6 +1,5 @@
 import { Effect, Option } from 'effect'
 import {
-  DirectoryControlCommand as type,
   EventJournalId,
   JobQueueId,
   ProjectId,
@@ -8,6 +7,8 @@ import {
   WorkspaceId,
   type DirectoryStatusProjection,
 } from '@struct/domain'
+// eslint-disable-next-line no-unused-vars -- Babel does not mark type-only namespace references as used.
+import type * as Domain from '@struct/domain'
 import type {
   DirectoryControlRepositoryError,
   DirectoryControlResult,
@@ -33,7 +34,7 @@ export interface DirectoryJobRouteDeps {
     readonly workspaceId: typeof WorkspaceId.Type
     readonly projectId: typeof ProjectId.Type
     readonly jobId: typeof JobQueueId.Type
-    readonly command: typeof type.Type
+    readonly command: Domain.DirectoryControlCommand
     readonly idempotencyKey: string
     readonly eventId: typeof EventJournalId.Type
   }) => Effect.Effect<
@@ -51,7 +52,7 @@ export const getDirectoryJobStatus = (
 
 export function controlDirectoryJob(
   scope: DirectoryJobScope,
-  command: typeof type.Type,
+  command: Domain.DirectoryControlCommand,
   idempotencyKey: string,
   deps: Pick<DirectoryJobRouteDeps, 'command' | 'randomEventId'>,
 ): Effect.Effect<

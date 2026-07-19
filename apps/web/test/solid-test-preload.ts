@@ -15,8 +15,11 @@ Bun.plugin({
           [presetTypeScript, { allExtensions: true, isTSX: true }],
         ],
       })
+      if (transformed?.code === undefined) {
+        throw new Error(`Failed to transform Solid TSX for test: ${path}`)
+      }
       return {
-        contents: transformed?.code ?? source,
+        contents: transformed.code,
         loader: 'js',
       }
     })

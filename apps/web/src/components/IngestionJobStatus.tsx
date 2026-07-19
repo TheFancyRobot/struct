@@ -14,6 +14,7 @@ export type DirectoryViewState =
   | 'partial-failure'
   | 'retrying'
   | 'cancelled'
+  | 'exhausted'
   | 'completed'
   | 'reconnect-replay'
 
@@ -31,6 +32,7 @@ export function directoryViewState(
   if (input.registering || input.status === null) return 'registering'
   if (input.status.status === 'completed') return 'completed'
   if (input.status.status === 'cancelled') return 'cancelled'
+  if (input.status.status === 'exhausted') return 'exhausted'
   if (input.status.status === 'paused') return 'paused'
   if (input.status.counts.failed > 0) return 'partial-failure'
   if (
@@ -51,6 +53,7 @@ const labels: Readonly<Record<DirectoryViewState, string>> = {
   'partial-failure': 'Completed entries with failures',
   retrying: 'Retry queued',
   cancelled: 'Ingestion cancelled',
+  exhausted: 'Retry attempts exhausted',
   completed: 'Directory ready',
   'reconnect-replay': 'Reconnecting to persisted progress',
 }

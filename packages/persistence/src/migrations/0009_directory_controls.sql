@@ -6,6 +6,9 @@ SET directory_root_id = snapshot.directory_root_id
 FROM directory_snapshots snapshot
 WHERE snapshot.id = directory.snapshot_id;
 
+ALTER TABLE directory_ingestion_jobs
+  ALTER COLUMN directory_root_id SET NOT NULL;
+
 CREATE TABLE directory_ingestion_commands (
   job_id UUID NOT NULL REFERENCES directory_ingestion_jobs(job_id) ON DELETE CASCADE,
   idempotency_key TEXT NOT NULL CHECK (length(idempotency_key) BETWEEN 1 AND 512),
