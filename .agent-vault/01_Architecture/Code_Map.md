@@ -33,6 +33,7 @@ tags:
 - Persistence migrations and core postgres-backed repository services are implemented; STEP-01-03 adds typed `job_queue` aggregate transitions and an explicitly read-only `event_journal` reader for ingestion dispatch/events. Journal writes are available only through aggregate-specific source-registration, ingestion, and research transition services. API currently exposes healthz, SSE placeholder, and `POST /sources/text` for one text-source registration path.
 - STEP-01-04 supersedes the earlier planned-package snapshot: `packages/retrieval`, `packages/research-engine`, and `packages/fred-workflows` now exist with typed public roots and tests. API adds `POST /research/runs`; worker adds durable bounded research execution and stale recovery; persistence adds migration 0003 and atomic research repositories.
 - Migration `0004_event_journal_commit_order` enforces commit-visible event cursor ordering at the PostgreSQL table boundary with a transaction-held advisory-lock allocator trigger; rollback gaps remain valid and all insert paths are covered automatically.
+- STEP-01-05 adds shared typed research-event/citation projections, a read-only `ResearchProjectionRepo`, project-scoped cursor-replay SSE and citation HTTP routes, and SolidJS progress/citation navigation. Phase 01 now has a persisted visible walking path rather than the former SSE placeholder.
 
 ## Key Components
 

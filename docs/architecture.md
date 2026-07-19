@@ -549,13 +549,25 @@ Required signal types:
 
 The first implementation slice should prove the architecture rather than chase breadth.
 
-STEP-01-04 implements the research half of this slice with:
+STEP-01-04 implements the research execution half of this slice with:
 
 - `source_text_index`, a PostgreSQL generated-`tsvector` index keyed by immutable `SourceVersion`;
 - `packages/retrieval`, which enforces workspace/project/source-version scope and bounded lexical results; phrase/proximity candidates are revalidated only as byte-for-byte contiguous source windows, preserving original coordinates, distance, order, and repeated-lexeme multiplicity, while non-positional distributed terms may use exact multi-range locators; all selected evidence is at most 1200 characters;
 - `packages/research-engine`, which owns the fixed one-tool/one-model plan and citation sufficiency gates;
 - `packages/fred-workflows`, pinned to `@fancyrobot/fred@2.0.0`, with one search function node, one answer-synthesizer agent, and one citation-validation node;
-- `POST /research/runs` plus a durable worker job that persists answers, citations, run state, and replayable research events.
+- `POST /api/projects/:projectId/research` plus a durable worker job that
+  persists answers, citations, run state, and replayable research events.
+
+STEP-01-05 completes the visible walking slice with:
+
+- typed `ResearchEvent` projections over the persisted journal and a
+  project/run-scoped SSE route with monotonic cursor replay and 30-second
+  heartbeats;
+- a project/thread-scoped citation lookup that resolves immutable source
+  versions and both current line-range and exact character locators;
+- SolidJS progress and citation components with bounded reconnect backoff,
+  cursor deduplication, cleanup, typed response decoding, and Solid Router
+  links to highlighted stored-source evidence.
 
 Minimum end-to-end path:
 

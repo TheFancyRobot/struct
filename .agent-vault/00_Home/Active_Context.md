@@ -21,7 +21,7 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-19._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_01_walking_skeleton/Steps/Step_05_stream-persisted-progress-and-render-navigable-citation|STEP-01-05 Stream Persisted Progress and Render Navigable Citation]] - status: planned - phase: [[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]]
+- Current step: [[02_Phases/Phase_01_walking_skeleton/Steps/Step_05_stream-persisted-progress-and-render-navigable-citation|STEP-01-05 Stream Persisted Progress and Render Navigable Citation]] - status: in_progress - phase: [[02_Phases/Phase_01_walking_skeleton/Phase|Phase 01 walking skeleton]] - owner: step-01-05-execute
 - Active phase: [[02_Phases/Phase_01_walking_skeleton/Phase|PHASE-01 Walking Skeleton]] - status: in_progress - updated: 2026-07-19
 - Also active: 67 more additional steps.
 <!-- AGENT-END:current-focus -->
@@ -35,11 +35,11 @@ _Last refreshed: 2026-07-19._
 
 ## In Scope Right Now
 
-- Phase 01 walking skeleton: STEP-01-01 through STEP-01-04 are implemented; STEP-01-05 is the next planned step.
+- Phase 01 walking skeleton: STEP-01-01 through STEP-01-05 are implemented; STEP-01-06 is the next planned step.
 - Keep architecture notes aligned with the code as implementation progresses.
 - Record non-trivial decisions as dedicated notes.
 - STEP-01-04 provides tenant-scoped deterministic PostgreSQL retrieval, a bounded Fred workflow, exact citation validation, and atomic durable research execution.
-- STEP-01-04 review remediation is complete locally; root orchestration owns the remaining PR re-review and merge gate.
+- STEP-01-05 persisted SSE progress and exact citation navigation are complete locally; root orchestration owns independent review, publication, and merge.
 
 ## Out Of Scope Right Now
 
@@ -72,6 +72,6 @@ _Last refreshed: 2026-07-19._
 
 ## Next Actions
 
-- Complete PR review and merge for [[02_Phases/Phase_01_walking_skeleton/Steps/Step_04_implement-deterministic-retrieval-and-fred-research-workflow|STEP-01-04 Implement Deterministic Retrieval and Fred Research Workflow]].
-- After the merge gate, begin [[02_Phases/Phase_01_walking_skeleton/Steps/Step_05_stream-persisted-progress-and-render-navigable-citation|STEP-01-05 Stream Persisted Progress and Render Navigable Citation]] on its own branch.
+- Independently review, publish, and merge [[02_Phases/Phase_01_walking_skeleton/Steps/Step_05_stream-persisted-progress-and-render-navigable-citation|STEP-01-05 Stream Persisted Progress and Render Navigable Citation]].
+- After the merge gate, begin [[02_Phases/Phase_01_walking_skeleton/Steps/Step_06_automate-vertical-slice-tests-documentation-and-observability|STEP-01-06 Automate Vertical Slice Tests Documentation and Observability]] on its own branch.
 - Keep architecture notes aligned with the code as implementation progresses.

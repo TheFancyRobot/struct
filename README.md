@@ -2,7 +2,7 @@
 
 A trustworthy, source-grounded research workspace for documents, datasets, and directories. Documents are retrieved, datasets are queried, directories are navigated, and large corpora are recursively analyzed — with deterministic computation, verifiable citations, and durable, resumable work.
 
-> **Current state: Phase 01 (walking skeleton) — STEP-01-01 through STEP-01-04 are implemented.** The monorepo now includes deterministic PostgreSQL text retrieval, typed research contracts, pinned Fred 2.0.0 workflow orchestration, `POST /research/runs`, durable research jobs/events, citation validation, and persisted grounded answers in addition to the single-text ingestion path. All gates pass when validated locally (typecheck, lint, lint:imports, build, native Bun tests, database integration tests, migration up/down/up, Compose config, app smokes).
+> **Current state: Phase 01 (walking skeleton) — STEP-01-01 through STEP-01-05 are implemented.** The monorepo now includes deterministic PostgreSQL text retrieval, typed research contracts, pinned Fred 2.0.0 workflow orchestration, durable research jobs/events, cursor-replayable SSE progress, citation validation, persisted grounded answers, and a SolidJS citation inspector in addition to the single-text ingestion path. All gates pass when validated locally (typecheck, lint, lint:imports, build, native Bun tests, database integration tests, migration up/down/up, Compose config, app smokes).
 
 ## Canonical documents
 
@@ -27,7 +27,7 @@ A trustworthy, source-grounded research workspace for documents, datasets, and d
 ```
 apps/
 ├── web        # SolidJS 1.9 + Vite 8 + Solid Router + Tailwind 4 + DaisyUI (DEC-0013, DEC-0014)
-├── api        # Bun HTTP + Effect Config — healthz, sole migration executor, POST /sources/text, POST /research/runs
+├── api        # Bun HTTP + Effect Config — healthz, migrations, project-scoped source/research/SSE/citation APIs
 └── worker     # Durable text-ingestion and bounded research job execution
 
 packages/
@@ -70,7 +70,8 @@ bun run corpus:eval         # full ~25k corpus + quality gates (planned, Phase 0
 ```
 
 The walking-slice research command accepts `workspaceId`, `projectId`, a non-empty
-`sourceVersionIds` array, and `question` at `POST /research/runs`. The worker
+`sourceVersionIds` array, and `question` at
+`POST /api/projects/:projectId/research`. The worker
 requires `FRED_PROVIDER_PACKAGE` and `FRED_MODEL` at startup and loads the
 configured Fred provider before reporting readiness. Provider-specific credentials
 are required before live model execution; tests use a fixed mock provider and

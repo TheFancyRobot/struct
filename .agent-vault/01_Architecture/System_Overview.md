@@ -47,6 +47,7 @@ tags:
   plans an isolated DuckDB sidecar.
 - STEP-01-03 review remediation hardened artifact parent-component containment, made the API registration command transactional, and made worker database readiness/poll failures fail visibly.
 - STEP-01-04 implements `retrieval`, `research-engine`, and `fred-workflows`; Fred core is pinned at `2.0.0`; PostgreSQL FTS indexes normalized text by immutable source version and derives tenant ownership through source relationships; and the API/worker research path atomically persists grounded answers, citations, terminal state, and journal events.
+- STEP-01-05 projects the append-only PostgreSQL event journal into typed, cursor-replayable SSE and resolves validated citations against immutable `SourceVersion` text. SolidJS consumes these boundaries with schema validation, bounded reconnect, replay deduplication, cleanup, and exact highlighted citation navigation.
 
 ## Key Components
 

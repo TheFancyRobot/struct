@@ -11,6 +11,11 @@ export default defineConfig({
   },
   server: {
     port: Number(process.env.WEB_PORT) || 3000,
+    proxy: {
+      '/api': {
+        target: `http://localhost:${Number(process.env.API_PORT) || 3001}`,
+      },
+    },
   },
   build: {
     target: 'esnext',

@@ -39,6 +39,7 @@ export {
   EventJournalReader,
   SourceRegistrationRepo,
   ResearchExecutionRepo,
+  ResearchProjectionRepo,
   SourceTextReindexRepo,
   // Persistence errors
   QueryError,
@@ -98,5 +99,10 @@ export type {
   FailResearchInput,
   ResearchExecutionError,
 } from './repositories/research-execution.js'
+
+export type {
+  CompletedResearchProjection,
+  CitationSourceProjection,
+} from './repositories/research-projections.js'
 
 export type { SourceTextReindexJob } from './repositories/source-text-reindex.js'

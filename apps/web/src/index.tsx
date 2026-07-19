@@ -10,12 +10,14 @@ import './index.css'
 import { render } from 'solid-js/web'
 import { Router, Route } from '@solidjs/router'
 import App from './App'
+import { CitationPage } from './pages/CitationPage'
+import { ResearchPage } from './pages/ResearchPage'
 
 render(
   () => (
     <Router root={App}>
-      {/* Walking skeleton: landing route only. Later phases add project/source routes. */}
-      <Route path="/" component={App} />
+      <Route path="/projects/:projectId/research/:threadId/runs/:runId" component={ResearchPage} />
+      <Route path="/projects/:projectId/research/:threadId/citation/:citationId" component={CitationPage} />
     </Router>
   ),
   document.getElementById('app')!,
