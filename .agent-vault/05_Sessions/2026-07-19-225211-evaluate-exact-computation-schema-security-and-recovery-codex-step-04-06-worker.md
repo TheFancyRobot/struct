@@ -11,7 +11,7 @@ branch: ''
 phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]'
 context:
   context_id: SESSION-2026-07-19-225211
-  status: active
+  status: completed
   updated_at: '2026-07-19T22:52:11.415Z'
   current_focus:
     summary: Advance [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_06_evaluate-exact-computation-schema-security-and-recovery|STEP-04-06 Evaluate Exact Computation Schema Security and Recovery]].
@@ -60,6 +60,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 23:17 - Root pre-PR review bounded corpus record reads to 64 concurrent files, replacing the unbounded 25,000-file `Promise.all` fan-out.
 - 23:17 - Root review replaced the weakened-policy tautology with a real acceptance-gate mutation: removing the required `SQL-MUTATION` rejection must make the gate fail. The final gate now also rejects incomplete, duplicate, or failed case inventories.
 - 23:18 - Downstream impact audit covered the DuckDB decimal conversion, all sidecar materialization tests, evaluator callers, report stability, documentation, and package scripts before PR creation.
+- 23:25 - Triaged all PR #24 bot comments against the execution brief and validation plan before editing; confirmed five evaluator coverage gaps and three vault/documentation inconsistencies.
+- 23:37 - Consolidated remediation now evaluates all eight corpus-security truth classes, observed DuckDB schema types and nullability, real container configuration below the SQL parser, an explicit query-start handshake before cancellation, and each named recovery truth boundary against distinct durable evidence.
+- 23:37 - Downstream impact review covered the sidecar HTTP protocol, health response, all materialize/query clients, report schema/count consumers, runbook, checked-in evidence, and vault lifecycle mirrors.
 
 ## Findings
 
@@ -69,11 +72,19 @@ Use one note per meaningful work session. Record chronology, validation, and han
 
 - Use this as the single canonical prose section for prepared context, resume notes, and handoff summaries tied to the current effective context.
 - Keep durable conclusions promoted into phase, bug, decision, or architecture notes when they outlive the session.
+- This worker session is completed; STEP-04-06 remains active under the root orchestrator until PR #24 merges.
 
 ## Changed Paths
 
 <!-- AGENT-START:session-changed-paths -->
-- None yet.
+- `package.json`, `bun.lock`
+- `packages/evaluation/`
+- `packages/data-engine/test/sidecar.integration.test.ts`
+- `services/data-engine-sidecar/server.mjs`
+- `docs/evaluation-corpus-generator.md`, `docs/evaluation-corpus.md`
+- `docs/local-development.md`, `docs/security-model.md`
+- `docs/operations/phase-04-evaluation.md`
+- STEP-04-06 and active-context vault notes
 <!-- AGENT-END:session-changed-paths -->
 - `package.json`
 - `bun.lock`
@@ -95,9 +106,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Validation Run
 
 <!-- AGENT-START:session-validation-run -->
-- Command: not run yet
-- Result: not run
-- Notes:
+- Command: full corpus, unit, live integration, static, build, security, Compose, migration, and vault gates
+- Result: PASS
+- Notes: Root review and the PR #24 remediation re-ran affected gates; detailed commands and evidence follow below.
 <!-- AGENT-END:session-validation-run -->
 - `bun run corpus:eval` twice: PASS; 25,000 files; byte-identical report file SHA-256 `06481c7d0865cfd50ca6411e4b029db7235ca455f4b81c5014ad4634017569ac`; internal report hash `06fad3006ebd00459bb01c68008de0a9647c5c348709bf82dcdaac9e47b5df2f`.
 - Full report counts: exact-answer 8, schema-family 4, citation 9, sql-guardrail 7, authentication 2, sidecar-isolation 3, recovery 6, negative-control 2.
@@ -112,6 +123,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Root post-review validation: evaluation package typecheck and 20 focused tests PASS; live smoke evaluation twice PASS; full 25,000-file evaluation PASS with unchanged report hash `06fad3006ebd00459bb01c68008de0a9647c5c348709bf82dcdaac9e47b5df2f`.
 - Root repository gate: typecheck, lint, import boundaries, docs lint, build, secrets scan, frozen install, 426 unit tests, and rebuilt Node 24.18.0 Compose data-engine image all PASS.
 - Root live gate after clean sidecar/gateway recreation: 102 PostgreSQL/data-engine integration tests and 935 assertions PASS; Agent Vault doctor clean with 184 managed notes and zero errors/warnings.
+- PR #24 consolidated remediation final evidence supersedes the earlier pre-review hash/count snapshot: two full 25,000-file runs are byte-identical with report file SHA-256 `faffea814c1f67cac53c1292aca7c5192fcbb453ec03da4ccdfb993d8b53aec5` and internal report hash `2308e41673a758ef0701116508ae1db4431673062e6fa6c43fe3bf69fb9c79d7`.
+- Final report counts: exact-answer 8, schema-family 4, citation 9, SQL-guardrail 9, authentication 2, sidecar-isolation 3, corpus-security 8, recovery 6, negative-control 2.
+- Post-remediation gates: 427 unit tests / 1697 assertions, 102 live integration tests / 935 assertions, smoke evaluation twice, typecheck, lint, imports, docs, build, rebuilt Node 24.18.0 sidecar, and Agent Vault doctor all PASS.
 
 ## Bugs Encountered
 

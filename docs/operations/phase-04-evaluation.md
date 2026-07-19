@@ -38,10 +38,12 @@ bun run bench
 `corpus:eval` writes
 `packages/evaluation/results/phase-04-evaluation-v1.json`. It must report
 `status: "passed"` with 100% exact answers and citation reopen success, all four
-schema families, rejected unsafe SQL/authentication/egress/path cases, client
-disconnect recovery, atomic materialization replay, and both negative controls.
-Run it twice and compare the report bytes or `reportSha256`; timings are emitted
-separately so the normalized report remains byte-identical.
+schema families with observed DuckDB types and nullability, all eight tagged
+corpus-security classes, rejected unsafe SQL/authentication/egress/path cases,
+inspected Compose isolation, client-disconnect recovery, atomic materialization
+replay, and both negative controls. Run it twice and compare the report bytes or
+`reportSha256`; timings are emitted separately so the normalized report remains
+byte-identical.
 
 The sidecar materializes corpus numeric values as `DECIMAL(38,18)`. This
 preserves the canonical telemetry lexemes while rejecting values beyond 20
@@ -52,8 +54,12 @@ integer digits or 18 fractional digits instead of silently rounding them.
 The automated gate injects a failure between materialization state and terminal
 event persistence, verifies transaction rollback, expires and reclaims the
 lease, fences the stale attempt, and verifies exactly one materialization and
-one terminal event. It also disconnects a live expensive query and verifies the
-sidecar accepts the next bounded query.
+one terminal event. Each named recovery truth boundary is checked against
+distinct durable evidence. The evaluator also waits for the sidecar's explicit
+`102 Processing` start handshake before disconnecting a live expensive query,
+then verifies that the sidecar accepts the next bounded query. Container checks
+inspect the running sidecar's internal-only network, mounts, read-only root,
+capability drop, no-new-privileges policy, and the gateway's loopback binding.
 
 For the container-lifecycle drill, run:
 

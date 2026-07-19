@@ -1138,6 +1138,7 @@ const server = createServer(async (request, response) => {
   }
   if (busy) return fail(response, 429, 'busy', 'Data-engine concurrency limit reached')
   busy = true
+  response.writeProcessing()
   try {
     const result = url.pathname === '/v1/query'
       ? await querySnapshots(validated, request, response)

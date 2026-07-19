@@ -131,6 +131,7 @@ interface EvaluationCase {
     | 'sql-guardrail'
     | 'authentication'
     | 'sidecar-isolation'
+    | 'corpus-security'
     | 'recovery'
     | 'negative-control'
   readonly status: 'passed'
@@ -228,6 +229,7 @@ function isEvaluationCase(value: unknown): value is EvaluationCase {
       'sql-guardrail',
       'authentication',
       'sidecar-isolation',
+      'corpus-security',
       'recovery',
       'negative-control',
     ].includes(String(value['category']))
@@ -596,6 +598,7 @@ async function seedCatalog(
 async function persistMaterializationsWithRecovery(
   sql: import('postgres').Sql,
   families: ReadonlyArray<MaterializedFamily>,
+  recoveryTruth: GroundTruth['recoveryCases'],
 ): Promise<ReadonlyArray<EvaluationCase>> {
   const layer = Layer.provide(DatasetMaterializationRepo.Default, SqlClientLive(sql))
   const run = <A, E>(effect: Effect.Effect<A, E, DatasetMaterializationRepo>) =>
@@ -745,24 +748,48 @@ async function persistMaterializationsWithRecovery(
         'Recovered completion produced duplicate or partial durable state',
       )
     }
-    for (const caseId of [
-      'transaction-rollback',
-      'lease-expiry',
-      'lease-reclaim',
-      'stale-attempt-fence',
-      'single-materialization',
-      'single-terminal-event',
-    ]) {
+    const boundaryEvidence: Readonly<Record<string, unknown>> = {
+      discovery: {
+        claimedSnapshotId: reclaimed.value.snapshotId,
+        expectedSnapshotId: ids.snapshotId,
+      },
+      hashing: {
+        parquetHash: result.parquetHash,
+        expectedHash: `sha256:${materialized.parquetDigest}`,
+      },
+      'artifact-persistence': {
+        materializations: Number(durable[0]?.['materializations']),
+      },
+      'version-creation': {
+        snapshotId: result.snapshotId,
+        datasetId: result.datasetId,
+      },
+      'event-publication': {
+        events: Number(durable[0]?.['events']),
+      },
+      checkpoint: {
+        status: durable[0]?.['status'],
+        attempt: reclaimed.value.attempt,
+        staleAttemptRejected: stale._tag === 'Failure',
+      },
+    }
+    for (const recoveryCase of recoveryTruth) {
+      const evidence = boundaryEvidence[recoveryCase.boundary]
+      if (evidence === undefined) {
+        throw fail(
+          'recovery',
+          recoveryCase.boundary,
+          'Ground-truth recovery boundary has no real evaluator probe',
+        )
+      }
       cases.push({
-        id: `RECOVERY-${caseId}`,
+        id: `RECOVERY-${recoveryCase.boundary}`,
         category: 'recovery',
         status: 'passed',
         evidenceHash: evidenceHash({
-          caseId,
-          attempt: reclaimed.value.attempt,
-          materializations: 1,
-          events: 1,
-          status: 'completed',
+          boundary: recoveryCase.boundary,
+          expected: recoveryCase.expected,
+          evidence,
         }),
       })
     }
@@ -1170,9 +1197,7 @@ async function runSecurityCases(
       id: caseId,
       category: expectedCode === 'authentication'
         ? 'authentication'
-        : caseId.includes('EGRESS') || caseId.includes('PATH')
-          ? 'sidecar-isolation'
-          : 'sql-guardrail',
+        : 'sql-guardrail',
       status: 'passed',
       evidenceHash: evidenceHash({ caseId, status: response.status, code }),
     }
@@ -1249,29 +1274,43 @@ async function runSecurityCases(
     limits: { ...base.limits, timeoutMs: 5_000 },
   })
   const url = new URL(baseUrl)
-  await new Promise<void>((resolveDisconnect, rejectDisconnect) => {
-    const socket = createConnection({
-      host: url.hostname,
-      port: Number(url.port || 80),
-    })
-    socket.once('error', rejectDisconnect)
-    socket.once('connect', () => {
-      socket.write([
-        'POST /v1/query HTTP/1.1',
-        `Host: ${url.host}`,
-        `Authorization: Bearer ${token}`,
-        'Content-Type: application/json',
-        `Content-Length: ${Buffer.byteLength(encoded)}`,
-        'Connection: close',
-        '',
-        encoded,
-      ].join('\r\n'))
-      setTimeout(() => {
+  const cancellationSocket = await new Promise<ReturnType<typeof createConnection>>(
+    (resolveStarted, rejectStarted) => {
+      const socket = createConnection({
+        host: url.hostname,
+        port: Number(url.port || 80),
+      })
+      socket.once('error', rejectStarted)
+      const timeout = setTimeout(() => {
         socket.destroy()
-        resolveDisconnect()
-      }, 5)
-    })
-  })
+        rejectStarted(fail(
+          'sidecar-isolation',
+          'CANCEL-CLIENT-DISCONNECT',
+          'Expensive query did not emit its start handshake',
+        ))
+      }, 5_000)
+      let responsePrefix = ''
+      socket.on('data', (chunk) => {
+        responsePrefix += chunk.toString()
+        if (!responsePrefix.includes('102 Processing')) return
+        clearTimeout(timeout)
+        resolveStarted(socket)
+      })
+      socket.once('connect', () => {
+        socket.write([
+          'POST /v1/query HTTP/1.1',
+          `Host: ${url.host}`,
+          `Authorization: Bearer ${token}`,
+          'Content-Type: application/json',
+          `Content-Length: ${Buffer.byteLength(encoded)}`,
+          'Connection: close',
+          '',
+          encoded,
+        ].join('\r\n'))
+      })
+    },
+  )
+  cancellationSocket.destroy()
   let recoveredStatus = 0
   for (let attempt = 0; attempt < 20; attempt += 1) {
     const response = await fetch(`${baseUrl}/v1/query`, {
@@ -1300,6 +1339,7 @@ async function runSecurityCases(
     status: 'passed',
     evidenceHash: evidenceHash({
       cancellation: 'client-disconnect',
+      startHandshake: '102 Processing',
       subsequentStatus: recoveredStatus,
     }),
   })
@@ -1358,22 +1398,228 @@ async function runSecurityCases(
   return cases
 }
 
-function schemaCases(
+async function runCorpusSecurityCases(
+  groundTruth: GroundTruth,
+  families: ReadonlyArray<MaterializedFamily>,
+  baseUrl: string,
+  token: string,
+): Promise<ReadonlyArray<EvaluationCase>> {
+  const client = makeDataEngineClient({ baseUrl, credential: token })
+  const cases: EvaluationCase[] = []
+  for (const [securityClass, expectedRecordIds] of Object.entries(
+    groundTruth.securityCases,
+  )) {
+    const materializedRecordIds = new Set<string>()
+    for (let offset = 0; offset < expectedRecordIds.length; offset += 200) {
+      const literals = expectedRecordIds.slice(offset, offset + 200).map(
+        (recordId) => `'${recordId.replaceAll("'", "''")}'`,
+      ).join(', ')
+      for (const materialized of families) {
+        const result = await Effect.runPromise(client.query({
+          protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
+          operation: 'query',
+          workspaceId,
+          projectId,
+          sql: `SELECT _record_id FROM ${materialized.binding.alias}
+                WHERE _record_id IN (${literals}) ORDER BY ALL`,
+          snapshots: [materialized.binding],
+          limits: {
+            maxRows: 10_000,
+            maxOutputBytes: 4 * 1024 * 1024,
+            maxMemoryMb: 128,
+            timeoutMs: 30_000,
+          },
+        }))
+        for (let index = 0; index < result.rows.length; index += 1) {
+          const recordId = valueAt(result, index, '_record_id')
+          if (recordId !== null) materializedRecordIds.add(recordId)
+        }
+      }
+    }
+    if (
+      expectedRecordIds.some(
+        (recordId) => !materializedRecordIds.has(recordId),
+      )
+    ) {
+      throw fail(
+        'corpus-security',
+        securityClass,
+        `Tagged ${securityClass} records did not survive exact materialization and query`,
+      )
+    }
+    cases.push({
+      id: `CORPUS-SECURITY-${securityClass}`,
+      category: 'corpus-security',
+      status: 'passed',
+      evidenceHash: evidenceHash({
+        securityClass,
+        recordIds: expectedRecordIds.toSorted(),
+      }),
+    })
+  }
+  return cases
+}
+
+async function dockerInspect(name: string): Promise<Record<string, unknown>> {
+  const process = Bun.spawn(['docker', 'inspect', name], {
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+  const output: unknown = await new Response(process.stdout).json()
+  if (
+    await process.exited !== 0
+    || !Array.isArray(output)
+    || !isRecord(output[0])
+  ) {
+    throw fail(
+      'sidecar-isolation',
+      name,
+      'Docker isolation state could not be inspected',
+    )
+  }
+  return output[0]
+}
+
+async function runContainerIsolationCases(): Promise<
+  ReadonlyArray<EvaluationCase>
+> {
+  const sidecar = await dockerInspect('struct-data-engine')
+  const gateway = await dockerInspect('struct-data-engine-gateway')
+  const sidecarHost = sidecar['HostConfig']
+  const gatewayHost = gateway['HostConfig']
+  const sidecarMounts = sidecar['Mounts']
+  const gatewayMounts = gateway['Mounts']
+  const sidecarNetworks = isRecord(sidecar['NetworkSettings'])
+    ? sidecar['NetworkSettings']['Networks']
+    : undefined
+  const gatewayPorts = isRecord(gateway['NetworkSettings'])
+    ? gateway['NetworkSettings']['Ports']
+    : undefined
+  if (
+    !isRecord(sidecarHost)
+    || sidecarHost['ReadonlyRootfs'] !== true
+    || !Array.isArray(sidecarHost['CapDrop'])
+    || !sidecarHost['CapDrop'].includes('ALL')
+    || !Array.isArray(sidecarHost['SecurityOpt'])
+    || !sidecarHost['SecurityOpt'].includes('no-new-privileges:true')
+    || !Array.isArray(sidecarMounts)
+    || sidecarMounts.length !== 2
+    || !sidecarMounts.some((mount) =>
+      isRecord(mount)
+      && mount['Destination'] === '/artifacts'
+      && mount['RW'] === false)
+    || !sidecarMounts.some((mount) =>
+      isRecord(mount)
+      && mount['Destination'] === '/scratch'
+      && mount['Type'] === 'volume')
+    || !isRecord(sidecarNetworks)
+    || Object.keys(sidecarNetworks).length !== 1
+  ) {
+    throw fail(
+      'sidecar-isolation',
+      'ISOLATION-SIDECAR-CONTAINER',
+      'Sidecar container isolation policy is not enforced',
+    )
+  }
+  const networkName = Object.keys(sidecarNetworks)[0]
+  if (networkName === undefined) {
+    throw fail(
+      'sidecar-isolation',
+      'ISOLATION-INTERNAL-NETWORK',
+      'Sidecar internal network is missing',
+    )
+  }
+  const network = await dockerInspect(networkName)
+  if (network['Internal'] !== true) {
+    throw fail(
+      'sidecar-isolation',
+      'ISOLATION-INTERNAL-NETWORK',
+      'Sidecar network permits external routing',
+    )
+  }
+  const loopbackBindings = isRecord(gatewayPorts)
+    && Array.isArray(gatewayPorts['4300/tcp'])
+    ? gatewayPorts['4300/tcp']
+    : []
+  if (
+    !isRecord(gatewayHost)
+    || gatewayHost['ReadonlyRootfs'] !== true
+    || !Array.isArray(gatewayMounts)
+    || gatewayMounts.length !== 0
+    || loopbackBindings.length !== 1
+    || !isRecord(loopbackBindings[0])
+    || loopbackBindings[0]['HostIp'] !== '127.0.0.1'
+  ) {
+    throw fail(
+      'sidecar-isolation',
+      'ISOLATION-FIXED-GATEWAY',
+      'Gateway is not mount-free and loopback-bound',
+    )
+  }
+  return [{
+    id: 'ISOLATION-SIDECAR-CONTAINER',
+    category: 'sidecar-isolation',
+    status: 'passed',
+    evidenceHash: evidenceHash({
+      internalNetwork: networkName,
+      readOnlyRoot: true,
+      artifactMountReadOnly: true,
+      scratchVolumeOnly: true,
+      capabilitiesDropped: true,
+    }),
+  }, {
+    id: 'ISOLATION-FIXED-GATEWAY',
+    category: 'sidecar-isolation',
+    status: 'passed',
+    evidenceHash: evidenceHash({
+      mounts: 0,
+      hostIp: '127.0.0.1',
+      readOnlyRoot: true,
+    }),
+  }]
+}
+
+function expectedDuckType(declaredType: string): string {
+  if (declaredType === 'nested') return 'VARCHAR'
+  switch (logicalType(declaredType)) {
+    case 'boolean': return 'BOOLEAN'
+    case 'integer': return 'BIGINT'
+    case 'decimal': return 'DECIMAL(38,18)'
+    case 'timestamp': return 'TIMESTAMP'
+    case 'json': return 'VARCHAR'
+    case 'string': return 'VARCHAR'
+  }
+}
+
+async function schemaCases(
   manifest: import('./corpus.js').CorpusManifest,
   families: ReadonlyArray<MaterializedFamily>,
-): ReadonlyArray<EvaluationCase> {
-  return manifest.schemaFamilies.map((family) => {
+  expectedSchemas: GroundTruth['expectedSchemas'],
+  baseUrl: string,
+  token: string,
+): Promise<ReadonlyArray<EvaluationCase>> {
+  const client = makeDataEngineClient({ baseUrl, credential: token })
+  const cases: EvaluationCase[] = []
+  for (const family of manifest.schemaFamilies) {
     const actual = families.find(
       (candidate) => candidate.family.schemaFamilyId === family.schemaFamilyId,
     )
+    const expected = expectedSchemas.find(
+      (candidate) => candidate.schemaFamilyId === family.schemaFamilyId,
+    )
     if (
       actual === undefined
+      || expected === undefined
+      || canonicalJson(family) !== canonicalJson(expected)
       || actual.profile.rowCount !== family.recordCount
       || actual.profile.columns.length !== family.fields.length + 1
       || actual.profile.columns.some((column, index) =>
         index < family.fields.length
           ? column.name !== family.fields[index]?.name
           : column.name !== '_record_id')
+      || family.fields.some((field, index) =>
+        !(field.nullable || field.optional)
+        && actual.profile.columns[index]?.nullCount !== 0)
     ) {
       throw fail(
         'schema-family',
@@ -1381,7 +1627,43 @@ function schemaCases(
         'Schema family profile does not match the manifest',
       )
     }
-    return {
+    const result = await Effect.runPromise(client.query({
+      protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
+      operation: 'query',
+      workspaceId,
+      projectId,
+      sql: `SELECT * FROM ${actual.binding.alias} ORDER BY ALL LIMIT 1`,
+      snapshots: [actual.binding],
+      limits: {
+        maxRows: 1,
+        maxOutputBytes: 100_000,
+        maxMemoryMb: 64,
+        timeoutMs: 5_000,
+      },
+    }))
+    const expectedColumns = [
+      ...family.fields.map((field, ordinal) => ({
+        ordinal,
+        name: field.name,
+        type: expectedDuckType(field.declaredType),
+      })),
+      {
+        ordinal: family.fields.length,
+        name: '_record_id',
+        type: 'VARCHAR',
+      },
+    ]
+    if (canonicalJson(result.columns) !== canonicalJson(expectedColumns)) {
+      throw fail(
+        'schema-family',
+        family.schemaFamilyId,
+        `Observed DuckDB schema types do not match independent ground truth: ${canonicalJson({
+          actual: result.columns,
+          expected: expectedColumns,
+        }).trim()}`,
+      )
+    }
+    cases.push({
       id: `SCHEMA-${family.schemaFamilyId}`,
       category: 'schema-family',
       status: 'passed',
@@ -1389,18 +1671,21 @@ function schemaCases(
         family: family.schemaFamilyId,
         fields: family.fields,
         profile: actual.profile,
+        observedColumns: result.columns,
       }),
-    }
-  })
+    })
+  }
+  return cases
 }
 
 const expectedCaseCounts: Readonly<Record<EvaluationCase['category'], number>> = {
   'exact-answer': 8,
   'schema-family': 4,
   citation: 9,
-  'sql-guardrail': 7,
+  'sql-guardrail': 9,
   authentication: 2,
   'sidecar-isolation': 3,
+  'corpus-security': 8,
   recovery: 6,
   'negative-control': 2,
 }
@@ -1545,7 +1830,11 @@ export const runPhase04Evaluation = Effect.fn('runPhase04Evaluation')(
     })
     const recoveryStarted = performance.now()
     const recoveryCases = yield* Effect.tryPromise({
-      try: () => persistMaterializationsWithRecovery(sql, families),
+      try: () => persistMaterializationsWithRecovery(
+        sql,
+        families,
+        groundTruth.recoveryCases,
+      ),
       catch: (cause) =>
         cause instanceof Phase04EvaluationError
           ? cause
@@ -1582,10 +1871,44 @@ export const runPhase04Evaluation = Effect.fn('runPhase04Evaluation')(
           ? cause
           : fail('security', 'sidecar', 'Security evaluation failed'),
     })
+    const corpusSecurityCases = yield* Effect.tryPromise({
+      try: () => runCorpusSecurityCases(
+        groundTruth,
+        families,
+        options.dataEngineUrl,
+        options.dataEngineToken,
+      ),
+      catch: (cause) =>
+        cause instanceof Phase04EvaluationError
+          ? cause
+          : fail('corpus-security', 'records', 'Corpus security evaluation failed'),
+    })
+    const isolationCases = yield* Effect.tryPromise({
+      try: () => runContainerIsolationCases(),
+      catch: (cause) =>
+        cause instanceof Phase04EvaluationError
+          ? cause
+          : fail('sidecar-isolation', 'container', 'Container isolation evaluation failed'),
+    })
+    const evaluatedSchemaCases = yield* Effect.tryPromise({
+      try: () => schemaCases(
+        manifest,
+        families,
+        groundTruth.expectedSchemas,
+        options.dataEngineUrl,
+        options.dataEngineToken,
+      ),
+      catch: (cause) =>
+        cause instanceof Phase04EvaluationError
+          ? cause
+          : fail('schema-family', 'observed', 'Observed schema evaluation failed'),
+    })
     const coreCases = [
-      ...schemaCases(manifest, families),
+      ...evaluatedSchemaCases,
       ...exact.cases,
       ...securityCases,
+      ...corpusSecurityCases,
+      ...isolationCases,
       ...recoveryCases,
     ]
     const cases = [
@@ -1606,6 +1929,7 @@ export const runPhase04Evaluation = Effect.fn('runPhase04Evaluation')(
       'sql-guardrail',
       'authentication',
       'sidecar-isolation',
+      'corpus-security',
       'recovery',
       'negative-control',
     ]
@@ -1647,6 +1971,7 @@ export const runPhase04Evaluation = Effect.fn('runPhase04Evaluation')(
           'sql-guardrail': 0,
           authentication: 0,
           'sidecar-isolation': 0,
+          'corpus-security': 0,
           recovery: 0,
           'negative-control': 0,
         },

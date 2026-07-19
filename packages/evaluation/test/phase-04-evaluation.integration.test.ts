@@ -50,9 +50,10 @@ suite('Phase 04 exact-computation evaluation', () => {
         'exact-answer': 8,
         'schema-family': 4,
         citation: 9,
-        'sql-guardrail': 7,
+        'sql-guardrail': 9,
         authentication: 2,
         'sidecar-isolation': 3,
+        'corpus-security': 8,
         recovery: 6,
         'negative-control': 2,
       })

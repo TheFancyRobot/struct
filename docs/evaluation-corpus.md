@@ -648,19 +648,21 @@ This maps the Validation Plan's completeness checks to sections so the gate can 
 
 ## 18. Pass / fail
 
-- **PASS** — the corpus/ground-truth/gate contracts in §2–§16 are complete; deterministic seed/hash behavior is specified (§3, §13); all STEP-00-05 security handoff cases map to fixtures (§10); downstream Phase 04 implementation can proceed without inventing schemas or thresholds; and the §17 completeness checklist is fully satisfied.
-- **FAIL** — any of: ground truth or provenance is missing (§7–§9); a 25k claim relies on toy/smoke data (§14.2); real sensitive data is required (§15); deterministic gates depend only on a model judge (§11.3); recovery or security checks are omitted (§10, §11.1); a non-negotiable threshold is expressed as a soft target instead of an exact value (§11.1); or the Phase 4 handoff claims artifacts already exist (§14).
+- **PASS** — the corpus/ground-truth/gate contracts in §2–§16 are complete; deterministic seed/hash behavior is specified (§3, §13); all STEP-00-05 security handoff cases map to fixtures (§10); the Phase 04 generator and evaluator execute those contracts; and the §17 completeness checklist is fully satisfied.
+- **FAIL** — any of: ground truth or provenance is missing (§7–§9); a 25k claim relies on toy/smoke data (§14.2); real sensitive data is required (§15); deterministic gates depend only on a model judge (§11.3); recovery or security checks are omitted (§10, §11.1); or a non-negotiable threshold is expressed as a soft target instead of an exact value (§11.1).
 
 ## 19. Reconciliation and provenance
 
-This specification consumes — and does not contradict — the following authoritative sources. It adds no production code; it is Phase 0 spec-only, owned by STEP-00-06.
+This document originated as the Phase 0 specification owned by STEP-00-06.
+STEP-04-05 and STEP-04-06 now implement its generator and evaluation contracts
+in `packages/evaluation`; the historical specification remains authoritative.
 
 - **[security-model.md §25](./security-model.md#25-step-00-06-handoff)** — every ABUSE category → expected safe behavior → required observable evidence is mapped to a corpus fixture in §10. §22 provisional limits ground §12/§13 benchmark budgets (DuckDB `memory_limit` ~244 MiB, `threads=2`, interrupt ~93 ms, timeout ~255 ms; checkpoint < 64 KiB; event payload < 16 KiB; duplicate-side-effect rate 0). §25 sanitization/privacy and audit-event set ground §15. DEF-05 (gate-tier thresholds) is finalized here in §11.
 - **[evaluation-strategy.md](./evaluation-strategy.md)** — §3 layers, §4 corpus goals/contents, §5 ground truth, §6 question sets, §7 metrics, §8 acceptance gates, §9 continuous workflow, §10 hardware discipline, §13 v1 release criteria, §14 suggested thresholds, §15 non-negotiable rules → operationalized in §4–§13. The non-negotiable rules (prompt-injection 0%, duplicate side-effect 0%, stale-citation 100%) are exact thresholds in §11.1.
 - **[DEC-0011](../.agent-vault/04_Decisions/DEC-0011_gate-releases-on-a-reproducible-25000-file-evaluation-corpus.md)** — reproducible ~25,000-file corpus, committed seed, versioned ground truth, tiered smoke/nightly/release suites, every artifact records corpus version/seed/code/models/prompts/providers/deps → §2, §3, §13, §16. Phase 00 specifies; Phase 04 implements.
 - **[DEC-0009](../.agent-vault/04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql.md)** — sandbox roots, allowlist read-only SQL, imported content as untrusted evidence → §10 (ABUSE-01/02/08), §15. Fail-closed typed errors.
 - **[architecture.md](./architecture.md)** — §7 journal/SSE, §8 ingestion (no model call per file), §9 agent-vs-tool split, §10 bounded execution + terminal states, §14 non-negotiable contracts (immutable source versions; exact answers from deterministic tools; untrusted content; durable/cancellable work; citations validated before finalization) → §3.2, §4.1, §5, §9, §11.
-- **[repository-contract.md §2](./repository-contract.md#2-ci-gate-matrix)** — three gate tiers and check ownership; STEP-00-06 finalizes thresholds → §11. §3.2 confirms `packages/evaluation` generator + CI gate implementation is deferred to Phase 04/09; STEP-00-06 owns the spec.
+- **[repository-contract.md §2](./repository-contract.md#2-ci-gate-matrix)** — three gate tiers and check ownership; STEP-00-06 finalized thresholds → §11. Phase 04 now owns the executable generator and evaluator in `packages/evaluation`; Phase 09 still owns final pre-release CI hardening.
 - **[product-brief.md](./product-brief.md)** — §13 research execution model, §21 security model, §24 corpus contents/questions, §25 performance principles, §27 v1 acceptance, §30 demonstration scenario (the mixed-source flagship), §31 final direction → §4, §6.3, §10, §11, §14.
 
 ## Change log

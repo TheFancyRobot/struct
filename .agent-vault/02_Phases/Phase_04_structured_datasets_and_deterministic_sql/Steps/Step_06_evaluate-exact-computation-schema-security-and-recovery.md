@@ -18,7 +18,7 @@ tags:
   - agent-vault
   - step
 context_id: SESSION-2026-07-19-225211
-active_session_id: 05_Sessions/2026-07-19-225211-evaluate-exact-computation-schema-security-and-recovery-codex-step-04-06-worker
+active_session_id: ''
 context_status: active
 context_summary: Advance [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_06_evaluate-exact-computation-schema-security-and-recovery|STEP-04-06 Evaluate Exact Computation Schema Security and Recovery]].
 ---
@@ -52,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_06_evaluate-exact-computation-schema-security-and-recovery/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_06_evaluate-exact-computation-schema-security-and-recovery/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: in_progress
+- Current owner: Codex
+- Last touched: 2026-07-19
+- Next action: Complete the confirmed PR #24 remediation and merge after all review threads are addressed.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

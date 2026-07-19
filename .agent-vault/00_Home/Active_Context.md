@@ -23,6 +23,7 @@ _Last refreshed: 2026-07-19._
 - Session in progress: none.
 - Current step: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_06_evaluate-exact-computation-schema-security-and-recovery|STEP-04-06 Evaluate Exact Computation Schema Security and Recovery]] - status: in_progress - phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]] - owner: Codex
 - Active phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]] - status: in_progress - owner: Codex - updated: 2026-07-19
+- Next action: complete the confirmed PR #24 remediation, merge STEP-04-06, and close Phase 04.
 - Also active: 48 more additional steps.
 <!-- AGENT-END:current-focus -->
 
