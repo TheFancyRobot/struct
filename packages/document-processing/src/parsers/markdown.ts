@@ -16,7 +16,7 @@ const markdownFragments = (source: string): ReadonlyArray<MarkdownFragment> => {
   let paragraph = 0
   let lines: string[] = []
   let blockSection: string | null = null
-  let fence: '`' | '~' | null = null
+  let fence: { readonly marker: '`' | '~'; readonly length: number } | null = null
 
   const flush = () => {
     const text = lines.join('\n').trim()
@@ -29,7 +29,12 @@ const markdownFragments = (source: string): ReadonlyArray<MarkdownFragment> => {
     const fenceMatch = /^ {0,3}(`{3,}|~{3,})/.exec(line)
     if (fence !== null) {
       lines.push(line)
-      if (fenceMatch?.[1]?.startsWith(fence)) {
+      if (
+        fenceMatch?.[1]
+        && fenceMatch[1][0] === fence.marker
+        && fenceMatch[1].length >= fence.length
+        && /^[ \t]*$/.test(line.slice(fenceMatch[0].length))
+      ) {
         flush()
         fence = null
       }
@@ -38,7 +43,10 @@ const markdownFragments = (source: string): ReadonlyArray<MarkdownFragment> => {
     if (fenceMatch?.[1]) {
       flush()
       blockSection = section
-      fence = fenceMatch[1][0] === '`' ? '`' : '~'
+      fence = {
+        marker: fenceMatch[1][0] === '`' ? '`' : '~',
+        length: fenceMatch[1].length,
+      }
       lines.push(line)
       continue
     }

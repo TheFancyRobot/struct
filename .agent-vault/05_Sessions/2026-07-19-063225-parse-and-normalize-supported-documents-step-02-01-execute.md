@@ -54,6 +54,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 06:47 - Completed final code gates: lint, root typecheck, focused 39-test suite, import boundaries, docs lint, and secret scan.
 <!-- AGENT-END:session-execution-log -->
 - 2026-07-19: Exact-head Codex review identified two provenance defects. Remediated PDF parsing to infer paragraph boundaries from pdf.js line layout and emit page/paragraph locators, and remediated Markdown parsing to split ATX headings at block boundaries while ignoring heading-like content inside fenced code. Added focused regression coverage for both cases.
+- 2026-07-19: Exact-head CodeRabbit review found that a shorter or code-suffixed fence could prematurely close a longer Markdown fenced block. Fence tracking now preserves the opening marker and length and accepts only whitespace-only closing markers of the same character and equal-or-greater length; regression coverage added.
 
 ## Findings
 
@@ -84,6 +85,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Final CodeRabbit-remediation validation: 10/10 focused parser tests, 304/304 full PostgreSQL-backed tests with 1,647 assertions, 1/1 browser E2E, root typecheck, zero-warning lint, import boundaries, builds, Compose config, docs links, history-aware secrets, and diff hygiene passed. A fresh independent exact-diff audit found no actionable issue.
 <!-- AGENT-END:session-validation-run -->
 - 2026-07-19 exact-head remediation gate: focused document parser tests 12/12; PostgreSQL-backed repository suite 306/306 with 1,649 assertions; repository typecheck, zero-warning lint, import boundaries, production builds, docs links, history-aware secret scan, Compose config, and `git diff --check` all passed.
+- 2026-07-19 fence remediation gate: focused parser tests 13/13; PostgreSQL-backed suite 307/307 with 1,650 assertions; package typecheck, zero-warning repository lint, and `git diff --check` passed.
 
 ## Bugs Encountered
 

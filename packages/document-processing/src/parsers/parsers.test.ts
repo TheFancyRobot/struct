@@ -69,6 +69,15 @@ describe('document parsers', () => {
     ])
   })
 
+  it('keeps shorter and code-suffixed fence markers inside a longer fenced block', async () => {
+    const document = await Effect.runPromise(parseMarkdown(encode('````ts\n``` code\n# hidden\n````\n# Visible\nBody')))
+    expect(document.fragments).toMatchObject([
+      { text: '````ts\n``` code\n# hidden\n````', section: null, paragraph: 1 },
+      { text: '# Visible', section: 'Visible', paragraph: 2 },
+      { text: 'Body', section: 'Visible', paragraph: 3 },
+    ])
+  })
+
   it('extracts HTML blocks while excluding nested script content', async () => {
     const document = await Effect.runPromise(parseHtml(encode('<h1>Guide</h1><p>Safe<br><script>secret()</script>text</p><p>More</p>')))
     expect(document.text).toBe('Guide\n\nSafe text\n\nMore')
