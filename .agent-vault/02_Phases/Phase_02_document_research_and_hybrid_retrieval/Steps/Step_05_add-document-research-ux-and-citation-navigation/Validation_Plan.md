@@ -4,11 +4,12 @@
 
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The narrowest typed slice for Document Research UX and Citation Navigation that is callable by the next step without broadening scope.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: Only the minimal API surface in `apps/api/src/routes/documents.ts`, `apps/api/src/routes/citations.ts` needed to exercise this step end to end.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: `apps/web/src/app/projects/[projectId]/page.tsx`, `apps/web/src/components/DocumentSearchPane.tsx`, `apps/web/src/components/CitationInspector.tsx` to expose only the UI states required to inspect this step’s output and failures.
+- Confirm the existing SolidJS research page, stream, and citation viewer expose only the document states required by this step.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
 
 ## Planned Verification
 
+- Refined gate: Solid component tests plus Bun-native browser coverage for keyboard navigation, loading/error/empty/insufficient/unsupported states, source preview and exact citation route, reconnect/replay, and tenant-safe API failures; use current `apps/web/src/pages`, components, router, and API-client paths rather than planned Next.js paths.
 - Run the nearest repo-wide or package-targeted `bun run typecheck` command once the touched packages and apps exist.
 - Planned app/integration coverage once the app surfaces exist: `bun test apps/api apps/web` for the API/worker/web path touched here.
 - Add a browser/e2e or component-level check that exercises the visible UI state introduced by this step and one failure presentation path.

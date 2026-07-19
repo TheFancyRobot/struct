@@ -7,7 +7,7 @@ phase_id: PHASE-02
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_01_walking_skeleton/Phase|PHASE-01 Walking Skeleton]]'
 related_architecture:
@@ -68,7 +68,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 ## Delivery Strategy
 
-- **Safe parallel work:** Document parser adapters and retrieval-index implementation can proceed in parallel behind frozen source-version and locator contracts; UX may start against contract fixtures.
+- **Execution order:** Run one step at a time; each step starts only after its predecessor is reviewed and merged.
 - **Gate:** The phase closes only when all acceptance criteria have reproducible evidence and the relevant docs, migrations, security checks, telemetry, and evaluations are updated.
 - **Boundary:** Post-v1 work must not be pulled forward in a way that weakens v1 completeness or its release gates.
 
@@ -118,3 +118,14 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - Product requirements: authoritative repository document `docs/product-brief.md`.
 - Human-readable roadmap: `docs/roadmap.md`; concise index: `docs/implementation-plan.md`.
 - Assumption policy: reversible uncertainties use the documented default until spike evidence requires a decision update; no hidden architectural assumption is carried only in chat.
+### 2026-07-19 Refinement
+
+- Supersedes generic path, migration-number, parallel-work, and acceptance assumptions elsewhere in this note when they conflict with completed Phase 01.
+- Baseline: Bun workspace; SolidJS/Vite web; Effect API/worker/services; PostgreSQL/pgvector migrations through `0004`; immutable source artifacts/versions; durable ingestion/research events; deterministic text retrieval; bounded Fred execution; citation validation/navigation; SSE; correlated telemetry; end-to-end tests.
+- Execute sequentially: parse PDF-with-embedded-text, Markdown, UTF-8 plain text/source code, and HTML; persist deterministic chunks/locators; add PostgreSQL keyword/vector/hybrid retrieval; extend bounded Fred document research/evidence sufficiency; extend existing Solid UX and minimal citation-backed saved findings; close with deterministic evaluation.
+- DOCX waits for a deliberately selected reliable Bun-compatible path. OCR-heavy PDFs are detected and rejected explicitly.
+- Reuse Phase 01 boundaries. Use the next migration number from the manifest (`0005` at refinement time), never stale planned numbers.
+- Bun is the sole host runtime. Phase 02 needs no sidecar or second runtime. PostgreSQL full-text plus pgvector remains the only retrieval store.
+- Withdraw the earlier parallel-work suggestion: each step consumes its predecessor's merged handoff.
+- Each step must clear focused and applicable repo-wide typecheck, lint, import-boundary, database-backed test, e2e, build, docs, secret-scan, and Vault-doctor gates. Zero known defects may remain.
+- Refined in [[05_Sessions/2026-07-19-062410-parse-and-normalize-supported-documents-refine-phase-02|SESSION-2026-07-19-062410]].

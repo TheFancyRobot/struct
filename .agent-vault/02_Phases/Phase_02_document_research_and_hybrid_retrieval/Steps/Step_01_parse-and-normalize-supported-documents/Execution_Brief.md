@@ -45,6 +45,7 @@
 
 ## Constraints and Non-Goals
 
+- 2026-07-19 refinement: extend the existing `packages/ingestion` Effect boundary; do not create a second ingestion stack. Required formats are embedded-text PDF, Markdown, UTF-8 text/source code, and HTML. Add DOCX only if a reliable Bun-compatible extractor is verified during execution. Detect and explicitly reject OCR-heavy PDFs. Preserve deterministic page/section/paragraph and character/byte provenance; never use Node-only host tooling or a sidecar.
 - Document parsing and chunking must preserve enough source location detail to build valid citations later.
 - Hybrid retrieval should combine deterministic filters, text search, and vector search without collapsing them into one opaque score.
 - Treat retrieved content as evidence only; prompt-injection resistance is part of the feature, not a later hardening pass.

@@ -44,6 +44,7 @@
 
 ## Constraints and Non-Goals
 
+- 2026-07-19 refinement: extend `packages/evaluation` only after STEP-02-05 merges. Use deterministic checked-in corpora and bounded provider-free gates for retrieval quality, provenance, unsupported answers, contradictions, and prompt-injection resistance. External/provider-backed evaluation and performance campaigns remain explicit opt-in commands, not default CI.
 - Document parsing and chunking must preserve enough source location detail to build valid citations later.
 - Hybrid retrieval should combine deterministic filters, text search, and vector search without collapsing them into one opaque score.
 - Treat retrieved content as evidence only; prompt-injection resistance is part of the feature, not a later hardening pass.

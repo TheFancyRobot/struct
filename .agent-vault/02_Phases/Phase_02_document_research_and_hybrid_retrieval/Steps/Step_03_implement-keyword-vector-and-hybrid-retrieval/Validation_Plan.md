@@ -3,12 +3,13 @@
 ## Acceptance Checks
 
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The narrowest typed slice for Keyword Vector and Hybrid Retrieval that is callable by the next step without broadening scope.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: The migration contract in `packages/persistence/src/migrations/0003_retrieval_indexes.sql` and make the schema changes explicit about workspace scoping, immutable versioning, and foreign-key shape where relevant.
+- Confirm the manifest-derived retrieval-index migration is present, bounded to this step, and explicit about workspace scoping and immutable source-version ownership.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The retrieval boundary in `packages/retrieval/src/full-text.ts`, `packages/retrieval/src/vector-search.ts`, `packages/retrieval/src/hybrid-retrieval.ts` so ranking, filtering, and provenance remain inspectable and typed.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
 
 ## Planned Verification
 
+- Refined gate: real PostgreSQL keyword, vector, and fused-ranking fixtures; deterministic tie-breaking; tenant/source filters; empty and adversarial queries; embedding failure behavior; exact provenance; index rebuild/upgrade; then applicable repo-wide Bun gates and Vault doctor.
 - Planned command once these packages exist: `bun test packages/persistence packages/retrieval` plus the nearest package-level `bun run typecheck`.
 - Plan a fresh-database migration smoke test and an upgrade-path test so the new schema contract is reversible and auditable.
 

@@ -22,7 +22,7 @@ Keep this note short and current.
 _Last refreshed: 2026-07-19._
 - Session in progress: none.
 - Current step: [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_01_parse-and-normalize-supported-documents|STEP-02-01 Parse and Normalize Supported Documents]] - status: planned - phase: [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|Phase 02 document research and hybrid retrieval]]
-- Active phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]] - status: planned - updated: 2026-07-19
+- Active phase: [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]] - status: planned - updated: 2026-07-19
 - Also active: 65 more additional steps.
 <!-- AGENT-END:current-focus -->
 

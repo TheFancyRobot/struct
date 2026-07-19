@@ -9,6 +9,7 @@
 
 ## Planned Verification
 
+- Refined gate: executable corpus smoke/evaluation commands with fixed thresholds and regression fixtures for keyword/vector/hybrid recall, locator fidelity, cross-tenant isolation, stale-version provenance, unsupported evidence, contradiction handling, and source-text prompt injection; finish with every maintained repository and Vault gate clean.
 - Planned command once these packages exist: `bun test packages/evaluation` plus the nearest package-level `bun run typecheck`.
 - Planned app/integration coverage once the app surfaces exist: `bun test apps/api` for the API/worker/web path touched here.
 - Run the evaluation/benchmark fixture for this slice and store the corpus, seed, or hardware assumptions alongside the result.

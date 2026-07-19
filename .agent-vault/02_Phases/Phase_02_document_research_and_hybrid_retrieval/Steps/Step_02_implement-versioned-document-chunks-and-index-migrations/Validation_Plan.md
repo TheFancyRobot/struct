@@ -4,11 +4,12 @@
 
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The narrowest typed slice for Versioned Document Chunks and Index Migrations that is callable by the next step without broadening scope.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: update typed domain modules for `Document` in `packages/domain/src/document.ts`.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: The migration contract in `packages/persistence/src/migrations/0002_document_chunks.sql` and make the schema changes explicit about workspace scoping, immutable versioning, and foreign-key shape where relevant.
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: the `0005_document_chunks` migration is explicit about workspace scoping, immutable versioning, and foreign-key shape.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
 
 ## Planned Verification
 
+- Refined gate: migration up/down/upgrade from the current Phase 01 schema, tenant and source-version ownership, deterministic chunk rebuild/idempotency, locator round-trip, stale-attempt fencing, and rollback safety; then applicable repo-wide Bun gates and Vault doctor.
 - Planned command once these packages exist: `bun test packages/document-processing packages/domain packages/persistence packages/retrieval` plus the nearest package-level `bun run typecheck`.
 - Plan a fresh-database migration smoke test and an upgrade-path test so the new schema contract is reversible and auditable.
 

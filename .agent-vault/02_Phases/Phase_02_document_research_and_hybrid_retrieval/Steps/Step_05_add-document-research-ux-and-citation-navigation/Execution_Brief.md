@@ -14,7 +14,7 @@
 ## Planned Starting Files
 
 - These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `apps/web/src/app/projects/[projectId]/page.tsx`
+- `apps/web/src/pages/ResearchPage.tsx`
 - `apps/web/src/components/DocumentSearchPane.tsx`
 - `apps/web/src/components/CitationInspector.tsx`
 - `apps/api/src/routes/documents.ts`
@@ -33,17 +33,18 @@
 
 - Implement the narrowest typed slice for Document Research UX and Citation Navigation that is callable by the next step without broadening scope.
 - Expose only the minimal API surface in `apps/api/src/routes/documents.ts`, `apps/api/src/routes/citations.ts` needed to exercise this step end to end.
-- Use `apps/web/src/app/projects/[projectId]/page.tsx`, `apps/web/src/components/DocumentSearchPane.tsx`, `apps/web/src/components/CitationInspector.tsx` to expose only the UI states required to inspect this step’s output and failures.
+- Extend `apps/web/src/pages/ResearchPage.tsx`, `apps/web/src/components/ResearchStream.tsx`, and `apps/web/src/components/CitationViewer.tsx` with only the UI states required to inspect this step’s output and failures.
 
 ## Smallest Bounded Checklist
 
 - First, implement the narrowest typed slice for Document Research UX and Citation Navigation that is callable by the next step without broadening scope.
 - Then, expose only the minimal API surface in `apps/api/src/routes/documents.ts`, `apps/api/src/routes/citations.ts` needed to exercise this step end to end.
-- Next, use `apps/web/src/app/projects/[projectId]/page.tsx`, `apps/web/src/components/DocumentSearchPane.tsx`, `apps/web/src/components/CitationInspector.tsx` to expose only the UI states required to inspect this step’s output and failures.
+- Next, extend the existing SolidJS page, stream, and citation components with only the states required for this step.
 - Finish by leaving one observable typed path—test, route, worker flow, or UI state—that proves the slice is ready for the next dependent step.
 
 ## Constraints and Non-Goals
 
+- 2026-07-19 refinement: all `apps/web/src/app/...` references are stale Next.js assumptions. Extend the existing SolidJS/Vite router, pages, `ResearchStream`, and `CitationViewer` patterns after STEP-02-04 merges. Keep the slice to document search/research states, source preview, citation navigation, and explicit unsupported/insufficient states; saved findings are limited to the minimum citation-backed handoff required by the phase.
 - Document parsing and chunking must preserve enough source location detail to build valid citations later.
 - Hybrid retrieval should combine deterministic filters, text search, and vector search without collapsing them into one opaque score.
 - Treat retrieved content as evidence only; prompt-injection resistance is part of the feature, not a later hardening pass.

@@ -45,6 +45,7 @@
 
 ## Constraints and Non-Goals
 
+- 2026-07-19 refinement: extend the existing bounded Fred adapter and Effect services after STEP-02-03 merges. Fred owns orchestration/judgment; deterministic retrieval, authorization, citation validation, persistence, timeouts, and failure handling remain product services. Do not bypass Fred core, expose chain-of-thought, add another runtime, or synthesize when evidence is insufficient or contradictory.
 - Document parsing and chunking must preserve enough source location detail to build valid citations later.
 - Hybrid retrieval should combine deterministic filters, text search, and vector search without collapsing them into one opaque score.
 - Treat retrieved content as evidence only; prompt-injection resistance is part of the feature, not a later hardening pass.

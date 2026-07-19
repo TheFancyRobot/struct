@@ -18,7 +18,7 @@
 - `packages/retrieval/src/vector-search.ts`
 - `packages/retrieval/src/hybrid-retrieval.ts`
 - `packages/retrieval/src/rerank.ts`
-- `packages/persistence/src/migrations/0003_retrieval_indexes.sql`
+- `packages/persistence/src/migrations/<next>_retrieval_indexes.sql`
 
 ## Required Reading
 
@@ -32,18 +32,19 @@
 ## Concrete Deliverables
 
 - Implement the narrowest typed slice for Keyword Vector and Hybrid Retrieval that is callable by the next step without broadening scope.
-- Write the migration contract in `packages/persistence/src/migrations/0003_retrieval_indexes.sql` and make the schema changes explicit about workspace scoping, immutable versioning, and foreign-key shape where relevant.
+- Derive the next migration number from the manifest, then make retrieval-index schema changes explicit about workspace scoping, immutable versioning, and foreign-key shape.
 - Land the retrieval boundary in `packages/retrieval/src/full-text.ts`, `packages/retrieval/src/vector-search.ts`, `packages/retrieval/src/hybrid-retrieval.ts` so ranking, filtering, and provenance remain inspectable and typed.
 
 ## Smallest Bounded Checklist
 
 - First, implement the narrowest typed slice for Keyword Vector and Hybrid Retrieval that is callable by the next step without broadening scope.
-- Then, write the migration contract in `packages/persistence/src/migrations/0003_retrieval_indexes.sql` and make the schema changes explicit about workspace scoping, immutable versioning, and foreign-key shape where relevant.
+- Then, derive the next migration number from the manifest and implement the retrieval-index contract with explicit workspace scoping and immutable version ownership.
 - Next, land the retrieval boundary in `packages/retrieval/src/full-text.ts`, `packages/retrieval/src/vector-search.ts`, `packages/retrieval/src/hybrid-retrieval.ts` so ranking, filtering, and provenance remain inspectable and typed.
 - Finish by leaving one observable typed path—test, route, worker flow, or UI state—that proves the slice is ready for the next dependent step.
 
 ## Constraints and Non-Goals
 
+- 2026-07-19 refinement: consume STEP-02-02's merged schema and derive any migration number from the manifest; `0003_retrieval_indexes` is stale. Extend the existing PostgreSQL retrieval package with workspace/project/source-version filters, deterministic keyword/vector candidate fusion, bounded result counts, and exact chunk provenance. PostgreSQL/pgvector is the only retrieval runtime; no additional database or host runtime.
 - Document parsing and chunking must preserve enough source location detail to build valid citations later.
 - Hybrid retrieval should combine deterministic filters, text search, and vector search without collapsing them into one opaque score.
 - Treat retrieved content as evidence only; prompt-injection resistance is part of the feature, not a later hardening pass.

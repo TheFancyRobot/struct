@@ -9,6 +9,7 @@
 
 ## Planned Verification
 
+- Refined gate: focused parser fixtures for every required format plus malformed, encrypted/unsupported, path-safe, size-bound, OCR-heavy, and deterministic-locator cases; then the applicable maintained `bun run test`, typecheck, lint/import boundaries, build, docs, secrets, and Vault-doctor gates. No provider credentials or external services beyond existing PostgreSQL.
 - Planned command once these packages exist: `bun test packages/document-processing` plus the nearest package-level `bun run typecheck`.
 - Planned app/integration coverage once the app surfaces exist: `bun test apps/worker` for the API/worker/web path touched here.
 
