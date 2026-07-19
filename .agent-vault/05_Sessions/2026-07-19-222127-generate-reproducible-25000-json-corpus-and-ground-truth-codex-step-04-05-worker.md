@@ -6,8 +6,8 @@ title: codex-step-04-05-worker session for Generate Reproducible 25000 JSON Corp
 session_id: SESSION-2026-07-19-222127
 date: '2026-07-19'
 status: completed
-owner: codex-step-04-05-worker
-branch: ''
+owner: Codex
+branch: agent/step-04-05-reproducible-corpus
 phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]'
 context:
   context_id: SESSION-2026-07-19-222127
@@ -126,3 +126,4 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Completion Summary
 
 - Completed the Bun-only reproducible 25,000-file JSON corpus, exact ground truth and citations, security/schema/recovery cases, verify-before-compare workflow, compact checked-in evidence, tests, scripts, and docs. All local code, test, build, security, documentation, reproducibility, and vault gates are green. No git or GitHub command was run.
+- Merged PR #23 into `main` at merge commit `ca9514a` after two independent 25,000-record generations matched exactly, 472 repository tests passed with 0 failures, all static/build/docs/security/vault gates passed, and all eight automatic-review threads were addressed and resolved.

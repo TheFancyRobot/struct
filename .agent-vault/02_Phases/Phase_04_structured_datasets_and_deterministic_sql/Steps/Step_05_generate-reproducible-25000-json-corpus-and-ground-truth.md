@@ -5,7 +5,7 @@ contract_version: 1
 title: Generate Reproducible 25000 JSON Corpus and Ground Truth
 step_id: STEP-04-05
 phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]]'
-status: in_progress
+status: completed
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-19'
@@ -19,8 +19,8 @@ tags:
   - step
 context_id: SESSION-2026-07-19-222127
 active_session_id: 05_Sessions/2026-07-19-222127-generate-reproducible-25000-json-corpus-and-ground-truth-codex-step-04-05-worker
-context_status: in_progress
-context_summary: Worker implementation, self-review, two full 25,000-record reproducibility runs, and all local gates are complete; root PR/review/merge close-out remains.
+context_status: completed
+context_summary: 'STEP-04-05 merged through PR #23 at merge commit ca9514a after two full reproducibility runs, 472 passing tests, completed automatic reviews, and zero unresolved threads.'
 ---
 
 # Step 05 - Generate Reproducible 25000 JSON Corpus and Ground Truth
@@ -52,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: in_progress
+- Status: completed
 - Current owner: Codex
 - Last touched: 2026-07-19
-- Next action: Complete the root-reviewed PR feedback close-out, merge, and update the step/session mirrors to completed.
+- Next action: Use the merged corpus and ground truth as the verified input to STEP-04-06.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
