@@ -1,23 +1,21 @@
+const git = Bun.which('git')
+if (git === null) {
+  console.error('Failed to enumerate repository paths: git is not installed.')
+  process.exit(1)
+}
 const discovery = Bun.spawnSync([
-  'rg',
-  '--files',
-  '--hidden',
-  '--no-ignore',
-  '-g',
-  '!.git/**',
-  '-g',
-  '!**/node_modules/**',
-  '-g',
-  '!**/dist/**',
-  '-g',
-  '!**/.local/**',
+  git,
+  'ls-files',
+  '--cached',
+  '--others',
+  '--exclude-standard',
 ], {
   stdout: 'pipe',
   stderr: 'pipe',
 })
 if (!discovery.success) {
   console.error(
-    `Failed to enumerate repository paths with rg: ${discovery.stderr.toString().trim() || `exit ${discovery.exitCode}`}`,
+    `Failed to enumerate repository paths with git: ${discovery.stderr.toString().trim() || `exit ${discovery.exitCode}`}`,
   )
   process.exit(1)
 }
@@ -25,6 +23,7 @@ const repositoryPaths = discovery.stdout.toString().split('\n').filter(Boolean)
 
 const secretPatterns: ReadonlyArray<readonly [string, RegExp]> = [
   ['OpenAI key', /\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b/g],
+  ['Anthropic key', /\bsk-ant-[A-Za-z0-9_-]{20,}\b/g],
   ['GitHub token', /\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}\b/g],
   ['AWS access key', /\bAKIA[A-Z0-9]{16}\b/g],
   ['private key', /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/g],
@@ -32,7 +31,6 @@ const secretPatterns: ReadonlyArray<readonly [string, RegExp]> = [
 const findings: string[] = []
 
 for (const file of repositoryPaths) {
-  if (file === '.env.example') continue
   const blob = Bun.file(file)
   if (!(await blob.exists()) || blob.size > 2_000_000) continue
   const text = await blob.text()

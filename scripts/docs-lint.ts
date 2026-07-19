@@ -1,7 +1,12 @@
 import { existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
-const discovery = Bun.spawnSync(['rg', '--files', '-g', '*.md'], {
+const rg = Bun.which('rg')
+if (rg === null) {
+  console.error('Failed to enumerate Markdown files: rg is not installed.')
+  process.exit(1)
+}
+const discovery = Bun.spawnSync([rg, '--files', '-g', '*.md'], {
   stdout: 'pipe',
   stderr: 'pipe',
 })
