@@ -11,6 +11,7 @@ import {
 } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { join } from 'node:path'
+import { performance } from 'node:perf_hooks'
 import { Transform } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { DuckDBInstance } from '@duckdb/node-api'
@@ -29,6 +30,9 @@ const MAX_INPUT_BYTES = 64 * 1024 * 1024
 const MAX_ROWS = 1_000_000
 const MAX_OUTPUT_BYTES = 128 * 1024 * 1024
 const MAX_TIMEOUT_MS = 60_000
+const MAX_QUERY_ROWS = 10_000
+const MAX_QUERY_OUTPUT_BYTES = 4 * 1024 * 1024
+const MAX_QUERY_MEMORY_MB = 192
 const HANDOFF_TTL_MS = 5 * 60_000
 const HANDOFF_SWEEP_MS = 60_000
 let busy = false
@@ -146,6 +150,267 @@ function validateRequest(value) {
     throw new RequestFailure('resource-limit', 'Materialization limits exceed sidecar policy')
   }
   return value
+}
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+const SHA256_PATTERN = /^sha256:[a-f0-9]{64}$/
+const DIGEST_PATTERN = /^[a-f0-9]{64}$/
+const ALIAS_PATTERN = /^[a-z][a-z0-9_]{0,62}$/
+const FORBIDDEN_SQL_WORDS = new Set([
+  'alter', 'attach', 'begin', 'call', 'checkpoint', 'commit', 'copy',
+  'create', 'current_catalog', 'current_database', 'current_date',
+  'current_role', 'current_schema', 'current_time', 'current_timestamp',
+  'current_user', 'delete', 'detach', 'drop', 'export', 'force', 'import',
+  'insert', 'install', 'load', 'localtime', 'localtimestamp', 'merge',
+  'pragma', 'replace', 'reset', 'rollback', 'sample', 'session_user', 'set',
+  'system_user', 'tablesample', 'transaction', 'truncate', 'update', 'use',
+  'vacuum',
+])
+const ALLOWED_SQL_FUNCTIONS = new Set([
+  'abs', 'as', 'avg', 'cast', 'ceil', 'ceiling', 'coalesce', 'count',
+  'date_part', 'date_trunc', 'decimal', 'extract', 'floor', 'greatest', 'least',
+  'exists', 'in', 'length', 'lower', 'max', 'min', 'nullif', 'over',
+  'round', 'sum', 'trim', 'try_cast', 'upper',
+])
+
+function validateQueryRequest(value) {
+  if (!exactKeys(value, [
+    'protocolVersion',
+    'operation',
+    'workspaceId',
+    'projectId',
+    'sql',
+    'snapshots',
+    'limits',
+  ])) {
+    throw new RequestFailure('protocol', 'Query fields do not match protocol version 1')
+  }
+  if (value.protocolVersion !== PROTOCOL_VERSION || value.operation !== 'query') {
+    throw new RequestFailure('protocol', 'Unsupported protocol version or operation')
+  }
+  if (!UUID_PATTERN.test(value.workspaceId) || !UUID_PATTERN.test(value.projectId)) {
+    throw new RequestFailure('invalid-input', 'Query scope is invalid')
+  }
+  if (
+    typeof value.sql !== 'string'
+    || value.sql.length === 0
+    || value.sql.length > 32_768
+  ) {
+    throw new RequestFailure('invalid-query', 'SQL text is invalid')
+  }
+  if (!Array.isArray(value.snapshots) || value.snapshots.length < 1 || value.snapshots.length > 8) {
+    throw new RequestFailure('invalid-input', 'Query requires one to eight catalog snapshots')
+  }
+  const aliases = new Set()
+  const snapshotIds = new Set()
+  for (const snapshot of value.snapshots) {
+    if (
+      !exactKeys(snapshot, [
+        'alias',
+        'datasetId',
+        'snapshotId',
+        'schemaHash',
+        'parquetDigest',
+      ])
+      || !ALIAS_PATTERN.test(snapshot.alias)
+      || !UUID_PATTERN.test(snapshot.datasetId)
+      || !UUID_PATTERN.test(snapshot.snapshotId)
+      || !SHA256_PATTERN.test(snapshot.schemaHash)
+      || !DIGEST_PATTERN.test(snapshot.parquetDigest)
+      || aliases.has(snapshot.alias)
+      || snapshotIds.has(snapshot.snapshotId)
+    ) {
+      throw new RequestFailure('lineage', 'Query snapshot binding is invalid')
+    }
+    aliases.add(snapshot.alias)
+    snapshotIds.add(snapshot.snapshotId)
+  }
+  if (
+    !exactKeys(value.limits, [
+      'maxRows',
+      'maxOutputBytes',
+      'maxMemoryMb',
+      'timeoutMs',
+    ])
+    || !Object.values(value.limits).every(
+      (limit) => Number.isSafeInteger(limit) && limit > 0,
+    )
+    || value.limits.maxRows > MAX_QUERY_ROWS
+    || value.limits.maxOutputBytes > MAX_QUERY_OUTPUT_BYTES
+    || value.limits.maxMemoryMb > MAX_QUERY_MEMORY_MB
+    || value.limits.timeoutMs > MAX_TIMEOUT_MS
+  ) {
+    throw new RequestFailure('resource-limit', 'Query limits exceed sidecar policy')
+  }
+  return value
+}
+
+function canonicalizeSql(sql) {
+  let canonical = ''
+  let quote
+  let pendingSpace = false
+  for (let index = 0; index < sql.length; index += 1) {
+    const character = sql[index]
+    if (quote !== undefined) {
+      canonical += character
+      if (character === quote) {
+        if (sql[index + 1] === quote) {
+          canonical += sql[index + 1]
+          index += 1
+        } else {
+          quote = undefined
+        }
+      }
+      continue
+    }
+    if (character === "'" || character === '"') {
+      if (pendingSpace && canonical.length > 0) canonical += ' '
+      pendingSpace = false
+      quote = character
+      canonical += character
+      continue
+    }
+    if (/\s/.test(character)) {
+      pendingSpace = true
+      continue
+    }
+    if (pendingSpace && canonical.length > 0) canonical += ' '
+    pendingSpace = false
+    canonical += character
+  }
+  if (quote !== undefined) {
+    throw new RequestFailure('invalid-query', 'SQL contains an unterminated quoted value')
+  }
+  canonical = canonical.trim()
+  if (canonical.endsWith(';')) canonical = canonical.slice(0, -1).trim()
+  return canonical
+}
+
+function sqlTokens(sql) {
+  const hasControlCharacter = [...sql].some((character) => {
+    const code = character.charCodeAt(0)
+    return code <= 8 || code === 11 || code === 12 || (code >= 14 && code <= 31)
+      || code === 127
+  })
+  if (
+    hasControlCharacter
+    || sql.includes('--')
+    || sql.includes('/*')
+    || sql.includes('*/')
+    || sql.includes('$$')
+  ) {
+    throw new RequestFailure('invalid-query', 'SQL comments or unsafe encoding are not allowed')
+  }
+  const tokens = []
+  let index = 0
+  while (index < sql.length) {
+    const character = sql[index]
+    if (/\s/.test(character)) {
+      index += 1
+      continue
+    }
+    if (character === "'" || character === '"') {
+      const quote = character
+      let value = character
+      index += 1
+      let closed = false
+      while (index < sql.length) {
+        value += sql[index]
+        if (sql[index] === quote) {
+          if (sql[index + 1] === quote) {
+            value += sql[index + 1]
+            index += 2
+            continue
+          }
+          index += 1
+          closed = true
+          break
+        }
+        index += 1
+      }
+      if (!closed) {
+        throw new RequestFailure('invalid-query', 'SQL contains an unterminated quoted value')
+      }
+      if (
+        quote === "'"
+        && (
+          /(?:^|[\\/])\.\.(?:[\\/]|$)/.test(value)
+          || /(?:https?|file):\/\//i.test(value)
+          || /^'(?:\/|\\\\|[a-z]:[\\/])/i.test(value)
+          || /[\\/]/.test(value)
+        )
+      ) {
+        throw new RequestFailure('invalid-query', 'SQL paths and URLs are not allowed')
+      }
+      tokens.push({ kind: quote === "'" ? 'string' : 'identifier', value })
+      continue
+    }
+    const identifier = /^[a-z_][a-z0-9_$]*/i.exec(sql.slice(index))
+    if (identifier !== null) {
+      tokens.push({ kind: 'identifier', value: identifier[0] })
+      index += identifier[0].length
+      continue
+    }
+    const number = /^(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:e[+-]?[0-9]+)?/i
+      .exec(sql.slice(index))
+    if (number !== null) {
+      tokens.push({ kind: 'number', value: number[0] })
+      index += number[0].length
+      continue
+    }
+    if ('(),.*+-/%=<>!|&[]:;'.includes(character)) {
+      tokens.push({ kind: 'symbol', value: character })
+      index += 1
+      continue
+    }
+    throw new RequestFailure('invalid-query', 'SQL contains an unsupported token')
+  }
+  return tokens
+}
+
+function validateSqlSubset(sql) {
+  const canonicalSql = canonicalizeSql(sql)
+  const tokens = sqlTokens(canonicalSql)
+  const words = tokens
+    .filter((token) => token.kind === 'identifier')
+    .map((token) => token.value.toLowerCase())
+  if (!['select', 'with'].includes(words[0])) {
+    throw new RequestFailure('invalid-query', 'Only SELECT and WITH queries are allowed')
+  }
+  if (words.some((word) => FORBIDDEN_SQL_WORDS.has(word))) {
+    throw new RequestFailure('invalid-query', 'SQL contains a forbidden operation')
+  }
+  for (let index = 0; index < tokens.length - 1; index += 1) {
+    const token = tokens[index]
+    if (
+      token.kind === 'identifier'
+      && tokens[index + 1]?.value === '('
+      && !ALLOWED_SQL_FUNCTIONS.has(token.value.toLowerCase())
+    ) {
+      throw new RequestFailure('invalid-query', 'SQL contains a non-allowlisted function')
+    }
+  }
+  let depth = 0
+  let ordered = false
+  for (let index = 0; index < tokens.length - 1; index += 1) {
+    const token = tokens[index]
+    if (token.value === '(') depth += 1
+    if (token.value === ')') depth -= 1
+    if (
+      depth === 0
+      && token.kind === 'identifier'
+      && token.value.toLowerCase() === 'order'
+      && tokens[index + 1]?.kind === 'identifier'
+      && tokens[index + 1]?.value.toLowerCase() === 'by'
+    ) {
+      ordered = true
+    }
+  }
+  if (!ordered) {
+    throw new RequestFailure('invalid-query', 'Deterministic queries require a top-level ORDER BY')
+  }
+  return canonicalSql
 }
 
 function quoteIdentifier(value) {
@@ -595,6 +860,185 @@ async function materialize(request, httpRequest, httpResponse) {
   }
 }
 
+function stableJson(value) {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value)
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableJson(item)).join(',')}]`
+  }
+  return `{${Object.keys(value).sort().map((key) =>
+    `${JSON.stringify(key)}:${stableJson(value[key])}`).join(',')}}`
+}
+
+function queryValue(value) {
+  if (value === null || typeof value === 'boolean' || typeof value === 'string') {
+    return value
+  }
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) {
+      throw new RequestFailure('engine', 'Query returned a non-finite numeric value')
+    }
+    return String(value)
+  }
+  if (typeof value === 'bigint') return value.toString()
+  return stableJson(value)
+}
+
+async function querySnapshots(request, httpRequest, httpResponse) {
+  let cancelled = httpResponse.destroyed
+  let timedOut = false
+  let instance
+  let connection
+  const interrupt = () => {
+    cancelled = true
+    connection?.interrupt()
+  }
+  const timeoutInterrupt = () => {
+    timedOut = true
+    interrupt()
+  }
+  const ensureActive = () => {
+    if (timedOut) throw new RequestFailure('timeout', 'Query timed out')
+    if (cancelled || httpRequest.aborted) {
+      throw new RequestFailure('cancelled', 'Query was interrupted')
+    }
+  }
+  httpRequest.once('aborted', interrupt)
+  httpResponse.once('close', interrupt)
+  const timeout = setTimeout(timeoutInterrupt, request.limits.timeoutMs)
+  const startedAt = performance.now()
+  try {
+    const canonicalSql = validateSqlSubset(request.sql)
+    instance = await DuckDBInstance.create(':memory:', {
+      memory_limit: `${request.limits.maxMemoryMb}MB`,
+      threads: THREADS,
+      temp_directory: join(SCRATCH_ROOT, 'tmp'),
+      allow_community_extensions: 'false',
+      allow_unsigned_extensions: 'false',
+    })
+    connection = await instance.connect()
+    await connection.run(`SET allowed_directories=['${ARTIFACT_ROOT}','${SCRATCH_ROOT}']`)
+    await connection.run('SET enable_external_access=false')
+    ensureActive()
+
+    const referencedTables = await connection.getTableNames(canonicalSql, false)
+    const allowedAliases = new Set(
+      request.snapshots.map((snapshot) => snapshot.alias),
+    )
+    if (
+      referencedTables.length === 0
+      || referencedTables.some((table) => !allowedAliases.has(table))
+    ) {
+      throw new RequestFailure(
+        'lineage',
+        'Query references a table outside its catalog bindings',
+      )
+    }
+    for (const snapshot of request.snapshots) {
+      const path = join(
+        ARTIFACT_ROOT,
+        'objects',
+        'sha256',
+        snapshot.parquetDigest.slice(0, 2),
+        snapshot.parquetDigest,
+      )
+      let metadata
+      try {
+        metadata = await stat(path)
+      } catch (error) {
+        if (error?.code === 'ENOENT') {
+          throw new RequestFailure('not-found', 'Cataloged Parquet artifact was not found')
+        }
+        throw error
+      }
+      if (!metadata.isFile() || await hashFile(path, ensureActive) !== snapshot.parquetDigest) {
+        throw new RequestFailure('lineage', 'Cataloged Parquet artifact failed lineage validation')
+      }
+      const escapedPath = path.replaceAll("'", "''")
+      await connection.run(
+        `CREATE VIEW ${quoteIdentifier(snapshot.alias)}
+         AS SELECT * FROM read_parquet('${escapedPath}')`,
+      )
+      ensureActive()
+    }
+
+    const extracted = await connection.extractStatements(canonicalSql)
+    if (extracted.count !== 1) {
+      throw new RequestFailure('invalid-query', 'Exactly one SQL statement is required')
+    }
+    const prepared = await extracted.prepare(0)
+    try {
+      if (prepared.statementType !== 1) {
+        throw new RequestFailure('invalid-query', 'Only read-only SELECT statements are allowed')
+      }
+    } finally {
+      prepared.destroySync()
+    }
+    ensureActive()
+
+    const reader = await connection.runAndReadAll(
+      `SELECT * FROM (${canonicalSql}) AS bounded_query
+       LIMIT ${request.limits.maxRows + 1}`,
+    )
+    await reader.readAll()
+    ensureActive()
+    const rawRows = reader.getRowsJson()
+    const truncated = rawRows.length > request.limits.maxRows
+    const rows = rawRows
+      .slice(0, request.limits.maxRows)
+      .map((row) => row.map(queryValue))
+    const columns = reader.columnNames().map((name, ordinal) => ({
+      ordinal,
+      name,
+      type: String(reader.columnTypes()[ordinal]),
+    }))
+    const snapshots = request.snapshots
+    const schemaHash = `sha256:${createHash('sha256')
+      .update(`${JSON.stringify(columns)}\n`)
+      .digest('hex')}`
+    const hashInput = {
+      canonicalSql,
+      snapshots,
+      schemaHash,
+      columns,
+      rows,
+      rowCount: rows.length,
+      truncated,
+    }
+    const resultHash = `sha256:${createHash('sha256')
+      .update(`${JSON.stringify(hashInput)}\n`)
+      .digest('hex')}`
+    const result = {
+      protocolVersion: PROTOCOL_VERSION,
+      workspaceId: request.workspaceId,
+      projectId: request.projectId,
+      ...hashInput,
+      resultHash,
+      executionMs: Math.max(0, Math.round(performance.now() - startedAt)),
+    }
+    if (Buffer.byteLength(JSON.stringify(result)) > request.limits.maxOutputBytes) {
+      throw new RequestFailure('resource-limit', 'Query output exceeds configured limit')
+    }
+    return result
+  } catch (error) {
+    if (timedOut) {
+      throw new RequestFailure('timeout', 'Query timed out')
+    }
+    if (
+      error instanceof RequestFailure
+      || !String(error?.message).toLowerCase().includes('interrupt')
+    ) {
+      throw error
+    }
+    throw new RequestFailure('cancelled', 'Query was interrupted')
+  } finally {
+    clearTimeout(timeout)
+    httpRequest.off('aborted', interrupt)
+    httpResponse.off('close', interrupt)
+    connection?.disconnectSync()
+    instance?.closeSync()
+  }
+}
+
 const server = createServer(async (request, response) => {
   const url = new URL(request.url ?? '/', 'http://data-engine')
   if (url.pathname === '/healthz' && TOKEN.length < 16) {
@@ -618,33 +1062,74 @@ const server = createServer(async (request, response) => {
       })
       await pipeline(artifact.createReadStream({ autoClose: false }), response)
       return
-    } catch {
+    } catch (error) {
       if (response.headersSent) return response.destroy()
-      return fail(response, 404, 'handoff-not-found', 'Materialized artifact handoff was not found')
+      if (error?.code === 'ENOENT') {
+        return fail(
+          response,
+          404,
+          'handoff-not-found',
+          'Materialized artifact handoff was not found',
+        )
+      }
+      return fail(
+        response,
+        500,
+        'engine',
+        'Materialized artifact handoff failed',
+      )
     } finally {
       await artifact?.close()
     }
   }
-  if (request.method !== 'POST' || url.pathname !== '/v1/materialize') {
+  if (
+    request.method !== 'POST'
+    || !['/v1/materialize', '/v1/query'].includes(url.pathname)
+  ) {
     return fail(response, 404, 'protocol', 'Unknown operation')
   }
   let validated
   try {
-    validated = validateRequest(await body(request))
+    const decoded = await body(request)
+    validated = url.pathname === '/v1/query'
+      ? validateQueryRequest(decoded)
+      : validateRequest(decoded)
   } catch (error) {
     const code = error instanceof RequestFailure ? error.code : 'engine'
-    const status = code === 'not-found' ? 404 : code === 'resource-limit' ? 413 : 400
-    return fail(response, status, code, error instanceof RequestFailure ? error.message : 'Materialization failed')
+    const status = code === 'not-found'
+      ? 404
+      : code === 'resource-limit'
+        ? 413
+        : 400
+    return fail(
+      response,
+      status,
+      code,
+      error instanceof RequestFailure ? error.message : 'Data-engine request failed',
+    )
   }
-  if (busy) return fail(response, 429, 'busy', 'Materializer concurrency limit reached')
+  if (busy) return fail(response, 429, 'busy', 'Data-engine concurrency limit reached')
   busy = true
   try {
-    const result = await materialize(validated, request, response)
+    const result = url.pathname === '/v1/query'
+      ? await querySnapshots(validated, request, response)
+      : await materialize(validated, request, response)
     return json(response, 200, { ok: true, result })
   } catch (error) {
     const code = error instanceof RequestFailure ? error.code : 'engine'
-    const status = code === 'not-found' ? 404 : code === 'resource-limit' ? 413 : 400
-    return fail(response, status, code, error instanceof RequestFailure ? error.message : 'Materialization failed')
+    const status = code === 'not-found'
+      ? 404
+      : code === 'resource-limit'
+        ? 413
+        : code === 'busy'
+          ? 429
+          : 400
+    return fail(
+      response,
+      status,
+      code,
+      error instanceof RequestFailure ? error.message : 'Data-engine operation failed',
+    )
   } finally {
     busy = false
   }

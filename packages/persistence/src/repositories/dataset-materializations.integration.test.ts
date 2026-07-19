@@ -33,6 +33,8 @@ const conflictingJobId = JobQueueId.make('730e8400-e29b-41d4-a716-446655440008')
 const foreignWorkspaceId = WorkspaceId.make('730e8400-e29b-41d4-a716-446655440009')
 const terminalSnapshotId = DatasetSnapshotId.make('730e8400-e29b-41d4-a716-446655440010')
 const terminalJobId = JobQueueId.make('730e8400-e29b-41d4-a716-446655440011')
+const unmaterializedSnapshotId =
+  DatasetSnapshotId.make('730e8400-e29b-41d4-a716-446655440012')
 const contentHash = `sha256:${'a'.repeat(64)}`
 const terminalContentHash = `sha256:${'e'.repeat(64)}`
 
@@ -103,6 +105,21 @@ describeIf('DatasetMaterializationRepo (PostgreSQL)', () => {
         sourceId,
         versionId,
         contentHash,
+      ],
+    )
+    await sql.unsafe(
+      `INSERT INTO dataset_snapshots (
+         id, dataset_id, workspace_id, project_id, version,
+         schema_family_id, previous_snapshot_id, content_hash
+       ) VALUES ($1, $2, $3, $4, 99, $5, $6, $7)`,
+      [
+        unmaterializedSnapshotId,
+        datasetId,
+        workspaceId,
+        projectId,
+        familyId,
+        snapshotId,
+        `sha256:${'f'.repeat(64)}`,
       ],
     )
   })
@@ -290,6 +307,43 @@ describeIf('DatasetMaterializationRepo (PostgreSQL)', () => {
     expect(Number(rows[0]?.['materializations'])).toBe(1)
     expect(Number(rows[0]?.['events'])).toBe(2)
     expect(rows[0]?.['status']).toBe('completed')
+  })
+
+  it('resolves only materialized snapshots in the exact workspace and project', async () => {
+    const resolved = await Effect.runPromise(
+      DatasetMaterializationRepo.resolveQuerySnapshots(
+        workspaceId,
+        projectId,
+        [{ alias: 'records', datasetId, snapshotId }],
+      ).pipe(Effect.provide(layer)),
+    )
+    expect(resolved).toEqual([{
+      alias: 'records',
+      datasetId,
+      snapshotId,
+      schemaHash: Sha256Digest.make(`sha256:${'b'.repeat(64)}`),
+      parquetDigest: 'c'.repeat(64),
+    }])
+    const foreign = await Effect.runPromiseExit(
+      DatasetMaterializationRepo.resolveQuerySnapshots(
+        foreignWorkspaceId,
+        projectId,
+        [{ alias: 'records', datasetId, snapshotId }],
+      ).pipe(Effect.provide(layer)),
+    )
+    expect(String(foreign)).toContain('DatasetMaterializationScopeError')
+    const missing = await Effect.runPromiseExit(
+      DatasetMaterializationRepo.resolveQuerySnapshots(
+        workspaceId,
+        projectId,
+        [{
+          alias: 'missing',
+          datasetId,
+          snapshotId: unmaterializedSnapshotId,
+        }],
+      ).pipe(Effect.provide(layer)),
+    )
+    expect(String(missing)).toContain('DatasetMaterializationScopeError')
   })
 
   it('journals an expired final attempt before marking it failed', async () => {
