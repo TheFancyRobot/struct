@@ -14,7 +14,10 @@ const App: ParentComponent = (props) => {
   const [theme, setTheme] = createSignal<Theme>('struct-light')
 
   return (
-    <div class="min-h-screen bg-base-100 text-base-content">
+    <div
+      class="min-h-screen bg-base-100 text-base-content"
+      data-theme={theme()}
+    >
       <header class="border-b border-base-300 bg-base-200/50">
         <div class="container mx-auto px-4 py-3 flex items-center justify-between">
           <h1 class="text-xl font-bold tracking-tight">
@@ -23,7 +26,9 @@ const App: ParentComponent = (props) => {
           </h1>
           <div class="flex items-center gap-3">
             <button
+              type="button"
               class="btn btn-ghost btn-sm"
+              aria-label={`Switch to ${theme() === 'struct-light' ? 'dark' : 'light'} theme`}
               onClick={() => setTheme(theme() === 'struct-light' ? 'struct-dark' : 'struct-light')}
             >
               {theme() === 'struct-light' ? '🌙' : '☀️'} Theme

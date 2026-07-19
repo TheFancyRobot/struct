@@ -46,6 +46,28 @@ afterAll(async () => {
 })
 
 describe('walking-skeleton browser path', () => {
+  it('applies the selected Struct theme to the application root', async () => {
+    const page = await browser.newPage()
+    await page.goto(origin)
+
+    const appRoot = page.locator('[data-theme]')
+    expect(await appRoot.getAttribute('data-theme')).toBe('struct-light')
+    const lightBackground = await appRoot.evaluate(
+      (element) => getComputedStyle(element).backgroundColor,
+    )
+
+    await page.getByRole('button', { name: 'Switch to dark theme' }).click()
+
+    expect(await appRoot.getAttribute('data-theme')).toBe('struct-dark')
+    expect(await appRoot.evaluate(
+      (element) => getComputedStyle(element).backgroundColor,
+    )).not.toBe(lightBackground)
+    expect(await page.getByRole('button', { name: 'Switch to light theme' }).count())
+      .toBe(1)
+
+    await page.close()
+  })
+
   it('opens a completed answer citation with the keyboard', async () => {
     const page = await browser.newPage()
     await page.route(`**/api/projects/${projectId}/runs/${runId}/events*`, (route) =>

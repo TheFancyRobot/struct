@@ -4,11 +4,11 @@ template_version: 2
 contract_version: 1
 title: Solid theme toggle does not apply the selected theme
 bug_id: BUG-0007
-status: open
+status: fixed
 severity: sev-3
 category: logic
 reported_on: '2026-07-19'
-fixed_on: ''
+fixed_on: '2026-07-19'
 owner: Codex
 created: '2026-07-19'
 updated: '2026-07-19'
@@ -56,6 +56,8 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Confirmed Root Cause
 
 - Record the proven cause and decisive evidence.
+- `App` changed a `theme` signal but never read it in a reactive DOM attribute, so Solid had no visible theme side effect.
+- The web Vite pipeline also lacked the official Tailwind CSS Vite plugin. Production output retained raw `@plugin` and `@tailwind` directives, leaving Tailwind utilities and DaisyUI theme selectors inert. Attribute-only wiring therefore would not have changed the rendered palette.
 
 ## Workaround
 
@@ -64,6 +66,8 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
+- Completed: bind the signal to the application root through reactive `data-theme`, expose accessible toggle state, define matching `struct-light` and `struct-dark` project themes, and compile Tailwind/DaisyUI through `@tailwindcss/vite`.
+- Added browser regression coverage that proves the deterministic light default, the dark toggle, the updated accessible control state, and a real computed background-color change.
 
 ## Regression Coverage Needed
 
@@ -84,3 +88,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-19 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-07-19: Fixed and validated. Focused web unit tests passed (12 tests, 72 assertions); the full walking-skeleton browser suite passed (5 tests, 13 assertions). Repository typecheck, build, lint, dependency/import boundaries, documentation links, and secret scan all passed.
+- 2026-07-19: Final package-level validation passed: `@struct/web test` ran 17 tests with 85 assertions. The web test script now explicitly loads the Solid TSX transform when executed from its workspace, avoiding reliance on the repository-root Bun configuration.

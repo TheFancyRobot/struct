@@ -7,7 +7,7 @@
     "dev": "bun --bun vite",
     "build": "bun --bun vite build",
     "typecheck": "bun --bun tsc --noEmit --project tsconfig.json",
-    "test": "bun test --max-concurrency 1 --pass-with-no-tests ."
+    "test": "bun test --preload ./test/solid-test-preload.ts --max-concurrency 1 --pass-with-no-tests ."
   },
   "dependencies": {
     "solid-js": "1.9.14",
@@ -19,6 +19,7 @@
   "devDependencies": {
     "@struct/domain": "workspace:*",
     "@struct/observability": "workspace:*",
+    "@tailwindcss/vite": "4.2.4",
     "@types/node": "^24.0.0",
     "playwright": "1.58.2",
     "typescript": "7.0.2",

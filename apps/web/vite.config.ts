@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite'
 import solid from 'vite-plugin-solid'
+import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 
 export default defineConfig({
-  plugins: [solid()],
+  plugins: [solid(), tailwindcss()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
@@ -20,10 +21,6 @@ export default defineConfig({
   build: {
     target: 'esnext',
     outDir: 'dist',
-    // Use esbuild CSS minifier to avoid lightningcss warnings on
-    // Tailwind 4 custom @theme/@plugin/@tailwind at-rules.
-    // PostCSS (via Tailwind compiler) handles these correctly at build time;
-    // lightningcss only warns during final minification pass.
     cssMinify: 'esbuild',
   },
 })
