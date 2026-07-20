@@ -14,7 +14,7 @@ context:
   status: completed
   updated_at: '2026-07-20T08:34:00.000Z'
   current_focus:
-    summary: STEP-06-02 is implemented and root-validated; publication, automated review, and merge remain.
+    summary: STEP-06-02 is implemented, reviewed, and merged in PR #35.
     target: '[[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_02_implement-bounded-corpus-partitioning-and-scheduling|STEP-06-02 Implement Bounded Corpus Partitioning and Scheduling]]'
   resume_target:
     type: step
@@ -127,9 +127,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 
 <!-- AGENT-START:session-follow-up-work -->
 - [x] Implement and validate STEP-06-02.
-- [ ] Root orchestrator: self-review, publish, address validated bot feedback, and merge before STEP-06-03.
+- [x] Root orchestrator: self-review, publish, address validated bot feedback, and merge before STEP-06-03.
 <!-- AGENT-END:session-follow-up-work -->
 
 ## Completion Summary
 
-- STEP-06-02 is implemented and root-validated with no known confirmed defect. Publication, automated review, and merge remain; STEP-06-03 stays gated until then.
+- STEP-06-02 is implemented, root-validated, reviewed, and merged in PR #35 with no known confirmed defect. STEP-06-03 is unblocked.

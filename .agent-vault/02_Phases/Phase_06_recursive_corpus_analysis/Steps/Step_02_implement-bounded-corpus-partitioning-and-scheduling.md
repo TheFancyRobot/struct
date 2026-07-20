@@ -20,7 +20,7 @@ tags:
 context_id: SESSION-2026-07-20-080214
 active_session_id: 05_Sessions/2026-07-20-080214-implement-bounded-corpus-partitioning-and-scheduling-step-06-02-worker
 context_status: completed
-context_summary: STEP-06-02 deterministic corpus partitioning, bounded scheduling, journal-backed worker controls, and recovery semantics are implemented and validated; STEP-06-03 may proceed after review and merge.
+context_summary: 'STEP-06-02 deterministic corpus partitioning, bounded scheduling, atomic journal concurrency, and recovery semantics are implemented, validated, reviewed, and merged in PR #35; STEP-06-03 may proceed.'
 ---
 
 # Step 02 - Implement Bounded Corpus Partitioning and Scheduling
@@ -54,7 +54,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - Status: completed
 - Current owner: Codex
 - Last touched: 2026-07-20
-- Next action: Publish, address validated automated feedback, and merge before activating STEP-06-03.
+- Next action: STEP-06-03 may proceed from the reviewed and merged partitioning contract.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
