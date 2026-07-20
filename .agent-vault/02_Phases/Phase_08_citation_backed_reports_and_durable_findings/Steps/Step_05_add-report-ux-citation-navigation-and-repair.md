@@ -5,7 +5,7 @@ contract_version: 1
 title: Add Report UX Citation Navigation and Repair
 step_id: STEP-08-05
 phase: '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]'
-status: in-review
+status: completed
 owner: report-workspace-repair
 created: '2026-07-17'
 updated: '2026-07-20'
@@ -19,8 +19,8 @@ tags:
   - step
 context_id: SESSION-2026-07-20-191411
 active_session_id: SESSION-2026-07-20-191411
-context_status: ready-for-review
-context_summary: Production report workspace, explicit citation repair, immutable history, secure source return, and responsive UI are implemented with all bounded gates green; ready for root review.
+context_status: complete
+context_summary: 'Report workspace and citation repair merged into main via PR #51 with repository, PostgreSQL, browser, UI, and vault gates green.'
 ---
 
 # Step 05 - Add Report UX Citation Navigation and Repair
