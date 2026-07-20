@@ -16,6 +16,8 @@
     "phase-05:eval": "bun src/run-phase-05-evaluation.ts --check-and-generate && bun test --max-concurrency 1 test/phase-05-evaluation.test.ts",
     "phase-06:generate": "bun src/run-phase-06-recursive-evaluation.ts --generate",
     "phase-06:eval": "bun src/run-phase-06-recursive-evaluation.ts --check && bun test --timeout 30000 --max-concurrency 1 test/recursive-analysis.test.ts",
+    "phase-07:generate": "bun src/run-phase-07-hybrid-evaluation.ts --generate",
+    "phase-07:eval": "bun src/run-phase-07-hybrid-evaluation.ts --check && bun test --max-concurrency 1 test/hybrid-research.test.ts",
     "directory:eval": "bun src/directory-refresh-smoke.ts",
     "bench": "bun src/benchmarks/run.ts",
     "typecheck": "bun --bun tsc --noEmit --project tsconfig.json",

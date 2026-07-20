@@ -5,17 +5,23 @@ contract_version: 1
 title: Evaluate Hybrid Correctness Provenance and Security
 step_id: STEP-07-06
 phase: '[[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]'
-status: planned
+status: completed
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_05_deliver-mixed-source-demo-and-explorable-report|STEP-07-05 Deliver Mixed-Source Demo and Explorable Report]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-20-154811-evaluate-hybrid-correctness-provenance-and-security-step-07-06-worker|SESSION-2026-07-20-154811 step-07-06-worker session for Evaluate Hybrid Correctness Provenance and Security]]'
+  - '[[05_Sessions/2026-07-20-160150-evaluate-hybrid-correctness-provenance-and-security-root|SESSION-2026-07-20-160150 root session for Evaluate Hybrid Correctness Provenance and Security]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-20-160150
+active_session_id: ''
+context_status: complete
+context_summary: Hybrid correctness, provenance, contradiction, resource, replay, and adversarial prompt-injection evaluation pass with zero known defects; ready for publication and merge.
 ---
 
 # Step 06 - Evaluate Hybrid Correctness Provenance and Security
@@ -47,10 +53,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_06_evaluate-hybrid-correctness-provenance-and-security/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_06_evaluate-hybrid-correctness-provenance-and-security/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: completed
+- Current owner: step-07-06-worker
+- Last touched: 2026-07-20
+- Next action: Root orchestrator independently reviews, publishes, and merges STEP-07-06 before refining the next phase.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -60,7 +66,8 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-20 - [[05_Sessions/2026-07-20-154811-evaluate-hybrid-correctness-provenance-and-security-step-07-06-worker|SESSION-2026-07-20-154811 step-07-06-worker session for Evaluate Hybrid Correctness Provenance and Security]] - Session created.
+- 2026-07-20 - [[05_Sessions/2026-07-20-160150-evaluate-hybrid-correctness-provenance-and-security-root|SESSION-2026-07-20-160150 root session for Evaluate Hybrid Correctness Provenance and Security]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes
