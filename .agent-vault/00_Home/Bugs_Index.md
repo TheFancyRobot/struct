@@ -30,11 +30,11 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 _Last rebuilt: 2026-07-20._
 
 - Notes indexed: 11
-- Status summary: investigating (1), fixed (10)
+- Status summary: fixed (11)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
-| BUG-0011 | [STEP-06-01 post-merge contract review findings](../03_Bugs/BUG-0011_step-06-01-post-merge-contract-review-findings.md) | investigating | sev-3 | 2026-07-20 | - | - |
+| BUG-0011 | [STEP-06-01 post-merge contract review findings](../03_Bugs/BUG-0011_step-06-01-post-merge-contract-review-findings.md) | fixed | sev-3 | 2026-07-20 | 2026-07-20 | - |
 | BUG-0001 | [Research completion rejects serialized PostgreSQL JSONB payloads](../03_Bugs/BUG-0001_research-completion-rejects-serialized-postgresql-jsonb-payloads.md) | fixed | sev-3 | 2026-07-19 | 2026-07-19 | - |
 | BUG-0002 | [SourceVersion ingestion attempt accepts forged aggregate scope](../03_Bugs/BUG-0002_sourceversion-ingestion-attempt-accepts-forged-aggregate-scope.md) | fixed | sev-3 | 2026-07-19 | 2026-07-19 | - |
 | BUG-0003 | [Source registration persists unauthorized mismatched aggregate scope](../03_Bugs/BUG-0003_source-registration-persists-unauthorized-mismatched-aggregate-scope.md) | fixed | sev-3 | 2026-07-19 | 2026-07-19 | - |

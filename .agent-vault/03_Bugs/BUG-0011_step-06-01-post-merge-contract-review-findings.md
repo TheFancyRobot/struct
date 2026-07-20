@@ -4,11 +4,11 @@ template_version: 2
 contract_version: 1
 title: STEP-06-01 post-merge contract review findings
 bug_id: BUG-0011
-status: investigating
+status: fixed
 severity: sev-3
 category: logic
 reported_on: '2026-07-20'
-fixed_on: ''
+fixed_on: '2026-07-20'
 owner: step-06-01-postmerge-fix
 created: '2026-07-20'
 updated: '2026-07-20'
@@ -66,7 +66,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
-- Implemented on the dedicated follow-up branch: sufficiency tracks exactly unresolved contradictions while all resolved contradictions remain in the auditable result; batch and aggregation reject top-level contradiction evidence not carried by findings; batch validation rejects evidence outside the expected partition and coverage whose expected item/partition counts do not match that partition. The bug remains investigating until the root reviews and merges the fix.
+- Merged in PR #34: sufficiency tracks exactly unresolved contradictions while all resolved contradictions remain in the auditable result; batch and aggregation reject top-level contradiction evidence not carried by findings; batch validation rejects evidence outside the expected partition and coverage whose expected item/partition counts do not match that partition.
 
 ## Regression Coverage Needed
 
@@ -89,3 +89,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-07-20 - Reported.
 <!-- AGENT-END:bug-timeline -->
 - 2026-07-20 - Implemented all five confirmed remediations with focused regressions; root review and merge remain before marking fixed or activating STEP-06-02.
+- 2026-07-20 - PR #34 passed automated review with no actionable findings and merged into `main` as `cee9509`; BUG-0011 is fixed.

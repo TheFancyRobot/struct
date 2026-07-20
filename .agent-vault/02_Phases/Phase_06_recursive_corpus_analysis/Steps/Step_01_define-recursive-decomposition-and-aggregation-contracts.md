@@ -22,8 +22,8 @@ tags:
   - step
 context_id: SESSION-2026-07-20-074814
 active_session_id: 05_Sessions/2026-07-20-074814-define-recursive-decomposition-and-aggregation-contracts-step-06-01-postmerge-fix
-context_status: active
-context_summary: STEP-06-01 is completed, reviewed, and merged; all five BUG-0011 remediations are implemented and validated on the follow-up branch, which gates STEP-06-02 until root review and merge.
+context_status: completed
+context_summary: STEP-06-01 and the five BUG-0011 remediations are completed, validated, reviewed, and merged; STEP-06-02 may activate.
 ---
 
 # Step 01 - Define Recursive Decomposition and Aggregation Contracts
@@ -57,7 +57,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - Status: completed
 - Current owner: Codex
 - Last touched: 2026-07-20
-- Next action: Root orchestrator independently reviews, publishes, and merges the BUG-0011 follow-up before STEP-06-02 begins.
+- Next action: Activate STEP-06-02 in a fresh session and dedicated branch.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

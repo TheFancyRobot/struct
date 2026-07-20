@@ -92,7 +92,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|PHASE-05 Typed Research Planning and Bounded Execution]]
-- Current phase status: active; STEP-06-01 is completed, reviewed, and merged, while BUG-0011 follow-up remediation gates STEP-06-02 until its fix merges
+- Current phase status: active; STEP-06-01 and its BUG-0011 remediation are completed, reviewed, and merged; STEP-06-02 is ready to activate
 - Next phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|PHASE-07 Hybrid Cross-Source Research]]
 <!-- AGENT-END:phase-linear-context -->
 
