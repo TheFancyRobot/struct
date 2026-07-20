@@ -144,3 +144,4 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - STEP-08-03 is implementation-complete with zero known confirmed defects.
 - Durable findings can be saved from completed research, browsed in a scoped project notebook, composed into deterministic reports, and revised one section at a time without mutating unrelated content or evidence.
 - Root orchestration retains branch, commit, push, pull-request, review, and merge ownership.
+- PR #49 passed the available automated gate with no actionable review feedback and merged into `main` as `176af2a` on 2026-07-20.
