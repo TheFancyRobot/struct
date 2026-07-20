@@ -5,16 +5,16 @@ contract_version: 1
 title: step-06-03-worker session for Implement Deterministic Batch Extraction and Evidence Artifacts
 session_id: SESSION-2026-07-20-084208
 date: '2026-07-20'
-status: completed
+status: in-progress
 owner: step-06-03-worker
 branch: agent/step-06-03
 phase: '[[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]'
 context:
   context_id: SESSION-2026-07-20-084208
-  status: completed
-  updated_at: '2026-07-20T09:08:00.000Z'
+  status: active
+  updated_at: '2026-07-20T09:12:00.000Z'
   current_focus:
-    summary: STEP-06-03 is implemented and root-validated; publication, automated review, and merge remain.
+    summary: STEP-06-03 is implemented and root-validated; PR #36 review and merge remain.
     target: '[[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_03_implement-deterministic-batch-extraction-and-evidence-artifacts|STEP-06-03 Implement Deterministic Batch Extraction and Evidence Artifacts]]'
   resume_target:
     type: step
@@ -62,6 +62,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 09:03 - Root review confirmed that `maximumArtifactBytes` affected output without affecting durable lookup identity. Centralized transformation identity over algorithm version, query identity, evidence schema version, and byte bound; journal lookup/event/metadata/commit digest now carry that identity.
 - 09:05 - Added explicit empty-match semantics and immutable source version/content identity regressions. Focused remediation validation passed 19/19 with typecheck, lint, and import boundaries clean.
 - 09:07 - Final root review removed a phantom empty group from selection-only plans and added regression coverage; no other confirmed defect remained.
+- 09:12 - Validated both Codex findings. Kept step/session mirrors active through the merge gate and added a bounded numeric-lexeme preflight that rejects values native JSON parsing cannot preserve exactly.
 
 ## Findings
 
@@ -72,6 +73,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Fred-facing evidence is bounded and explicitly labels every source-derived record, field, grouping key, exclusion, and contributor as untrusted content. Deterministic extraction remains outside Fred.
 - Artifact byte bounds are transformation inputs, not merely validation policy: any bound that can alter truncation or bytes must participate in the canonical transformation identity and durable journal key.
 - Empty grouped aggregation emits zero groups; empty ungrouped/global aggregation emits one empty-key group with count `0`, sum `0`, min/max `null`, and no contributors.
+- Exact decimal aggregation must validate source numeric lexemes before `JSON.parse`; unsafe integers, over-precise decimals, overflow, and underflow are rejected as `unsafe-number` rather than silently rounded.
 
 ## Context Handoff
 
@@ -111,6 +113,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Result: implementation is ready for root review and PR publication with no known confirmed defect.
 - Root-review remediation: root typecheck passed; 19 focused tests passed, 0 failed; lint and import boundaries passed. Regressions prove same-bound reuse, different-bound transformation/journal separation, empty grouped/global behavior, and changed immutable source version/content artifact identities.
 - Final root gate: 582 repository tests passed, 164 opt-in integration skips, 0 failed; 19 focused tests passed; typecheck, lint, import boundaries, production build, docs lint, secrets scan, Compose config, diff check, and vault doctor passed.
+- Codex remediation gate: 583 repository tests passed, 164 opt-in integration skips, 0 failed; 20 focused tests passed; typecheck, lint, import boundaries, production build, docs, secrets, and Compose config passed.
 
 ## Bugs Encountered
 
@@ -134,4 +137,4 @@ Use one note per meaningful work session. Record chronology, validation, and han
 
 ## Completion Summary
 
-- STEP-06-03 is implemented and root-validated with no known confirmed defect. Publication, automated review, and merge remain; STEP-06-04 stays gated until then.
+- STEP-06-03 implementation and local validation are complete, but the session remains open through PR #36 review and merge. STEP-06-04 stays gated.

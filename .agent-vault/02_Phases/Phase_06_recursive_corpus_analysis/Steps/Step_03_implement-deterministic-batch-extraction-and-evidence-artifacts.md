@@ -5,7 +5,7 @@ contract_version: 1
 title: Implement Deterministic Batch Extraction and Evidence Artifacts
 step_id: STEP-06-03
 phase: '[[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]'
-status: completed
+status: active
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-20'
@@ -19,7 +19,7 @@ tags:
   - step
 context_id: SESSION-2026-07-20-084208
 active_session_id: 05_Sessions/2026-07-20-084208-implement-deterministic-batch-extraction-and-evidence-artifacts-step-06-03-worker
-context_status: completed
+context_status: active
 context_summary: STEP-06-03 deterministic selection, bounded exact evidence artifacts, content-addressed publication, atomic metadata commit, and restart-safe reuse are implemented and validated; root review and PR gate remain.
 ---
 

@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T09:05:37.258Z",
+  "generatedAt": "2026-07-20T09:14:30.766Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -15577,262 +15577,279 @@
         {
           "name": "BatchSelectionCounts",
           "kind": "interface",
-          "line": 96,
+          "line": 97,
           "exported": true,
-          "endLine": 96
+          "endLine": 97
         },
         {
           "name": "BatchSelectionResult",
           "kind": "interface",
-          "line": 109,
+          "line": 110,
           "exported": true,
-          "endLine": 109
+          "endLine": 110
         },
         {
           "name": "BatchSelectionValidationError",
           "kind": "class",
-          "line": 117,
+          "line": 118,
           "exported": true,
-          "endLine": 117
+          "endLine": 118
         },
         {
           "name": "encoder",
-          "kind": "const",
-          "line": 127,
-          "exported": false,
-          "endLine": 127
-        },
-        {
-          "name": "fatalUtf8Decoder",
           "kind": "const",
           "line": 128,
           "exported": false,
           "endLine": 128
         },
         {
+          "name": "fatalUtf8Decoder",
+          "kind": "const",
+          "line": 129,
+          "exported": false,
+          "endLine": 129
+        },
+        {
           "name": "compareCanonicalText",
           "kind": "function",
-          "line": 130,
+          "line": 131,
           "exported": true,
-          "endLine": 130,
+          "endLine": 131,
           "signature": "(left: string, right: string)"
         },
         {
           "name": "canonicalJson",
           "kind": "function",
-          "line": 141,
+          "line": 142,
           "exported": true,
-          "endLine": 141,
+          "endLine": 142,
           "signature": "(value: unknown)"
         },
         {
           "name": "digest",
           "kind": "function",
-          "line": 164,
+          "line": 165,
           "exported": false,
-          "endLine": 164,
+          "endLine": 165,
           "signature": "(value: unknown)"
         },
         {
           "name": "fieldPattern",
-          "kind": "const",
-          "line": 172,
-          "exported": false,
-          "endLine": 172
-        },
-        {
-          "name": "namePattern",
           "kind": "const",
           "line": 173,
           "exported": false,
           "endLine": 173
         },
         {
+          "name": "namePattern",
+          "kind": "const",
+          "line": 174,
+          "exported": false,
+          "endLine": 174
+        },
+        {
           "name": "invalid",
           "kind": "function",
-          "line": 175,
+          "line": 176,
           "exported": false,
-          "endLine": 175,
+          "endLine": 176,
           "signature": "(path: string, reason: string, message: string)"
         },
         {
           "name": "validatePlanInput",
           "kind": "function",
-          "line": 179,
+          "line": 180,
           "exported": false,
-          "endLine": 179
+          "endLine": 180
         },
         {
           "name": "makeBatchSelectionPlan",
           "kind": "const",
-          "line": 260,
+          "line": 261,
           "exported": true,
-          "endLine": 260
+          "endLine": 261
         },
         {
           "name": "canonicalPlanInput",
           "kind": "function",
-          "line": 272,
+          "line": 273,
           "exported": false,
-          "endLine": 272
+          "endLine": 273
         },
         {
           "name": "validateBatchSelectionPlan",
           "kind": "const",
-          "line": 285,
+          "line": 286,
           "exported": true,
-          "endLine": 285
+          "endLine": 286
         },
         {
           "name": "objectField",
           "kind": "function",
-          "line": 303,
+          "line": 304,
           "exported": false,
-          "endLine": 303,
+          "endLine": 304,
           "signature": "(value: unknown, field: string)"
         },
         {
           "name": "scalar",
           "kind": "function",
-          "line": 316,
+          "line": 317,
           "exported": false,
-          "endLine": 316,
+          "endLine": 317,
           "signature": "(value: unknown)"
         },
         {
           "name": "matches",
           "kind": "function",
-          "line": 325,
+          "line": 326,
           "exported": false,
-          "endLine": 325,
+          "endLine": 326,
           "signature": "(value: unknown, predicates: ReadonlyArray<BatchPredicate>)"
         },
         {
           "name": "JsonRecord",
           "kind": "interface",
-          "line": 335,
+          "line": 336,
           "exported": false,
-          "endLine": 335
+          "endLine": 336
         },
         {
           "name": "recordsFromJson",
           "kind": "function",
-          "line": 341,
+          "line": 342,
           "exported": false,
-          "endLine": 341,
+          "endLine": 342,
           "signature": "(value: unknown)"
         },
         {
           "name": "sourceOrder",
           "kind": "function",
-          "line": 363,
+          "line": 364,
           "exported": false,
-          "endLine": 363
+          "endLine": 364
         },
         {
           "name": "MatchedRecord",
           "kind": "interface",
-          "line": 373,
+          "line": 374,
           "exported": false,
-          "endLine": 373
+          "endLine": 374
         },
         {
           "name": "jsonPointerSegment",
           "kind": "function",
-          "line": 380,
+          "line": 381,
           "exported": false,
-          "endLine": 380,
+          "endLine": 381,
           "signature": "(segment: string)"
         },
         {
           "name": "fieldPointer",
           "kind": "function",
-          "line": 384,
+          "line": 385,
           "exported": false,
-          "endLine": 384,
+          "endLine": 385,
           "signature": "(field: string)"
         },
         {
           "name": "selectedRecord",
           "kind": "function",
-          "line": 389,
+          "line": 390,
           "exported": false,
-          "endLine": 389
+          "endLine": 390
         },
         {
           "name": "recordLocator",
           "kind": "function",
-          "line": 418,
+          "line": 419,
           "exported": false,
-          "endLine": 418,
+          "endLine": 419,
           "signature": "(item: MatchedRecord)"
         },
         {
           "name": "contributors",
           "kind": "function",
-          "line": 422,
+          "line": 423,
           "exported": false,
-          "endLine": 422
+          "endLine": 423
         },
         {
           "name": "Decimal",
           "kind": "interface",
-          "line": 449,
+          "line": 450,
           "exported": false,
-          "endLine": 449
+          "endLine": 450
         },
         {
           "name": "decimalFromNumber",
           "kind": "function",
-          "line": 454,
+          "line": 455,
           "exported": false,
-          "endLine": 454,
+          "endLine": 455,
           "signature": "(value: number)"
+        },
+        {
+          "name": "decimalFromLexeme",
+          "kind": "function",
+          "line": 459,
+          "exported": false,
+          "endLine": 459,
+          "signature": "(lexeme: string)"
+        },
+        {
+          "name": "hasLosslessNumericLexemes",
+          "kind": "function",
+          "line": 477,
+          "exported": false,
+          "endLine": 477,
+          "signature": "(text: string)",
+          "doc": "Native JSON parsing is safe for this boundary only when converting the\nsource lexeme to a number and back preserves its exact decimal value."
         },
         {
           "name": "alignDecimal",
           "kind": "function",
-          "line": 468,
+          "line": 517,
           "exported": false,
-          "endLine": 468,
+          "endLine": 517,
           "signature": "(value: Decimal, scale: number)"
         },
         {
           "name": "compareDecimal",
           "kind": "function",
-          "line": 472,
+          "line": 521,
           "exported": false,
-          "endLine": 472,
+          "endLine": 521,
           "signature": "(left: Decimal, right: Decimal)"
         },
         {
           "name": "renderDecimal",
           "kind": "function",
-          "line": 479,
+          "line": 528,
           "exported": false,
-          "endLine": 479,
+          "endLine": 528,
           "signature": "(value: Decimal)"
         },
         {
           "name": "aggregateDecimals",
           "kind": "function",
-          "line": 490,
+          "line": 539,
           "exported": false,
-          "endLine": 490
+          "endLine": 539
         },
         {
           "name": "aggregate",
           "kind": "function",
-          "line": 515,
+          "line": 564,
           "exported": false,
-          "endLine": 515
+          "endLine": 564
         },
         {
           "name": "selectBatchEvidence",
           "kind": "const",
-          "line": 574,
+          "line": 623,
           "exported": true,
-          "endLine": 574
+          "endLine": 623
         }
       ],
       "imports": [
@@ -15847,9 +15864,9 @@
         }
       ],
       "exports": [],
-      "hash": "69c8b892ca6787b1b819d5695b74a18d5e533d8cbc4e57ee97442114fdd77bfe",
-      "mtimeMs": 1784538278186.7896,
-      "size": 22206,
+      "hash": "eecf935b89c5e4893728caaccf76bdf38ea94cc369ac5988ee5d8c0c6c60b83e",
+      "mtimeMs": 1784538808072.0645,
+      "size": 24676,
       "generated": false,
       "vendor": false,
       "parser": "regex"

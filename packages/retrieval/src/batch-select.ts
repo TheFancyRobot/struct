@@ -88,6 +88,7 @@ export interface BatchSelectionExclusion {
   readonly normalizedPath: string
   readonly reason:
     | 'malformed-json'
+    | 'unsafe-number'
     | 'unsupported-json-shape'
     | 'partition-mismatch'
   readonly contentTrust: 'untrusted-source-content'
@@ -452,7 +453,11 @@ interface Decimal {
 }
 
 function decimalFromNumber(value: number): Decimal {
-  const [mantissa, exponentText] = value.toString().toLowerCase().split('e')
+  return decimalFromLexeme(value.toString())
+}
+
+function decimalFromLexeme(lexeme: string): Decimal {
+  const [mantissa, exponentText] = lexeme.toLowerCase().split('e')
   const exponent = exponentText === undefined ? 0 : Number(exponentText)
   const negative = mantissa!.startsWith('-')
   const unsigned = negative ? mantissa!.slice(1) : mantissa!
@@ -463,6 +468,50 @@ function decimalFromNumber(value: number): Decimal {
   return scale >= 0
     ? { coefficient, scale }
     : { coefficient: coefficient * (10n ** BigInt(-scale)), scale: 0 }
+}
+
+/**
+ * Native JSON parsing is safe for this boundary only when converting the
+ * source lexeme to a number and back preserves its exact decimal value.
+ */
+function hasLosslessNumericLexemes(text: string): boolean {
+  const numberPattern = /-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/y
+  let inString = false
+  let escaped = false
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index]!
+    if (inString) {
+      if (escaped) escaped = false
+      else if (character === '\\') escaped = true
+      else if (character === '"') inString = false
+      continue
+    }
+    if (character === '"') {
+      inString = true
+      continue
+    }
+    if (character !== '-' && (character < '0' || character > '9')) continue
+    numberPattern.lastIndex = index
+    const match = numberPattern.exec(text)
+    if (match === null) continue
+    const lexeme = match[0]
+    const numeric = Number(lexeme)
+    const exponentText = lexeme.toLowerCase().split('e')[1]
+    const exponent = exponentText === undefined ? 0 : Number(exponentText)
+    if (
+      !Number.isFinite(numeric)
+      || Math.abs(exponent) > 400
+      || (numeric === 0 && !/^[-+]?0*(?:\.0*)?(?:e[-+]?[0-9]+)?$/i.test(lexeme))
+      || compareDecimal(
+        decimalFromLexeme(lexeme),
+        decimalFromNumber(numeric),
+      ) !== 0
+    ) {
+      return false
+    }
+    index += lexeme.length - 1
+  }
+  return true
 }
 
 function alignDecimal(value: Decimal, scale: number): bigint {
@@ -615,8 +664,38 @@ export const selectBatchEvidence = Effect.fn(
       continue
     }
     examinedKeys.add(source.entryKey)
+    const decoded = yield* Effect.try({
+      try: () => fatalUtf8Decoder.decode(source.bytes),
+      catch: () => invalid(
+        `sources.${source.entryKey}`,
+        'malformed-json',
+        'Source bytes are not valid JSON',
+      ),
+    }).pipe(Effect.either)
+    if (decoded._tag === 'Left') {
+      exclusions.push({
+        entryKey: source.entryKey,
+        sourceVersionId: source.sourceVersionId,
+        normalizedPath: source.normalizedPath,
+        reason: 'malformed-json',
+        contentTrust: 'untrusted-source-content',
+      })
+      excludedExpectedEntries += 1
+      continue
+    }
+    if (!hasLosslessNumericLexemes(decoded.right)) {
+      exclusions.push({
+        entryKey: source.entryKey,
+        sourceVersionId: source.sourceVersionId,
+        normalizedPath: source.normalizedPath,
+        reason: 'unsafe-number',
+        contentTrust: 'untrusted-source-content',
+      })
+      excludedExpectedEntries += 1
+      continue
+    }
     const parsed = yield* Effect.try({
-      try: (): unknown => JSON.parse(fatalUtf8Decoder.decode(source.bytes)),
+      try: (): unknown => JSON.parse(decoded.right),
       catch: () => invalid(
         `sources.${source.entryKey}`,
         'malformed-json',

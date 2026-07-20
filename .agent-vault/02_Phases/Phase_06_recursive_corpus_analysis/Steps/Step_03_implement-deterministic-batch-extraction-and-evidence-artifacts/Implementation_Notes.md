@@ -9,6 +9,7 @@
 - Root review established that the artifact byte bound is a transformation input. `computeBatchEvidenceTransformationIdentity` includes algorithm version, query identity, evidence schema version, and `maximumArtifactBytes`; the worker journal keys reuse by this identity while retaining query identity separately.
 - Empty-match semantics are deterministic: grouped plans emit no groups, while ungrouped/global plans emit one empty-key group with count `0`, sum `0`, min/max `null`, and zero contributors.
 - Selection-only plans without grouping or aggregation emit no phantom group.
+- Numeric lexemes are checked before native JSON parsing; values that would overflow, underflow, or round to a different exact decimal are recorded as `unsafe-number` exclusions.
 
 ## Related Notes
 

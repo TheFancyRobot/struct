@@ -255,6 +255,39 @@ describe('deterministic batch selection', () => {
     expect(result.groups[0]?.values[0]?.value).toMatch(/^2\d{308}$/)
   })
 
+  it('rejects numeric lexemes that native JSON parsing cannot preserve exactly', async () => {
+    const unsafeInteger = source(
+      'unsafe-integer',
+      'events/unsafe-integer.json',
+      '[{"active":true,"amount":9007199254740993,"team":"blue"}]',
+    )
+    const overPreciseDecimal = source(
+      'over-precise-decimal',
+      'events/over-precise-decimal.json',
+      '[{"active":true,"amount":0.10000000000000001,"team":"blue"}]',
+    )
+    const underflow = source(
+      'underflow',
+      'events/underflow.json',
+      '[{"active":true,"amount":1e-9999,"team":"blue"}]',
+    )
+    const sources = [underflow, unsafeInteger, overPreciseDecimal]
+    const result = await Effect.runPromise(
+      selectBatchEvidence(partition(sources), sources, await plan()),
+    )
+
+    expect(result.records).toEqual([])
+    expect(result.exclusions.map(({ entryKey, reason }) => ({
+      entryKey,
+      reason,
+    }))).toEqual([
+      { entryKey: 'over-precise-decimal', reason: 'unsafe-number' },
+      { entryKey: 'underflow', reason: 'unsafe-number' },
+      { entryKey: 'unsafe-integer', reason: 'unsafe-number' },
+    ])
+    expect(result.counts.excludedEntries).toBe(3)
+  })
+
   it('defines deterministic grouped and global aggregates for empty matches', async () => {
     const input = source('a', 'events/a.json', JSON.stringify([
       { active: false, amount: 1, team: 'blue' },
