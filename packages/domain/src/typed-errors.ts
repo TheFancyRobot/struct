@@ -108,7 +108,15 @@ export class ResearchCitationValidationError extends Schema.TaggedError<Research
 export class ResearchContractValidationError extends Schema.TaggedError<ResearchContractValidationError>()(
   'ResearchContractValidationError',
   {
-    contract: Schema.Literal('classification', 'plan', 'execution'),
+    contract: Schema.Literal(
+      'classification',
+      'plan',
+      'execution',
+      'recursive-request',
+      'recursive-decomposition',
+      'recursive-batch',
+      'recursive-aggregation',
+    ),
     reason: Schema.Literal(
       'malformed',
       'invalid-identity',
@@ -119,6 +127,7 @@ export class ResearchContractValidationError extends Schema.TaggedError<Research
       'cyclic-dependency',
       'fan-out-exceeded',
       'invalid-budget',
+      'invalid-lineage',
     ),
     path: Schema.String,
     message: Schema.String,
