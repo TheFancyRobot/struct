@@ -7,9 +7,14 @@ function compareString(left: string, right: string): number {
 }
 
 function scopeKey(scope: Domain.ResearchPlan['sourceScopes'][number]): string {
-  return scope.kind === 'document'
-    ? `document:${scope.sourceVersionId}`
-    : `dataset:${scope.datasetId}:${scope.datasetSnapshotId}:${[...scope.sourceVersionIds].sort().join(',')}`
+  switch (scope.kind) {
+    case 'document':
+      return `document:${scope.sourceVersionId}`
+    case 'dataset':
+      return `dataset:${scope.datasetId}:${scope.datasetSnapshotId}:${[...scope.sourceVersionIds].sort().join(',')}`
+    case 'recursive':
+      return `recursive:${[...scope.sourceVersionIds].sort().join(',')}`
+  }
 }
 
 function inputRefKey(
@@ -22,6 +27,8 @@ function inputRefKey(
       return `dataset-snapshot:${input.datasetId}:${input.datasetSnapshotId}`
     case 'node-output':
       return `node-output:${input.nodeId}`
+    case 'recursive-source-set':
+      return `recursive-source-set:${[...input.sourceVersionIds].sort().join(',')}`
   }
 }
 
@@ -50,7 +57,14 @@ export const normalizeResearchPlan = Effect.fn('ResearchPlan.normalize')(
           inputRefs: [...node.inputRefs].sort(
             (left, right) =>
               compareString(inputRefKey(left), inputRefKey(right)),
-          ),
+          ).map((input) => input.kind === 'recursive-source-set'
+            ? {
+                ...input,
+                sourceVersionIds: [...input.sourceVersionIds].sort(
+                  compareString,
+                ),
+              }
+            : input),
           evidenceRefs: [...node.evidenceRefs].sort(),
         }))
         .sort((left, right) => compareString(left.id, right.id)),

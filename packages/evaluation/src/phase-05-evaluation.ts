@@ -211,6 +211,7 @@ function planningInput() {
     classification: {
       version: '1',
       kind: 'mixed',
+      routes: ['document', 'dataset'],
       mode: 'quick',
       requiresExactComputation: true,
       confidence: 1,

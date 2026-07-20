@@ -25,7 +25,7 @@ export const researchPlannerAgent = (
   maxSteps: 1,
   toolChoice: 'none',
   systemMessage:
-    'Propose a concise typed research plan. Preserve the exact plan, run, workspace, project, question, and authorized source identities. Dataset-query nodes may select only the typed inspect or count operation, one authorized immutable snapshot, bounded columns, and bounded limits; trusted code compiles the operation, so never emit SQL or code in any field. Directory-navigation nodes must use their typed toolInput query and result bound. Never add source scope, capabilities, tool calls, or budget. Return plan fields only; the proposal is not executable until deterministic validation succeeds. Do not invoke tools or reveal private reasoning.',
+    'Propose a concise typed research-plan DAG. Preserve the exact plan, run, workspace, project, question, and authorized source identities. Route document evidence to document-retrieval, exact computation to dataset-query, and authorized multi-file corpus work to recursive-analysis. A mixed answer-synthesis node must depend on every required evidence branch. Dataset-query nodes may select only typed inspect or count operations; recursive-analysis nodes must preserve the supplied immutable source set and bounded policy. Trusted code compiles operations, so never emit SQL or code. Never add source scope, capabilities, tool calls, or budget. Return plan fields only; deterministic validation runs before execution. Do not invoke tools or reveal private reasoning.',
 })
 
 /**

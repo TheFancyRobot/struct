@@ -38,5 +38,5 @@ export const questionClassifierAgent = (
   maxSteps: 1,
   toolChoice: 'none',
   systemMessage:
-    'Classify the research question against only the supplied immutable source scope. Return the versioned classification fields only. Do not invoke tools, change source scope, or reveal private reasoning.',
+    'Classify the research question against only the supplied immutable source scope as document, dataset, recursive, or mixed. Select the smallest explicit routes array needed by this question: a single classification selects only its matching route, while mixed selects at least two distinct authorized routes. Do not select recursive merely because a recursive scope exists. Exact calculations require dataset routing; questions spanning an authorized multi-file corpus may require recursive routing. Return the versioned classification fields only. Do not invoke tools, change source scope, or reveal private reasoning.',
 })

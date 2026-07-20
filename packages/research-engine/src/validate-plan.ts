@@ -14,6 +14,8 @@ import {
 import type * as Domain from '@struct/domain'
 import { Effect, Schema } from 'effect'
 import { normalizeResearchPlan } from './normalize-plan.js'
+import { decomposeQuestionRoutes } from './question-decomposition.js'
+import { routeResearchPlan } from './route-sources.js'
 
 export const ResearchQuestion = Schema.String.pipe(
   Schema.minLength(1),
@@ -69,22 +71,35 @@ function allowedSourceReferences(
   readonly sourceVersions: ReadonlySet<string>
   readonly documentSourceVersions: ReadonlySet<string>
   readonly datasetSnapshots: ReadonlySet<string>
+  readonly recursiveSourceSets: ReadonlyArray<ReadonlySet<string>>
 } {
   const sourceVersions = new Set<string>()
   const documentSourceVersions = new Set<string>()
   const datasetSnapshots = new Set<string>()
+  const recursiveSourceSets: Array<ReadonlySet<string>> = []
   for (const scope of scopes) {
     if (scope.kind === 'document') {
       sourceVersions.add(scope.sourceVersionId)
       documentSourceVersions.add(scope.sourceVersionId)
-    } else {
+    } else if (scope.kind === 'dataset') {
       datasetSnapshots.add(`${scope.datasetId}:${scope.datasetSnapshotId}`)
+      for (const sourceVersionId of scope.sourceVersionIds) {
+        sourceVersions.add(sourceVersionId)
+      }
+    } else {
+      const recursiveSources = new Set<string>(scope.sourceVersionIds)
+      recursiveSourceSets.push(recursiveSources)
       for (const sourceVersionId of scope.sourceVersionIds) {
         sourceVersions.add(sourceVersionId)
       }
     }
   }
-  return { sourceVersions, documentSourceVersions, datasetSnapshots }
+  return {
+    sourceVersions,
+    documentSourceVersions,
+    datasetSnapshots,
+    recursiveSourceSets,
+  }
 }
 
 const compatibleCapability: Readonly<
@@ -93,6 +108,7 @@ const compatibleCapability: Readonly<
   'hybrid-retrieval': 'document:retrieve',
   'dataset-query': 'dataset:query',
   'directory-navigation': 'directory:navigate',
+  'recursive-analysis': 'recursive:analyze',
   'citation-validation': 'citation:validate',
 }
 
@@ -102,6 +118,7 @@ const nodeTool: Partial<
   'document-retrieval': 'hybrid-retrieval',
   'dataset-query': 'dataset-query',
   'directory-navigation': 'directory-navigation',
+  'recursive-analysis': 'recursive-analysis',
   'citation-validation': 'citation-validation',
 }
 
@@ -140,24 +157,33 @@ function validateScope(
       scope.kind === 'document' ? [scope.sourceVersionId] : []),
   )
   const allowedDatasets = new Map<string, Set<string>>()
+  const allowedRecursiveScopes: Array<ReadonlySet<string>> = []
   for (const scope of input.sourceScopes) {
-    if (scope.kind !== 'dataset') continue
-    const key = datasetScopeKey(scope)
-    const sourceVersions = allowedDatasets.get(key) ?? new Set<string>()
-    for (const sourceVersionId of scope.sourceVersionIds) {
-      sourceVersions.add(sourceVersionId)
+    if (scope.kind === 'dataset') {
+      const key = datasetScopeKey(scope)
+      const sourceVersions = allowedDatasets.get(key) ?? new Set<string>()
+      for (const sourceVersionId of scope.sourceVersionIds) {
+        sourceVersions.add(sourceVersionId)
+      }
+      allowedDatasets.set(key, sourceVersions)
+    } else if (scope.kind === 'recursive') {
+      allowedRecursiveScopes.push(new Set(scope.sourceVersionIds))
     }
-    allowedDatasets.set(key, sourceVersions)
   }
   for (const scope of plan.sourceScopes) {
     const authorized = scope.kind === 'document'
       ? allowedDocuments.has(scope.sourceVersionId)
-      : (() => {
+      : scope.kind === 'dataset'
+        ? (() => {
           const sourceVersions = allowedDatasets.get(datasetScopeKey(scope))
           return sourceVersions !== undefined
             && scope.sourceVersionIds.every((sourceVersionId) =>
               sourceVersions.has(sourceVersionId))
         })()
+        : allowedRecursiveScopes.some((authorizedSources) =>
+          scope.sourceVersionIds.every((sourceVersionId) =>
+            authorizedSources.has(sourceVersionId))
+        )
     if (!authorized) {
       return failure(
         'missing-reference',
@@ -169,9 +195,8 @@ function validateScope(
 
   const allowed = allowedSourceReferences(plan.sourceScopes)
   for (const node of plan.nodes) {
-    const directInputs = node.inputRefs.filter(
-      (ref) => ref.kind !== 'node-output',
-    )
+    const directInputs = node.inputRefs.filter((ref) =>
+      ref.kind !== 'node-output')
     if (
       node.kind === 'document-retrieval'
       || node.kind === 'directory-navigation'
@@ -229,6 +254,26 @@ function validateScope(
           'A dataset-query node requires a typed query spec inside its authorized immutable snapshot scope',
         )
       }
+    } else if (node.kind === 'recursive-analysis') {
+      const [recursiveInput, ...additionalRecursiveInputs] = directInputs.filter(
+        (ref) => ref.kind === 'recursive-source-set',
+      )
+      if (
+        directInputs.length !== 1
+        || recursiveInput === undefined
+        || additionalRecursiveInputs.length > 0
+        || !allowed.recursiveSourceSets.some((sourceSet) =>
+          recursiveInput.sourceVersionIds.every((sourceVersionId) =>
+            sourceSet.has(sourceVersionId))
+        )
+        || node.toolInput?.kind !== 'recursive-analysis'
+      ) {
+        return failure(
+          'missing-reference',
+          `nodes.${node.id}`,
+          'A recursive-analysis node requires one authorized immutable recursive source set',
+        )
+      }
     }
     for (const ref of node.inputRefs) {
       const authorized = ref.kind === 'source-version'
@@ -242,7 +287,12 @@ function validateScope(
           ? allowed.datasetSnapshots.has(
             `${ref.datasetId}:${ref.datasetSnapshotId}`,
           )
-          : true
+          : ref.kind === 'recursive-source-set'
+            ? allowed.recursiveSourceSets.some((sourceSet) =>
+              ref.sourceVersionIds.every((sourceVersionId) =>
+                sourceSet.has(sourceVersionId))
+            )
+            : true
       if (!authorized) {
         return failure(
           'missing-reference',
@@ -257,9 +307,14 @@ function validateScope(
     const authorized = requirement.kind === 'document'
       ? requirement.sourceVersionIds.every((sourceVersionId) =>
         allowed.documentSourceVersions.has(sourceVersionId))
-      : allowed.datasetSnapshots.has(
-        `${requirement.datasetId}:${requirement.datasetSnapshotId}`,
-      )
+      : requirement.kind === 'dataset'
+        ? allowed.datasetSnapshots.has(
+          `${requirement.datasetId}:${requirement.datasetSnapshotId}`,
+        )
+        : allowed.recursiveSourceSets.some((sourceSet) =>
+          requirement.sourceVersionIds.every((sourceVersionId) =>
+            sourceSet.has(sourceVersionId))
+        )
     if (!authorized) {
       return failure(
         'missing-reference',
@@ -461,6 +516,12 @@ export const validateResearchPlan = Effect.fn('ResearchPlan.validate')(
     ]) {
       if (error !== undefined) return yield* error
     }
-    return yield* normalizeResearchPlan(plan)
+    const normalized = yield* normalizeResearchPlan(plan)
+    const branches = yield* decomposeQuestionRoutes(
+      input.classification,
+      input.sourceScopes,
+    )
+    yield* routeResearchPlan(normalized, branches)
+    return normalized
   },
 )

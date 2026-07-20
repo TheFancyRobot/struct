@@ -25,13 +25,35 @@ const BoundedInteger = Schema.Number.pipe(
 
 export const ResearchContractVersion = Schema.Literal('1')
 
+const ResearchRouteKind = Schema.Literal('document', 'dataset', 'recursive')
+
 export const QuestionClassification = Schema.Struct({
   version: ResearchContractVersion,
-  kind: Schema.Literal('document', 'dataset', 'mixed'),
+  kind: Schema.Literal('document', 'dataset', 'recursive', 'mixed'),
+  routes: Schema.Array(ResearchRouteKind).pipe(
+    Schema.minItems(1),
+    Schema.maxItems(3),
+  ),
   mode: Schema.Literal('quick', 'deep'),
   requiresExactComputation: Schema.Boolean,
   confidence: Schema.Number.pipe(Schema.finite(), Schema.between(0, 1)),
-})
+}).pipe(Schema.filter((classification) => [
+  new Set(classification.routes).size === classification.routes.length
+    ? undefined
+    : 'classification routes must be unique',
+  classification.kind === 'mixed'
+    ? classification.routes.length >= 2
+      ? undefined
+      : 'mixed classification requires at least two explicit routes'
+    : classification.routes.length === 1
+      && classification.routes[0] === classification.kind
+      ? undefined
+      : 'single-source classification must select exactly its matching route',
+  !classification.requiresExactComputation
+    || classification.routes.includes('dataset')
+    ? undefined
+    : 'exact computation requires an explicit dataset route',
+]))
 export type QuestionClassification =
   Schema.Schema.Type<typeof QuestionClassification>
 
@@ -45,6 +67,13 @@ export const ResearchSourceScope = Schema.Union(
     datasetId: DatasetId,
     datasetSnapshotId: DatasetSnapshotId,
     sourceVersionIds: Schema.Array(SourceVersionId).pipe(Schema.minItems(1)),
+  }),
+  Schema.Struct({
+    kind: Schema.Literal('recursive'),
+    sourceVersionIds: Schema.Array(SourceVersionId).pipe(
+      Schema.minItems(2),
+      Schema.maxItems(25_000),
+    ),
   }),
 )
 export type ResearchSourceScope =
@@ -64,6 +93,15 @@ export const ResearchEvidenceRequirement = Schema.Union(
     datasetSnapshotId: DatasetSnapshotId,
     minimumCitations: BoundedInteger.pipe(Schema.positive()),
   }),
+  Schema.Struct({
+    id: EvidenceRequirementId,
+    kind: Schema.Literal('recursive'),
+    sourceVersionIds: Schema.Array(SourceVersionId).pipe(
+      Schema.minItems(2),
+      Schema.maxItems(25_000),
+    ),
+    minimumCitations: BoundedInteger.pipe(Schema.positive()),
+  }),
 )
 export type ResearchEvidenceRequirement =
   Schema.Schema.Type<typeof ResearchEvidenceRequirement>
@@ -72,6 +110,7 @@ export const ResearchToolId = Schema.Literal(
   'hybrid-retrieval',
   'dataset-query',
   'directory-navigation',
+  'recursive-analysis',
   'citation-validation',
 )
 export type ResearchToolId = Schema.Schema.Type<typeof ResearchToolId>
@@ -80,6 +119,7 @@ export const ResearchToolCapability = Schema.Literal(
   'document:retrieve',
   'dataset:query',
   'directory:navigate',
+  'recursive:analyze',
   'citation:validate',
 )
 export type ResearchToolCapability =
@@ -93,7 +133,7 @@ export const ResearchToolPolicy = Schema.Struct({
       Schema.positive(),
       Schema.lessThanOrEqualTo(256),
     ),
-  })).pipe(Schema.maxItems(4)),
+  })).pipe(Schema.maxItems(5)),
 })
 export type ResearchToolPolicy = Schema.Schema.Type<typeof ResearchToolPolicy>
 
@@ -110,6 +150,13 @@ export const ResearchPlanInputRef = Schema.Union(
   Schema.Struct({
     kind: Schema.Literal('node-output'),
     nodeId: ResearchPlanNodeId,
+  }),
+  Schema.Struct({
+    kind: Schema.Literal('recursive-source-set'),
+    sourceVersionIds: Schema.Array(SourceVersionId).pipe(
+      Schema.minItems(2),
+      Schema.maxItems(25_000),
+    ),
   }),
 )
 export type ResearchPlanInputRef =
@@ -150,9 +197,16 @@ export const ResearchDirectoryNavigationSpec = Schema.Struct({
 export type ResearchDirectoryNavigationSpec =
   Schema.Schema.Type<typeof ResearchDirectoryNavigationSpec>
 
+export const ResearchRecursiveAnalysisSpec = Schema.Struct({
+  kind: Schema.Literal('recursive-analysis'),
+})
+export type ResearchRecursiveAnalysisSpec =
+  Schema.Schema.Type<typeof ResearchRecursiveAnalysisSpec>
+
 export const ResearchPlanToolInput = Schema.Union(
   ResearchDatasetQuerySpec,
   ResearchDirectoryNavigationSpec,
+  ResearchRecursiveAnalysisSpec,
 )
 export type ResearchPlanToolInput =
   Schema.Schema.Type<typeof ResearchPlanToolInput>
@@ -163,6 +217,7 @@ export const ResearchPlanNode = Schema.Struct({
     'document-retrieval',
     'dataset-query',
     'directory-navigation',
+    'recursive-analysis',
     'evidence-evaluation',
     'answer-synthesis',
     'citation-validation',
@@ -242,6 +297,37 @@ function parseFailure(
 }
 
 function graphFailure(plan: ResearchPlan): ResearchContractValidationError | undefined {
+  const sourceScopeKeys = plan.sourceScopes.map((scope) => {
+    switch (scope.kind) {
+      case 'document':
+        return `document:${scope.sourceVersionId}`
+      case 'dataset':
+        return `dataset:${scope.datasetId}:${scope.datasetSnapshotId}`
+      case 'recursive':
+        return `recursive:${[...scope.sourceVersionIds].sort().join(',')}`
+    }
+  })
+  if (new Set(sourceScopeKeys).size !== sourceScopeKeys.length) {
+    return new ResearchContractValidationError({
+      contract: 'plan',
+      reason: 'invalid-identity',
+      path: 'sourceScopes',
+      message: 'Research plan source scopes must have unique identities',
+    })
+  }
+  for (const scope of plan.sourceScopes) {
+    if (
+      'sourceVersionIds' in scope
+      && new Set(scope.sourceVersionIds).size !== scope.sourceVersionIds.length
+    ) {
+      return new ResearchContractValidationError({
+        contract: 'plan',
+        reason: 'invalid-identity',
+        path: 'sourceScopes.sourceVersionIds',
+        message: 'Source scope version identities must be unique',
+      })
+    }
+  }
   const nodeIds = new Set(plan.nodes.map((node) => node.id))
   if (nodeIds.size !== plan.nodes.length) {
     return new ResearchContractValidationError({
@@ -262,7 +348,34 @@ function graphFailure(plan: ResearchPlan): ResearchContractValidationError | und
       message: 'Research evidence requirement identities must be unique',
     })
   }
+  for (const requirement of plan.evidenceRequirements) {
+    if (
+      'sourceVersionIds' in requirement
+      && new Set(requirement.sourceVersionIds).size
+        !== requirement.sourceVersionIds.length
+    ) {
+      return new ResearchContractValidationError({
+        contract: 'plan',
+        reason: 'invalid-identity',
+        path: `evidenceRequirements.${requirement.id}.sourceVersionIds`,
+        message: 'Evidence source version identities must be unique',
+      })
+    }
+  }
   for (const node of plan.nodes) {
+    for (const input of node.inputRefs) {
+      if (
+        input.kind === 'recursive-source-set'
+        && new Set(input.sourceVersionIds).size !== input.sourceVersionIds.length
+      ) {
+        return new ResearchContractValidationError({
+          contract: 'plan',
+          reason: 'invalid-identity',
+          path: `nodes.${node.id}.inputRefs.sourceVersionIds`,
+          message: 'Recursive input source identities must be unique',
+        })
+      }
+    }
     const declaredDependencies = new Set(node.dependencies)
     if (node.dependencies.some((dependency) => !nodeIds.has(dependency))) {
       return new ResearchContractValidationError({

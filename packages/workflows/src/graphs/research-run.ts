@@ -113,6 +113,10 @@ const toolByNodeKind: Readonly<
     toolId: 'directory-navigation',
     capability: 'directory:navigate',
   },
+  'recursive-analysis': {
+    toolId: 'recursive-analysis',
+    capability: 'recursive:analyze',
+  },
   'citation-validation': {
     toolId: 'citation-validation',
     capability: 'citation:validate',

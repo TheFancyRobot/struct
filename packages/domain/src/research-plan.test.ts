@@ -194,6 +194,7 @@ describe('research plan contracts', () => {
     const input = {
       version: '1',
       kind: 'mixed',
+      routes: ['document', 'dataset'],
       mode: 'deep',
       requiresExactComputation: true,
       confidence: 0.9,
@@ -204,6 +205,20 @@ describe('research plan contracts', () => {
     expect(await failureReason(decodeQuestionClassification({
       ...input,
       confidence: Number.POSITIVE_INFINITY,
+    }))).toBe('malformed')
+    expect(await failureReason(decodeQuestionClassification({
+      ...input,
+      routes: ['document'],
+    }))).toBe('malformed')
+    expect(await failureReason(decodeQuestionClassification({
+      ...input,
+      routes: ['document', 'document'],
+    }))).toBe('malformed')
+    expect(await failureReason(decodeQuestionClassification({
+      ...input,
+      kind: 'document',
+      routes: ['document'],
+      requiresExactComputation: true,
     }))).toBe('malformed')
   })
 

@@ -61,6 +61,7 @@ describe('Fred research-planning agents', () => {
       classification: {
         version: '1',
         kind: 'document',
+        routes: ['document'],
         mode: 'quick',
         requiresExactComputation: false,
         confidence: 0.95,
@@ -111,6 +112,7 @@ describe('Fred research-planning agents', () => {
         classification: {
           version: '1',
           kind: 'document',
+          routes: ['document'],
           mode: 'quick',
           requiresExactComputation: false,
           confidence: 0.95,
