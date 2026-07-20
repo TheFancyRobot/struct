@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T02:23:38.572Z",
+  "generatedAt": "2026-07-20T02:58:37.119Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -11974,6 +11974,81 @@
       "parser": "regex"
     },
     {
+      "path": "packages/research-engine/src/budget-enforcer.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "stop",
+          "kind": "function",
+          "line": 18,
+          "exported": false,
+          "endLine": 18
+        },
+        {
+          "name": "attemptedUsage",
+          "kind": "function",
+          "line": 27,
+          "exported": false,
+          "endLine": 27,
+          "signature": "(action: ResearchAction, state: ResearchGraphState)"
+        },
+        {
+          "name": "budgetReason",
+          "kind": "function",
+          "line": 37,
+          "exported": false,
+          "endLine": 37
+        },
+        {
+          "name": "declarationReason",
+          "kind": "function",
+          "line": 92,
+          "exported": false,
+          "endLine": 92
+        },
+        {
+          "name": "beginResearchAction",
+          "kind": "const",
+          "line": 131,
+          "exported": true,
+          "endLine": 131
+        },
+        {
+          "name": "completeResearchAction",
+          "kind": "const",
+          "line": 177,
+          "exported": true,
+          "endLine": 177
+        }
+      ],
+      "imports": [
+        {
+          "source": "ResearchBudget, ResearchPlan",
+          "specifier": "@struct/domain",
+          "imported": [
+            "ResearchBudget",
+            "ResearchPlan"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "ca054b75658b1fa233efe3ea07c752798fe794cf07d8fb9c7dd97dcf17af1951",
+      "mtimeMs": 1784516030402.838,
+      "size": 7288,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/research-engine/src/evidence-sufficiency.ts",
       "language": "TypeScript",
       "symbols": [
@@ -12119,6 +12194,169 @@
       "parser": "regex"
     },
     {
+      "path": "packages/research-engine/src/execution-policy.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "Counter",
+          "kind": "const",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        },
+        {
+          "name": "Fingerprint",
+          "kind": "const",
+          "line": 18,
+          "exported": false,
+          "endLine": 18
+        },
+        {
+          "name": "BoundedMessage",
+          "kind": "const",
+          "line": 19,
+          "exported": false,
+          "endLine": 19
+        },
+        {
+          "name": "ResearchModelRole",
+          "kind": "const",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "ResearchModelRole",
+          "kind": "type",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "ResearchExecutionPolicy",
+          "kind": "const",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "ResearchExecutionPolicy",
+          "kind": "type",
+          "line": 33,
+          "exported": true,
+          "endLine": 33
+        },
+        {
+          "name": "ResearchStopReason",
+          "kind": "const",
+          "line": 36,
+          "exported": true,
+          "endLine": 36
+        },
+        {
+          "name": "ResearchStopReason",
+          "kind": "type",
+          "line": 96,
+          "exported": true,
+          "endLine": 96
+        },
+        {
+          "name": "ResearchExecutionStopped",
+          "kind": "class",
+          "line": 98,
+          "exported": true,
+          "endLine": 98
+        },
+        {
+          "name": "ResearchProviderFailure",
+          "kind": "class",
+          "line": 106,
+          "exported": true,
+          "endLine": 106
+        },
+        {
+          "name": "ResearchAction",
+          "kind": "const",
+          "line": 113,
+          "exported": true,
+          "endLine": 113
+        },
+        {
+          "name": "ResearchAction",
+          "kind": "type",
+          "line": 130,
+          "exported": true,
+          "endLine": 130
+        },
+        {
+          "name": "ResearchActionResult",
+          "kind": "const",
+          "line": 132,
+          "exported": true,
+          "endLine": 132
+        },
+        {
+          "name": "ResearchActionResult",
+          "kind": "type",
+          "line": 136,
+          "exported": true,
+          "endLine": 136
+        },
+        {
+          "name": "ResearchToolGrantUsage",
+          "kind": "const",
+          "line": 139,
+          "exported": true,
+          "endLine": 139
+        },
+        {
+          "name": "ResearchToolGrantUsage",
+          "kind": "type",
+          "line": 144,
+          "exported": true,
+          "endLine": 144
+        },
+        {
+          "name": "ResearchGraphState",
+          "kind": "const",
+          "line": 147,
+          "exported": true,
+          "endLine": 147
+        },
+        {
+          "name": "ResearchGraphState",
+          "kind": "type",
+          "line": 170,
+          "exported": true,
+          "endLine": 170
+        },
+        {
+          "name": "initialResearchGraphState",
+          "kind": "function",
+          "line": 173,
+          "exported": true,
+          "endLine": 173
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "9060d3a4226b35f8df6a11ad8d96d0e749089c34995f50f6721d7a580aee4c3b",
+      "mtimeMs": 1784516030402.5364,
+      "size": 5530,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/research-engine/src/normalize-plan.ts",
       "language": "TypeScript",
       "symbols": [
@@ -12165,7 +12403,7 @@
       ],
       "exports": [],
       "hash": "9ec61c19d756e5395c25da2c108c4a8f3660fcc6dc40c98c67aa587d7fd323a5",
-      "mtimeMs": 1784512857384.5176,
+      "mtimeMs": 1784514897939.9656,
       "size": 2662,
       "generated": false,
       "vendor": false,
@@ -12382,7 +12620,7 @@
       ],
       "exports": [],
       "hash": "3279086a518229dbb947e10dd2f61127a7567d317ffbd6c52598ba6b1952ecad",
-      "mtimeMs": 1784514040726.0771,
+      "mtimeMs": 1784514897940.1467,
       "size": 13268,
       "generated": false,
       "vendor": false,
@@ -13729,7 +13967,7 @@
       ],
       "exports": [],
       "hash": "c93bbac0f28c8d84bdaf36a5001ed0d9967f4a0f82e1292af63f4b0a86f18bcd",
-      "mtimeMs": 1784512961847.787,
+      "mtimeMs": 1784514897940.6223,
       "size": 1321,
       "generated": false,
       "vendor": false,
@@ -13796,7 +14034,7 @@
       ],
       "exports": [],
       "hash": "086803cb7c7290fa8b96dfcc48be37a1d2aeda949655a3b5762315daec91b071",
-      "mtimeMs": 1784514186939.2615,
+      "mtimeMs": 1784514897940.7593,
       "size": 1562,
       "generated": false,
       "vendor": false,
@@ -13969,6 +14207,126 @@
       "parser": "regex"
     },
     {
+      "path": "packages/workflows/src/graphs/research-run.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "RESEARCH_RUN_WORKFLOW_ID",
+          "kind": "const",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        },
+        {
+          "name": "ResearchToolExecutor",
+          "kind": "interface",
+          "line": 37,
+          "exported": true,
+          "endLine": 37
+        },
+        {
+          "name": "ResearchToolResolver",
+          "kind": "interface",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "ResearchModelExecutor",
+          "kind": "interface",
+          "line": 59,
+          "exported": true,
+          "endLine": 59
+        },
+        {
+          "name": "ResearchModelResolver",
+          "kind": "interface",
+          "line": 70,
+          "exported": true,
+          "endLine": 70
+        },
+        {
+          "name": "ResearchRunGraphDependencies",
+          "kind": "interface",
+          "line": 80,
+          "exported": true,
+          "endLine": 80
+        },
+        {
+          "name": "interrupted",
+          "kind": "function",
+          "line": 117,
+          "exported": false,
+          "endLine": 117,
+          "signature": "()"
+        },
+        {
+          "name": "providerStopped",
+          "kind": "function",
+          "line": 127,
+          "exported": false,
+          "endLine": 127
+        },
+        {
+          "name": "actionForNode",
+          "kind": "function",
+          "line": 141,
+          "exported": false,
+          "endLine": 141
+        },
+        {
+          "name": "topologicalNodes",
+          "kind": "function",
+          "line": 168,
+          "exported": false,
+          "endLine": 168,
+          "signature": "(plan: ResearchPlan)"
+        },
+        {
+          "name": "executionEffect",
+          "kind": "function",
+          "line": 190,
+          "exported": false,
+          "endLine": 190
+        },
+        {
+          "name": "compileResearchRunWorkflow",
+          "kind": "const",
+          "line": 246,
+          "exported": true,
+          "endLine": 246
+        },
+        {
+          "name": "ResearchRunCompilationFailure",
+          "kind": "type",
+          "line": 298,
+          "exported": true,
+          "endLine": 298
+        }
+      ],
+      "imports": [
+        {
+          "source": "Cause, Effect, Exit, Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Cause",
+            "Effect",
+            "Exit",
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "f9a484f742194b3c1ef343b750f6075607a78afc9f0a78d53bbcba4892eeba87",
+      "mtimeMs": 1784516071810.877,
+      "size": 8482,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/workflows/src/graphs/walking-skeleton.ts",
       "language": "TypeScript",
       "symbols": [
@@ -14061,6 +14419,121 @@
       "hash": "fc4c03dad0fff2abd117a37f2b8f09a6c39203f2ef99a49c6b15b5025f3dac98",
       "mtimeMs": 1784506183890.4583,
       "size": 5204,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/workflows/src/model-routing.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "Identifier",
+          "kind": "const",
+          "line": 7,
+          "exported": false,
+          "endLine": 7
+        },
+        {
+          "name": "ModelOutputContract",
+          "kind": "const",
+          "line": 9,
+          "exported": true,
+          "endLine": 9
+        },
+        {
+          "name": "ModelOutputContract",
+          "kind": "type",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "ModelRoute",
+          "kind": "const",
+          "line": 18,
+          "exported": true,
+          "endLine": 18
+        },
+        {
+          "name": "ModelRoute",
+          "kind": "type",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "ModelRouteWithFallback",
+          "kind": "const",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
+          "name": "ModelRouteWithFallback",
+          "kind": "type",
+          "line": 30,
+          "exported": true,
+          "endLine": 30
+        },
+        {
+          "name": "ResearchModelRoutingPolicy",
+          "kind": "const",
+          "line": 33,
+          "exported": true,
+          "endLine": 33
+        },
+        {
+          "name": "ResearchModelRoutingPolicy",
+          "kind": "type",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "IncompatibleModelRoute",
+          "kind": "class",
+          "line": 51,
+          "exported": true,
+          "endLine": 51
+        },
+        {
+          "name": "ResolvedModelRoute",
+          "kind": "interface",
+          "line": 66,
+          "exported": true,
+          "endLine": 66
+        },
+        {
+          "name": "resolveModelRoute",
+          "kind": "const",
+          "line": 72,
+          "exported": true,
+          "endLine": 72
+        },
+        {
+          "name": "boundedProviderFailure",
+          "kind": "function",
+          "line": 106,
+          "exported": true,
+          "endLine": 106
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "e858e132f9e113a8cad1aa9177f8333fd7c3a2d72bb75c920804d1f4d25a9d7d",
+      "mtimeMs": 1784515280235.2397,
+      "size": 3266,
       "generated": false,
       "vendor": false,
       "parser": "regex"

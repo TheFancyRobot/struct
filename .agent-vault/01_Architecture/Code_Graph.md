@@ -6,9 +6,9 @@ title: Code Graph
 architecture_id: "ARCH-0006"
 status: active
 owner: ""
-reviewed_on: "2026-07-19"
-created: "2026-07-19"
-updated: "2026-07-19"
+reviewed_on: "2026-07-20"
+created: "2026-07-20"
+updated: "2026-07-20"
 related_notes:
   - "[[01_Architecture/Code_Map|Code Map]]"
   - "[[01_Architecture/System_Overview|System Overview]]"
@@ -28,8 +28,8 @@ tags:
 ## Overview
 
 - Repository: struct
-- Files indexed: 149
-- Symbols found: 1649
+- Files indexed: 153
+- Symbols found: 1701
 - Detailed index path: `.agent-vault/08_Automation/code-graph/index.json`
 
 ## Key Components
@@ -71,7 +71,7 @@ tags:
 - `packages/data-engine/src`: 5 files, 77 exported symbols, 21 internal symbols
 - `packages/retrieval/src`: 6 files, 43 exported symbols, 39 internal symbols
 - `packages/ingestion/src`: 10 files, 56 exported symbols, 16 internal symbols
-- `apps/api/src/routes`: 8 files, 38 exported symbols, 27 internal symbols
+- `packages/research-engine/src`: 6 files, 47 exported symbols, 23 internal symbols
 
 ## Related Notes
 
