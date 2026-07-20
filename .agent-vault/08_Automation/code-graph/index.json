@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T11:05:37.082Z",
+  "generatedAt": "2026-07-20T11:54:47.013Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -225,7 +225,7 @@
       ],
       "exports": [],
       "hash": "8ed1040fa24b5f175e300ee46b27bc7ea76262792e3ea153992eb6be5ffa1c08",
-      "mtimeMs": 1784544040676.6448,
+      "mtimeMs": 1784547495279.0774,
       "size": 36141,
       "generated": false,
       "vendor": false,
@@ -825,9 +825,9 @@
         }
       ],
       "exports": [],
-      "hash": "5d623d5b8aaa7c4e2eda8d0c955c9457539af17a5ee585800e415dd6e4be5756",
-      "mtimeMs": 1784545043783.8699,
-      "size": 6163,
+      "hash": "478f9dc966f9102c246df989cdec1710a68129f2be6896367942e482f4fe775f",
+      "mtimeMs": 1784547495279.382,
+      "size": 6288,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1223,9 +1223,9 @@
         {
           "name": "cancelResearchRun",
           "kind": "function",
-          "line": 60,
+          "line": 71,
           "exported": true,
-          "endLine": 60
+          "endLine": 71
         }
       ],
       "imports": [
@@ -1240,9 +1240,9 @@
         }
       ],
       "exports": [],
-      "hash": "736d4293451fb07889eb8b589dc27db900c6b1dc7bb26f2517ade026268301ad",
-      "mtimeMs": 1784545217088.444,
-      "size": 2374,
+      "hash": "1ccbc4d026994ea4eca18c5d9436180eb9fd7e6e4e7f1beab3f56be0383c34d3",
+      "mtimeMs": 1784547495280.3684,
+      "size": 2943,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1272,9 +1272,9 @@
           "kind": "default"
         }
       ],
-      "hash": "cca22b05ef791dfb144728e257b374f68dbc254920979050b921f881acc2ee82",
-      "mtimeMs": 1784544191687.5647,
-      "size": 4317,
+      "hash": "b2884483370cd23288f38819ffd1be95030b4468ee7c203ea54b2842c8ba4c8f",
+      "mtimeMs": 1784547495279.9944,
+      "size": 4449,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1569,7 +1569,7 @@
       ],
       "exports": [],
       "hash": "111c6600b737a6ff1ec5001606534cff5059e2642eefb2adf1212b059aa5f481",
-      "mtimeMs": 1784544352941.2341,
+      "mtimeMs": 1784547495280.5146,
       "size": 7769,
       "generated": false,
       "vendor": false,
@@ -1599,7 +1599,7 @@
       ],
       "exports": [],
       "hash": "caa31a8bdfb051a92f0804e59a614277d5fd6e8200bc60f14f9945747c6d8f05",
-      "mtimeMs": 1784545359877.0388,
+      "mtimeMs": 1784547495281.0173,
       "size": 601,
       "generated": false,
       "vendor": false,
@@ -1619,23 +1619,23 @@
         {
           "name": "statusTone",
           "kind": "const",
-          "line": 19,
+          "line": 18,
           "exported": false,
-          "endLine": 19
+          "endLine": 18
         },
         {
           "name": "formatTime",
           "kind": "const",
-          "line": 26,
+          "line": 25,
           "exported": false,
-          "endLine": 26
+          "endLine": 25
         },
         {
           "name": "RecursiveRunTimeline",
           "kind": "const",
-          "line": 35,
+          "line": 34,
           "exported": true,
-          "endLine": 35
+          "endLine": 34
         }
       ],
       "imports": [
@@ -1649,9 +1649,9 @@
         }
       ],
       "exports": [],
-      "hash": "525738b3ea4a6ffa509dfd0614b05efcf035e5b9f559c0f0ddc1ab0b4cb671f7",
-      "mtimeMs": 1784544090313.9792,
-      "size": 6601,
+      "hash": "a4a99c35b2bcbf588f6843e0604716652e71f96b87ca8687cb3b52c3bb344ae3",
+      "mtimeMs": 1784547495280.6458,
+      "size": 6599,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1757,7 +1757,7 @@
       ],
       "exports": [],
       "hash": "9ba03a164fdf91f84dbc619f70169ff6dad92d946edbda47ba4b3becc6b1c38c",
-      "mtimeMs": 1784545334385.393,
+      "mtimeMs": 1784547495280.8945,
       "size": 12439,
       "generated": false,
       "vendor": false,
@@ -1975,7 +1975,7 @@
       ],
       "exports": [],
       "hash": "7e7fbfd037d8e1b90dfa242738b3664e559fdfffe7149a5a35efdea69a5f80b8",
-      "mtimeMs": 1784544126167.0183,
+      "mtimeMs": 1784547495281.702,
       "size": 1023,
       "generated": false,
       "vendor": false,
@@ -2365,7 +2365,7 @@
       ],
       "exports": [],
       "hash": "b1662ed951c5c9917fbc15ea20a970752b0b9236b079948e1e064dfb22b2d91f",
-      "mtimeMs": 1784545111162.083,
+      "mtimeMs": 1784547495281.928,
       "size": 10785,
       "generated": false,
       "vendor": false,
@@ -2774,7 +2774,7 @@
       ],
       "exports": [],
       "hash": "56264f6befeda0690b6d6b663ff03fcc10e4a171e2e59ebdb28c05867ece0f9c",
-      "mtimeMs": 1784545111161.764,
+      "mtimeMs": 1784547495282.4937,
       "size": 7919,
       "generated": false,
       "vendor": false,
@@ -2848,7 +2848,7 @@
       ],
       "exports": [],
       "hash": "3842e7e2164e9b5de648c09c90f9f590decab1a4fcac013ee9f236d725a8cf69",
-      "mtimeMs": 1784545065272.4246,
+      "mtimeMs": 1784547495282.7048,
       "size": 3329,
       "generated": false,
       "vendor": false,
@@ -3096,7 +3096,7 @@
       ],
       "exports": [],
       "hash": "6e23afb86de9296ec0b644e78d31e8d8a0cbd080fc7c48228160720b0724ca60",
-      "mtimeMs": 1784545077400.242,
+      "mtimeMs": 1784547495282.9258,
       "size": 50788,
       "generated": false,
       "vendor": false,
@@ -7273,7 +7273,7 @@
       ],
       "exports": [],
       "hash": "fcd9e5a33e66462a4abae6bd147776fd6a8754cccd7750a57ef03fc715a61be1",
-      "mtimeMs": 1784545092169.1663,
+      "mtimeMs": 1784547495283.2441,
       "size": 8011,
       "generated": false,
       "vendor": false,
@@ -7430,7 +7430,7 @@
       ],
       "exports": [],
       "hash": "ac83b1d55a33347359684e60fa5f92cc0b4090e0e379b1ae541d621b98272174",
-      "mtimeMs": 1784544004308.5579,
+      "mtimeMs": 1784547495283.3845,
       "size": 5198,
       "generated": false,
       "vendor": false,
@@ -9826,13 +9826,18 @@
         },
         {
           "name": "*",
+          "source": "./recursive-analysis.js",
+          "kind": "namespace"
+        },
+        {
+          "name": "*",
           "source": "./run-phase-02-evaluation.js",
           "kind": "namespace"
         }
       ],
-      "hash": "68d1c398b48c049fcdd6abb4f1cf49e4b4c464dc7fe81aae92aa8bf8ee72d93c",
-      "mtimeMs": 1784531240335.07,
-      "size": 763,
+      "hash": "1ebe4c3421811d3fc9d6b6108ec0d1d06f5a99b07ad1f4b26ee3ebcbb7f860fa",
+      "mtimeMs": 1784547856771.8828,
+      "size": 803,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -10832,6 +10837,269 @@
       "parser": "regex"
     },
     {
+      "path": "packages/evaluation/src/recursive-analysis.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "PHASE_06_RECURSIVE_EVALUATION_ID",
+          "kind": "const",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "PHASE_06_RECURSIVE_FILE_COUNT",
+          "kind": "const",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "MINORITY_INTERVAL",
+          "kind": "const",
+          "line": 31,
+          "exported": false,
+          "endLine": 31
+        },
+        {
+          "name": "CONTRADICTION_INTERVAL",
+          "kind": "const",
+          "line": 32,
+          "exported": false,
+          "endLine": 32
+        },
+        {
+          "name": "MAXIMUM_CHECKPOINT_BYTES",
+          "kind": "const",
+          "line": 33,
+          "exported": false,
+          "endLine": 33
+        },
+        {
+          "name": "MAXIMUM_PARTITION_SKEW_RATIO",
+          "kind": "const",
+          "line": 34,
+          "exported": false,
+          "endLine": 34
+        },
+        {
+          "name": "sha256",
+          "kind": "function",
+          "line": 36,
+          "exported": false,
+          "endLine": 36,
+          "signature": "(value: string)"
+        },
+        {
+          "name": "digest",
+          "kind": "function",
+          "line": 40,
+          "exported": false,
+          "endLine": 40,
+          "signature": "(value: string)"
+        },
+        {
+          "name": "stableSourceVersionId",
+          "kind": "function",
+          "line": 44,
+          "exported": false,
+          "endLine": 44,
+          "signature": "(index: number)"
+        },
+        {
+          "name": "entryIndex",
+          "kind": "function",
+          "line": 49,
+          "exported": false,
+          "endLine": 49,
+          "signature": "(entryKey: string)"
+        },
+        {
+          "name": "Phase06RecursiveFixture",
+          "kind": "interface",
+          "line": 53,
+          "exported": true,
+          "endLine": 53
+        },
+        {
+          "name": "makePhase06RecursiveFixture",
+          "kind": "function",
+          "line": 63,
+          "exported": true,
+          "endLine": 63,
+          "signature": "()"
+        },
+        {
+          "name": "Counter",
+          "kind": "const",
+          "line": 134,
+          "exported": false,
+          "endLine": 134
+        },
+        {
+          "name": "PartitionSummary",
+          "kind": "const",
+          "line": 139,
+          "exported": false,
+          "endLine": 139
+        },
+        {
+          "name": "PartitionSummary",
+          "kind": "type",
+          "line": 147,
+          "exported": false,
+          "endLine": 147
+        },
+        {
+          "name": "MergeCheckpoint",
+          "kind": "const",
+          "line": 148,
+          "exported": false,
+          "endLine": 148
+        },
+        {
+          "name": "MergeCheckpoint",
+          "kind": "type",
+          "line": 156,
+          "exported": false,
+          "endLine": 156
+        },
+        {
+          "name": "Phase06EvaluationCriterion",
+          "kind": "const",
+          "line": 158,
+          "exported": true,
+          "endLine": 158
+        },
+        {
+          "name": "Phase06EvaluationCriterion",
+          "kind": "type",
+          "line": 176,
+          "exported": true,
+          "endLine": 176
+        },
+        {
+          "name": "Phase06RecursiveEvaluationBody",
+          "kind": "const",
+          "line": 179,
+          "exported": false,
+          "endLine": 179
+        },
+        {
+          "name": "Phase06RecursiveEvaluationBody",
+          "kind": "type",
+          "line": 233,
+          "exported": false,
+          "endLine": 233
+        },
+        {
+          "name": "Phase06RecursiveEvaluationReport",
+          "kind": "const",
+          "line": 236,
+          "exported": true,
+          "endLine": 236
+        },
+        {
+          "name": "Phase06RecursiveEvaluationReport",
+          "kind": "type",
+          "line": 241,
+          "exported": true,
+          "endLine": 241
+        },
+        {
+          "name": "criterion",
+          "kind": "function",
+          "line": 244,
+          "exported": false,
+          "endLine": 244
+        },
+        {
+          "name": "artifactForClaim",
+          "kind": "function",
+          "line": 252,
+          "exported": false,
+          "endLine": 252,
+          "signature": "(claim: RecursivePartitionClaim)"
+        },
+        {
+          "name": "commitClaims",
+          "kind": "function",
+          "line": 260,
+          "exported": false,
+          "endLine": 260
+        },
+        {
+          "name": "finishPartitions",
+          "kind": "function",
+          "line": 278,
+          "exported": false,
+          "endLine": 278
+        },
+        {
+          "name": "partitionSummary",
+          "kind": "function",
+          "line": 305,
+          "exported": false,
+          "endLine": 305
+        },
+        {
+          "name": "checkpointBytes",
+          "kind": "function",
+          "line": 321,
+          "exported": false,
+          "endLine": 321,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "runPhase06RecursiveEvaluation",
+          "kind": "const",
+          "line": 325,
+          "exported": true,
+          "endLine": 325
+        },
+        {
+          "name": "serializePhase06RecursiveEvaluationReport",
+          "kind": "function",
+          "line": 587,
+          "exported": true,
+          "endLine": 587
+        },
+        {
+          "name": "verifyPhase06RecursiveEvaluationReport",
+          "kind": "function",
+          "line": 593,
+          "exported": true,
+          "endLine": 593
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "canonicalJson",
+          "specifier": "./corpus.js",
+          "imported": [
+            "canonicalJson"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "558690a18f494bed23921defcb64deea3b2e38d56e6f4c342e81c05897e19e73",
+      "mtimeMs": 1784548213532.0947,
+      "size": 20655,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/evaluation/src/run-phase-02-evaluation.ts",
       "language": "TypeScript",
       "symbols": [
@@ -10963,6 +11231,96 @@
       "hash": "a5d3c98c55d2f96efc14719721d497553d4b443f2d85ef82011ca098b08feff5",
       "mtimeMs": 1784531240335.362,
       "size": 2474,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/evaluation/src/run-phase-06-recursive-evaluation.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "root",
+          "kind": "const",
+          "line": 11,
+          "exported": false,
+          "endLine": 11
+        },
+        {
+          "name": "reportPath",
+          "kind": "const",
+          "line": 12,
+          "exported": false,
+          "endLine": 12
+        },
+        {
+          "name": "mode",
+          "kind": "const",
+          "line": 16,
+          "exported": false,
+          "endLine": 16
+        },
+        {
+          "name": "started",
+          "kind": "const",
+          "line": 17,
+          "exported": false,
+          "endLine": 17
+        },
+        {
+          "name": "firstBytes",
+          "kind": "const",
+          "line": 26,
+          "exported": false,
+          "endLine": 26
+        },
+        {
+          "name": "secondBytes",
+          "kind": "const",
+          "line": 27,
+          "exported": false,
+          "endLine": 27
+        }
+      ],
+      "imports": [
+        {
+          "source": "mkdir",
+          "specifier": "node:fs/promises",
+          "imported": [
+            "mkdir"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "dirname, resolve",
+          "specifier": "node:path",
+          "imported": [
+            "dirname",
+            "resolve"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "CorpusPartitioning",
+          "specifier": "@struct/research-engine",
+          "imported": [
+            "CorpusPartitioning"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "cfba333f6f15e22060ed1cc2cfdd7048f84aac6b654ee02510c15efc28e909ca",
+      "mtimeMs": 1784547856771.3447,
+      "size": 1922,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -14245,7 +14603,7 @@
       ],
       "exports": [],
       "hash": "65b99d504cb1b8b2832844e3f9ca8059a46940ffaeb11f637a359a27abe2787d",
-      "mtimeMs": 1784545172346.9487,
+      "mtimeMs": 1784547495283.9695,
       "size": 74645,
       "generated": false,
       "vendor": false,
