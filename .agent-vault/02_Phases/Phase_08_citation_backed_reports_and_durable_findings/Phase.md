@@ -4,7 +4,7 @@ template_version: 2
 contract_version: 1
 title: Citation-Backed Reports and Durable Findings
 phase_id: PHASE-08
-status: in_progress
+status: completed
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-20'

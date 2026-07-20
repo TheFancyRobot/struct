@@ -5,7 +5,7 @@ contract_version: 1
 title: Evaluate Report Fidelity Version Drift and Auditability
 step_id: STEP-08-06
 phase: '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]'
-status: in-review
+status: completed
 owner: report-fidelity-audit
 created: '2026-07-17'
 updated: '2026-07-20'
@@ -19,8 +19,8 @@ tags:
   - step
 context_id: SESSION-2026-07-20-200206
 active_session_id: SESSION-2026-07-20-200206
-context_status: ready-for-review
-context_summary: Real publication and export policies are exercised for all eight citation states; only publishable succeeds, with focused gates clean.
+context_status: complete
+context_summary: 'Deterministic report fidelity and audit gates merged into main via PR #52 with 26/26 cases and all repository gates green.'
 ---
 
 # Step 06 - Evaluate Report Fidelity Version Drift and Auditability
