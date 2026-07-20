@@ -15,6 +15,8 @@ import {
   EventJournalId,
   JobQueueId,
   ProjectId,
+  ResearchPlanId,
+  ResearchPlanNodeId,
   ResearchRunId,
   ResearchThreadId,
   SourceId,
@@ -59,6 +61,59 @@ const projectId = ProjectId.make('210e8400-e29b-41d4-a716-446655440001')
 const sourceId = SourceId.make('210e8400-e29b-41d4-a716-446655440002')
 const sourceVersionId =
   SourceVersionId.make('210e8400-e29b-41d4-a716-446655440003')
+const integrationPlanning = {
+  plan: ({
+    run,
+    workspaceId,
+    projectId,
+    sourceVersionIds,
+  }: {
+    readonly run: { readonly id: typeof ResearchRunId.Type; readonly question: string }
+    readonly workspaceId: typeof WorkspaceId.Type
+    readonly projectId: typeof ProjectId.Type
+    readonly sourceVersionIds: ReadonlyArray<typeof SourceVersionId.Type>
+  }) => Effect.succeed({
+    version: '1' as const,
+    id: ResearchPlanId.make(crypto.randomUUID()),
+    runId: run.id,
+    workspaceId,
+    projectId,
+    objective: run.question,
+    sourceScopes: sourceVersionIds.map((versionId) => ({
+      kind: 'document' as const,
+      sourceVersionId: versionId,
+    })),
+    nodes: [{
+      id: ResearchPlanNodeId.make(crypto.randomUUID()),
+      kind: 'document-retrieval' as const,
+      goal: run.question,
+      dependencies: [],
+      inputRefs: [{
+        kind: 'source-version' as const,
+        sourceVersionId: sourceVersionIds[0]!,
+      }],
+      evidenceRefs: [],
+    }],
+    evidenceRequirements: [],
+    toolPolicy: {
+      grants: [{
+        toolId: 'hybrid-retrieval' as const,
+        capability: 'document:retrieve' as const,
+        maximumCalls: 1,
+      }],
+    },
+    budget: {
+      maximumSteps: 1,
+      maximumModelCalls: 0,
+      maximumToolCalls: 1,
+      maximumTokens: 1,
+      maximumElapsedMilliseconds: 60_000,
+      maximumEstimatedCostMicros: 1,
+      maximumFanOut: 1,
+      maximumRevisions: 0,
+    },
+  }),
+}
 const ingestionJobId =
   JobQueueId.make('210e8400-e29b-41d4-a716-446655440004')
 const threadId =
@@ -348,11 +403,30 @@ describeIf('walking skeleton full vertical slice', () => {
             ResearchExecutionRepo.fail(input).pipe(
               Effect.provide(executionLayer),
             ),
+          loadDurableState: (workspaceId, projectId, durableRunId) =>
+            ResearchExecutionRepo.loadDurableState(
+              workspaceId,
+              projectId,
+              durableRunId,
+            ).pipe(Effect.provide(executionLayer)),
+          persistPlan: (input) =>
+            ResearchExecutionRepo.persistPlan(input).pipe(
+              Effect.provide(executionLayer),
+            ),
+          persistCheckpoint: (input) =>
+            ResearchExecutionRepo.persistCheckpoint(input).pipe(
+              Effect.provide(executionLayer),
+            ),
+          persistPlanningFailure: (input) =>
+            ResearchExecutionRepo.persistPlanningFailure(input).pipe(
+              Effect.provide(executionLayer),
+            ),
         },
         runs: {
           findById: (id) =>
             ResearchRunRepo.findById(id).pipe(Effect.provide(runLayer)),
         },
+        planning: integrationPlanning,
         workflow: {
           run: ({
             run,
@@ -527,8 +601,9 @@ describeIf('walking skeleton full vertical slice', () => {
       if (replay.includes('event: research-completed')) break
     }
     streamAbort.abort()
-    expect(replay.match(/^id: /gm)).toHaveLength(4)
+    expect(replay.match(/^id: /gm)).toHaveLength(5)
     expect(replay).toContain('event: research-started')
+    expect(replay).toContain('event: research-plan-accepted')
     expect(replay).toContain('event: retrieval-completed')
     expect(replay).toContain('event: citations-validated')
     expect(replay).toContain('event: research-completed')

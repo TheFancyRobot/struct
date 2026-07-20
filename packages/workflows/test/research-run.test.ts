@@ -617,4 +617,61 @@ describe('bounded research run graph', () => {
     expect(starting.steps).toBe(0)
     expect(starting.completedNodeIds).toEqual([])
   })
+
+  it('does not repeat a committed action during checkpoint resume', async () => {
+    let resolutions = 0
+    const graph = await workflow(dependencies(
+      {
+        resolve: () => {
+          resolutions += 1
+          return Effect.succeed({
+            execute: () => Effect.succeed(result),
+          })
+        },
+      },
+      succeedingModels,
+    ))
+    const resumed = {
+      ...initialState(),
+      status: 'running' as const,
+      steps: 1,
+      toolCalls: 1,
+      completedNodeIds: [ids.retrieve],
+    }
+
+    expect(await functionNode(graph, ids.retrieve).fn(context(resumed)))
+      .toEqual(resumed)
+    expect(resolutions).toBe(0)
+  })
+
+  it('polls durable cancellation before resolving the next provider', async () => {
+    let resolutions = 0
+    const graph = await Effect.runPromise(compileResearchRunWorkflow(
+      plan,
+      routing,
+      policy,
+      {
+        ...dependencies(
+          {
+            resolve: () => {
+              resolutions += 1
+              return Effect.succeed({
+                execute: () => Effect.succeed(result),
+              })
+            },
+          },
+          succeedingModels,
+        ),
+        isCancellationRequested: () => Effect.succeed(true),
+      },
+    ))
+
+    await expect(
+      functionNode(graph, ids.retrieve).fn(context(initialState())),
+    ).rejects.toMatchObject({
+      _tag: 'ResearchExecutionStopped',
+      reason: { kind: 'interrupted' },
+    })
+    expect(resolutions).toBe(0)
+  })
 })

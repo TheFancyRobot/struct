@@ -235,7 +235,7 @@ export const completeResearchAction = Effect.fn(
     },
     {
       resource: 'tool-grant-usage' as const,
-      limit: 3,
+      limit: 4,
       attempted: action.kind === 'tool'
           && !state.toolGrantUsage.some(
             (usage) =>
