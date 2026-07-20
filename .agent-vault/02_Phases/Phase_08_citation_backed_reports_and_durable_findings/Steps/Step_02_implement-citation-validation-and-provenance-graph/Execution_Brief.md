@@ -51,3 +51,11 @@
 
 - Step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_02_implement-citation-validation-and-provenance-graph|STEP-08-02 Implement Citation Validation and Provenance Graph]]
 - Phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]
+
+## Refined Execution Boundary — 2026-07-20
+
+- Implement one deterministic Effect validation service and persistence projection over the Step 01 contract. Reuse existing citation repositories, research projections, `getCitationDetail`, dataset citation reopening, and immutable source/query/artifact identities instead of creating a disconnected graph subsystem.
+- Persist typed edges from report claim to report revision, finding/run output, evidence, and immutable document span, dataset query/result snapshot, recursive artifact, or hybrid dual evidence. Store only the edges and validation facts needed for opening, auditing, drift detection, and publication gating; do not add a graph database.
+- Validate existence, exact locator/hash/snapshot identity, workspace/project authorization, evidence-kind compatibility, and current visibility. Return explicit valid, stale, broken, unauthorized, or incompatible results; never silently retarget a citation to a refreshed version.
+- Provide a bounded revalidation path triggered by publish/export and explicit source-version change, with idempotent results and observable reason codes. Fred is not involved.
+- This step owns persistence, service, and API-read boundaries needed by later composition, not report editing UI, exports, or repair UX.

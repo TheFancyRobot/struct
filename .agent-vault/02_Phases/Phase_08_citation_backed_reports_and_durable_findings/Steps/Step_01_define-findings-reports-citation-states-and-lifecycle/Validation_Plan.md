@@ -37,3 +37,11 @@
 
 - Step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_01_define-findings-reports-citation-states-and-lifecycle|STEP-08-01 Define Findings Reports Citation States and Lifecycle]]
 - Phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]
+
+## Refined Zero-Defect Gate — 2026-07-20
+
+- Schema tests cover valid construction and rejection of missing project/run/source-version identity, duplicate or dangling claim links, mutable citation targets, illegal lifecycle transitions, authorship conflation, stale revision writes, unsupported publish, and supersession cycles.
+- Contract tests prove document spans, dataset query/result snapshots, recursive evidence artifacts, and hybrid dual-source claims can be represented without lossy string-only locators.
+- A publishability decision is deterministic, fail-closed, and derived from every claim/citation state; user edits preserve prior revisions and evidence identity.
+- The lifecycle doc and code use the same state names and invariants. No placeholder types, parallel legacy schemas, compatibility adapters, or untested migration-preservation scripts remain.
+- Focused verification: domain and persistence tests/typechecks plus migration tests where the schema is touched. Before completion also run repository typecheck, lint, import/boundary checks, full test gate, docs lint, secrets scan, and Vault doctor.

@@ -8,7 +8,7 @@ phase: '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_04_build-export-and-share-bundles-with-source-snapshots|STEP-08-04 Build Export and Share Bundles with Source Snapshots]]'
 related_sessions: []
@@ -55,6 +55,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Human Notes
 
 - Keep this step narrow and explicit; planned paths may not exist yet and should be created only when execution begins.
+- Refined 2026-07-20 in [[05_Sessions/2026-07-20-162818-define-findings-reports-citation-states-and-lifecycle-phase-08-refinement-worker|the Phase 08 refinement session]]. Complete the existing SolidJS report experience and explicit audited repair flow in the slate/blue light/dark system, with six inspected responsive screenshots and full Playwright coverage.
 
 ## Session History
 

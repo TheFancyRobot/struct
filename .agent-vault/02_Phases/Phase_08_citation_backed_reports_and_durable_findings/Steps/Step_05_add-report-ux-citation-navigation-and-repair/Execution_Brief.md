@@ -50,3 +50,11 @@
 
 - Step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_05_add-report-ux-citation-navigation-and-repair|STEP-08-05 Add Report UX Citation Navigation and Repair]]
 - Phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]
+
+## Refined Execution Boundary — 2026-07-20
+
+- Complete the existing SolidJS report experience rather than building a second demo: report outline/editor, finding picker, claim-level status, evidence drawer, document/dataset/recursive/hybrid citation opening, publish/export controls, revision history, and explicit repair actions.
+- Reuse `MixedSourceReport`, `CitationViewer`, citation API helpers/routes, application routing, and shared slate/blue light/dark tokens. Use Solid primitives and existing state patterns; do not introduce React compatibility, another component library, or page-local design system.
+- Editing creates a new user revision. Repair is explicit and auditable: remove/replace a claim, select newly validated evidence, or regenerate only one section. Never silently retarget an immutable citation or hide contradiction/unsupported/stale/broken/unauthorized/incompatible states.
+- Publish/export controls show the exact blocking reasons. Evidence navigation preserves report context and offers a reliable back path. Loading, empty, offline/API failure, conflict, cancellation, and successful-save states are first-class.
+- Keep the UI fast and work-ready at common desktop widths while remaining usable on tablet/mobile. Use the SolidJS, frontend-design, and dashboard UI skills during implementation.

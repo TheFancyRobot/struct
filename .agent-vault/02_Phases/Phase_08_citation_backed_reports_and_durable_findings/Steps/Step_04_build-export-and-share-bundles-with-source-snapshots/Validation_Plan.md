@@ -33,3 +33,11 @@
 
 - Step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_04_build-export-and-share-bundles-with-source-snapshots|STEP-08-04 Build Export and Share Bundles with Source Snapshots]]
 - Phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]
+
+## Refined Zero-Defect Gate — 2026-07-20
+
+- Golden tests prove byte-identical canonical manifests/bundles for identical inputs, stable ordering across insertion order, and different hashes for any report revision, evidence, validation, authorization/redaction, or producer-version change.
+- Round-trip verification rebuilds the report/evidence graph from the bundle and resolves every included locator/hash without network access or mutable-current-version lookup. Independently tampered manifest fields, files, paths, hashes, counts, and trailing bytes fail closed.
+- Security tests cover cross-workspace denial, revoked visibility, path traversal, symlink escape, secret/absolute-path leakage, unauthorized source inclusion, redaction, decompression/file-count/size bounds, and partial artifact cleanup.
+- Retry after interruption is idempotent and atomic; duplicate requests do not publish divergent bundles. Non-valid required citations and unsupported claims block export with typed reasons.
+- Run focused domain/source-storage/API/worker tests and typechecks, integration round trips, then repository typecheck, lint, import/boundary checks, full tests, docs lint, secrets scan, and Vault doctor.

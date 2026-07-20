@@ -52,3 +52,11 @@
 
 - Step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_03_build-durable-findings-notebooks-and-report-composition|STEP-08-03 Build Durable Findings Notebooks and Report Composition]]
 - Phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]
+
+## Refined Execution Boundary — 2026-07-20
+
+- Deliver the first usable durable-artifact slice: save an immutable run output as a finding, organize findings in a project notebook, create a report with ordered sections and claims, edit user-authored revisions, and compose from selected validated findings through typed repositories and API routes.
+- Composition is deterministic assembly of accepted run outputs and evidence links. A bounded focused Fred agent may be added only for explicitly requested section prose regeneration; if used, deterministic Effect tools select evidence, validate outputs, enforce budgets/timeouts, and persist revision/checkpoint state.
+- Reuse existing project/run authorization and research projections. Record generated text, user edits, source revision, actor, timestamp, and supersession separately. Regenerate only the selected section and never rewrite unaffected sections or historical revisions.
+- Add a minimal functional SolidJS notebook/report page using existing application routing, components, citation-opening behavior, and slate/blue light/dark tokens. Step 05 owns polish and repair UX; this step must still be usable end to end.
+- Do not add a general notebook execution environment, collaborative editor, alternate state library, or second API architecture.

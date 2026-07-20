@@ -5,9 +5,9 @@ contract_version: 1
 title: Citation-Backed Reports and Durable Findings
 phase_id: PHASE-08
 status: planned
-owner: ''
+owner: Codex
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_07_hybrid_cross_source_research/Phase|PHASE-07 Hybrid Cross-Source Research]]'
 related_architecture:
@@ -118,3 +118,27 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - Product requirements: authoritative repository document `docs/product-brief.md`.
 - Human-readable roadmap: `docs/roadmap.md`; concise index: `docs/implementation-plan.md`.
 - Assumption policy: reversible uncertainties use the documented default until spike evidence requires a decision update; no hidden architectural assumption is carried only in chat.
+### Refinement — 2026-07-20
+
+#### Repository Baseline
+- Phase 07 is complete. The repository already has typed hybrid routing, separate document/dataset branches, immutable document/dataset/recursive evidence, reconciliation states, quantitatively guarded synthesis, persisted run/checkpoint telemetry, citation detail routes, dataset-citation reopening, local content-addressed artifact storage, and a responsive SolidJS mixed-source report.
+- Existing `Finding`, `Report`, and `CitationStatus` schemas are intentionally minimal; `ResearchFinding` and dataset/document citation types already exist. Extend and converge these contracts instead of creating competing models or replacing working citation paths.
+- Bun remains the sole host runtime. Deterministic lifecycle, validation, persistence, authorization, export, and repair logic belongs in typed Effect services. Fred is used only if a bounded agentic regeneration/synthesis decision is genuinely required; report CRUD and citation validation must not be Fred workflows.
+
+#### Product-Focused Sequence
+1. Stabilize one canonical durable finding/report/claim/citation-state lifecycle contract, including authorship, immutable evidence references, publication blocking, supersession, and section-scoped regeneration boundaries.
+2. Persist and validate the provenance graph across existing document, dataset, recursive, and hybrid evidence; expose typed stale/broken/unauthorized/incompatible outcomes without retargeting citations.
+3. Deliver usable durable findings and report composition through repositories, typed API routes, and a minimal SolidJS notebook/report surface using immutable run outputs plus separately recorded user edits.
+4. Produce deterministic, access-controlled export/share bundles through the existing artifact store with canonical manifests, hashes, validation results, source/query references, redaction decisions, and round-trip verification.
+5. Complete the report editor, citation navigation, evidence inspection, publish blocking, and explicit repair UX in the existing slate/blue light/dark design system, with responsive Playwright coverage.
+6. Gate the phase with deterministic fidelity, drift, tamper, authorization, recovery, audit, accessibility, and export round-trip evaluation.
+
+#### Boundaries and Risks
+- Do not introduce another runtime, object store, collaboration system, general graph database, notebook execution engine, plugin system, or document format. Local artifact storage and the existing Bun/PostgreSQL stack are sufficient for v1.
+- This is greenfield: when persistence shape changes, use a direct current-schema migration and drop/recreate test databases; do not add compatibility layers, data-preservation scripts, or legacy adapters.
+- Primary risks are duplicate domain models, silently retargeted citations, user edits overwriting generated evidence, publish/export bypassing validation or authorization, non-canonical bundles, over-broad regeneration, and UI repair actions that conceal rather than record provenance changes.
+- Work remains sequential, one step branch and reviewed merge at a time. No implementation step starts while a confirmed defect exists.
+
+#### Phase Readiness Gate
+- The first step is ready only when Phase 07 is merged/completed, this refinement session is complete, Active Context/indexes are refreshed, and Vault doctor plus docs lint are clean.
+- Every step must pass focused tests plus repository typecheck, lint, import/boundary checks, full non-environment-gated tests, relevant integration/Playwright coverage, docs lint, secrets scan, and Vault doctor before publication.

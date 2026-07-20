@@ -8,14 +8,19 @@ phase: '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_06_evaluate-hybrid-correctness-provenance-and-security|STEP-07-06 Evaluate Hybrid Correctness Provenance and Security]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-20-162818-define-findings-reports-citation-states-and-lifecycle-phase-08-refinement-worker|SESSION-2026-07-20-162818 phase-08-refinement-worker session for Define Findings Reports Citation States and Lifecycle]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-20-162818
+active_session_id: 05_Sessions/2026-07-20-162818-define-findings-reports-citation-states-and-lifecycle-phase-08-refinement-worker
+context_status: completed
+context_summary: Phase 08 refinement complete; STEP-08-01 is ready for a fresh implementation session.
 ---
 
 # Step 01 - Define Findings Reports Citation States and Lifecycle
@@ -55,11 +60,12 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Human Notes
 
 - Keep this step narrow and explicit; planned paths may not exist yet and should be created only when execution begins.
+- Refined 2026-07-20 in [[05_Sessions/2026-07-20-162818-define-findings-reports-citation-states-and-lifecycle-phase-08-refinement-worker|the Phase 08 refinement session]]. Extend and converge the existing domain/citation contracts; define the direct greenfield persistence lifecycle; do not duplicate models or add runtime/API/UI/export/Fred scope.
 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-20 - [[05_Sessions/2026-07-20-162818-define-findings-reports-citation-states-and-lifecycle-phase-08-refinement-worker|SESSION-2026-07-20-162818 phase-08-refinement-worker session for Define Findings Reports Citation States and Lifecycle]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

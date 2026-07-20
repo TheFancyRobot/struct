@@ -22,7 +22,7 @@ Keep this note short and current.
 _Last refreshed: 2026-07-20._
 - Session in progress: none.
 - Current step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_01_define-findings-reports-citation-states-and-lifecycle|STEP-08-01 Define Findings Reports Citation States and Lifecycle]] - status: planned - phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]
-- Active phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|PHASE-07 Hybrid Cross-Source Research]] - status: planned - updated: 2026-07-20
+- Active phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|PHASE-08 Citation-Backed Reports and Durable Findings]] - status: planned - owner: Codex - updated: 2026-07-20
 - Also active: 29 more additional steps.
 <!-- AGENT-END:current-focus -->
 

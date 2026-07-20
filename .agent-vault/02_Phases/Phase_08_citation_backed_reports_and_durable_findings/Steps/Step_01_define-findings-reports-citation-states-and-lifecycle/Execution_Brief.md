@@ -50,3 +50,12 @@
 
 - Step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_01_define-findings-reports-citation-states-and-lifecycle|STEP-08-01 Define Findings Reports Citation States and Lifecycle]]
 - Phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]
+
+## Refined Execution Boundary — 2026-07-20
+
+- Exact outcome: one canonical typed contract for durable findings, reports, sections, claims, authorship, citation validation state, publication state, supersession, and section-scoped regeneration, plus a direct greenfield persistence shape and lifecycle document.
+- Start from `packages/domain/src/schemas.ts`, `packages/domain/src/research-finding.ts`, branded IDs, existing citation/evidence types, and current persistence conventions. Create focused modules only where they remove ambiguity; do not duplicate the existing `Finding`, `Report`, `ResearchFinding`, or citation models.
+- Every claim must either reference immutable document, dataset-query, recursive, or hybrid evidence, or carry an explicit unsupported/draft state that cannot publish. User-authored content and generated content have distinct authorship/revision records; edits never mutate evidence snapshots.
+- Define legal transitions for draft, valid, stale, broken, unauthorized, incompatible, superseded, and publishable states, including deterministic idempotency and concurrency/version checks.
+- Keep this step to domain schemas, direct current-schema persistence/migration contracts, tests, and `docs/report-lifecycle.md`. No routes, worker jobs, export bundles, UI, or Fred workflow belongs here.
+- Use Effect Schema and typed errors/services consistently. Bun is the only host runtime. No backward compatibility or migration-preservation work is required.
