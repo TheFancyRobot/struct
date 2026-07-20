@@ -105,6 +105,29 @@ describe('LocalArtifactStore', () => {
     expect(new TextDecoder().decode(stored.bytes)).toBe('same bytes')
   })
 
+  it('fails closed when stored bytes no longer match their content-addressed ref', async () => {
+    const root = await tempRoot()
+    const store = await Effect.runPromise(LocalArtifactStore.make({ root }))
+    const artifact = await Effect.runPromise(store.writeObject(
+      new TextEncoder().encode('original bytes'),
+      { mediaType: 'text/plain' },
+    ))
+    const digest = artifact.ref.slice('artifact://sha256/'.length)
+    await writeFile(
+      join(root, 'objects', 'sha256', digest.slice(0, 2), digest),
+      'tampered bytes',
+    )
+
+    const result = await Effect.runPromiseExit(store.readObject(artifact.ref))
+
+    expect(Exit.isFailure(result)).toBe(true)
+    if (Exit.isFailure(result)) {
+      expect(result.cause.toString()).toContain(
+        'Artifact bytes do not match their content-addressed ref',
+      )
+    }
+  })
+
   it('rejects symlinked content-addressed object paths instead of treating them as deduped objects', async () => {
     const root = await tempRoot()
     const store = await Effect.runPromise(LocalArtifactStore.make({ root }))
