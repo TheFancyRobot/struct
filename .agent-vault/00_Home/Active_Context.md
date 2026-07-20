@@ -5,7 +5,7 @@ contract_version: 1
 title: Active Context
 status: active
 created: '2026-07-17'
-updated: '2026-07-19'
+updated: '2026-07-20'
 tags:
   - agent-vault
   - home
@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-20._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_02_implement-fred-planner-with-validated-deterministic-plans|STEP-05-02 Implement Fred Planner with Validated Deterministic Plans]] - status: completed locally; review and merge pending - phase: [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|Phase 05 typed research planning and bounded execution]]
+- Current step: [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_04_persist-checkpoints-events-budgets-and-cancellation|STEP-05-04 Persist Checkpoints Events Budgets and Cancellation]] - status: planned - phase: [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|Phase 05 typed research planning and bounded execution]]
 - Active phase: [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|PHASE-05 Typed Research Planning and Bounded Execution]] - status: planned - updated: 2026-07-19
-- Also active: 46 more additional steps.
+- Also active: 44 more additional steps.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -38,13 +38,13 @@ _Last refreshed: 2026-07-20._
 - Phase 02 is completed and merged through STEP-02-06 with deterministic retrieval, exact provenance, bounded core-Fred document research, SolidJS citation navigation, and injection-resistance evaluation.
 - Phase 03 and STEP-03-01 through STEP-03-06 are completed and merged.
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
-- Phase 05 refinement and STEP-05-01 are merged. STEP-05-02 implementation and local zero-defect validation are complete on its dedicated branch; root self-review, PR review, and merge remain.
+- Phase 05 refinement and STEP-05-01/02 are merged. STEP-05-03 implementation, zero-defect validation, and review remediation are complete on its dedicated branch; merge remains before STEP-05-04 begins.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 
 ## Out Of Scope Right Now
 
 - A second runtime, queue, database, filesystem service, client state framework, or Fred executor.
-- STEP-05-03 and later work until STEP-05-02 is reviewed and merged.
+- STEP-05-04 and later work until STEP-05-03 is merged.
 - Later-phase release work.
 
 ## Working Assumptions
@@ -61,7 +61,7 @@ _Last refreshed: 2026-07-20._
 
 ## Open Questions
 
-- No unresolved design question blocks STEP-05-02 review and merge.
+- No unresolved design question blocks STEP-05-03 merge.
 
 ## Critical Bugs
 
@@ -71,6 +71,6 @@ _Last refreshed: 2026-07-20._
 
 ## Next Actions
 
-- Root self-review, publish, review, remediate, and merge [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_02_implement-fred-planner-with-validated-deterministic-plans|STEP-05-02 Implement Fred Planner with Validated Deterministic Plans]].
-- Do not begin STEP-05-03 until STEP-05-02 is merged and the zero-defect gate is green.
+- Resolve reviewed findings and merge [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_03_implement-bounded-graph-orchestration-and-model-routing|STEP-05-03 Implement Bounded Graph Orchestration and Model Routing]].
+- Do not begin STEP-05-04 until STEP-05-03 is merged and the zero-defect gate is green.
 - Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.
