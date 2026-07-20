@@ -50,7 +50,6 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-START:session-execution-log -->
 - 02:38 - Created session note.
 - 02:38 - Linked related step [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_03_implement-bounded-graph-orchestration-and-model-routing|STEP-05-03 Implement Bounded Graph Orchestration and Model Routing]].
-<!-- AGENT-END:session-execution-log -->
 - Started STEP-05-03 from the refined execution brief and validation plan.
 - Scope is bounded graph compilation, deterministic in-memory execution enforcement, and model routing only; no persistence, worker dispatch, API, retry, or recovery work.
 - Implemented bounded execution state/policy, deterministic pre-call and pre-commit enforcement, model routing, Fred graph compilation, and focused coverage.
@@ -60,6 +59,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Added engine-boundary identity checks for `runId`, `planId`, `workspaceId`, and `projectId`; mismatched resumed/checkpoint state now stops before any resolver call.
 - Added typed pre-commit state-budget enforcement for aggregate artifacts and every analogous growable bounded state field: action fingerprints, completed node IDs, tool-grant usage entries, and per-grant call counts.
 - Reconciled the stale Agent-Managed Snapshot with completed frontmatter and current root handoff.
+<!-- AGENT-END:session-execution-log -->
 
 ## Findings
 
@@ -83,8 +83,6 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Changed Paths
 
 <!-- AGENT-START:session-changed-paths -->
-- None yet.
-<!-- AGENT-END:session-changed-paths -->
 - `packages/research-engine/src/execution-policy.ts`
 - `packages/research-engine/src/budget-enforcer.ts`
 - `packages/research-engine/src/index.ts`
@@ -94,34 +92,29 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `packages/workflows/src/index.ts`
 - `packages/workflows/test/research-run.test.ts`
 - STEP-05-03 implementation, outcome, and session notes.
+<!-- AGENT-END:session-changed-paths -->
 
 ## Validation Run
 
 <!-- AGENT-START:session-validation-run -->
-- Command: `bun test packages/research-engine/test/budget-enforcer.test.ts packages/workflows/test/research-run.test.ts`
-- Result: passed — 17 tests, 39 assertions, 0 failures
 - Command: `bun test packages/domain packages/workflows packages/research-engine`
-- Result: passed — 141 tests, 344 assertions, 0 failures
+- Result: passed — 151 tests, 392 assertions, 0 failures
 - Command: `bun run typecheck`; `bun run lint`; `bun run lint:imports`
 - Result: passed — no TypeScript, ESLint, dependency, or package-boundary defects
 <!-- AGENT-END:session-validation-run -->
-- Review-remediation validation (supersedes the earlier pre-review counts): `bun test packages/research-engine/test/budget-enforcer.test.ts packages/workflows/test/research-run.test.ts` passed 21 tests, 50 assertions, 0 failures.
-- Review-remediation package validation: `bun test packages/domain packages/workflows packages/research-engine` passed 145 tests, 355 assertions, 0 failures.
-- Review-remediation static validation: `bun run typecheck`, `bun run lint`, and `bun run lint:imports` passed with no TypeScript, ESLint, dependency, or package-boundary defects.
-- Final PR-remediation focused validation (supersedes earlier counts): `bun test packages/research-engine/test/budget-enforcer.test.ts packages/workflows/test/research-run.test.ts` passed 27 tests, 82 assertions, 0 failures.
-- Final PR-remediation package validation: `bun test packages/domain packages/workflows packages/research-engine` passed 151 tests, 392 assertions, 0 failures.
-- Final PR-remediation static validation: `bun run typecheck`, `bun run lint`, and `bun run lint:imports` passed with no TypeScript, ESLint, dependency, or package-boundary defects.
 
 ## Bugs Encountered
 
 <!-- AGENT-START:session-bugs-encountered -->
-- None.
+- Fixed late elapsed-deadline overruns, including providers that never settle, so timeout interrupts the provider and cannot commit a result.
+- Fixed abort-driven Effect interruption escaping as an untyped runtime failure.
+- Fixed foreign-state identity acceptance and aggregate serialized-state capacity overflow.
 <!-- AGENT-END:session-bugs-encountered -->
 
 ## Decisions Made or Updated
 
 <!-- AGENT-START:session-decisions-made-or-updated -->
-- None.
+- Keep this in-memory graph dependency-respecting and serialized. Core Fred fan-out forks independent state, while atomic persistent budget reservations and merge semantics belong to STEP-05-04/05.
 <!-- AGENT-END:session-decisions-made-or-updated -->
 
 ## Follow-Up Work
