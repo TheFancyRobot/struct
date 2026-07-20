@@ -5,6 +5,8 @@
 - Scheduling enforces concurrency, monotonic elapsed time, token/cost/artifact budgets, cancellation, lease-loss recovery, bounded retry attempts, idempotent committed artifacts, and resume without duplicate work.
 - Reconstructed plans retain per-partition estimates and are canonically revalidated with scheduler lease, artifact, total, progress, and terminal-state invariants before monitor or resume.
 - Terminal cancellation and timeout preserve earlier terminal reasons; mixed completed, failed, and cancelled work converges deterministically to `partial`.
+- Lease-loss recovery terminalizes a running final attempt instead of creating attempt N+1.
+- Worker claim and resume publication use a transactional compare-and-swap contract, fencing concurrent workers that loaded the same durable snapshot.
 - `packages/workflows/src/graphs/recursive-analysis.ts` remains deterministic and providerless; `apps/worker/src/jobs/partition-analysis.ts` composes the product-owned journal with enqueue, monitor, claim, and resume operations. No payload extraction, model/Fred execution, compatibility layer, migration, or UI was added.
 
 ## Related Notes

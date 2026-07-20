@@ -95,9 +95,11 @@ describe('partition analysis worker journal surface', () => {
         values.set(value.plan.id, value)
         events.push(event)
       }),
-      save: (value, event) => Effect.sync(() => {
+      compareAndSwap: (expected, value, event) => Effect.sync(() => {
+        if (values.get(value.plan.id) !== expected) return false
         values.set(value.plan.id, value)
         events.push(event)
+        return true
       }),
     })
     const input = fixture()
@@ -126,11 +128,50 @@ describe('partition analysis worker journal surface', () => {
     ])
   })
 
+  it('atomically fences concurrent claims from the same durable snapshot', async () => {
+    const input = fixture()
+    const prepared = await Effect.runPromise(
+      prepareForTest(input.manifest, input.request),
+    )
+    let current: DurablePartitionAnalysis = prepared
+    let loadCount = 0
+    let releaseLoads!: () => void
+    const bothLoaded = new Promise<void>((resolve) => {
+      releaseLoads = resolve
+    })
+    const job = makePartitionAnalysisJob({
+      load: () => Effect.promise(async () => {
+        const snapshot = current
+        loadCount += 1
+        if (loadCount === 2) releaseLoads()
+        await bothLoaded
+        return Option.some(snapshot)
+      }),
+      create: () => Effect.void,
+      compareAndSwap: (expected, next) => Effect.sync(() => {
+        if (current !== expected) return false
+        current = next
+        return true
+      }),
+    })
+
+    const results = await Promise.allSettled([
+      run(job.claim(prepared.plan.id, 1)),
+      run(job.claim(prepared.plan.id, 1)),
+    ])
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
+    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1)
+    const rejected = results.find((result) => result.status === 'rejected')
+    expect(String(rejected?.reason)).toContain('JobClaimError')
+    expect(current.scheduler.progress.filter((item) => item.status === 'running'))
+      .toHaveLength(input.request.policy.maximumConcurrency)
+  })
+
   it('returns a typed not-found failure for unknown monitoring identity', async () => {
     const job = makePartitionAnalysisJob({
       load: () => Effect.succeed(Option.none()),
       create: () => Effect.void,
-      save: () => Effect.void,
+      compareAndSwap: () => Effect.succeed(true),
     })
     const result = await run(Effect.either(
       job.monitor('sha256:missing'),
@@ -154,7 +195,7 @@ describe('partition analysis worker journal surface', () => {
     const job = makePartitionAnalysisJob({
       load: () => Effect.succeed(Option.some(corrupted)),
       create: () => Effect.void,
-      save: () => Effect.void,
+      compareAndSwap: () => Effect.succeed(true),
     })
     const result = await run(Effect.either(
       job.monitor(prepared.plan.id),

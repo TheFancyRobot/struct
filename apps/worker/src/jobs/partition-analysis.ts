@@ -39,10 +39,16 @@ export interface PartitionAnalysisJournal {
     value: DurablePartitionAnalysis,
     event: PartitionAnalysisJournalEvent,
   ) => Effect.Effect<void, JobClaimError>
-  readonly save: (
-    value: DurablePartitionAnalysis,
+  /**
+   * Atomically persists `next` and its event only when the durable value still
+   * equals `expected`. Implementations must perform one transactional
+   * compare-and-swap; returning false means another worker won the race.
+   */
+  readonly compareAndSwap: (
+    expected: DurablePartitionAnalysis,
+    next: DurablePartitionAnalysis,
     event: PartitionAnalysisJournalEvent,
-  ) => Effect.Effect<void, JobClaimError>
+  ) => Effect.Effect<boolean, JobClaimError>
 }
 
 function missing(planId: string): NotFoundError {
@@ -107,10 +113,17 @@ export const makePartitionAnalysisJob = (
       durable.scheduler,
     )
     const resumed = { plan: durable.plan, scheduler }
-    yield* journal.save(resumed, {
+    const saved = yield* journal.compareAndSwap(durable, resumed, {
       type: 'partition-analysis-resumed',
       planId,
     })
+    if (!saved) {
+      return yield* new JobClaimError({
+        operation: 'partition-analysis-resume',
+        reason: 'stale-scheduler-state',
+        message: 'Partition analysis changed before resume could commit',
+      })
+    }
     return resumed
   })
 
@@ -125,11 +138,18 @@ export const makePartitionAnalysisJob = (
       elapsedMilliseconds,
     )
     const next = { plan: durable.plan, scheduler: claimed.state }
-    yield* journal.save(next, {
+    const saved = yield* journal.compareAndSwap(durable, next, {
       type: 'partition-analysis-claimed',
       planId,
       partitionIds: claimed.claims.map((item) => item.partition.id),
     })
+    if (!saved) {
+      return yield* new JobClaimError({
+        operation: 'partition-analysis-claim',
+        reason: 'stale-scheduler-state',
+        message: 'Partition analysis changed before claims could commit',
+      })
+    }
     return { ...next, claims: claimed.claims }
   })
 

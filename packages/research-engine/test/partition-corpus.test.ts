@@ -333,6 +333,39 @@ describe('recursive partition scheduling', () => {
       item.partitionId === thirdClaim.partition.id)?.status).toBe('failed')
   })
 
+  it('terminalizes a lost final attempt instead of claiming attempt N plus one', async () => {
+    const setup = await fixture()
+    const first = await run(CorpusPartitioning.claim(setup.plan, setup.state, 1))
+    const firstIds = new Set(first.claims.map((claim) => claim.partition.id))
+    const resumedOnce = await run(
+      CorpusPartitioning.resume(setup.plan, first.state),
+    )
+    const second = await run(
+      CorpusPartitioning.claim(setup.plan, resumedOnce, 2),
+    )
+    const resumedTwice = await run(
+      CorpusPartitioning.resume(setup.plan, second.state),
+    )
+    const third = await run(
+      CorpusPartitioning.claim(setup.plan, resumedTwice, 3),
+    )
+    expect(third.claims.every((claim) =>
+      claim.lease.attempt
+        === setup.plan.request.policy.maximumPartitionAttempts)).toBe(true)
+
+    const afterFinalLoss = await run(
+      CorpusPartitioning.resume(setup.plan, third.state),
+    )
+    expect(afterFinalLoss.progress.filter((item) =>
+      firstIds.has(item.partitionId)).every((item) =>
+      item.status === 'failed'
+      && item.terminalReason?.kind === 'partition-attempts-exhausted')).toBe(true)
+    const next = await run(
+      CorpusPartitioning.claim(setup.plan, afterFinalLoss, 4),
+    )
+    expect(next.claims.some((claim) => firstIds.has(claim.partition.id))).toBe(false)
+  })
+
   it('resumes without replaying or duplicating a committed partition', async () => {
     const setup = await fixture()
     const claimed = await run(CorpusPartitioning.claim(setup.plan, setup.state, 1))

@@ -56,6 +56,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 08:11 - Completed focused and repository-wide validation with no confirmed defect.
 <!-- AGENT-END:session-execution-log -->
 - 08:23 - Root self-review fixed terminal-state cancellation, timeout reason preservation, final mixed-outcome convergence, canonical reconstructed plan/state validation, persisted per-partition estimates, and monitor-time corruption rejection before publication.
+- 08:32 - Validated both Codex review findings as real, terminalized final-attempt lease loss, replaced unconditional journal saves with atomic compare-and-swap for claim/resume, and added final-attempt plus concurrent-claim regressions.
 
 ## Findings
 
@@ -63,6 +64,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Reconstructed partition plans must retain per-partition token, cost, and artifact estimates so canonical identities and aggregate budgets can be revalidated after restart.
 - Terminal progress is immutable audit state: cancellation and timeout must not replace an earlier failure reason, and a completed final sibling must converge the scheduler to `partial` when any sibling failed or was cancelled.
 - Monitoring is a trust boundary and validates reconstructed plan, lease, artifact, progress, and budget invariants before exposing state.
+- Lease-loss recovery is a retry transition and must terminalize a running partition already at `maximumPartitionAttempts`; it cannot create attempt N+1.
+- Worker claim and resume publication must be one transactional compare-and-swap against the loaded durable snapshot so concurrent workers cannot duplicate execution or erase leases.
 
 ## Context Handoff
 
@@ -101,6 +104,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Root live integration suite: 108 passed, 0 failed against healthy PostgreSQL and DuckDB Compose services.
 - Root browser regression suite: 5 passed, 0 failed.
 - Root typecheck, lint, import boundaries, production build, docs lint, secrets scan, and Compose config gates passed.
+- Post-review repository suite: 563 passed, 164 opt-in integration skips, 0 failed; typecheck, lint, imports, build, docs, secrets, and Compose config remained green.
+- New regressions prove a lost final attempt cannot be reclaimed and exactly one of two concurrent claims can atomically publish from the same durable snapshot.
 
 ## Bugs Encountered
 

@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T08:25:59.730Z",
+  "generatedAt": "2026-07-20T08:32:50.297Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -2366,17 +2366,17 @@
         {
           "name": "missing",
           "kind": "function",
-          "line": 48,
+          "line": 54,
           "exported": false,
-          "endLine": 48,
+          "endLine": 54,
           "signature": "(planId: string)"
         },
         {
           "name": "makePartitionAnalysisJob",
           "kind": "const",
-          "line": 56,
+          "line": 62,
           "exported": true,
-          "endLine": 56
+          "endLine": 62
         }
       ],
       "imports": [
@@ -2417,9 +2417,9 @@
         }
       ],
       "exports": [],
-      "hash": "3d7dcddbb5eed685e47bc2f9dc24cf8de956707f490290deb24a3aef85565e9a",
-      "mtimeMs": 1784535728555.618,
-      "size": 4029,
+      "hash": "ecfb6c14a029e0e1b13970c6f4b5976d32c76e633f3f8fe597f8d7d6e028d810",
+      "mtimeMs": 1784536251983.4802,
+      "size": 4855,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -14830,17 +14830,17 @@
         {
           "name": "isCounter",
           "kind": "function",
-          "line": 660,
+          "line": 665,
           "exported": false,
-          "endLine": 660,
+          "endLine": 665,
           "signature": "(value: number)"
         },
         {
           "name": "CorpusPartitioning",
           "kind": "class",
-          "line": 664,
+          "line": 669,
           "exported": true,
-          "endLine": 664
+          "endLine": 669
         }
       ],
       "imports": [
@@ -14905,9 +14905,9 @@
         }
       ],
       "exports": [],
-      "hash": "143935f36f48fcc7ee855e10819a061e9611cf96d3214db0d0cdc57a9a6fc507",
-      "mtimeMs": 1784535772027.149,
-      "size": 37611,
+      "hash": "11596e54303e27397f00f711945b130108cb244c0824cff3a2a000f58f2d7dad",
+      "mtimeMs": 1784536251983.1733,
+      "size": 38521,
       "generated": false,
       "vendor": false,
       "parser": "regex"

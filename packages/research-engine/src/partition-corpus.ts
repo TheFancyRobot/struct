@@ -594,6 +594,11 @@ function assertState(
         (running && (
           item.lease === null
           || item.lease.attempt !== item.attempt
+          || item.lease.id !== stableHash('recursive-partition-lease', {
+            planId: plan.id,
+            partitionId: item.partitionId,
+            attempt: item.attempt,
+          })
           || item.artifact !== null
           || item.terminalReason !== null
         ))
@@ -1070,13 +1075,36 @@ export class CorpusPartitioning extends Effect.Service<CorpusPartitioning>()(
           || state.status === 'failed'
           || state.status === 'partial'
         ) return state
+        const progress = state.progress.map((item) => {
+          if (item.status !== 'running') return item
+          if (
+            item.attempt
+            >= plan.request.policy.maximumPartitionAttempts
+          ) {
+            return {
+              ...item,
+              status: 'failed' as const,
+              lease: null,
+              terminalReason: {
+                kind: 'partition-attempts-exhausted' as const,
+                limit: plan.request.policy.maximumPartitionAttempts,
+              },
+            }
+          }
+          return {
+            ...item,
+            status: 'retryable' as const,
+            lease: null,
+          }
+        })
+        const allTerminal = progress.every((item) =>
+          item.status === 'completed'
+          || item.status === 'failed'
+          || item.status === 'cancelled')
         return {
           ...state,
-          status: 'queued' as const,
-          progress: state.progress.map((item) =>
-            item.status === 'running'
-              ? { ...item, status: 'retryable' as const, lease: null }
-              : item),
+          status: allTerminal ? 'partial' as const : 'queued' as const,
+          progress,
         }
       }),
 
