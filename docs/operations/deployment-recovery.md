@@ -11,7 +11,7 @@ Set the required values from [`.env.example`](../../.env.example), then run:
 ```sh
 bun install --frozen-lockfile
 bun run ops stack:up
-bun run ops database:reset # greenfield initialization; approval required
+STRUCT_ALLOW_DESTRUCTIVE_RESET=struct bun run ops database:reset
 bun run build
 ```
 
@@ -24,8 +24,9 @@ database creation, explicitly acknowledge the target database:
 STRUCT_ALLOW_DESTRUCTIVE_RESET=struct bun run ops database:reset
 ```
 
-The approval value must exactly match the loopback `struct` database named by
-`DATABASE_URL`. The command drops and recreates that database and applies the
+These deployment examples require `DATABASE_URL` to end in `/struct`; for any
+other allowed `struct*` database, set the approval to that exact database name.
+The command drops and recreates that database and applies the
 current schema. It does not delete `./.local`, follow symlinks, preserve old
 rows, or run compatibility migrations.
 
@@ -37,6 +38,7 @@ succeeds:
 
 ```sh
 bun run ops database:backup --output .local/backups/before-deploy.dump
+bun run ops artifacts:backup --output .local/backups/before-deploy.artifacts
 ```
 
 Restore validates the archive before changing the database, then requires the
@@ -45,11 +47,16 @@ same exact destructive approval used by reset:
 ```sh
 STRUCT_ALLOW_DESTRUCTIVE_RESET=struct \
   bun run ops database:restore --input .local/backups/before-deploy.dump
+STRUCT_ALLOW_DESTRUCTIVE_RESET=struct \
+  bun run ops artifacts:restore --input .local/backups/before-deploy.artifacts
 bun run ops database:verify
+bun run ops artifacts:verify
 ```
 
-Keep the artifact store backup paired with the database archive. PostgreSQL
-stores immutable artifact references, not the artifact bytes themselves.
+Keep the `.dump` and `.artifacts` snapshots paired. PostgreSQL stores immutable
+artifact references, while the artifact snapshot contains the bytes. Backup and
+restore reject symlinks and verify every content-addressed object against the
+SHA-256 digest in its path.
 
 ## Application rollback
 
@@ -81,13 +88,15 @@ bun run ops stack:restart
 
 The isolated proof uses a dedicated database name ending in `_recovery_test`.
 It creates representative workspace, source, research, report revision,
-citation, and provenance state; backs it up; resets to empty; restores it;
-checks ownership joins and append-only enforcement; restarts PostgreSQL and the
-data engine; and checks the same fingerprint again:
+citation, provenance, and real content-addressed artifact bytes; backs both
+stores up; resets them to empty; restores them; verifies the referenced bytes
+against their digest, checks ownership joins and append-only enforcement,
+restarts PostgreSQL and the data engine, and checks the same fingerprint again:
 
 ```sh
 DATABASE_URL=postgres://struct:struct@127.0.0.1:5432/struct_recovery_test \
 STRUCT_ALLOW_DESTRUCTIVE_RESET=struct_recovery_test \
+ARTIFACT_STORAGE_ROOT=.local/artifacts_recovery_test \
 DATA_ENGINE_TOKEN="$DATA_ENGINE_TOKEN" \
   bun run ops:recovery-proof
 ```

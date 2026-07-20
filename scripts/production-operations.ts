@@ -1,5 +1,6 @@
-import { mkdir, open, rename, rm } from 'node:fs/promises'
-import { basename, dirname, relative, resolve } from 'node:path'
+import { createHash } from 'node:crypto'
+import { cp, lstat, mkdir, open, readdir, readFile, rename, rm } from 'node:fs/promises'
+import { basename, dirname, isAbsolute, relative, resolve } from 'node:path'
 import postgres from 'postgres'
 
 const repositoryRoot = resolve(import.meta.dir, '..')
@@ -70,6 +71,113 @@ export function resolveBackupPath(input: string): string {
     throw new OperationsError('Backup path must end in .dump')
   }
   return candidate
+}
+
+export function resolveArtifactBackupPath(input: string): string {
+  const candidate = resolve(repositoryRoot, input)
+  const pathFromRoot = relative(backupRoot, candidate)
+  if (pathFromRoot.startsWith('..') || pathFromRoot === '' || isAbsolute(pathFromRoot)) {
+    throw new OperationsError('Artifact backup path must be a directory beneath .local/backups')
+  }
+  if (!candidate.endsWith('.artifacts')) {
+    throw new OperationsError('Artifact backup path must end in .artifacts')
+  }
+  return candidate
+}
+
+function artifactRoot(): string {
+  return resolve(repositoryRoot, process.env.ARTIFACT_STORAGE_ROOT ?? '.local/artifacts')
+}
+
+export async function verifyArtifactStore(root: string): Promise<number> {
+  const metadata = await lstat(root).catch(() => undefined)
+  if (!metadata?.isDirectory() || metadata.isSymbolicLink()) {
+    throw new OperationsError('Artifact store must be a real directory')
+  }
+
+  let verifiedObjects = 0
+  const visit = async (directory: string): Promise<void> => {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const path = resolve(directory, entry.name)
+      const pathFromRoot = relative(root, path)
+      if (pathFromRoot.startsWith('..') || isAbsolute(pathFromRoot) || entry.isSymbolicLink()) {
+        throw new OperationsError('Artifact store contains an unsafe path')
+      }
+      if (entry.isDirectory()) {
+        await visit(path)
+        continue
+      }
+      if (!entry.isFile()) throw new OperationsError('Artifact store contains an unsupported entry')
+
+      const match = /^objects\/sha256\/([0-9a-f]{2})\/([0-9a-f]{64})$/.exec(
+        pathFromRoot.replaceAll('\\', '/'),
+      )
+      if (pathFromRoot.replaceAll('\\', '/').startsWith('objects/sha256/') && !match) {
+        throw new OperationsError('Artifact object path is malformed')
+      }
+      if (match) {
+        if (match[2]?.slice(0, 2) !== match[1]) {
+          throw new OperationsError('Artifact object is stored beneath the wrong digest prefix')
+        }
+        const digest = createHash('sha256').update(await readFile(path)).digest('hex')
+        if (digest !== match[2]) throw new OperationsError('Artifact content hash verification failed')
+        verifiedObjects += 1
+      }
+    }
+  }
+  await visit(root)
+  return verifiedObjects
+}
+
+function isNestedWithin(parent: string, candidate: string): boolean {
+  const nested = relative(parent, candidate)
+  return nested === '' || (!nested.startsWith('..') && !isAbsolute(nested))
+}
+
+async function backupArtifacts(outputPath: string): Promise<void> {
+  const source = artifactRoot()
+  if (isNestedWithin(source, outputPath) || isNestedWithin(outputPath, source)) {
+    throw new OperationsError('Artifact backup and artifact store must not overlap')
+  }
+  await verifyArtifactStore(source)
+  await mkdir(dirname(outputPath), { recursive: true })
+  const temporaryPath = `${outputPath}.partial-${process.pid}`
+  await rm(temporaryPath, { recursive: true, force: true })
+  try {
+    await cp(source, temporaryPath, { recursive: true, errorOnExist: true })
+    await verifyArtifactStore(temporaryPath)
+    await rm(outputPath, { recursive: true, force: true })
+    await rename(temporaryPath, outputPath)
+  } catch (error) {
+    await rm(temporaryPath, { recursive: true, force: true })
+    throw error
+  }
+}
+
+async function restoreArtifacts(target: LocalDatabaseTarget, inputPath: string): Promise<void> {
+  requireDestructiveApproval(target)
+  await verifyArtifactStore(inputPath)
+  const destination = artifactRoot()
+  if (isNestedWithin(destination, inputPath) || isNestedWithin(inputPath, destination)) {
+    throw new OperationsError('Artifact backup and artifact store must not overlap')
+  }
+  await mkdir(dirname(destination), { recursive: true })
+  const temporaryPath = `${destination}.restore-${process.pid}`
+  const previousPath = `${destination}.previous-${process.pid}`
+  await rm(temporaryPath, { recursive: true, force: true })
+  await rm(previousPath, { recursive: true, force: true })
+  await cp(inputPath, temporaryPath, { recursive: true, errorOnExist: true })
+  await verifyArtifactStore(temporaryPath)
+  const current = await lstat(destination).catch(() => undefined)
+  if (current) await rename(destination, previousPath)
+  try {
+    await rename(temporaryPath, destination)
+  } catch (error) {
+    if (current) await rename(previousPath, destination).catch(() => undefined)
+    await rm(temporaryPath, { recursive: true, force: true })
+    throw error
+  }
+  await rm(previousPath, { recursive: true, force: true })
 }
 
 async function run(
@@ -273,12 +381,21 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
     case 'database:verify':
       await verifyDependencies(databaseUrl, target)
       return
+    case 'artifacts:backup':
+      await backupArtifacts(resolveArtifactBackupPath(option(args, '--output')))
+      return
+    case 'artifacts:restore':
+      await restoreArtifacts(target, resolveArtifactBackupPath(option(args, '--input')))
+      return
+    case 'artifacts:verify':
+      await verifyArtifactStore(artifactRoot())
+      return
     case 'application:verify':
       await verifyApplicationReadiness()
       return
     default:
       throw new OperationsError(
-        'Usage: bun run ops <stack:up|stack:restart|database:reset|database:backup --output .local/backups/name.dump|database:restore --input .local/backups/name.dump|database:verify|application:verify>',
+        'Usage: bun run ops <stack:up|stack:restart|database:reset|database:backup --output .local/backups/name.dump|database:restore --input .local/backups/name.dump|database:verify|artifacts:backup --output .local/backups/name.artifacts|artifacts:restore --input .local/backups/name.artifacts|artifacts:verify|application:verify>',
       )
   }
 }

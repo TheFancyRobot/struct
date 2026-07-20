@@ -53,7 +53,7 @@ in-flight jobs before exit; the API must drain SSE streams.
 **Reset (clean local state):**
 
 ```bash
-# local-only reset commands; approval must equal DATABASE_URL's database
+# local-only default; DATABASE_URL must end in /struct (otherwise use its exact database name)
 bun run dev:stop
 bun run ops stack:up
 STRUCT_ALLOW_DESTRUCTIVE_RESET=struct bun run ops database:reset

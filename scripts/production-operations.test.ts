@@ -1,9 +1,15 @@
 import { afterEach, describe, expect, it } from 'bun:test'
+import { createHash, randomUUID } from 'node:crypto'
+import { mkdir, rm, symlink, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import {
   OperationsError,
   parseLocalDatabaseTarget,
   requireDestructiveApproval,
+  resolveArtifactBackupPath,
   resolveBackupPath,
+  verifyArtifactStore,
   verifyApplicationReadiness,
 } from './production-operations'
 
@@ -51,6 +57,37 @@ describe('production operation safety boundaries', () => {
     expect(resolveBackupPath('.local/backups/recovery.dump')).toEndWith('/.local/backups/recovery.dump')
     expect(() => resolveBackupPath('.local/backups/../escape.dump')).toThrow('beneath .local/backups')
     expect(() => resolveBackupPath('.local/backups/recovery.sql')).toThrow('must end in .dump')
+  })
+
+  it('confines artifact snapshots beneath the repository backup root', () => {
+    expect(resolveArtifactBackupPath('.local/backups/recovery.artifacts')).toEndWith(
+      '/.local/backups/recovery.artifacts',
+    )
+    expect(() => resolveArtifactBackupPath('.local/backups/../escape.artifacts')).toThrow(
+      'beneath .local/backups',
+    )
+    expect(() => resolveArtifactBackupPath('.local/backups/recovery.tar')).toThrow(
+      'must end in .artifacts',
+    )
+  })
+
+  it('verifies content-addressed artifact bytes and rejects unsafe entries', async () => {
+    const root = join(tmpdir(), `struct-artifact-verify-${randomUUID()}`)
+    const bytes = new TextEncoder().encode('recovery bytes')
+    const digest = createHash('sha256').update(bytes).digest('hex')
+    const objectDirectory = join(root, 'objects', 'sha256', digest.slice(0, 2))
+    try {
+      await mkdir(objectDirectory, { recursive: true })
+      await writeFile(join(objectDirectory, digest), bytes)
+      expect(await verifyArtifactStore(root)).toBe(1)
+      await writeFile(join(objectDirectory, digest), 'tampered')
+      await expect(verifyArtifactStore(root)).rejects.toThrow('content hash verification failed')
+      await rm(join(objectDirectory, digest))
+      await symlink('/tmp', join(root, 'unsafe'))
+      await expect(verifyArtifactStore(root)).rejects.toThrow('unsafe path')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
   })
 
   it('checks web, API, and worker readiness at their configured loopback ports', async () => {

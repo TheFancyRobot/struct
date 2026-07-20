@@ -24,6 +24,10 @@ All commands run from the repository root via the Bun workspace scripts that STE
 | `bun run migrations:create` | Scaffold a new timestamped migration in `packages/persistence` | `packages/persistence` | Phase 02+ |
 | `bun run ops stack:up` | Validate and start Compose dependencies through authenticated readiness | root operations | STEP-09-02 |
 | `bun run ops database:reset` | Guarded greenfield database drop/recreate and migration | root operations + `apps/api` | STEP-09-02 |
+| `bun run ops database:backup` / `database:restore` | Create or restore a guarded PostgreSQL custom archive | root operations | STEP-09-02 |
+| `bun run ops artifacts:backup` / `artifacts:restore` | Create or restore a paired, content-verified artifact snapshot | root operations | STEP-09-02 |
+| `bun run ops database:verify` / `artifacts:verify` | Verify dependency readiness and content-addressed artifact integrity | root operations | STEP-09-02 |
+| `bun run ops stack:restart` | Restart Compose dependencies and wait for authenticated readiness | root operations | STEP-09-02 |
 | `bun run ops:recovery-proof` | Prove isolated backup/restore, integrity, immutability, and restart recovery | root operations | STEP-09-02 |
 | `bun run ops application:verify` | Fail closed unless web, API, and worker are ready after deployment/rollback | root operations | STEP-09-02 |
 | `bun run corpus:smoke` | Run a small synthetic subset of the evaluation corpus | `packages/evaluation` | Phase 04 |

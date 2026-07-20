@@ -55,6 +55,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Self-review found and fixed a credential/port preflight gap before destructive Docker-exec operations; wrong-password proof failed closed without changing the fixture.
 - Completed all focused, repository-wide, live Compose, real-service, and vault validation gates.
 - Root pre-publication review corrected stale generated step/session mirrors and stale Active Context prose before the change could reach review.
+- Validated four CodeRabbit documentation findings. All were actionable; the artifact-store comment revealed a recovery-proof gap. Root added paired artifact backup/restore/verification, isolated byte-level recovery coverage, aligned the operator commands, and checked downstream recovery behavior in one remediation round.
 
 ## Findings
 
@@ -92,6 +93,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Live: clean reset, representative seed, backup, empty reset, restore, ownership fingerprint, append-only rejection, PostgreSQL/data-engine restart, wrong-credential fail-closed, and web/API/worker readiness all passed.
 - Static: typecheck, ESLint, import boundaries, builds, docs lint, secret scan all passed.
 - Root independently repeated focused operations/migration tests, typecheck, lint, docs lint, Compose configuration validation, database verification, and a wrong-credential destructive-command proof; all passed or failed closed as designed. Application verification was not repeated because the worker had intentionally stopped the Bun processes after its successful live proof.
+- Review remediation: 13 focused tests passed with 57 assertions; typecheck, ESLint, and docs lint passed. A live isolated proof destroyed and restored both PostgreSQL state and real content-addressed artifact bytes, verified their SHA-256 integrity, enforced append-only state, and survived PostgreSQL/data-engine restart.
 
 ## Bugs Encountered
 
