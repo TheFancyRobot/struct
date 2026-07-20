@@ -349,8 +349,8 @@ export async function verifyApplicationReadiness(
 ): Promise<void> {
   const probes = [
     ['web', `http://127.0.0.1:${environment.WEB_PORT ?? '3000'}/`],
-    ['api', `http://127.0.0.1:${environment.API_PORT ?? '3001'}/healthz`],
-    ['worker', `http://127.0.0.1:${environment.WORKER_METRICS_PORT ?? '3002'}/healthz`],
+    ['api', `http://127.0.0.1:${environment.API_PORT ?? '3001'}/readyz`],
+    ['worker', `http://127.0.0.1:${environment.WORKER_METRICS_PORT ?? '3002'}/readyz`],
   ] as const
   for (const [name, url] of probes) {
     let response: Response

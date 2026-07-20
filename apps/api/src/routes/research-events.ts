@@ -1,4 +1,5 @@
 import { Effect, Schema } from 'effect'
+import { withWalkingSliceSpan } from '@struct/observability'
 import { ResearchEvent } from '@struct/domain'
 import type * as typeDomain from '@struct/domain'
 import type * as typePersistence from '@struct/persistence'
@@ -54,7 +55,9 @@ export const resolveResearchEventScope = (
   typeDomain.WorkspaceId,
   typePersistence.PersistenceError,
   never
-> =>
+> => withWalkingSliceSpan(
+  'sse',
+  { projectId, runId },
   Effect.gen(function* () {
     const project = yield* deps.findProject(projectId)
     const exists = yield* deps.runExists(project.workspaceId, projectId, runId)
@@ -66,7 +69,8 @@ export const resolveResearchEventScope = (
       })
     }
     return project.workspaceId
-  })
+  }),
+)
 
 export function researchEventScopeFailureResponse(
   error: typePersistence.PersistenceError,
@@ -113,7 +117,10 @@ export const loadResearchEvents = (
   typePersistence.PersistenceError,
   never
 > =>
-  Effect.gen(function* () {
+  withWalkingSliceSpan(
+    'sse',
+    { workspaceId, projectId, runId },
+    Effect.gen(function* () {
     const events = yield* deps.listEventsAfter(
       workspaceId,
       projectId,
@@ -148,7 +155,8 @@ export const loadResearchEvents = (
         )
       }),
     )
-  })
+    }),
+  )
 
 export function researchEventsResponse(
   workspaceId: typeDomain.WorkspaceId,

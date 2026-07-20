@@ -14,6 +14,7 @@ import {
 import type {
   StoredBytes,
 } from '@struct/source-storage'
+import { withWalkingSliceSpan } from '@struct/observability'
 import { Cause, Effect, Option, Schema } from 'effect'
 
 const Revision = Schema.Number.pipe(Schema.int(), Schema.nonNegative())
@@ -198,7 +199,11 @@ export const reportExportRoute = Effect.fn('ReportExportRoute')(
         )
         return {
           kind: 'json' as const,
-          body: yield* deps.publish(report, provenance),
+          body: yield* withWalkingSliceSpan(
+            'report',
+            { workspaceId: body.workspaceId, projectId, reportId },
+            deps.publish(report, provenance),
+          ),
           status: 201,
         }
       }
@@ -228,7 +233,11 @@ export const reportExportRoute = Effect.fn('ReportExportRoute')(
         if (expected.digest !== digest) {
           return yield* Effect.fail({ _tag: 'ReportExportScopeError' as const })
         }
-        const stored = yield* deps.read(digest)
+        const stored = yield* withWalkingSliceSpan(
+          'report',
+          { workspaceId, projectId, reportId },
+          deps.read(digest),
+        )
         if (url.searchParams.get('download') === '1') {
           return {
             kind: 'download' as const,

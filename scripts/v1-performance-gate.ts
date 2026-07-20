@@ -44,7 +44,7 @@ export const liveGates: readonly LiveGate[] = [
   { id: 'canonical-report', command: ['bun', 'packages/evaluation/src/v1-performance-resilience.ts', '--check'], maximumMilliseconds: 10_000 },
 ]
 
-async function execute(gate: LiveGate): Promise<number> {
+export async function executeLiveGate(gate: LiveGate): Promise<number> {
   const started = performance.now()
   const child = Bun.spawn([...gate.command], {
     cwd: repositoryRoot,
@@ -52,10 +52,21 @@ async function execute(gate: LiveGate): Promise<number> {
     stdout: 'inherit',
     stderr: 'inherit',
   })
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  const timeoutOutcome = new Promise<{ readonly exitCode: -1; readonly timedOut: true }>(
+    (resolveTimeout) => {
+      timeout = setTimeout(
+        () => resolveTimeout({ exitCode: -1, timedOut: true }),
+        gate.maximumMilliseconds,
+      )
+    },
+  )
   const outcome = await Promise.race([
     child.exited.then((exitCode) => ({ exitCode, timedOut: false })),
-    Bun.sleep(gate.maximumMilliseconds).then(() => ({ exitCode: -1, timedOut: true })),
-  ])
+    timeoutOutcome,
+  ]).finally(() => {
+    if (timeout !== undefined) clearTimeout(timeout)
+  })
   if (outcome.timedOut) {
     child.kill()
     await child.exited
@@ -70,13 +81,20 @@ async function execute(gate: LiveGate): Promise<number> {
 export async function runV1PerformanceGate(): Promise<void> {
   const results: Array<{ readonly id: string; readonly elapsedMilliseconds: number }> = []
   for (const gate of liveGates) {
-    results.push({ id: gate.id, elapsedMilliseconds: await execute(gate) })
+    results.push({ id: gate.id, elapsedMilliseconds: await executeLiveGate(gate) })
   }
   process.stdout.write(`${JSON.stringify({ status: 'passed', gates: results }, null, 2)}\n`)
 }
 
 if (import.meta.main) {
-  runV1PerformanceGate().catch((cause: unknown) => {
+  const program = process.argv.includes('--deadline-cleanup-probe')
+    ? executeLiveGate({
+        id: 'deadline-cleanup-probe',
+        command: ['bun', '-e', 'process.exit(0)'],
+        maximumMilliseconds: 10_000,
+      }).then(() => undefined)
+    : runV1PerformanceGate()
+  program.catch((cause: unknown) => {
     process.stderr.write(`v1 performance/resilience gate failed: ${cause instanceof Error ? cause.message : String(cause)}\n`)
     process.exitCode = 1
   })

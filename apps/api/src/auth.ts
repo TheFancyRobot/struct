@@ -20,7 +20,8 @@ export class ApiAuthorizationError
 
 export function isPublicApiRequest(request: Request): boolean {
   const url = new URL(request.url)
-  return request.method === 'GET' && url.pathname === '/healthz'
+  return request.method === 'GET'
+    && (url.pathname === '/healthz' || url.pathname === '/readyz')
 }
 
 function credentialMatches(expected: string, actual: string): boolean {

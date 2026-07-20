@@ -47,9 +47,13 @@ import {
   readVerifiedReportExport,
 } from '@struct/source-storage'
 import {
+  DependencyReadinessError,
+  healthResponse,
   incrementWalkingSliceMetric,
   logWalkingSlice,
   makeTracingLayer,
+  observeBoundary,
+  readinessResponse,
   renderWalkingSliceMetrics,
   tracingOtlpEndpointConfig,
   withWalkingSliceSpan,
@@ -269,7 +273,23 @@ const server = Effect.gen(function* () {
       const url = new URL(req.url)
 
       if (isPublicApiRequest(req)) {
-        return jsonResponse({ status: 'ok', version: '0.0.1-skeleton' })
+        if (url.pathname === '/healthz') return healthResponse()
+        return Runtime.runPromise(effectRuntime)(readinessResponse([{
+          dependency: 'database',
+          check: observeBoundary({
+            boundary: 'database',
+            event: 'api.database.readiness',
+            identity: {},
+            effect: Effect.tryPromise({
+              try: () => sql.unsafe('SELECT 1').then(() => undefined),
+              catch: () => new DependencyReadinessError({
+                dependency: 'database',
+                classification: 'dependency-unavailable',
+                message: 'API database readiness failed',
+              }),
+            }),
+          }),
+        }]))
       }
 
       const authenticated = await Runtime.runPromiseExit(effectRuntime)(
@@ -1233,6 +1253,7 @@ const server = Effect.gen(function* () {
 
   yield* Effect.log(`API server starting on port ${port}`)
   yield* Effect.log(`Health check: http://localhost:${port}/healthz`)
+  yield* Effect.log(`Readiness check: http://localhost:${port}/readyz`)
   yield* Effect.never
 })
 

@@ -14,7 +14,7 @@ const otherWorkspaceId = WorkspaceId.make('910e8400-e29b-41d4-a716-446655440001'
 const credential = Redacted.make('production-test-token')
 
 describe('API identity boundary', () => {
-  it('keeps only the liveness probe public across the reachable route inventory', () => {
+  it('keeps only liveness and dependency readiness probes public', () => {
     const protectedRequests = [
       ['GET', '/metrics'],
       ['POST', '/api/projects/project/directories'],
@@ -32,6 +32,7 @@ describe('API identity boundary', () => {
       ['GET', '/api/projects/project/reports/report/export'],
     ] as const
     expect(isPublicApiRequest(new Request('http://localhost/healthz'))).toBe(true)
+    expect(isPublicApiRequest(new Request('http://localhost/readyz'))).toBe(true)
     for (const [method, path] of protectedRequests) {
       expect(isPublicApiRequest(new Request(`http://localhost${path}`, {
         method,

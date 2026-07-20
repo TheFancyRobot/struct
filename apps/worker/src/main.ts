@@ -51,9 +51,14 @@ import {
   runFredResearchPlanning,
 } from '@struct/workflows'
 import {
+  DependencyReadinessError,
+  healthResponse,
   makeTracingLayer,
+  observeBoundary,
+  readinessResponse,
   renderWalkingSliceMetrics,
   tracingOtlpEndpointConfig,
+  withWalkingSliceSpan,
 } from '@struct/observability'
 import {
   artifactStorageRootConfig,
@@ -151,7 +156,16 @@ const program = Effect.gen(function* () {
             })),
         ),
     },
-    client: dataEngineClient,
+    client: {
+      query: (request) => withWalkingSliceSpan(
+        'data-engine',
+        {
+          workspaceId: request.workspaceId,
+          projectId: request.projectId,
+        },
+        dataEngineClient.query(request),
+      ),
+    },
   })
   const deterministicDatasetQueryFor = (
     preview: Effect.Effect.Success<ReturnType<typeof readOnlySql.execute>>,
@@ -187,10 +201,36 @@ const program = Effect.gen(function* () {
           if (request.method !== 'GET') {
             return new Response('Method Not Allowed', { status: 405 })
           }
-          if (pathname === '/healthz') {
-            return new Response(ready ? 'ok' : 'starting', {
-              status: ready ? 200 : 503,
-            })
+          if (pathname === '/healthz') return healthResponse()
+          if (pathname === '/readyz') {
+            return Runtime.runPromise(effectRuntime)(readinessResponse([
+              {
+                dependency: 'worker',
+                check: ready
+                  ? Effect.void
+                  : Effect.fail(new DependencyReadinessError({
+                      dependency: 'worker',
+                      classification: 'stalled',
+                      message: 'Worker startup is incomplete',
+                    })),
+              },
+              {
+                dependency: 'database',
+                check: observeBoundary({
+                  boundary: 'database',
+                  event: 'worker.database.readiness',
+                  identity: {},
+                  effect: Effect.tryPromise({
+                    try: () => sql.unsafe('SELECT 1').then(() => undefined),
+                    catch: () => new DependencyReadinessError({
+                      dependency: 'database',
+                      classification: 'dependency-unavailable',
+                      message: 'Worker database readiness failed',
+                    }),
+                  }),
+                }),
+              },
+            ]))
           }
           if (pathname === '/metrics') {
             return new Response(
