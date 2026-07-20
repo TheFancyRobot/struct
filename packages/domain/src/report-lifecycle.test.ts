@@ -408,6 +408,12 @@ describe('durable report lifecycle contracts', () => {
     expect(await Effect.runPromise(
       transitionCitationState(transitioned, command),
     )).toEqual(transitioned)
+    expect(Exit.isFailure(await Effect.runPromiseExit(
+      transitionCitationState(transitioned, {
+        ...command,
+        expectedRevision: 3,
+      }),
+    ))).toBe(true)
 
     const stale = await Effect.runPromiseExit(
       transitionCitationState(current, { ...command, expectedRevision: 1 }),
@@ -605,8 +611,11 @@ describe('durable report lifecycle contracts', () => {
     )
     expect(published.publicationState).toBe('published')
     expect(await Effect.runPromise(
-      publishReport(published, 0, 'publish:ready', 3n),
+      publishReport(published, 1, 'publish:ready', 3n),
     )).toEqual(published)
+    expect(Exit.isFailure(await Effect.runPromiseExit(
+      publishReport(published, 0, 'publish:ready', 3n),
+    ))).toBe(true)
     expect(Exit.isFailure(await Effect.runPromiseExit(
       publishReport(prepared, 1, 'prepare:ready', 3n),
     ))).toBe(true)

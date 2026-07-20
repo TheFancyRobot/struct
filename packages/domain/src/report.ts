@@ -291,6 +291,7 @@ export const regenerateReportSection = Effect.fn('Report.regenerateSection')(
         && latest.content === request.content
         && sameAuthorship(latest.authorship, request.authorship)
         && latest.createdAt === request.occurredAt
+        && request.expectedReportRevision === report.revision - 1
       ) {
         return report
       }
@@ -361,11 +362,14 @@ export const publishReport = Effect.fn('Report.publish')(
       report.lastPublicationKey === idempotencyKey
       && report.publicationState === 'published'
     ) {
-      if (report.updatedAt === occurredAt) return report
+      if (
+        report.updatedAt === occurredAt
+        && expectedRevision === report.revision - 1
+      ) return report
       return yield* new ReportIdempotencyConflictError({
         reportId: report.id,
         idempotencyKey,
-        message: 'Publication idempotency key has a different timestamp',
+        message: 'Publication idempotency key was reused with different inputs',
       })
     }
     if (report.lastPublicationKey === idempotencyKey) {
@@ -420,11 +424,14 @@ export const prepareReportPublication = Effect.fn('Report.preparePublication')(
       report.lastPublicationKey === idempotencyKey
       && report.publicationState === 'publishable'
     ) {
-      if (report.updatedAt === occurredAt) return report
+      if (
+        report.updatedAt === occurredAt
+        && expectedRevision === report.revision - 1
+      ) return report
       return yield* new ReportIdempotencyConflictError({
         reportId: report.id,
         idempotencyKey,
-        message: 'Publishability idempotency key has a different timestamp',
+        message: 'Publishability idempotency key was reused with different inputs',
       })
     }
     if (report.lastPublicationKey === idempotencyKey) {

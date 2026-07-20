@@ -53,6 +53,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-END:session-execution-log -->
 - 2026-07-20 16:39 - Resumed from [[05_Sessions/2026-07-20-162818-define-findings-reports-citation-states-and-lifecycle-phase-08-refinement-worker|SESSION-2026-07-20-162818]] after confirming its completed refinement handoff. Re-ran readiness from the target-rooted Execution Brief and Validation Plan; the unit is ready for implementation.
 - 2026-07-20 - Root review rejected duplicate content-revision identities and non-relational source-version arrays. Added aggregate-wide revision identity checks and normalized finding/report source-version link tables with foreign keys.
+- 2026-07-20 - Validated two CodeRabbit documentation findings. Clarified publication replay and atomic transaction guarantees, then applied the same exact-input idempotency rule to citation transitions and section regeneration after blast-radius review.
 
 ## Findings
 
@@ -89,6 +90,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `bun run typecheck`; `bun run lint`; `bun run lint:imports`; `bun run build`; `bun run docs:lint`; `bun run secrets:scan` - passed.
 - Dependency checks covered 207 modules / 583 dependencies; docs lint covered 50 Markdown files; secrets scan covered 1,092 repository paths.
 - Root final-state verification: 97 focused tests / 287 assertions; 689 full tests / 2,660 assertions; 164 environment-gated skips; zero failures. Repository typecheck, lint, dependency/boundary checks, production build, docs lint, secrets scan, and Vault doctor all passed.
+- Review-remediation final state: 18 focused tests / 80 assertions and 689 full tests / 2,662 assertions passed; 164 environment-gated skips; zero failures. Full typecheck, lint, dependency/boundary checks, build, docs lint, and secrets scan passed.
 
 ## Bugs Encountered
 

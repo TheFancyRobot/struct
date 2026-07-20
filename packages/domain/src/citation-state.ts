@@ -127,6 +127,8 @@ export const transitionCitationState = Effect.fn('CitationState.transition')(
       current.lastIdempotencyKey === transition.idempotencyKey
       && current.state === transition.to
       && current.supersededBy === transition.replacementCitationId
+      && current.updatedAt === transition.occurredAt
+      && transition.expectedRevision === current.revision - 1
     ) {
       return current
     }

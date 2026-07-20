@@ -88,8 +88,15 @@ every claim is supported and every claim citation is `publishable`.
 incompatible, draft, unsupported, or superseded claim blocks publication.
 Superseded reports cannot be regenerated or published.
 
-Both operations use optimistic report revisions and idempotency keys. A stale
-write fails instead of overwriting newer work.
+Both operations use optimistic report revisions and idempotency keys scoped to
+one report's publication lifecycle. The key identifies the most recent
+successful `prepare-publication` or `publish` operation. Retrying that same
+operation with the same key, timestamp, and original expected revision is a
+no-op that returns the prior result. Reusing the key for the other operation or
+with a different timestamp or expected revision fails with
+`ReportIdempotencyConflictError` and does not change report state. A different
+key still must pass the expected-revision and legal-state checks, so stale
+writes fail instead of overwriting newer work.
 
 ## Section-scoped regeneration
 
@@ -119,11 +126,16 @@ greenfield database. It creates:
   links, ordered source-version links, and section-scoped claim links.
 
 The schema stores workspace, project, run, and foreign-keyed immutable
-source-version identities directly. Unique constraints enforce revision ordering keys,
-idempotency keys, and non-duplicated claim links. Application transactions must
-decode the complete aggregate with the canonical Effect Schemas before commit,
-which enforces cross-row invariants such as contiguous revisions, dangling
-claim rejection, publication readiness, and supersession-cycle rejection.
+source-version identities directly. Unique constraints enforce revision
+ordering keys, idempotency keys, and non-duplicated claim links.
+
+Application code must load, decode, validate, and mutate the complete aggregate
+inside one database transaction. Each write uses a conditional expected-
+revision check and locks the affected aggregate rows, or uses equivalent
+serializable isolation. Cross-aggregate graph changes, such as supersession,
+must lock every affected row or be revalidated at commit. This prevents
+concurrent writers from bypassing contiguous-revision, dangling-claim,
+publication-readiness, or supersession-cycle invariants.
 
 No data-preservation or compatibility migration is required. During
 development, drop and recreate the schema when a breaking contract changes.
