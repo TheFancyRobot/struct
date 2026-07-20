@@ -28,8 +28,8 @@ tags:
 ## Overview
 
 - Repository: struct
-- Files indexed: 145
-- Symbols found: 1622
+- Files indexed: 149
+- Symbols found: 1648
 - Detailed index path: `.agent-vault/08_Automation/code-graph/index.json`
 
 ## Key Components

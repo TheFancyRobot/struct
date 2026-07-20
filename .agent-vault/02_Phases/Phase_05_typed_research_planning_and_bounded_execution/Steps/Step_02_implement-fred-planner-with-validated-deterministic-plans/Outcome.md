@@ -1,6 +1,10 @@
 # Outcome
 
-- Record the final result, validation performed, and explicit follow-up here.
+- STEP-05-02 is complete. Focused tool-free Fred classification/planning agents now produce only typed proposals, while deterministic `@struct/research-engine` validation is the sole path from an untrusted proposal to a normalized executable plan.
+- Valid document, dataset, and mixed plans pass. Unknown or incompatible tools and capabilities, malformed output, immutable identity/question changes, source widening or out-of-scope references, missing dependencies, cycles, fan-out excess, per-tool call excess, and budget expansion fail closed with typed STEP-05-01 errors.
+- Equivalent proposals with reversed outer or nested source-version ordering normalize identically without input mutation.
+- Full repository gates passed. Database-backed integration tests remain intentionally environment-gated and were reported as 152 skips by the standard suite.
+- Follow-up: root orchestrator self-review, dedicated PR review/remediation, and merge must complete before STEP-05-03 begins.
 
 ## Related Notes
 

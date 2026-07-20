@@ -1,6 +1,11 @@
 # Implementation Notes
 
-- Capture durable findings learned during execution. Prefer short bullets with file paths, commands, and observed behavior.
+- Added focused Fred classifier and planner configs with typed STEP-05-01 inputs/outputs, `maxSteps: 1`, `toolChoice: none`, and no tools.
+- Both agent inputs reuse the same exported nonblank bounded `ResearchQuestion` schema, so whitespace-only questions fail before either provider call.
+- `validateResearchPlan` decodes untrusted proposals through the shared domain contract, then checks immutable identity/question, authorized source scope, compatible and bounded tool grants, required grants per node, per-tool call counts, and all budget ceilings before normalization.
+- Document retrieval inputs and document evidence requirements are restricted to document source scopes; dataset lineage cannot satisfy document evidence.
+- Normalization only canonicalizes ordering after validation. It copies and bytewise-sorts outer collections plus nested dataset-scope and document-evidence source-version sets without mutating input or repairing authority, graph, or budget failures.
+- Provider failure normalization retains no provider payload or cause details.
 
 ## Related Notes
 
