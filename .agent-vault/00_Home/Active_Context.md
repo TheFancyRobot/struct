@@ -20,8 +20,8 @@ Keep this note short and current.
 
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-20._
-- Session in progress: none.
-- Current step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_03_implement-deterministic-batch-extraction-and-evidence-artifacts|STEP-06-03 Implement Deterministic Batch Extraction and Evidence Artifacts]] - status: planned - phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+- Session in progress: [[05_Sessions/2026-07-20-084208-implement-deterministic-batch-extraction-and-evidence-artifacts-step-06-03-worker|SESSION-2026-07-20-084208 step-06-03-worker session for Implement Deterministic Batch Extraction and Evidence Artifacts]] - owner: step-06-03-worker - phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]] - updated: 2026-07-20
+- Current step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_03_implement-deterministic-batch-extraction-and-evidence-artifacts|STEP-06-03 Implement Deterministic Batch Extraction and Evidence Artifacts]] - status: active - phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]] - owner: Codex
 - Active phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|PHASE-06 Recursive Corpus Analysis]] - status: active - owner: Codex - updated: 2026-07-20
 - Also active: 39 more additional steps.
 <!-- AGENT-END:current-focus -->
@@ -39,7 +39,7 @@ _Last refreshed: 2026-07-20._
 - Phase 03 and STEP-03-01 through STEP-03-06 are completed and merged.
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
-- Phase 06 is refined and active. STEP-06-01 and its BUG-0011 remediation and STEP-06-02 are completed, reviewed, and merged; STEP-06-03 is next.
+- Phase 06 is refined and active. STEP-06-01 and its BUG-0011 remediation and STEP-06-02 are completed, reviewed, and merged; STEP-06-03 is implemented and validated in PR #36, with review and merge pending.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 
 ## Out Of Scope Right Now
@@ -71,5 +71,5 @@ _Last refreshed: 2026-07-20._
 
 ## Next Actions
 
-- Activate and execute STEP-06-03 on its dedicated branch with a fresh worker.
+- Complete PR #36 review and merge for STEP-06-03; only then activate STEP-06-04.
 - Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.

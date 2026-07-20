@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T08:37:36.984Z",
+  "generatedAt": "2026-07-20T09:14:30.766Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -2040,6 +2040,96 @@
       "parser": "regex"
     },
     {
+      "path": "apps/worker/src/jobs/build-partition-artifacts.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "CommittedPartitionEvidenceArtifact",
+          "kind": "interface",
+          "line": 30,
+          "exported": true,
+          "endLine": 30
+        },
+        {
+          "name": "PartitionEvidenceArtifactEvent",
+          "kind": "type",
+          "line": 46,
+          "exported": true,
+          "endLine": 46
+        },
+        {
+          "name": "PartitionEvidenceArtifactJournal",
+          "kind": "interface",
+          "line": 55,
+          "exported": true,
+          "endLine": 55
+        },
+        {
+          "name": "BuildPartitionArtifactsDependencies",
+          "kind": "interface",
+          "line": 76,
+          "exported": true,
+          "endLine": 76
+        },
+        {
+          "name": "conflict",
+          "kind": "function",
+          "line": 87,
+          "exported": false,
+          "endLine": 87,
+          "signature": "(message: string)"
+        },
+        {
+          "name": "computeCommitDigest",
+          "kind": "function",
+          "line": 95,
+          "exported": false,
+          "endLine": 95
+        },
+        {
+          "name": "validateCommitted",
+          "kind": "function",
+          "line": 117,
+          "exported": false,
+          "endLine": 117
+        },
+        {
+          "name": "validRecordLocator",
+          "kind": "function",
+          "line": 159,
+          "exported": false,
+          "endLine": 159,
+          "signature": "(locator: string)"
+        },
+        {
+          "name": "makeBuildPartitionArtifactsJob",
+          "kind": "const",
+          "line": 170,
+          "exported": true,
+          "endLine": 170
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "ce0b08bf701422230b166c88babbebc81173d782c5adaedbd8c14a0ce2938ce5",
+      "mtimeMs": 1784538139778.921,
+      "size": 9094,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "apps/worker/src/jobs/ingest-source.ts",
       "language": "TypeScript",
       "symbols": [
@@ -2418,7 +2508,7 @@
       ],
       "exports": [],
       "hash": "a82f2cc5445935e1666672fe162b5577e5cea210a064e0114f53d2ec4dd8030c",
-      "mtimeMs": 1784536481374.108,
+      "mtimeMs": 1784536881000.7222,
       "size": 4866,
       "generated": false,
       "vendor": false,
@@ -6062,7 +6152,7 @@
       ],
       "exports": [],
       "hash": "45fddca98a372f2274e39f1aace0f203f336f16afdc36c489674d0711ef84a74",
-      "mtimeMs": 1784534881234.5793,
+      "mtimeMs": 1784536881000.9138,
       "size": 6220,
       "generated": false,
       "vendor": false,
@@ -6453,7 +6543,7 @@
       ],
       "exports": [],
       "hash": "c5936e3e7455c80189ec8aeedf3a1875e732727f516db179dd10f09f4e5e2e72",
-      "mtimeMs": 1784535611725.2913,
+      "mtimeMs": 1784536881001.1997,
       "size": 24169,
       "generated": false,
       "vendor": false,
@@ -14198,7 +14288,7 @@
       ],
       "exports": [],
       "hash": "c737a7943473ff61fab86ecd602afeabea4dbab851da5834bebc8ec402026da2",
-      "mtimeMs": 1784535611725.737,
+      "mtimeMs": 1784536881001.3499,
       "size": 15104,
       "generated": false,
       "vendor": false,
@@ -14327,6 +14417,125 @@
       "hash": "76e64987ae437aadc4997beb250dd7e30cb2b2f4e4698908883c16fd7f5f1378",
       "mtimeMs": 1784533403588.05,
       "size": 1439,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/research-engine/src/evidence-artifacts.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "RECURSIVE_EVIDENCE_MEDIA_TYPE",
+          "kind": "const",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "MAX_BATCH_SOURCE_BYTES",
+          "kind": "const",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "RecursiveEvidenceArtifact",
+          "kind": "interface",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "BuiltRecursiveEvidenceArtifact",
+          "kind": "interface",
+          "line": 62,
+          "exported": true,
+          "endLine": 62
+        },
+        {
+          "name": "EvidenceArtifactValidationError",
+          "kind": "class",
+          "line": 70,
+          "exported": true,
+          "endLine": 70
+        },
+        {
+          "name": "failure",
+          "kind": "function",
+          "line": 80,
+          "exported": false,
+          "endLine": 80,
+          "signature": "(path: string, reason: string, message: string)"
+        },
+        {
+          "name": "hashBytes",
+          "kind": "function",
+          "line": 84,
+          "exported": false,
+          "endLine": 84,
+          "signature": "(bytes: Uint8Array)"
+        },
+        {
+          "name": "computeBatchEvidenceTransformationIdentity",
+          "kind": "function",
+          "line": 90,
+          "exported": true,
+          "endLine": 90
+        },
+        {
+          "name": "sourceIdentity",
+          "kind": "function",
+          "line": 104,
+          "exported": false,
+          "endLine": 104,
+          "signature": "(source: BatchEvidenceSource)"
+        },
+        {
+          "name": "compareIdentity",
+          "kind": "function",
+          "line": 108,
+          "exported": false,
+          "endLine": 108
+        },
+        {
+          "name": "encodeArtifact",
+          "kind": "function",
+          "line": 115,
+          "exported": false,
+          "endLine": 115,
+          "signature": "(artifact: RecursiveEvidenceArtifact)"
+        },
+        {
+          "name": "boundArtifact",
+          "kind": "function",
+          "line": 119,
+          "exported": false,
+          "endLine": 119
+        },
+        {
+          "name": "BatchEvidenceArtifacts",
+          "kind": "class",
+          "line": 200,
+          "exported": true,
+          "endLine": 200
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "894fca133ab3c224f7b8942c9191573c8a3a2d3819a47deee870113938429813",
+      "mtimeMs": 1784538139778.4678,
+      "size": 11461,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -14906,7 +15115,7 @@
       ],
       "exports": [],
       "hash": "d812bb0892f2abf2864a47198eb95c9ca2efb78eb0b73694df073b58fa5e2d5c",
-      "mtimeMs": 1784536481373.765,
+      "mtimeMs": 1784536881001.6187,
       "size": 38633,
       "generated": false,
       "vendor": false,
@@ -15280,6 +15489,384 @@
       "hash": "12496c6550903222bc556cca1d67acca12d41f9ccd915e06c73bbc1f027e86d1",
       "mtimeMs": 1784525583170.8738,
       "size": 14342,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/retrieval/src/batch-select.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "BatchScalar",
+          "kind": "type",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        },
+        {
+          "name": "MAX_BATCH_INPUT_RECORDS",
+          "kind": "const",
+          "line": 11,
+          "exported": true,
+          "endLine": 11
+        },
+        {
+          "name": "BatchEvidenceSource",
+          "kind": "interface",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "BatchPredicate",
+          "kind": "interface",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "BatchAggregation",
+          "kind": "interface",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "BatchSelectionPlanInput",
+          "kind": "interface",
+          "line": 34,
+          "exported": true,
+          "endLine": 34
+        },
+        {
+          "name": "BatchSelectionPlan",
+          "kind": "interface",
+          "line": 43,
+          "exported": true,
+          "endLine": 43
+        },
+        {
+          "name": "SelectedField",
+          "kind": "interface",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "SelectedBatchRecord",
+          "kind": "interface",
+          "line": 55,
+          "exported": true,
+          "endLine": 55
+        },
+        {
+          "name": "BatchAggregateGroup",
+          "kind": "interface",
+          "line": 67,
+          "exported": true,
+          "endLine": 67
+        },
+        {
+          "name": "BatchSelectionExclusion",
+          "kind": "interface",
+          "line": 85,
+          "exported": true,
+          "endLine": 85
+        },
+        {
+          "name": "BatchSelectionCounts",
+          "kind": "interface",
+          "line": 97,
+          "exported": true,
+          "endLine": 97
+        },
+        {
+          "name": "BatchSelectionResult",
+          "kind": "interface",
+          "line": 110,
+          "exported": true,
+          "endLine": 110
+        },
+        {
+          "name": "BatchSelectionValidationError",
+          "kind": "class",
+          "line": 118,
+          "exported": true,
+          "endLine": 118
+        },
+        {
+          "name": "encoder",
+          "kind": "const",
+          "line": 128,
+          "exported": false,
+          "endLine": 128
+        },
+        {
+          "name": "fatalUtf8Decoder",
+          "kind": "const",
+          "line": 129,
+          "exported": false,
+          "endLine": 129
+        },
+        {
+          "name": "compareCanonicalText",
+          "kind": "function",
+          "line": 131,
+          "exported": true,
+          "endLine": 131,
+          "signature": "(left: string, right: string)"
+        },
+        {
+          "name": "canonicalJson",
+          "kind": "function",
+          "line": 142,
+          "exported": true,
+          "endLine": 142,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "digest",
+          "kind": "function",
+          "line": 165,
+          "exported": false,
+          "endLine": 165,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "fieldPattern",
+          "kind": "const",
+          "line": 173,
+          "exported": false,
+          "endLine": 173
+        },
+        {
+          "name": "namePattern",
+          "kind": "const",
+          "line": 174,
+          "exported": false,
+          "endLine": 174
+        },
+        {
+          "name": "invalid",
+          "kind": "function",
+          "line": 176,
+          "exported": false,
+          "endLine": 176,
+          "signature": "(path: string, reason: string, message: string)"
+        },
+        {
+          "name": "validatePlanInput",
+          "kind": "function",
+          "line": 180,
+          "exported": false,
+          "endLine": 180
+        },
+        {
+          "name": "makeBatchSelectionPlan",
+          "kind": "const",
+          "line": 261,
+          "exported": true,
+          "endLine": 261
+        },
+        {
+          "name": "canonicalPlanInput",
+          "kind": "function",
+          "line": 273,
+          "exported": false,
+          "endLine": 273
+        },
+        {
+          "name": "validateBatchSelectionPlan",
+          "kind": "const",
+          "line": 286,
+          "exported": true,
+          "endLine": 286
+        },
+        {
+          "name": "objectField",
+          "kind": "function",
+          "line": 304,
+          "exported": false,
+          "endLine": 304,
+          "signature": "(value: unknown, field: string)"
+        },
+        {
+          "name": "scalar",
+          "kind": "function",
+          "line": 317,
+          "exported": false,
+          "endLine": 317,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "matches",
+          "kind": "function",
+          "line": 326,
+          "exported": false,
+          "endLine": 326,
+          "signature": "(value: unknown, predicates: ReadonlyArray<BatchPredicate>)"
+        },
+        {
+          "name": "JsonRecord",
+          "kind": "interface",
+          "line": 336,
+          "exported": false,
+          "endLine": 336
+        },
+        {
+          "name": "recordsFromJson",
+          "kind": "function",
+          "line": 342,
+          "exported": false,
+          "endLine": 342,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "sourceOrder",
+          "kind": "function",
+          "line": 364,
+          "exported": false,
+          "endLine": 364
+        },
+        {
+          "name": "MatchedRecord",
+          "kind": "interface",
+          "line": 374,
+          "exported": false,
+          "endLine": 374
+        },
+        {
+          "name": "jsonPointerSegment",
+          "kind": "function",
+          "line": 381,
+          "exported": false,
+          "endLine": 381,
+          "signature": "(segment: string)"
+        },
+        {
+          "name": "fieldPointer",
+          "kind": "function",
+          "line": 385,
+          "exported": false,
+          "endLine": 385,
+          "signature": "(field: string)"
+        },
+        {
+          "name": "selectedRecord",
+          "kind": "function",
+          "line": 390,
+          "exported": false,
+          "endLine": 390
+        },
+        {
+          "name": "recordLocator",
+          "kind": "function",
+          "line": 419,
+          "exported": false,
+          "endLine": 419,
+          "signature": "(item: MatchedRecord)"
+        },
+        {
+          "name": "contributors",
+          "kind": "function",
+          "line": 423,
+          "exported": false,
+          "endLine": 423
+        },
+        {
+          "name": "Decimal",
+          "kind": "interface",
+          "line": 450,
+          "exported": false,
+          "endLine": 450
+        },
+        {
+          "name": "decimalFromNumber",
+          "kind": "function",
+          "line": 455,
+          "exported": false,
+          "endLine": 455,
+          "signature": "(value: number)"
+        },
+        {
+          "name": "decimalFromLexeme",
+          "kind": "function",
+          "line": 459,
+          "exported": false,
+          "endLine": 459,
+          "signature": "(lexeme: string)"
+        },
+        {
+          "name": "hasLosslessNumericLexemes",
+          "kind": "function",
+          "line": 477,
+          "exported": false,
+          "endLine": 477,
+          "signature": "(text: string)",
+          "doc": "Native JSON parsing is safe for this boundary only when converting the\nsource lexeme to a number and back preserves its exact decimal value."
+        },
+        {
+          "name": "alignDecimal",
+          "kind": "function",
+          "line": 517,
+          "exported": false,
+          "endLine": 517,
+          "signature": "(value: Decimal, scale: number)"
+        },
+        {
+          "name": "compareDecimal",
+          "kind": "function",
+          "line": 521,
+          "exported": false,
+          "endLine": 521,
+          "signature": "(left: Decimal, right: Decimal)"
+        },
+        {
+          "name": "renderDecimal",
+          "kind": "function",
+          "line": 528,
+          "exported": false,
+          "endLine": 528,
+          "signature": "(value: Decimal)"
+        },
+        {
+          "name": "aggregateDecimals",
+          "kind": "function",
+          "line": 539,
+          "exported": false,
+          "endLine": 539
+        },
+        {
+          "name": "aggregate",
+          "kind": "function",
+          "line": 564,
+          "exported": false,
+          "endLine": 564
+        },
+        {
+          "name": "selectBatchEvidence",
+          "kind": "const",
+          "line": 623,
+          "exported": true,
+          "endLine": 623
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "eecf935b89c5e4893728caaccf76bdf38ea94cc369ac5988ee5d8c0c6c60b83e",
+      "mtimeMs": 1784538808072.0645,
+      "size": 24676,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -16066,6 +16653,59 @@
       "hash": "f599069fe478888f3e6c04444af70e6b729d9a33a62a91591ac911dccad8b8ed",
       "mtimeMs": 1784454281777.2954,
       "size": 8705,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/source-storage/src/analysis-artifacts.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "PublishAnalysisArtifactInput",
+          "kind": "interface",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        },
+        {
+          "name": "publishAnalysisArtifact",
+          "kind": "const",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "verifyStoredArtifact",
+          "kind": "function",
+          "line": 66,
+          "exported": false,
+          "endLine": 66
+        }
+      ],
+      "imports": [
+        {
+          "source": "Sha256Digest, StorageWriteError",
+          "specifier": "@struct/domain",
+          "imported": [
+            "Sha256Digest",
+            "StorageWriteError"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "7bc333b1448b765bb61e9f3a6f1fc6d8846cdb6b251280cd6065b4c49a56a8b5",
+      "mtimeMs": 1784537549409.0166,
+      "size": 2597,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -17004,7 +17644,7 @@
       ],
       "exports": [],
       "hash": "1af3e5b92dbd8a1e2da8bfebe33a9fb37f7cb768186cd3df5bd40e196437ca25",
-      "mtimeMs": 1784535076156.2502,
+      "mtimeMs": 1784536881002.1768,
       "size": 827,
       "generated": false,
       "vendor": false,
