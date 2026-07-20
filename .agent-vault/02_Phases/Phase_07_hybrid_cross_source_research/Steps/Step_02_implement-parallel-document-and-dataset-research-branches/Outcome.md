@@ -1,6 +1,10 @@
 # Outcome
 
 - Record the final result, validation performed, and explicit follow-up here.
+- Completed STEP-07-02. Independent selected branches overlap under the plan fan-out bound, dependencies wait, and answer synthesis waits for every selected predecessor.
+- Branch failure interrupts siblings; durable cancellation is checked before starts; committed nodes are skipped on resume; canonical state and artifact identity prevent duplicate delivery.
+- Core Fred remains the production workflow boundary for mixed execution.
+- Validation: focused hybrid tests 7 passed; full repository suite 644 passed, 164 skipped, 0 failed; typecheck, ESLint, import boundaries, and dependency boundaries passed.
 
 ## Related Notes
 

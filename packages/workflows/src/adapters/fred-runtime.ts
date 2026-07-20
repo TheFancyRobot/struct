@@ -39,6 +39,10 @@ import {
   compileResearchRunWorkflow,
   type ResearchRunGraphDependencies as typeResearchRunGraphDependencies,
 } from '../graphs/research-run.js'
+import {
+  compileHybridResearchWorkflow,
+  requiresHybridBranchExecution,
+} from '../graphs/hybrid-research.js'
 import type {
   ResearchModelRoutingPolicy as typeResearchModelRoutingPolicy,
 } from '../model-routing.js'
@@ -460,12 +464,22 @@ export const runFredBoundedResearchGraph = (
     }),
     (fred) =>
       Effect.gen(function* () {
-        const workflow = yield* compileResearchRunWorkflow(
-          plan,
-          routing,
-          policy,
-          dependencies,
-          signal,
+        const workflow = yield* (
+          requiresHybridBranchExecution(plan)
+            ? compileHybridResearchWorkflow(
+                plan,
+                routing,
+                policy,
+                dependencies,
+                signal,
+              )
+            : compileResearchRunWorkflow(
+                plan,
+                routing,
+                policy,
+                dependencies,
+                signal,
+              )
         ).pipe(
           Effect.mapError(() =>
             new ResearchWorkflowError({
