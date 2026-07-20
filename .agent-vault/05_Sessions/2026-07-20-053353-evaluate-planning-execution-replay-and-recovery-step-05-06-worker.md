@@ -93,6 +93,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `README.md`
 - Phase 05 step, outcome, session, active-context, and generated code-graph vault notes.
 <!-- AGENT-END:session-changed-paths -->
+- PR #32 remediation additionally changed `apps/worker/src/config.ts`, `apps/worker/src/config.test.ts`, `apps/worker/test/research-replay.integration.test.ts`, `apps/worker/test/support/research-resume-child.ts`, `apps/worker/package.json`, `packages/evaluation/src/phase-05-evaluation.ts`, `packages/evaluation/src/run-phase-05-evaluation.ts`, `packages/evaluation/test/phase-05-evaluation.test.ts`, `packages/evaluation/package.json`, both tracked Phase 05 result artifacts, the research recovery/benchmark docs, and bounded Phase 05 active-context/phase/step/outcome/session vault notes.
 
 ## Validation Run
 
@@ -113,6 +114,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Live PostgreSQL + Compose recovery gate: 1 test, 37 assertions, 0 failures; actual dataset-query artifact committed; replacement dataset-provider calls 0.
 - Generated evaluator: 10/10 observed criteria passed; byte-identical repeated report; SHA-256 `7a5c4b92377ab905942431a003a197d20e740fa0bdb08af9b2b2ffa2d8ba61e0`.
 - Root typecheck, lint, and import-boundary checks passed after remediation.
+- PR #32 remediation validation: `bun run --filter @struct/worker test:research-replay` passed 1 test/39 assertions; `bun run --filter @struct/evaluation phase-05:eval` passed 17 tests/65 assertions and all 10 criteria with canonical report hash `7614d0b882301484a2f8eca0325398d1f430933186cf90f104c7b1b7944d991e`; the same artifact-integrity/evaluator commands passed with `.local/evaluation/phase-05-live-evidence.json` absent. `env -u DATABASE_URL bun run test` passed 526 and skipped 164 opt-in integration tests, including research replay. Root `bun run typecheck`, `bun run lint`, `bun run lint:imports`, and `bun run docs:lint` passed. Vault code graph was refreshed; final doctor is recorded below.
+- Agent Vault doctor: clean across 190 validated notes; zero errors, warnings, or orphans. Code graph refreshed to 166 files and 1,857 symbols.
 
 ## Bugs Encountered
 
@@ -139,3 +142,4 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - STEP-05-06 now has deterministic and live production-path evidence for planning contracts, bounded execution policy, real dataset-query checkpoint replay, cancellation, provider/model failures, cross-process recovery, and the isolated Node 24 sidecar.
 - Root self-review fixed the documented working-directory path, Effect Config compliance, type-only contracts, and a Playwright completion-event fixture drift before publication.
 - Handoff is clean. Only PR review/merge and the Phase 06 refinement gate remain; do not perform the v1.0 release action.
+- PR #32 review remediation is complete: the mid-tool boundary is now a real distinct Bun replacement process with one observed recovery query; normal tests skip live PostgreSQL work without `DATABASE_URL`; the documented live command supplies its local default; Phase 05 report generation fails closed on stale/manual tracked artifacts; worker artifact roots resolve repository-relative config safely; and vault focus remains on STEP-05-06 PR review/merge until Phase 06 refinement.

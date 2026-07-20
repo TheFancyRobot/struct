@@ -79,6 +79,33 @@ describe('Worker ingestion config', () => {
     expect(stale).toBe(300000)
   })
 
+  it('resolves a relative artifact storage root from the repository root', async () => {
+    const provider = ConfigProvider.fromMap(new Map([
+      ['ARTIFACT_STORAGE_ROOT', 'var/worker-artifacts'],
+    ]))
+    const root = await Effect.runPromise(
+      artifactStorageRootConfig.pipe(
+        Effect.provide(Layer.setConfigProvider(provider)),
+      ),
+    )
+
+    expect(root).toBe(resolve(import.meta.dir, '../../..', 'var/worker-artifacts'))
+  })
+
+  it('preserves an absolute artifact storage root', async () => {
+    const absoluteRoot = resolve(import.meta.dir, 'worker-artifacts')
+    const provider = ConfigProvider.fromMap(new Map([
+      ['ARTIFACT_STORAGE_ROOT', absoluteRoot],
+    ]))
+    const root = await Effect.runPromise(
+      artifactStorageRootConfig.pipe(
+        Effect.provide(Layer.setConfigProvider(provider)),
+      ),
+    )
+
+    expect(root).toBe(absoluteRoot)
+  })
+
   it('rejects non-positive worker polling values', async () => {
     const provider = ConfigProvider.fromMap(new Map([
       ['WORKER_POLL_INTERVAL_MS', '0'],

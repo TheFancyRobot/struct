@@ -6,8 +6,10 @@ import {
   readPhase05LiveIntegrationEvidence,
   runPhase05Evaluation,
   serializePhase05EvaluationReport,
+  verifyPhase05TrackedReportIntegrity,
 } from '../src/phase-05-evaluation.js'
 import { resolve } from 'node:path'
+import { canonicalJson } from '../src/corpus.js'
 
 const liveEvidencePath = resolve(
   import.meta.dir,
@@ -36,6 +38,54 @@ describe('Phase 05 deterministic release evaluation', () => {
     expect(first.criteria.every((item) => item.status === 'passed')).toBe(true)
     expect(first.reportSha256).toBe(second.reportSha256)
     expect(firstBytes).toBe(secondBytes)
+  })
+
+  it('accepts the tracked canonical report when it matches fresh output', async () => {
+    const evidence = await readPhase05LiveIntegrationEvidence(liveEvidencePath)
+    const freshBytes = serializePhase05EvaluationReport(
+      await Effect.runPromise(runPhase05Evaluation(evidence)),
+    )
+    const trackedBytes = await Bun.file(resolve(
+      import.meta.dir,
+      '../results/phase-05-evaluation-v1.json',
+    )).text()
+
+    expect(() =>
+      verifyPhase05TrackedReportIntegrity(trackedBytes, freshBytes)
+    ).not.toThrow()
+  })
+
+  it('rejects manual or stale tracked report changes', async () => {
+    const evidence = await readPhase05LiveIntegrationEvidence(liveEvidencePath)
+    const freshBytes = serializePhase05EvaluationReport(
+      await Effect.runPromise(runPhase05Evaluation(evidence)),
+    )
+    const parsed: unknown = JSON.parse(freshBytes)
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      throw new Error('fresh report must be an object')
+    }
+    const manualBytes = JSON.stringify({
+      ...Object.fromEntries(Object.entries(parsed)),
+      status: 'failed',
+    })
+    expect(() =>
+      verifyPhase05TrackedReportIntegrity(manualBytes, freshBytes)
+    ).toThrow('tracked Phase 05 report hash does not match its body')
+
+    const staleBody: Record<string, unknown> = {
+      ...Object.fromEntries(Object.entries(parsed)),
+      status: 'failed',
+    }
+    delete staleBody['reportSha256']
+    const staleBytes = canonicalJson({
+      ...staleBody,
+      reportSha256: new Bun.CryptoHasher('sha256')
+        .update(canonicalJson(staleBody))
+        .digest('hex'),
+    })
+    expect(() =>
+      verifyPhase05TrackedReportIntegrity(staleBytes, freshBytes)
+    ).toThrow('tracked Phase 05 report differs from fresh evaluation output')
   })
 
   for (const criterionId of phase05CriterionIds) {

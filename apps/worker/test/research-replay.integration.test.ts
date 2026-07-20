@@ -33,9 +33,8 @@ import { dirname, join, resolve } from 'node:path'
 import postgres from 'postgres'
 import { makeProductionResearchWorkflow } from '../src/jobs/research-workflow.js'
 
-const databaseUrl =
-  process.env['DATABASE_URL']
-  ?? 'postgres://struct:struct@127.0.0.1:5432/struct'
+const databaseUrl = process.env['DATABASE_URL'] ?? ''
+const describeIf = databaseUrl.length > 0 ? describe : describe.skip
 const dataEngineUrl =
   process.env['DATA_ENGINE_URL'] ?? 'http://127.0.0.1:4300'
 const dataEngineToken =
@@ -345,7 +344,7 @@ async function prepareExactQuery(): Promise<
   }
 }
 
-describe('research replay through production persistence and workflow paths', () => {
+describeIf('research replay through production persistence and workflow paths', () => {
   let sql: import('postgres').Sql
   let localArtifacts: string
 
@@ -436,19 +435,79 @@ describe('research replay through production persistence and workflow paths', ()
     })
     let toolAttempts = 1
     const exactBeforeRestart = await Effect.runPromise(client.query(query))
-    let toolCommits = 1
+    let toolCommits = 0
     const storage = await Effect.runPromise(
       LocalArtifactStore.make({ root: localArtifacts }),
     )
     expect(exactBeforeRestart.rowCount).toBe(1)
-    const storedDatasetResult = await Effect.runPromise(storage.writeObject(
-      new TextEncoder().encode(JSON.stringify({
-        kind: 'dataset-query-result',
-        result: exactBeforeRestart,
-      })),
-      { mediaType: 'application/vnd.struct.dataset-query-result+json' },
-    ))
     await sql.end()
+    const queryRequestPath = resolve(localArtifacts, 'query-request.json')
+    await Bun.write(queryRequestPath, JSON.stringify(query))
+    const midToolReplacement = Bun.spawn(
+      ['bun', resolve(
+        import.meta.dir,
+        'support/research-resume-child.ts',
+      )],
+      {
+        env: {
+          ...process.env,
+          DATABASE_URL: databaseUrl,
+          DATA_ENGINE_URL: dataEngineUrl,
+          DATA_ENGINE_TOKEN: dataEngineToken,
+          PHASE_05_ARTIFACT_ROOT: localArtifacts,
+          PHASE_05_CHILD_MODE: 'uncommitted-dataset-query',
+          PHASE_05_QUERY_REQUEST: queryRequestPath,
+        },
+        stdout: 'pipe',
+        stderr: 'pipe',
+      },
+    )
+    const [
+      midToolReplacementExit,
+      midToolReplacementStdout,
+      midToolReplacementStderr,
+    ] = await Promise.all([
+      midToolReplacement.exited,
+      new Response(midToolReplacement.stdout).text(),
+      new Response(midToolReplacement.stderr).text(),
+    ])
+    if (midToolReplacementExit !== 0) {
+      throw new Error(
+        `mid-tool replacement process failed: ${midToolReplacementStderr}`,
+      )
+    }
+    const midToolReplacementLine = midToolReplacementStdout
+      .split('\n')
+      .find((line) => line.startsWith('PHASE05_CHILD_RESULT='))
+    if (midToolReplacementLine === undefined) {
+      throw new Error('mid-tool replacement did not emit recovery evidence')
+    }
+    const midToolReplacementResult = JSON.parse(
+      midToolReplacementLine.slice('PHASE05_CHILD_RESULT='.length),
+    ) as {
+      readonly processId: number
+      readonly disposition: string
+      readonly checkpointPresent: boolean
+      readonly datasetProviderCalls: number
+      readonly rowCount: number
+      readonly resultHash: string
+      readonly artifact: {
+        readonly hash: `sha256:${string}`
+        readonly byteLength: number
+        readonly mediaType: string
+      }
+    }
+    expect(midToolReplacementResult).toMatchObject({
+      disposition: 'start',
+      checkpointPresent: false,
+      datasetProviderCalls: 1,
+      rowCount: exactBeforeRestart.rowCount,
+      resultHash: exactBeforeRestart.resultHash,
+    })
+    expect(midToolReplacementResult.processId).not.toBe(process.pid)
+    toolAttempts += midToolReplacementResult.datasetProviderCalls
+    const storedDatasetResult = midToolReplacementResult.artifact
+    toolCommits += 1
     sql = postgres(databaseUrl, { max: 4, idle_timeout: 5 })
     const afterToolAttemptBeforeCommit = await runRepo(
       sql,
@@ -464,7 +523,11 @@ describe('research replay through production persistence and workflow paths', ()
     }
     expect(Option.isNone(afterToolAttemptBeforeCommit.value.checkpoint))
       .toBe(true)
-    const restartAfterToolAttemptBeforeCommit = true
+    const restartAfterToolAttemptBeforeCommit =
+      midToolReplacementResult.processId !== process.pid
+      && midToolReplacementResult.disposition === 'start'
+      && midToolReplacementResult.checkpointPresent === false
+      && midToolReplacementResult.datasetProviderCalls === 1
 
     const answer = { answer: 'The committed answer.', citations: [] }
     const storedAnswer = await Effect.runPromise(storage.writeObject(
@@ -937,6 +1000,8 @@ describe('research replay through production persistence and workflow paths', ()
           metrics.completedDatasetQueryReplays,
         datasetProviderCallsAfterReplacement:
           replacementResult.completedToolInvocations,
+        uncommittedDatasetProviderCallsAfterReplacement:
+          midToolReplacementResult.datasetProviderCalls,
         artifactCheckpointMode: metrics.artifactCheckpointMode,
         datasetArtifactCommitted,
         datasetIdempotencyCommitPersisted,

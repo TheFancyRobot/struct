@@ -66,14 +66,14 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 ## Acceptance Criteria
 
-- [ ] Every run persists a schema-valid plan or a typed planning failure before execution begins.
-- [ ] Invalid tools, cycles, missing dependencies, excess fan-out, unsupported capabilities, and budget violations are rejected deterministically.
-- [ ] Fred executes only registered typed tools and focused agent nodes under workspace, model, cost, time, and concurrency policies.
-- [ ] Live progress derives from committed product events and survives reconnect, cancellation, worker replacement, and cross-process resume.
-- [ ] Tool and model failures preserve typed categories, retry eligibility, attempt history, evidence, and operator diagnostics.
-- [ ] Replay and golden-trace tests detect plan, routing, tool-contract, and workflow regressions.
-- [ ] Maintained applications, packages, scripts, and tests remain Bun-only; any exact-query execution continues through the authenticated isolated Node 24 LTS DuckDB sidecar delivered in Phase 04.
-- [ ] Candidate generic Fred gaps are documented with portable reproductions; product delivery does not wait for optional upstream changes.
+- [x] Every run persists a schema-valid plan or a typed planning failure before execution begins.
+- [x] Invalid tools, cycles, missing dependencies, excess fan-out, unsupported capabilities, and budget violations are rejected deterministically.
+- [x] Fred executes only registered typed tools and focused agent nodes under workspace, model, cost, time, and concurrency policies.
+- [x] Live progress derives from committed product events and survives reconnect, cancellation, worker replacement, and cross-process resume.
+- [x] Tool and model failures preserve typed categories, retry eligibility, attempt history, evidence, and operator diagnostics.
+- [x] Replay and golden-trace tests detect plan, routing, tool-contract, and workflow regressions.
+- [x] Maintained applications, packages, scripts, and tests remain Bun-only; any exact-query execution continues through the authenticated isolated Node 24 LTS DuckDB sidecar delivered in Phase 04.
+- [x] Candidate generic Fred gaps are documented with portable reproductions; product delivery does not wait for optional upstream changes.
 
 ## Delivery Strategy
 
@@ -95,8 +95,8 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]]
-- Current phase status: planned
-- Next phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|PHASE-06 Recursive Corpus Analysis]]
+- Current phase status: active; all implementation and acceptance checks complete, with STEP-05-06 PR review/merge pending
+- Next phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|PHASE-06 Recursive Corpus Analysis]] remains planned until post-merge refinement
 <!-- AGENT-END:phase-linear-context -->
 
 ## Related Architecture

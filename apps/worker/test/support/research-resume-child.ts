@@ -1,5 +1,9 @@
 /* eslint-disable no-unused-vars -- Babel's parser does not mark type-only imports as used. */
 import {
+  makeDataEngineClient,
+  QueryRequest,
+} from '@struct/data-engine'
+import {
   DatasetId,
   DatasetSnapshotId,
   EvidenceRequirementId,
@@ -18,7 +22,7 @@ import {
 } from '@struct/persistence'
 import { selectResearchRecovery } from '@struct/research-engine'
 import { LocalArtifactStore } from '@struct/source-storage'
-import { Effect, Layer, Option, Runtime } from 'effect'
+import { Effect, Layer, Option, Runtime, Schema } from 'effect'
 import postgres from 'postgres'
 import { makeProductionResearchWorkflow } from '../../src/jobs/research-workflow.js'
 /* eslint-enable no-unused-vars */
@@ -132,6 +136,7 @@ const databaseUrl = process.env['DATABASE_URL']
 if (databaseUrl === undefined) throw new Error('DATABASE_URL is required')
 const artifactRoot = process.env['PHASE_05_ARTIFACT_ROOT']
 if (artifactRoot === undefined) throw new Error('PHASE_05_ARTIFACT_ROOT is required')
+const childMode = process.env['PHASE_05_CHILD_MODE'] ?? 'finalized-resume'
 const sql = postgres(databaseUrl, { max: 1, idle_timeout: 5 })
 const layer = Layer.provide(ResearchExecutionRepo.Default, SqlClientLive(sql))
 const loaded = await Effect.runPromise(
@@ -141,54 +146,99 @@ const loaded = await Effect.runPromise(
     ids.run,
   ).pipe(Effect.provide(layer)),
 )
-if (Option.isNone(loaded) || Option.isNone(loaded.value.checkpoint)) {
-  throw new Error('replacement process could not load committed checkpoint')
+if (Option.isNone(loaded)) {
+  throw new Error('replacement process could not load durable state')
 }
+const durableState = loaded.value
 const disposition = await Effect.runPromise(
-  selectResearchRecovery(plan, loaded.value),
+  selectResearchRecovery(plan, durableState),
 )
 const storage = await Effect.runPromise(
   LocalArtifactStore.make({ root: artifactRoot }),
 )
-let completedToolInvocations = 0
-const workflow = makeProductionResearchWorkflow({
-  storage,
-  runtime: Runtime.defaultRuntime,
-  fredConfig: {
-    providerPackage: 'unused-for-finalized-resume',
-    model: 'unused-for-finalized-resume',
-    maxElapsedMs: 10_000,
-  },
-  retrieve: () => Effect.dieMessage('completed retrieval must not replay'),
-  queryDataset: () => {
-    completedToolInvocations += 1
-    return Effect.dieMessage('completed dataset query must not replay')
-  },
-  loadDurableState: (workspaceId, projectId, runId) =>
-    ResearchExecutionRepo.loadDurableState(
-      workspaceId,
-      projectId,
-      runId,
-    ).pipe(Effect.provide(layer)),
-})
-const result = await Effect.runPromise(workflow.run({
-  run,
-  workspaceId: ids.workspace,
-  projectId: ids.project,
-  sourceVersionIds: [ids.source],
-  plan,
-  resumeCheckpoint: Option.some(loaded.value.checkpoint.value),
-  onCheckpoint: () => Effect.dieMessage(
-    'finalized checkpoint must not be rewritten',
-  ),
-  onRetrievalCompleted: () => Effect.dieMessage(
-    'completed retrieval event must not replay',
-  ),
-}))
-await sql.end()
-await Bun.write(Bun.stdout, `PHASE05_CHILD_RESULT=${JSON.stringify({
-  processId: process.pid,
-  disposition: disposition.kind,
-  answer: result.answer.answer,
-  completedToolInvocations,
-})}\n`)
+if (childMode === 'uncommitted-dataset-query') {
+  if (Option.isSome(durableState.checkpoint)) {
+    throw new Error('replacement process requires planned state without a checkpoint')
+  }
+  const queryRequestPath = process.env['PHASE_05_QUERY_REQUEST']
+  if (queryRequestPath === undefined) {
+    throw new Error('PHASE_05_QUERY_REQUEST is required')
+  }
+  const query = Schema.decodeUnknownSync(QueryRequest)(
+    JSON.parse(await Bun.file(queryRequestPath).text()),
+  )
+  let datasetProviderCalls = 0
+  datasetProviderCalls += 1
+  const result = await Effect.runPromise(makeDataEngineClient({
+    baseUrl: process.env['DATA_ENGINE_URL'] ?? 'http://127.0.0.1:4300',
+    credential:
+      process.env['DATA_ENGINE_TOKEN'] ?? 'struct-local-data-engine-token',
+  }).query(query))
+  const artifact = await Effect.runPromise(storage.writeObject(
+    new TextEncoder().encode(JSON.stringify({
+      kind: 'dataset-query-result',
+      result,
+    })),
+    { mediaType: 'application/vnd.struct.dataset-query-result+json' },
+  ))
+  await sql.end()
+  await Bun.write(Bun.stdout, `PHASE05_CHILD_RESULT=${JSON.stringify({
+    processId: process.pid,
+    disposition: disposition.kind,
+    checkpointPresent: false,
+    datasetProviderCalls,
+    rowCount: result.rowCount,
+    resultHash: result.resultHash,
+    artifact: {
+      hash: artifact.hash,
+      byteLength: artifact.byteLength,
+      mediaType: artifact.mediaType,
+    },
+  })}\n`)
+} else {
+  if (Option.isNone(durableState.checkpoint)) {
+    throw new Error('replacement process could not load committed checkpoint')
+  }
+  let completedToolInvocations = 0
+  const workflow = makeProductionResearchWorkflow({
+    storage,
+    runtime: Runtime.defaultRuntime,
+    fredConfig: {
+      providerPackage: 'unused-for-finalized-resume',
+      model: 'unused-for-finalized-resume',
+      maxElapsedMs: 10_000,
+    },
+    retrieve: () => Effect.dieMessage('completed retrieval must not replay'),
+    queryDataset: () => {
+      completedToolInvocations += 1
+      return Effect.dieMessage('completed dataset query must not replay')
+    },
+    loadDurableState: (workspaceId, projectId, runId) =>
+      ResearchExecutionRepo.loadDurableState(
+        workspaceId,
+        projectId,
+        runId,
+      ).pipe(Effect.provide(layer)),
+  })
+  const result = await Effect.runPromise(workflow.run({
+    run,
+    workspaceId: ids.workspace,
+    projectId: ids.project,
+    sourceVersionIds: [ids.source],
+    plan,
+    resumeCheckpoint: Option.some(durableState.checkpoint.value),
+    onCheckpoint: () => Effect.dieMessage(
+      'finalized checkpoint must not be rewritten',
+    ),
+    onRetrievalCompleted: () => Effect.dieMessage(
+      'completed retrieval event must not replay',
+    ),
+  }))
+  await sql.end()
+  await Bun.write(Bun.stdout, `PHASE05_CHILD_RESULT=${JSON.stringify({
+    processId: process.pid,
+    disposition: disposition.kind,
+    answer: result.answer.answer,
+    completedToolInvocations,
+  })}\n`)
+}

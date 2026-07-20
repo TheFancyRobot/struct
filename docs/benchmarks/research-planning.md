@@ -16,8 +16,9 @@ SHA-256 evidence hash for each criterion:
 4. run-bound, strictly ordered committed-event reconnect, idempotent
    cancellation, distinct-process replacement, and checkpoint resume/finalize;
 5. observed restart boundaries after planning, after a dataset-query attempt
-   before commit, after checkpoint/event commit, and during cancellation, plus
-   typed provider/model failure history;
+   before commit in a distinct replacement Bun process, after
+   checkpoint/event commit, and during cancellation, plus typed provider/model
+   failure history;
 6. all eight plan budget ceilings plus direct step/model/tool/cost/time/fan-out,
    duplicate/no-progress, and per-tool grant policy gates;
 7. typed transient failure, bounded retry history, and secret-free operator
@@ -37,11 +38,13 @@ cd packages/evaluation && bun run phase-05:eval
 ```
 
 The live test writes machine-local timings under
-`.local/evaluation/phase-05-live-metrics.json`. The evaluator schema-decodes
-`.local/evaluation/phase-05-live-evidence.json`, writes the checked evidence
-and report to `packages/evaluation/results`, runs the report twice, and requires
-byte-identical serialized sections and identical `reportSha256`.
+`.local/evaluation/phase-05-live-metrics.json` and fresh evidence beside it.
+`phase-05:generate` is the explicit command that accepts that live evidence
+into `packages/evaluation/results`. The normal `phase-05:eval` command instead
+uses the tracked evidence, recomputes the report, and verifies the tracked
+canonical bytes and embedded hash before any write. This makes stale or manual
+report edits fail even in a clean checkout without `.local` evidence.
 
 The reference report passes all ten criteria with hash
-`7a5c4b92377ab905942431a003a197d20e740fa0bdb08af9b2b2ffa2d8ba61e0`.
+`7614d0b882301484a2f8eca0325398d1f430933186cf90f104c7b1b7944d991e`.
 Wall-clock metrics are intentionally excluded from the deterministic report.

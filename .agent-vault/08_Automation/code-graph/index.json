@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T06:36:04.855Z",
+  "generatedAt": "2026-07-20T06:56:52.833Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -1883,125 +1883,132 @@
       "language": "TypeScript",
       "symbols": [
         {
-          "name": "positive",
+          "name": "repositoryRoot",
           "kind": "const",
           "line": 10,
           "exported": false,
           "endLine": 10
         },
         {
+          "name": "positive",
+          "kind": "const",
+          "line": 12,
+          "exported": false,
+          "endLine": 12
+        },
+        {
           "name": "workerMetricsPortConfig",
           "kind": "const",
-          "line": 16,
+          "line": 18,
           "exported": true,
-          "endLine": 16
+          "endLine": 18
         },
         {
           "name": "databaseUrlConfig",
           "kind": "const",
-          "line": 21,
+          "line": 23,
           "exported": true,
-          "endLine": 21
+          "endLine": 23
         },
         {
           "name": "artifactStorageRootConfig",
           "kind": "const",
-          "line": 24,
+          "line": 26,
           "exported": true,
-          "endLine": 24
+          "endLine": 26
         },
         {
           "name": "workerPollIntervalMsConfig",
           "kind": "const",
-          "line": 29,
+          "line": 32,
           "exported": true,
-          "endLine": 29
+          "endLine": 32
         },
         {
           "name": "workerJobStaleMsConfig",
           "kind": "const",
-          "line": 35,
+          "line": 38,
           "exported": true,
-          "endLine": 35
+          "endLine": 38
         },
         {
           "name": "MIN_RESEARCH_JOB_STALE_MARGIN_MS",
-          "kind": "const",
-          "line": 46,
-          "exported": true,
-          "endLine": 46
-        },
-        {
-          "name": "MAX_RESEARCH_JOB_HEARTBEAT_MS",
-          "kind": "const",
-          "line": 47,
-          "exported": true,
-          "endLine": 47
-        },
-        {
-          "name": "MAX_INGESTION_JOB_HEARTBEAT_MS",
-          "kind": "const",
-          "line": 48,
-          "exported": true,
-          "endLine": 48
-        },
-        {
-          "name": "MAX_SOURCE_TEXT_REINDEX_HEARTBEAT_MS",
           "kind": "const",
           "line": 49,
           "exported": true,
           "endLine": 49
         },
         {
-          "name": "IngestionJobTiming",
-          "kind": "interface",
+          "name": "MAX_RESEARCH_JOB_HEARTBEAT_MS",
+          "kind": "const",
+          "line": 50,
+          "exported": true,
+          "endLine": 50
+        },
+        {
+          "name": "MAX_INGESTION_JOB_HEARTBEAT_MS",
+          "kind": "const",
           "line": 51,
           "exported": true,
           "endLine": 51
         },
         {
+          "name": "MAX_SOURCE_TEXT_REINDEX_HEARTBEAT_MS",
+          "kind": "const",
+          "line": 52,
+          "exported": true,
+          "endLine": 52
+        },
+        {
+          "name": "IngestionJobTiming",
+          "kind": "interface",
+          "line": 54,
+          "exported": true,
+          "endLine": 54
+        },
+        {
           "name": "deriveIngestionJobHeartbeatIntervalMs",
           "kind": "function",
-          "line": 60,
+          "line": 63,
           "exported": true,
-          "endLine": 60,
+          "endLine": 63,
           "doc": "Keep at least three renewal opportunities inside one stale window, never\nrenew less frequently than the poll cadence, and cap steady-state DB load."
         },
         {
           "name": "deriveSourceTextReindexHeartbeatIntervalMs",
           "kind": "function",
-          "line": 74,
+          "line": 77,
           "exported": true,
-          "endLine": 74,
+          "endLine": 77,
           "doc": ""
         },
         {
           "name": "ResearchJobTiming",
           "kind": "interface",
-          "line": 87,
+          "line": 90,
           "exported": true,
-          "endLine": 87
+          "endLine": 90
         },
         {
           "name": "ValidatedResearchJobTiming",
           "kind": "interface",
-          "line": 93,
+          "line": 96,
           "exported": true,
-          "endLine": 93
+          "endLine": 96
         },
         {
           "name": "ResearchJobTimingConfigurationError",
           "kind": "class",
-          "line": 98,
+          "line": 101,
           "exported": true,
-          "endLine": 98
+          "endLine": 101
         },
         {
           "name": "validateResearchJobTiming",
           "kind": "const",
-          "line": 110,
+          "line": 113,
           "exported": true,
-          "endLine": 110
+          "endLine": 113
         }
       ],
       "imports": [
@@ -2025,9 +2032,9 @@
         }
       ],
       "exports": [],
-      "hash": "d17d8d9e1226277f18f1026437518427deff299d110f35490b2f90719f9696e0",
-      "mtimeMs": 1784528556112.277,
-      "size": 4332,
+      "hash": "f8b8d44627ec89b880ef8d7bedd63613bfd31c1a3343e58ecb9eb821db358855",
+      "mtimeMs": 1784530294088.0715,
+      "size": 4410,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2892,86 +2899,86 @@
         {
           "name": "ids",
           "kind": "const",
-          "line": 26,
+          "line": 30,
           "exported": false,
-          "endLine": 26
+          "endLine": 30
         },
         {
           "name": "budget",
           "kind": "const",
-          "line": 45,
+          "line": 49,
           "exported": false,
-          "endLine": 45
+          "endLine": 49
         },
         {
           "name": "plan",
           "kind": "const",
-          "line": 55,
+          "line": 59,
           "exported": false,
-          "endLine": 55
+          "endLine": 59
         },
         {
           "name": "databaseUrl",
-          "kind": "const",
-          "line": 131,
-          "exported": false,
-          "endLine": 131
-        },
-        {
-          "name": "artifactRoot",
-          "kind": "const",
-          "line": 133,
-          "exported": false,
-          "endLine": 133
-        },
-        {
-          "name": "sql",
           "kind": "const",
           "line": 135,
           "exported": false,
           "endLine": 135
         },
         {
-          "name": "layer",
-          "kind": "const",
-          "line": 136,
-          "exported": false,
-          "endLine": 136
-        },
-        {
-          "name": "loaded",
+          "name": "artifactRoot",
           "kind": "const",
           "line": 137,
           "exported": false,
           "endLine": 137
         },
         {
+          "name": "childMode",
+          "kind": "const",
+          "line": 139,
+          "exported": false,
+          "endLine": 139
+        },
+        {
+          "name": "sql",
+          "kind": "const",
+          "line": 140,
+          "exported": false,
+          "endLine": 140
+        },
+        {
+          "name": "layer",
+          "kind": "const",
+          "line": 141,
+          "exported": false,
+          "endLine": 141
+        },
+        {
+          "name": "loaded",
+          "kind": "const",
+          "line": 142,
+          "exported": false,
+          "endLine": 142
+        },
+        {
+          "name": "durableState",
+          "kind": "const",
+          "line": 152,
+          "exported": false,
+          "endLine": 152
+        },
+        {
           "name": "disposition",
           "kind": "const",
-          "line": 147,
+          "line": 153,
           "exported": false,
-          "endLine": 147
+          "endLine": 153
         },
         {
           "name": "storage",
           "kind": "const",
-          "line": 150,
+          "line": 156,
           "exported": false,
-          "endLine": 150
-        },
-        {
-          "name": "workflow",
-          "kind": "const",
-          "line": 154,
-          "exported": false,
-          "endLine": 154
-        },
-        {
-          "name": "result",
-          "kind": "const",
-          "line": 174,
-          "exported": false,
-          "endLine": 174
+          "endLine": 156
         }
       ],
       "imports": [
@@ -2992,13 +2999,14 @@
           "kind": "static"
         },
         {
-          "source": "Effect, Layer, Option, Runtime",
+          "source": "Effect, Layer, Option, Runtime, Schema",
           "specifier": "effect",
           "imported": [
             "Effect",
             "Layer",
             "Option",
-            "Runtime"
+            "Runtime",
+            "Schema"
           ],
           "kind": "static"
         },
@@ -3025,9 +3033,9 @@
         }
       ],
       "exports": [],
-      "hash": "3e442fe688f007c825260a84f12aaa50d5a8569023c5babda5eaae853b050208",
-      "mtimeMs": 1784528552937.1807,
-      "size": 5968,
+      "hash": "d5d96aa31a30376d1bafe4589faa1eca85572419e4eb036a2819a32f9fd1fb31",
+      "mtimeMs": 1784530574343.0298,
+      "size": 7773,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -8932,98 +8940,105 @@
         {
           "name": "Phase05LiveIntegrationEvidence",
           "kind": "const",
-          "line": 151,
+          "line": 152,
           "exported": true,
-          "endLine": 151
+          "endLine": 152
         },
         {
           "name": "Phase05LiveIntegrationEvidence",
           "kind": "type",
-          "line": 176,
+          "line": 177,
           "exported": true,
-          "endLine": 176
+          "endLine": 177
         },
         {
           "name": "readPhase05LiveIntegrationEvidence",
           "kind": "function",
-          "line": 179,
+          "line": 180,
           "exported": true,
-          "endLine": 179
+          "endLine": 180
         },
         {
           "name": "Phase05EvaluationError",
           "kind": "class",
-          "line": 186,
+          "line": 187,
           "exported": true,
-          "endLine": 186
+          "endLine": 187
         },
         {
           "name": "sha256",
           "kind": "function",
-          "line": 195,
+          "line": 196,
           "exported": false,
-          "endLine": 195,
+          "endLine": 196,
           "signature": "(value: string)"
         },
         {
           "name": "evidenceSha256",
           "kind": "function",
-          "line": 199,
+          "line": 200,
           "exported": false,
-          "endLine": 199,
+          "endLine": 200,
           "signature": "(value: unknown)"
         },
         {
           "name": "planningInput",
           "kind": "function",
-          "line": 203,
+          "line": 204,
           "exported": false,
-          "endLine": 203,
+          "endLine": 204,
           "signature": "()"
         },
         {
           "name": "validPlanProposal",
           "kind": "function",
-          "line": 258,
+          "line": 259,
           "exported": false,
-          "endLine": 258,
+          "endLine": 259,
           "signature": "()"
         },
         {
           "name": "criterion",
           "kind": "function",
-          "line": 359,
+          "line": 360,
           "exported": false,
-          "endLine": 359
+          "endLine": 360
         },
         {
           "name": "toolDefinition",
           "kind": "function",
-          "line": 375,
+          "line": 376,
           "exported": false,
-          "endLine": 375
+          "endLine": 376
         },
         {
           "name": "checkpoint",
           "kind": "function",
-          "line": 391,
+          "line": 392,
           "exported": false,
-          "endLine": 391,
+          "endLine": 392,
           "signature": "(plan: typeof ResearchPlan.Type)"
         },
         {
           "name": "runPhase05Evaluation",
           "kind": "const",
-          "line": 430,
+          "line": 431,
           "exported": true,
-          "endLine": 430
+          "endLine": 431
         },
         {
           "name": "serializePhase05EvaluationReport",
           "kind": "function",
-          "line": 1072,
+          "line": 1076,
           "exported": true,
-          "endLine": 1072
+          "endLine": 1076
+        },
+        {
+          "name": "verifyPhase05TrackedReportIntegrity",
+          "kind": "function",
+          "line": 1082,
+          "exported": true,
+          "endLine": 1082
         }
       ],
       "imports": [
@@ -9064,9 +9079,9 @@
         }
       ],
       "exports": [],
-      "hash": "b9a95bdb2a04885c28511521da50d4cf641a6f3c69f3ca7212aedb43041790be",
-      "mtimeMs": 1784529057616.8413,
-      "size": 34083,
+      "hash": "8e1e09e301f1599b760033d9b03a01d04b06c9e933c70d833574e2cc0b514aaf",
+      "mtimeMs": 1784530337566.7847,
+      "size": 35433,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -9199,37 +9214,44 @@
         {
           "name": "root",
           "kind": "const",
-          "line": 10,
-          "exported": false,
-          "endLine": 10
-        },
-        {
-          "name": "evidencePath",
-          "kind": "const",
           "line": 11,
           "exported": false,
           "endLine": 11
         },
         {
+          "name": "evidencePath",
+          "kind": "const",
+          "line": 12,
+          "exported": false,
+          "endLine": 12
+        },
+        {
           "name": "reportPath",
           "kind": "const",
-          "line": 15,
+          "line": 16,
           "exported": false,
-          "endLine": 15
+          "endLine": 16
+        },
+        {
+          "name": "mode",
+          "kind": "const",
+          "line": 20,
+          "exported": false,
+          "endLine": 20
         },
         {
           "name": "firstBytes",
           "kind": "const",
-          "line": 33,
+          "line": 39,
           "exported": false,
-          "endLine": 33
+          "endLine": 39
         },
         {
           "name": "secondBytes",
           "kind": "const",
-          "line": 34,
+          "line": 40,
           "exported": false,
-          "endLine": 34
+          "endLine": 40
         }
       ],
       "imports": [
@@ -9261,9 +9283,9 @@
         }
       ],
       "exports": [],
-      "hash": "c3242f6ff90562466f7fc668f25d2ce282a09fde699f7e1705669a4cd489aba1",
-      "mtimeMs": 1784527750039.3486,
-      "size": 1726,
+      "hash": "a5d3c98c55d2f96efc14719721d497553d4b443f2d85ef82011ca098b08feff5",
+      "mtimeMs": 1784530391659.2659,
+      "size": 2474,
       "generated": false,
       "vendor": false,
       "parser": "regex"

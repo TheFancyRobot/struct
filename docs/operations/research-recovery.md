@@ -10,10 +10,13 @@ Compose sidecar.
 - Planning commit: reopen the same run and load the schema-decoded plan from
   `ResearchExecutionRepo.loadDurableState`; never ask the model to plan again.
 - Tool/checkpoint commit: select `resume` or `finalize` from the committed
-  checkpoint. The live gate executes a real dataset query, commits its
-  content-addressed result artifact and checkpoint/event idempotently, then
-  proves a replacement process makes zero dataset-provider calls. Completed
-  nodes must not execute SQL, retrieval, or synthesis again.
+  checkpoint. The live gate first executes a real uncommitted dataset query,
+  starts a distinct Bun replacement process that loads the durable plan with
+  no checkpoint and reissues that query exactly once, then commits the
+  replacement's content-addressed result artifact and checkpoint/event
+  idempotently. A later replacement loads the committed checkpoint and makes
+  zero dataset-provider calls. Completed nodes must not execute SQL, retrieval,
+  or synthesis again.
 - Cancellation: call `requestCancellation` with the same idempotency key.
   Replays return the stored decision and create no second terminal event.
 - Provider failure: retain the typed failure tag and bounded retry history.
@@ -61,6 +64,6 @@ larger than 65,536 bytes, replay reconstruction within 1,000 ms, and sidecar
 recovery within 10,000 ms. It also requires restart gates after plan commit,
 after a dataset-query attempt but before its durable commit, after checkpoint
 commit, and during cancellation. The July 20, 2026 reference run measured a
-1,158-byte checkpoint, 12.099 ms replay reconstruction, and 259 ms sidecar
+1,158-byte checkpoint, 10.7 ms replay reconstruction, and 259 ms sidecar
 recovery. These wall-clock measurements stay outside the deterministic report
 hash.

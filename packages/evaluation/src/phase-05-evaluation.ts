@@ -121,6 +121,7 @@ const Phase05LiveIntegrationEvidenceBase = Schema.Struct({
     duplicateDurableEffects: EvidenceCounter,
     completedDatasetQueryReplays: EvidenceCounter,
     datasetProviderCallsAfterReplacement: EvidenceCounter,
+    uncommittedDatasetProviderCallsAfterReplacement: EvidenceCounter,
     artifactCheckpointMode: Schema.Literal('by-reference'),
     datasetArtifactCommitted: Schema.Literal(true),
     datasetIdempotencyCommitPersisted: Schema.Literal(true),
@@ -653,6 +654,8 @@ export const runPhase05Evaluation = Effect.fn('runPhase05Evaluation')(
           live.recovery.completedDatasetQueryReplays,
         datasetProviderCallsAfterReplacement:
           live.recovery.datasetProviderCallsAfterReplacement,
+        uncommittedDatasetProviderCallsAfterReplacement:
+          live.recovery.uncommittedDatasetProviderCallsAfterReplacement,
         datasetArtifactCommitted: live.recovery.datasetArtifactCommitted,
         datasetIdempotencyCommitPersisted:
           live.recovery.datasetIdempotencyCommitPersisted,
@@ -669,6 +672,7 @@ export const runPhase05Evaluation = Effect.fn('runPhase05Evaluation')(
         && live.recovery.duplicateDurableEffects === 0
         && live.recovery.completedDatasetQueryReplays === 0
         && live.recovery.datasetProviderCallsAfterReplacement === 0
+        && live.recovery.uncommittedDatasetProviderCallsAfterReplacement === 1
         && live.recovery.datasetArtifactCommitted
         && live.recovery.datasetIdempotencyCommitPersisted
         && live.recovery.artifactCheckpointMode === 'by-reference'
@@ -1073,4 +1077,35 @@ export function serializePhase05EvaluationReport(
   report: Phase05EvaluationReport,
 ): string {
   return canonicalJson(report)
+}
+
+export function verifyPhase05TrackedReportIntegrity(
+  trackedBytes: string,
+  freshBytes: string,
+): void {
+  const parsed: unknown = JSON.parse(trackedBytes)
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new Error('tracked Phase 05 report must be a JSON object')
+  }
+  const tracked = Object.fromEntries(Object.entries(parsed))
+  const trackedHash = tracked['reportSha256']
+  if (
+    typeof trackedHash !== 'string'
+    || !/^[0-9a-f]{64}$/.test(trackedHash)
+  ) {
+    throw new Error('tracked Phase 05 report hash is missing or malformed')
+  }
+  const trackedBody = { ...tracked }
+  delete trackedBody['reportSha256']
+  if (sha256(canonicalJson(trackedBody)) !== trackedHash) {
+    throw new Error('tracked Phase 05 report hash does not match its body')
+  }
+  if (canonicalJson(tracked) !== trackedBytes) {
+    throw new Error('tracked Phase 05 report bytes are not canonical')
+  }
+  if (trackedBytes !== freshBytes) {
+    throw new Error(
+      'tracked Phase 05 report differs from fresh evaluation output',
+    )
+  }
 }

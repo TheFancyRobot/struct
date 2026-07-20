@@ -3,24 +3,25 @@
   "source": "live-postgresql-compose",
   "runId": "960e8400-e29b-41d4-a716-446655440003",
   "recovery": {
-    "reconnectCursor": 10051,
+    "reconnectCursor": 10173,
     "committedEventSequences": [
-      10051,
-      10052
+      10173,
+      10174
     ],
     "reconnectEventSequences": [
-      10052
+      10174
     ],
     "terminalStates": 1,
     "duplicateDurableEffects": 0,
     "completedDatasetQueryReplays": 0,
     "datasetProviderCallsAfterReplacement": 0,
+    "uncommittedDatasetProviderCallsAfterReplacement": 1,
     "artifactCheckpointMode": "by-reference",
     "datasetArtifactCommitted": true,
     "datasetIdempotencyCommitPersisted": true,
     "checkpointBytes": 1158,
-    "initialProcessId": 25468,
-    "replacementProcessId": 25545,
+    "initialProcessId": 44935,
+    "replacementProcessId": 44985,
     "gates": {
       "restartAfterPlan": true,
       "restartAfterToolAttemptBeforeCommit": true,
