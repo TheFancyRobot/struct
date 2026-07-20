@@ -70,7 +70,9 @@ import { startResearch } from './routes/research'
 import { getCitationDetail } from './routes/citations'
 import {
   parseEventCursor,
+  researchEventScopeFailureResponse,
   researchEventsResponse,
+  resolveResearchEventScope,
 } from './routes/research-events'
 import { cancelResearch } from './routes/research-cancel'
 import {
@@ -676,25 +678,31 @@ const server = Effect.gen(function* () {
           return jsonResponse({ error: 'ResearchRunNotFound' }, 404)
         }
         const scopedRun = await Runtime.runPromiseExit(effectRuntime)(
-          Effect.gen(function* () {
-            const project = yield* ProjectRepo.findById(exit.value.projectId)
-              .pipe(Effect.provide(projectLayer))
-            const exists = yield* ResearchProjectionRepo.runExists(
-              project.workspaceId,
-              exit.value.projectId,
-              exit.value.runId,
-            ).pipe(Effect.provide(projectionLayer))
-            return { workspaceId: project.workspaceId, exists }
-          }),
+          resolveResearchEventScope(
+            exit.value.projectId,
+            exit.value.runId,
+            {
+              findProject: (projectId) => ProjectRepo.findById(projectId)
+                .pipe(Effect.provide(projectLayer)),
+              runExists: (workspaceId, projectId, runId) =>
+                ResearchProjectionRepo.runExists(
+                  workspaceId,
+                  projectId,
+                  runId,
+                ).pipe(Effect.provide(projectionLayer)),
+            },
+          ),
         )
         if (scopedRun._tag === 'Failure') {
-          return jsonResponse({ error: 'ResearchEventsUnavailable' }, 503)
-        }
-        if (!scopedRun.value.exists) {
-          return jsonResponse({ error: 'ResearchRunNotFound' }, 404)
+          const failure = Option.getOrUndefined(
+            Cause.failureOption(scopedRun.cause),
+          )
+          return failure === undefined
+            ? jsonResponse({ error: 'ResearchEventsUnavailable' }, 503)
+            : researchEventScopeFailureResponse(failure)
         }
         return researchEventsResponse(
-          scopedRun.value.workspaceId,
+          scopedRun.value,
           exit.value.projectId,
           exit.value.runId,
           cursor,

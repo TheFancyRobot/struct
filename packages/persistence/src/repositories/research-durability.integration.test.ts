@@ -80,6 +80,7 @@ const checkpoint = (
   checkpointId: string,
   steps: number,
   limits: ResearchPlan['budget'] = budget,
+  lastEventSequence = steps,
 ): ResearchExecutionCheckpoint => ({
   version: '1',
   id: ResearchCheckpointId.make(checkpointId),
@@ -106,7 +107,7 @@ const checkpoint = (
     duplicateActionCount: 0,
     noProgressCount: 0,
     fredCorrelation: 'fred-restart-test',
-    lastEventSequence: steps,
+    lastEventSequence,
   },
 })
 
@@ -251,6 +252,35 @@ describeIf('research durability (PostgreSQL, serial)', () => {
       }).pipe(Effect.provide(layer)),
     )
     expect(Exit.isFailure(rollback)).toBe(true)
+    const exactRetry = await Effect.runPromiseExit(
+      ResearchExecutionRepo.persistCheckpoint({
+        workspaceId,
+        projectId,
+        job,
+        checkpoint: checkpoint(id('446655440021'), 1),
+        eventId: EventJournalId.make(id('446655440029')),
+        createdAt: 31n,
+      }).pipe(Effect.provide(layer)),
+    )
+    expect(Exit.isSuccess(exactRetry)).toBe(true)
+    const checkpointEventsAfterRetry = await sql.unsafe(
+      `SELECT COUNT(*)::int AS count
+       FROM event_journal
+       WHERE entity_id = $1 AND event_type = 'research-checkpointed'`,
+      [runId],
+    )
+    expect(checkpointEventsAfterRetry[0]?.['count']).toBe(1)
+    const equalSequenceConflict = await Effect.runPromiseExit(
+      ResearchExecutionRepo.persistCheckpoint({
+        workspaceId,
+        projectId,
+        job,
+        checkpoint: checkpoint(id('446655440030'), 1),
+        eventId: EventJournalId.make(id('446655440031')),
+        createdAt: 32n,
+      }).pipe(Effect.provide(layer)),
+    )
+    expect(Exit.isFailure(equalSequenceConflict)).toBe(true)
     const expandedBudget = await Effect.runPromiseExit(
       ResearchExecutionRepo.persistCheckpoint({
         workspaceId,
@@ -266,6 +296,53 @@ describeIf('research durability (PostgreSQL, serial)', () => {
       }).pipe(Effect.provide(layer)),
     )
     expect(Exit.isFailure(expandedBudget)).toBe(true)
+
+    await Effect.runPromise(ResearchExecutionRepo.persistCheckpoint({
+      workspaceId,
+      projectId,
+      job,
+      checkpoint: checkpoint(id('446655440032'), 1, budget, 2),
+      eventId: EventJournalId.make(id('446655440033')),
+      createdAt: 36n,
+    }).pipe(Effect.provide(layer)))
+    const staleSequence = await Effect.runPromiseExit(
+      ResearchExecutionRepo.persistCheckpoint({
+        workspaceId,
+        projectId,
+        job,
+        checkpoint: checkpoint(id('446655440034'), 1, budget, 1),
+        eventId: EventJournalId.make(id('446655440035')),
+        createdAt: 37n,
+      }).pipe(Effect.provide(layer)),
+    )
+    expect(Exit.isFailure(staleSequence)).toBe(true)
+
+    const restartedSql = postgres(DATABASE_URL ?? '', {
+      max: 1,
+      idle_timeout: 5,
+    })
+    const restartedLayer = Layer.provide(
+      ResearchExecutionRepo.Default,
+      SqlClientLive(restartedSql),
+    )
+    const restarted = await Effect.runPromise(
+      ResearchExecutionRepo.loadDurableState(
+        workspaceId,
+        projectId,
+        runId,
+      ).pipe(Effect.provide(restartedLayer)),
+    )
+    await restartedSql.end()
+    expect(Option.isSome(restarted)).toBe(true)
+    if (Option.isSome(restarted)) {
+      const durableCheckpoint = Option.getOrUndefined(
+        restarted.value.checkpoint,
+      )
+      expect(durableCheckpoint?.id).toBe(
+        ResearchCheckpointId.make(id('446655440032')),
+      )
+      expect(durableCheckpoint?.state.lastEventSequence).toBe(2)
+    }
 
     const cancelled = await Effect.runPromise(
       ResearchExecutionRepo.requestCancellation({

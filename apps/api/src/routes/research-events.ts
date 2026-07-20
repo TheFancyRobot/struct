@@ -2,7 +2,7 @@ import { Effect, Schema } from 'effect'
 import { ResearchEvent } from '@struct/domain'
 import type * as typeDomain from '@struct/domain'
 import type * as typePersistence from '@struct/persistence'
-import { QueryError } from '@struct/persistence'
+import { EntityNotFoundError, QueryError } from '@struct/persistence'
 
 const MAX_EVENT_BATCH = 100
 const POLL_INTERVAL_MS = 1_000
@@ -29,6 +29,57 @@ export interface ResearchEventDeps {
     typePersistence.PersistenceError,
     never
   >
+}
+
+export interface ResearchEventScopeDeps {
+  readonly findProject: (
+    projectId: typeDomain.ProjectId,
+  ) => Effect.Effect<
+    typeof typeDomain.Project.Type,
+    typePersistence.PersistenceError,
+    never
+  >
+  readonly runExists: (
+    workspaceId: typeDomain.WorkspaceId,
+    projectId: typeDomain.ProjectId,
+    runId: typeDomain.ResearchRunId,
+  ) => Effect.Effect<boolean, typePersistence.PersistenceError, never>
+}
+
+export const resolveResearchEventScope = (
+  projectId: typeDomain.ProjectId,
+  runId: typeDomain.ResearchRunId,
+  deps: ResearchEventScopeDeps,
+): Effect.Effect<
+  typeDomain.WorkspaceId,
+  typePersistence.PersistenceError,
+  never
+> =>
+  Effect.gen(function* () {
+    const project = yield* deps.findProject(projectId)
+    const exists = yield* deps.runExists(project.workspaceId, projectId, runId)
+    if (!exists) {
+      return yield* new EntityNotFoundError({
+        entity: 'ResearchRun',
+        id: runId,
+        message: `ResearchRun ${runId} not found`,
+      })
+    }
+    return project.workspaceId
+  })
+
+export function researchEventScopeFailureResponse(
+  error: typePersistence.PersistenceError,
+): Response {
+  return error instanceof EntityNotFoundError
+    ? new Response(JSON.stringify({ error: 'ResearchRunNotFound' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    : new Response(JSON.stringify({ error: 'ResearchEventsUnavailable' }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      })
 }
 
 export interface ResearchEventStreamRuntime {

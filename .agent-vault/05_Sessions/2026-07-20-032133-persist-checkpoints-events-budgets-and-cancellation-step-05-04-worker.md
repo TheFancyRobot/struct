@@ -55,6 +55,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 03:37 - Verified the final repository state with PostgreSQL-backed full-suite, static, build, security, documentation, and migration gates.
 - Completed final self-review remediation for atomic stale recovery and terminal winner fences.
 - Completed the full zero-defect validation matrix after remediation; no confirmed defects remain in STEP-05-04 scope.
+- 04:04 - Remediated confirmed PR review findings in one pass: strict checkpoint sequence fencing with exact-retry idempotency, a built-app same-origin Bun credential bridge for native EventSource, typed missing-project SSE scope mapping, current step snapshot, and complete generated-index path accounting.
 
 ## Findings
 
@@ -62,7 +63,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - The executable ordering rule is one transaction under the existing run/job lock: write plan/checkpoint/budget/cancel/terminal state, append the product event, then expose both through the journal's commit-ordered cursor.
 - Restart reconstruction validates persisted plans and checkpoints through their Effect schemas, returns the last committed product cursor, and never embeds tool output bodies.
 - Cancellation has one terminal winner; duplicate keys replay the prior decision and late requests are audited no-ops without a second terminal event.
-- Authenticated replay derives workspace scope from the persisted project. The Vite dev proxy carries the server-side API token so the existing Solid EventSource remains functional.
+- Authenticated replay derives workspace scope from the persisted project. The Vite development proxy and Bun production web server carry the server-side API token so the existing Solid EventSource remains functional without exposing credentials.
 - Self-review found and fixed checkpoint budget-limit inflation: resumed checkpoints must retain the accepted plan's exact limits as well as monotonic usage.
 - Final self-review confirmed a reachable pre-plan stale-worker gap: stale recovery could append a terminal event while an absent `research_run_control` row made restart reconstruction empty.
 - Remediated atomically: stale recovery now persists a typed planning disposition and failed terminal state before the public terminal event, and every affected job/run/control transition checks its `RETURNING` row count before proceeding.
@@ -70,6 +71,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Added PostgreSQL regression coverage proving a pre-plan stale worker reconstructs as a typed planning failure with one failed terminal state.
 - Root acceptance review confirmed the new durable methods are intentionally repository/API seams in STEP-05-04, not yet production worker callers. The STEP-05-04 brief explicitly excludes production tool dispatch and worker recovery execution, lists no worker starting path, and requires the ordering contract to be ready for STEP-05-05 recovery dispatch. STEP-05-05 explicitly owns binding the merged graph and durable state into the existing worker lifecycle.
 - Existing walking-skeleton terminal transitions remain a current production path, not legacy compatibility. Their terminal control upsert gives cancellation and terminal races one database winner during the bounded transition period; STEP-05-05 will supply accepted-plan/planning-failure and checkpoint callers before switching executable graph dispatch to the new path.
+- Checkpoint order is now fenced by `lastEventSequence` under the existing row lock: a new checkpoint must advance the sequence; only an identical checkpoint ID and schema-encoded payload at the same sequence is an idempotent no-op, and all other equal/stale writes fail before state or journal mutation.
+- Built Solid deployments now use the repository-owned Bun web server as the real same-origin credential bridge. It serves `dist/` and forwards `/api` Request/Response streams without buffering, injects `API_AUTH_TOKEN` only server-side, and preserves native EventSource cursor reconnect behavior. Vite development keeps the equivalent server-side proxy and omits Authorization for a blank token.
+- Research SSE scope resolution distinguishes a missing valid project/run (`404 ResearchRunNotFound`) from persistence/infrastructure failure (`503 ResearchEventsUnavailable`) at an extracted route boundary.
 
 ## Context Handoff
 
@@ -100,9 +104,20 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `apps/web/vite.config.ts`
 - `README.md`
 - `.agent-vault/00_Home/Active_Context.md`
+- `.agent-vault/00_Home/Bugs_Index.md`
+- `.agent-vault/00_Home/Decisions_Index.md`
+- `.agent-vault/01_Architecture/Code_Graph.md`
+- `.agent-vault/08_Automation/code-graph/index.json`
 - `.agent-vault/02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase.md`
 - `.agent-vault/02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_04_persist-checkpoints-events-budgets-and-cancellation.md`
 - `.agent-vault/05_Sessions/2026-07-20-032133-persist-checkpoints-events-budgets-and-cancellation-step-05-04-worker.md`
+- `.env.example`
+- `apps/web/package.json`
+- `apps/web/src/server.ts`
+- `apps/web/src/server.test.ts`
+- `apps/web/vite.config.test.ts`
+- `docs/frontend-architecture.md`
+- `docs/local-development.md`
 <!-- AGENT-END:session-changed-paths -->
 
 ## Validation Run
@@ -110,12 +125,13 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-START:session-validation-run -->
 - Focused PostgreSQL durability/API suites: PASS for restart reconstruction, exact budget preservation, monotonic usage, cancellation races/idempotency, terminal fencing, and scoped replay.
 - Final post-review PostgreSQL/unit focus: 34 passed, 0 failed (ownership unit plus durability/research ownership integrations).
-- Root independent full repository run with PostgreSQL: 626 passed, 3 expected environment-gated data-engine skips, 0 failed, 3042 assertions across 109 files.
-- `bun run typecheck`, `bun run lint`, and `bun run lint:imports`: passed; 154 modules/383 dependencies and zero boundary violations.
+- Review-remediation focus: 14 API/web unit tests plus 3 PostgreSQL durability tests passed, including exact checkpoint retry, equal/stale rejection, and a fresh-client restart proving the newest checkpoint survives.
+- Root independent post-remediation full repository run with PostgreSQL: 631 passed, 3 expected environment-gated data-engine skips, 0 failed, 3064 assertions across 111 files.
+- `bun run typecheck`, `bun run lint`, and `bun run lint:imports`: passed; 155 modules/384 dependencies and zero boundary violations.
 - `bun run build`: web, API, and worker passed.
 - `bun install --frozen-lockfile`: passed with no changes.
 - `bun run docs:lint`: 42 Markdown files passed.
-- `bun run secrets:scan`: 954 repository paths passed with zero committed secrets.
+- `bun run secrets:scan`: 957 repository paths and 954 branch-history blobs passed with zero committed secrets.
 - Migration down/up smoke and runner/upgrade integration: passed.
 - `git diff --check` and Agent Vault doctor: passed with no findings.
 <!-- AGENT-END:session-validation-run -->

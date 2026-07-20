@@ -25,7 +25,7 @@ selected production topology.
 | DuckDB data-plane sidecar | `packages/data-engine` owns the typed client/protocol; Compose owns service lifecycle | sidecar is internal/no-egress; fixed-target gateway publishes authenticated `127.0.0.1:4300` and has no mounts | `./.local/artifacts` read-only and the `data-engine-scratch` local Docker volume read/write | authenticated `GET /healthz`; host Bun-client materialization/query integration probe | after artifact storage, before worker | stop/restart sidecar and gateway; remove unpromoted partials | `docker compose down -v` removes scratch |
 | `apps/worker` | itself | no inbound HTTP; optional metrics on `3002`; authenticated data-engine access through the loopback gateway | reads `./.local/artifacts` | `GET /healthz` on metrics port (optional) or process liveness | 3 (after PG + storage dirs) | `SIGTERM`; finish in-flight, checkpoint, exit | stop process |
 | `apps/api` | itself | `3001` (HTTP) | reads PG + artifact refs | `GET /healthz` → `200` | 4 (after worker) | `SIGTERM`; drain SSE, exit | stop process |
-| `apps/web` | itself | `3000` (Vite 8 dev) | none | `GET /` → `200` | 5 (after API) | `SIGTERM`; exit | stop process |
+| `apps/web` | itself | `3000` (Vite 8 dev or Bun production server) | none | `GET /` → `200` | 5 (after API) | `SIGTERM`; exit | stop process |
 
 Ownership rules captured by the table:
 
@@ -65,6 +65,11 @@ bun run dev                   # start worker, api, web
 
 Reset is a destructive local-only operation. It must never be wired to a production path.
 
+For a built web process, run `bun run --filter @struct/web build` followed by
+`bun run --filter @struct/web start`. The Bun server serves the generated
+`dist/` SPA and proxies same-origin `/api` requests to `API_ORIGIN`, adding the
+server-only `API_AUTH_TOKEN` without placing it in the browser bundle.
+
 ## 3. Environment, secrets, and safe volumes
 
 ### 3.1 Example-file and secrets policy
@@ -80,12 +85,13 @@ Reset is a destructive local-only operation. It must never be wired to a product
 | --- | --- | --- | --- |
 | `DATABASE_URL` | `apps/api`, `apps/worker` | PostgreSQL connection | `postgres://struct:struct@localhost:5432/struct` |
 | `ARTIFACT_STORAGE_ROOT` | `packages/source-storage`, `apps/api`, `apps/worker` | dev FS artifact root and upload staging root | `./.local/artifacts` |
-| `API_AUTH_TOKEN` | `apps/api` | bearer credential for protected local API reads (minimum 16 characters) | local secret |
+| `API_AUTH_TOKEN` | `apps/api`, `apps/web` server | bearer credential for protected API reads; the web server injects it without exposing it to browser code (minimum 16 characters) | local secret |
+| `API_ORIGIN` | `apps/web` production server | upstream API origin for the same-origin credential bridge | `http://127.0.0.1:3001` |
 | `MAX_TEXT_SOURCE_BYTES` | `apps/api`, `packages/ingestion` | walking-slice upload byte cap | `1048576` |
 | `DATA_ENGINE_URL` | `packages/data-engine`, `apps/worker` | authenticated loopback gateway | `http://127.0.0.1:4300` |
 | `DATA_ENGINE_TOKEN` | `packages/data-engine`, DuckDB sidecar | shared bearer credential (minimum 16 characters) | local secret |
 | `API_PORT` | `apps/api` | HTTP port | `3001` |
-| `WEB_PORT` | `apps/web` | Vite 8 dev port | `3000` |
+| `WEB_PORT` | `apps/web` | Vite 8 development or Bun production server port | `3000` |
 | `WORKER_METRICS_PORT` | `apps/worker` | optional metrics/health port | `3002` |
 | `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` | `apps/api`, `apps/worker`, `packages/workflows` | optional OTLP HTTP trace collector; stdout tracing is the local fallback | `http://localhost:4318/v1/traces` |
 | `WORKER_POLL_INTERVAL_MS` | `apps/worker` | ingestion job polling interval | `1000` |

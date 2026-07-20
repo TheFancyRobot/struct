@@ -3,11 +3,15 @@ import solid from 'vite-plugin-solid'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 
+export function apiProxyHeaders(
+  token: string | undefined,
+): Readonly<Record<string, string>> {
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, path.resolve(__dirname, '../..'), '')
-  const proxyHeaders = env['API_AUTH_TOKEN'] === undefined
-    ? {}
-    : { Authorization: `Bearer ${env['API_AUTH_TOKEN']}` }
+  const proxyHeaders = apiProxyHeaders(env['API_AUTH_TOKEN'])
   return {
     plugins: [solid(), tailwindcss()],
     resolve: {

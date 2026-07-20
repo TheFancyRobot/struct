@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T03:49:58.139Z",
+  "generatedAt": "2026-07-20T04:04:45.773Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -76,71 +76,71 @@
         {
           "name": "RegisterRequestBody",
           "kind": "interface",
-          "line": 82,
+          "line": 84,
           "exported": false,
-          "endLine": 82
+          "endLine": 84
         },
         {
           "name": "ResearchRequestBody",
           "kind": "interface",
-          "line": 90,
+          "line": 92,
           "exported": false,
-          "endLine": 90
+          "endLine": 92
         },
         {
           "name": "jsonResponse",
           "kind": "function",
-          "line": 97,
+          "line": 99,
           "exported": false,
-          "endLine": 97,
+          "endLine": 99,
           "signature": "(body: unknown, status = 200)"
         },
         {
           "name": "credentialMatches",
           "kind": "function",
-          "line": 104,
+          "line": 106,
           "exported": false,
-          "endLine": 104,
+          "endLine": 106,
           "signature": "(expected: string, actual: string)"
         },
         {
           "name": "bearerCredential",
           "kind": "function",
-          "line": 111,
+          "line": 113,
           "exported": false,
-          "endLine": 111,
+          "endLine": 113,
           "signature": "(request: Request)"
         },
         {
           "name": "parseBody",
           "kind": "function",
-          "line": 118,
+          "line": 120,
           "exported": false,
-          "endLine": 118,
+          "endLine": 120,
           "signature": "(body: RegisterRequestBody): Effect.Effect<{"
         },
         {
           "name": "parseResearchBody",
           "kind": "function",
-          "line": 142,
+          "line": 144,
           "exported": false,
-          "endLine": 142,
+          "endLine": 144,
           "signature": "(body: ResearchRequestBody): Effect.Effect<{"
         },
         {
           "name": "researchFailureResponse",
           "kind": "function",
-          "line": 177,
+          "line": 179,
           "exported": false,
-          "endLine": 177,
+          "endLine": 179,
           "signature": "(cause: Cause.Cause<unknown>)"
         },
         {
           "name": "server",
           "kind": "const",
-          "line": 188,
+          "line": 190,
           "exported": false,
-          "endLine": 188
+          "endLine": 190
         }
       ],
       "imports": [
@@ -216,9 +216,9 @@
         }
       ],
       "exports": [],
-      "hash": "5b8398525b074d5497707db5de26c13eaeb071c477c3a88ad006af1236187133",
-      "mtimeMs": 1784518416471.079,
-      "size": 32883,
+      "hash": "9f7d9140f8ac0e5563d0d0dff1acd45f212ae27b03ed48c4e8995d225d580fff",
+      "mtimeMs": 1784520119568.633,
+      "size": 33088,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -819,48 +819,69 @@
           "endLine": 11
         },
         {
-          "name": "ResearchEventStreamRuntime",
+          "name": "ResearchEventScopeDeps",
           "kind": "interface",
           "line": 34,
           "exported": true,
           "endLine": 34
         },
         {
+          "name": "resolveResearchEventScope",
+          "kind": "const",
+          "line": 49,
+          "exported": true,
+          "endLine": 49
+        },
+        {
+          "name": "researchEventScopeFailureResponse",
+          "kind": "function",
+          "line": 71,
+          "exported": true,
+          "endLine": 71
+        },
+        {
+          "name": "ResearchEventStreamRuntime",
+          "kind": "interface",
+          "line": 85,
+          "exported": true,
+          "endLine": 85
+        },
+        {
           "name": "liveStreamRuntime",
           "kind": "const",
-          "line": 39,
+          "line": 90,
           "exported": false,
-          "endLine": 39
+          "endLine": 90
         },
         {
           "name": "parseEventCursor",
           "kind": "function",
-          "line": 44,
+          "line": 95,
           "exported": true,
-          "endLine": 44,
+          "endLine": 95,
           "signature": "(value: string | null)"
         },
         {
           "name": "encodeSseEvent",
           "kind": "function",
-          "line": 50,
+          "line": 101,
           "exported": true,
-          "endLine": 50,
+          "endLine": 101,
           "signature": "(event: ResearchEvent)"
         },
         {
           "name": "loadResearchEvents",
           "kind": "const",
-          "line": 54,
+          "line": 105,
           "exported": true,
-          "endLine": 54
+          "endLine": 105
         },
         {
           "name": "researchEventsResponse",
           "kind": "function",
-          "line": 102,
+          "line": 153,
           "exported": true,
-          "endLine": 102
+          "endLine": 153
         }
       ],
       "imports": [
@@ -882,18 +903,19 @@
           "kind": "static"
         },
         {
-          "source": "QueryError",
+          "source": "EntityNotFoundError, QueryError",
           "specifier": "@struct/persistence",
           "imported": [
+            "EntityNotFoundError",
             "QueryError"
           ],
           "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "e41f1f49ce37733dd1cec6f2f6f108fe2a274f7549ce91b17bbc75f2b05c3065",
-      "mtimeMs": 1784518011035.8372,
-      "size": 5917,
+      "hash": "25905eace31d7a18359d3880d091049cac236fa5a349a81a7126f60d8d108440",
+      "mtimeMs": 1784520119567.4202,
+      "size": 7464,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1720,6 +1742,138 @@
       "hash": "91b953cfdaf5842e3a937456ddfb3f39db5fe49743c9e06c749f1d3fd96213fb",
       "mtimeMs": 1784459569499.2031,
       "size": 1025,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/web/src/server.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DEFAULT_API_ORIGIN",
+          "kind": "const",
+          "line": 3,
+          "exported": false,
+          "endLine": 3
+        },
+        {
+          "name": "DEFAULT_WEB_PORT",
+          "kind": "const",
+          "line": 4,
+          "exported": false,
+          "endLine": 4
+        },
+        {
+          "name": "WebServerConfig",
+          "kind": "interface",
+          "line": 6,
+          "exported": true,
+          "endLine": 6
+        },
+        {
+          "name": "loadWebServerConfig",
+          "kind": "function",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "proxyApiRequest",
+          "kind": "function",
+          "line": 37,
+          "exported": true,
+          "endLine": 37
+        },
+        {
+          "name": "safeAssetPath",
+          "kind": "function",
+          "line": 54,
+          "exported": false,
+          "endLine": 54,
+          "signature": "(pathname: string)"
+        },
+        {
+          "name": "createWebRequestHandler",
+          "kind": "function",
+          "line": 68,
+          "exported": true,
+          "endLine": 68
+        }
+      ],
+      "imports": [
+        {
+          "source": "path",
+          "specifier": "node:path",
+          "imported": [
+            "path"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "99449ad02f6ba67effa6070d217bdee07bcc0ae55c75bb917583c0cccd96a3cb",
+      "mtimeMs": 1784520119569.043,
+      "size": 3267,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/web/vite.config.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "apiProxyHeaders",
+          "kind": "function",
+          "line": 6,
+          "exported": true,
+          "endLine": 6
+        }
+      ],
+      "imports": [
+        {
+          "source": "defineConfig, loadEnv",
+          "specifier": "vite",
+          "imported": [
+            "defineConfig",
+            "loadEnv"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "solid",
+          "specifier": "vite-plugin-solid",
+          "imported": [
+            "solid"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "tailwindcss",
+          "specifier": "@tailwindcss/vite",
+          "imported": [
+            "tailwindcss"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "path",
+          "specifier": "node:path",
+          "imported": [
+            "path"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "default"
+        }
+      ],
+      "hash": "7c155e0ea806edbd417ea7665e13a009fefdf8b2f47c9f933a2e18cfa321db80",
+      "mtimeMs": 1784520178281.7517,
+      "size": 958,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -11552,9 +11706,9 @@
         {
           "name": "ResearchExecutionError",
           "kind": "type",
-          "line": 1828,
+          "line": 1855,
           "exported": true,
-          "endLine": 1828
+          "endLine": 1855
         }
       ],
       "imports": [
@@ -11583,9 +11737,9 @@
         }
       ],
       "exports": [],
-      "hash": "2b071c1f624cfe642ea0aabc67849d95749ccaf13293c61db722a632bb97821c",
-      "mtimeMs": 1784518881094.7378,
-      "size": 68872,
+      "hash": "5daa5d394e1bc6381d4958d3f21f779adffe1559283b68d64b8ba1279fbaee38",
+      "mtimeMs": 1784520119566.6245,
+      "size": 70045,
       "generated": false,
       "vendor": false,
       "parser": "regex"

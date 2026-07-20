@@ -1461,7 +1461,8 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
         try: () => sql.transaction(async (transaction) => {
           const rows = await transaction.unsafe(
             `SELECT
-               control.plan, control.budget_usage, control.cancellation_status,
+               control.plan, control.checkpoint, control.budget_usage,
+               control.cancellation_status,
                control.terminal_status,
                jq.id AS job_id, jq.status AS job_status, jq.attempts,
                rr.status AS run_status
@@ -1498,6 +1499,32 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
             throw new ResearchAggregateMismatchError(
               'checkpoint.state.budget.limits',
             )
+          }
+          if (row['checkpoint'] !== null) {
+            const previousCheckpoint = Schema.decodeUnknownSync(
+              ResearchExecutionCheckpoint,
+            )(parsePersistedJson(row['checkpoint']))
+            const previousSequence =
+              previousCheckpoint.state.lastEventSequence
+            const nextSequence = checkpoint.state.lastEventSequence
+            if (nextSequence === previousSequence) {
+              const encodedPrevious = Schema.encodeSync(
+                ResearchExecutionCheckpoint,
+              )(previousCheckpoint)
+              const isExactRetry =
+                previousCheckpoint.id === checkpoint.id
+                && JSON.stringify(encodedPrevious)
+                  === JSON.stringify(encodedCheckpoint)
+              if (isExactRetry) return
+              throw new ResearchAggregateMismatchError(
+                'checkpoint.state.lastEventSequence',
+              )
+            }
+            if (nextSequence < previousSequence) {
+              throw new ResearchAggregateMismatchError(
+                'checkpoint.state.lastEventSequence',
+              )
+            }
           }
           if (row['budget_usage'] !== null) {
             const previous = Schema.decodeUnknownSync(ResearchBudgetUsage)(
