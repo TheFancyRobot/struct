@@ -39,7 +39,7 @@ _Last refreshed: 2026-07-20._
 - Phase 03 and STEP-03-01 through STEP-03-06 are completed and merged.
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
-- Phase 06 is refined and active. STEP-06-01 and its BUG-0011 remediation and STEP-06-02 are completed, reviewed, and merged; STEP-06-03 is next.
+- Phase 06 is refined and active. STEP-06-01 and its BUG-0011 remediation and STEP-06-02 are completed, reviewed, and merged; STEP-06-03 is implemented and validated in PR #36, with review and merge pending.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 
 ## Out Of Scope Right Now
@@ -71,5 +71,5 @@ _Last refreshed: 2026-07-20._
 
 ## Next Actions
 
-- Activate and execute STEP-06-03 on its dedicated branch with a fresh worker.
+- Complete PR #36 review and merge for STEP-06-03; only then activate STEP-06-04.
 - Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.

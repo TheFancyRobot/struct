@@ -85,8 +85,6 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Changed Paths
 
 <!-- AGENT-START:session-changed-paths -->
-- None yet.
-<!-- AGENT-END:session-changed-paths -->
 - `packages/retrieval/src/batch-select.ts`
 - `packages/retrieval/src/batch-select.test.ts`
 - `packages/retrieval/src/index.ts`
@@ -98,13 +96,15 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `packages/source-storage/src/index.ts`
 - `apps/worker/src/jobs/build-partition-artifacts.ts`
 - `apps/worker/src/jobs/build-partition-artifacts.test.ts`
+<!-- AGENT-END:session-changed-paths -->
 
 ## Validation Run
 
 <!-- AGENT-START:session-validation-run -->
-- Command: not run yet
-- Result: not run
-- Notes:
+- Focused: 20 STEP-06-03 tests passed across retrieval, research-engine, source-storage, and worker; 0 failed.
+- Repository: 583 tests passed, 164 opt-in integration skips, 0 failed.
+- Live: 6/6 Phase 04 query-evidence and Phase 05 replay/authenticated sidecar-restart checks passed.
+- Static/operational: typecheck, lint, import boundaries, production build, docs lint, secrets scan, Compose config, diff check, and vault doctor passed.
 <!-- AGENT-END:session-validation-run -->
 - Focused: 16 STEP-06-03 tests passed across retrieval, research-engine, source-storage, and worker; 0 failed.
 - Affected packages/contracts: 134 tests passed, 8 opt-in PostgreSQL tests skipped, 0 failed.

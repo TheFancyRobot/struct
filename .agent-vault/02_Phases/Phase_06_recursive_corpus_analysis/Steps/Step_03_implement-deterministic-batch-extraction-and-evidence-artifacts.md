@@ -51,10 +51,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_03_implement-deterministic-batch-extraction-and-evidence-artifacts/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_03_implement-deterministic-batch-extraction-and-evidence-artifacts/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: active
+- Current owner: Codex
+- Last touched: 2026-07-20
+- Next action: Complete PR #36 automated review and merge, then close the step/context mirrors before activating STEP-06-04.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
