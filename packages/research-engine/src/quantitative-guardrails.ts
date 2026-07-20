@@ -41,6 +41,7 @@ export class HybridSynthesisValidationError
         'citation-drift',
         'invented-quantity',
         'semantic-mismatch',
+        'untrusted-instruction',
         'output-too-large',
       ),
       path: Schema.String,
@@ -106,6 +107,24 @@ function evidenceText(evidence: typeCrossSourceEvidence): string {
     ).join('\n')
     : payload.excerpt
   return `${content}\n${canonicalJson(evidence.semantics)}`
+}
+
+const UNTRUSTED_IMPERATIVE =
+  /^(?:ignore\b.{0,40}\binstructions?\b|(?:grant|give)\b.{0,24}\b(?:admin|administrator|root)\b|(?:remove|omit|drop|hide)\b.{0,24}\bcitations?\b|(?:raise|set|change)\b.{0,24}\bbudget\b.{0,24}\bunlimited\b)/iu
+
+function containsCopiedUntrustedInstruction(
+  claim: string,
+  evidence: ReadonlyArray<typeCrossSourceEvidence>,
+): boolean {
+  const untrustedText = evidence.map(evidenceText).join('\n').toLocaleLowerCase(
+    'en-US',
+  )
+  return claim.split(/[;\n]+/u).map((segment) => segment.trim())
+    .filter((segment) => segment.length > 0)
+    .some((segment) =>
+      UNTRUSTED_IMPERATIVE.test(segment)
+      && untrustedText.includes(segment.toLocaleLowerCase('en-US'))
+    )
 }
 
 function canonicalIds<T extends string>(
@@ -188,6 +207,13 @@ export const validateHybridSynthesisClaim = Effect.fn(
     approvedEvidence.flatMap((item) =>
       exactNumericStrings(evidenceText(item))),
   )
+  if (containsCopiedUntrustedInstruction(claim.text, approvedEvidence)) {
+    return yield* hybridSynthesisFailure(
+      'untrusted-instruction',
+      `${path}.text`,
+      'Hybrid synthesis claim contains an instruction from untrusted evidence',
+    )
+  }
   const invented = exactNumericStrings(claim.text)
     .find((value) => !approvedNumbers.has(value))
   if (invented !== undefined) {

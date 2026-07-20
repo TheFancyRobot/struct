@@ -217,6 +217,14 @@ export const completeResearchAction = Effect.fn(
       attempted: elapsedMilliseconds,
     }))
   }
+  const tokens = state.tokens + (result.tokens ?? 0)
+  if (tokens > plan.budget.maximumTokens) {
+    return Effect.fail(stop({
+      kind: 'token-budget',
+      limit: plan.budget.maximumTokens,
+      attempted: tokens,
+    }))
+  }
   const stateBudgets = [
     {
       resource: 'artifacts' as const,
@@ -296,6 +304,7 @@ export const completeResearchAction = Effect.fn(
     status: 'ready' as const,
     elapsedMilliseconds,
     ...usage,
+    tokens,
     activeConcurrency: Math.max(0, state.activeConcurrency - 1),
     duplicateActionCount: state.actionFingerprints.filter(
       (fingerprint) => fingerprint === action.fingerprint,

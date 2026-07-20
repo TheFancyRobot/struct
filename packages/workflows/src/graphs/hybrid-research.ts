@@ -119,6 +119,7 @@ function stateWithReservations(
       + reservations.filter((action) => action.kind === 'model').length,
     toolCalls: state.toolCalls
       + reservations.filter((action) => action.kind === 'tool').length,
+    tokens: state.tokens,
     estimatedCostMicros: state.estimatedCostMicros
       + reservations.reduce(
         (total, action) => total + action.estimatedCostMicros,
