@@ -56,6 +56,24 @@ import {
   type ResearchEvidenceAgentInput as typeResearchEvidenceAgentInput,
   type ResearchEvidenceAssessment as typeResearchEvidenceAssessment,
 } from '../agents/research-execution.js'
+import {
+  corpusAnalystAgent,
+  CorpusAnalystInput,
+  CorpusAnalystOutput,
+} from '../agents/corpus-analyst.js'
+import {
+  HierarchicalSynthesisInput,
+  HierarchicalSynthesisOutput,
+  hierarchicalSynthesizerAgent,
+  RecursiveEvidenceCriticInput,
+  RecursiveEvidenceCriticOutput,
+  recursiveEvidenceCriticAgent,
+} from '../agents/evidence-critic.js'
+import {
+  makeCorpusAnalysisWorkflow,
+  makeHierarchicalSynthesisWorkflow,
+  makeRecursiveCritiqueWorkflow,
+} from '../graphs/recursive-synthesis.js'
 /* eslint-enable no-unused-vars */
 
 export interface FredRuntimeConfig {
@@ -86,7 +104,10 @@ export interface FredClientFactory {
     input:
       | typeof Research.WalkingSkeletonResearchInput.Type
       | typeof Research.DocumentResearchInput.Type
-      | typeof ResearchGraphState.Type,
+      | typeof ResearchGraphState.Type
+      | typeof CorpusAnalystInput.Type
+      | typeof RecursiveEvidenceCriticInput.Type
+      | typeof HierarchicalSynthesisInput.Type,
     maxElapsedMs: number,
     signal: AbortSignal,
   ) => Promise<Fred.WorkflowExecutionResult>
@@ -494,6 +515,171 @@ export const runFredBoundedResearchGraph = (
           message: 'Bounded research graph exceeded elapsed-time budget',
         }),
     }),
+  )
+
+type RecursiveFocusedInput =
+  | typeof CorpusAnalystInput.Type
+  | typeof RecursiveEvidenceCriticInput.Type
+  | typeof HierarchicalSynthesisInput.Type
+
+const runFredRecursiveFocusedWorkflow = (
+  input: RecursiveFocusedInput,
+  workflow: Fred.WorkflowIR,
+  register: (
+    fred: Fred.FredClient,
+    providerId: string,
+  ) => Promise<void>,
+  config: FredRuntimeConfig,
+  signal: AbortSignal,
+  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+): Effect.Effect<
+  unknown,
+  ResearchProviderFailure,
+  never
+> =>
+  Effect.acquireUseRelease(
+    Effect.tryPromise({
+      try: (deadlineSignal) => createFredBeforeDeadline(
+        factory,
+        config.maxElapsedMs,
+        AbortSignal.any([deadlineSignal, signal]),
+      ),
+      catch: () =>
+        new ResearchProviderFailure({
+          message: 'Recursive synthesis runtime failed',
+        }),
+    }),
+    (fred) =>
+      Effect.tryPromise({
+        try: async (deadlineSignal) => {
+          const combinedSignal = AbortSignal.any([deadlineSignal, signal])
+          assertActive(combinedSignal)
+          const provider = await fred.providers.use(config.providerPackage)
+          assertActive(combinedSignal)
+          await register(fred, provider.id)
+          assertActive(combinedSignal)
+          const result = await factory.execute(
+            fred,
+            workflow,
+            input,
+            config.maxElapsedMs,
+            combinedSignal,
+          )
+          if (!result.success || result.status !== 'completed') {
+            throw new Error('Recursive synthesis workflow did not complete')
+          }
+          return result.finalOutput
+        },
+        catch: () =>
+          new ResearchProviderFailure({
+            message: 'Recursive synthesis provider failed',
+          }),
+      }),
+    (fred) => Effect.promise(() =>
+      boundedShutdown(fred, EMERGENCY_SHUTDOWN_MS)
+    ),
+  ).pipe(
+    Effect.timeoutFail({
+      duration: config.maxElapsedMs,
+      onTimeout: () =>
+        new ResearchProviderFailure({
+          message: 'Recursive synthesis exceeded elapsed-time budget',
+        }),
+    }),
+  )
+
+export const runFredCorpusAnalysis = (
+  input: typeof CorpusAnalystInput.Type,
+  config: FredRuntimeConfig,
+  signal: AbortSignal,
+  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+): Effect.Effect<
+  typeof CorpusAnalystOutput.Type,
+  ResearchProviderFailure,
+  never
+> =>
+  runFredRecursiveFocusedWorkflow(
+    input,
+    makeCorpusAnalysisWorkflow(),
+    async (fred, providerId) => {
+      await fred.agents.register(corpusAnalystAgent(providerId, config.model))
+    },
+    config,
+    signal,
+    factory,
+  ).pipe(
+    Effect.flatMap((output) =>
+      Schema.decodeUnknown(CorpusAnalystOutput)(output).pipe(
+        Effect.mapError(() =>
+          new ResearchProviderFailure({
+            message: 'Corpus analyst returned invalid typed output',
+          })),
+      ),
+    ),
+  )
+
+export const runFredRecursiveCritique = (
+  input: typeof RecursiveEvidenceCriticInput.Type,
+  config: FredRuntimeConfig,
+  signal: AbortSignal,
+  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+): Effect.Effect<
+  typeof RecursiveEvidenceCriticOutput.Type,
+  ResearchProviderFailure,
+  never
+> =>
+  runFredRecursiveFocusedWorkflow(
+    input,
+    makeRecursiveCritiqueWorkflow(),
+    async (fred, providerId) => {
+      await fred.agents.register(
+        recursiveEvidenceCriticAgent(providerId, config.model),
+      )
+    },
+    config,
+    signal,
+    factory,
+  ).pipe(
+    Effect.flatMap((output) =>
+      Schema.decodeUnknown(RecursiveEvidenceCriticOutput)(output).pipe(
+        Effect.mapError(() =>
+          new ResearchProviderFailure({
+            message: 'Recursive critic returned invalid typed output',
+          })),
+      ),
+    ),
+  )
+
+export const runFredHierarchicalSynthesis = (
+  input: typeof HierarchicalSynthesisInput.Type,
+  config: FredRuntimeConfig,
+  signal: AbortSignal,
+  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+): Effect.Effect<
+  typeof HierarchicalSynthesisOutput.Type,
+  ResearchProviderFailure,
+  never
+> =>
+  runFredRecursiveFocusedWorkflow(
+    input,
+    makeHierarchicalSynthesisWorkflow(),
+    async (fred, providerId) => {
+      await fred.agents.register(
+        hierarchicalSynthesizerAgent(providerId, config.model),
+      )
+    },
+    config,
+    signal,
+    factory,
+  ).pipe(
+    Effect.flatMap((output) =>
+      Schema.decodeUnknown(HierarchicalSynthesisOutput)(output).pipe(
+        Effect.mapError(() =>
+          new ResearchProviderFailure({
+            message: 'Hierarchical synthesizer returned invalid typed output',
+          })),
+      ),
+    ),
   )
 
 export const runFredResearchCritique = (

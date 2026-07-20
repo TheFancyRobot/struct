@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T09:14:30.766Z",
+  "generatedAt": "2026-07-20T10:15:20.476Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -2123,7 +2123,7 @@
       ],
       "exports": [],
       "hash": "ce0b08bf701422230b166c88babbebc81173d782c5adaedbd8c14a0ce2938ce5",
-      "mtimeMs": 1784538139778.921,
+      "mtimeMs": 1784539693230.663,
       "size": 9094,
       "generated": false,
       "vendor": false,
@@ -2510,6 +2510,234 @@
       "hash": "a82f2cc5445935e1666672fe162b5577e5cea210a064e0114f53d2ec4dd8030c",
       "mtimeMs": 1784536881000.7222,
       "size": 4866,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/worker/src/jobs/recursive-synthesis.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "CommittedRecursiveSynthesisNode",
+          "kind": "interface",
+          "line": 33,
+          "exported": true,
+          "endLine": 33
+        },
+        {
+          "name": "RecursiveSynthesisStage",
+          "kind": "type",
+          "line": 41,
+          "exported": true,
+          "endLine": 41
+        },
+        {
+          "name": "CommittedRecursiveSynthesisStage",
+          "kind": "type",
+          "line": 43,
+          "exported": true,
+          "endLine": 43
+        },
+        {
+          "name": "RecursiveSynthesisJournal",
+          "kind": "interface",
+          "line": 69,
+          "exported": true,
+          "endLine": 69
+        },
+        {
+          "name": "RecursiveSynthesisAgents",
+          "kind": "interface",
+          "line": 134,
+          "exported": true,
+          "endLine": 134
+        },
+        {
+          "name": "RecursiveSynthesisProgressNode",
+          "kind": "interface",
+          "line": 154,
+          "exported": true,
+          "endLine": 154
+        },
+        {
+          "name": "OutcomeLineage",
+          "kind": "interface",
+          "line": 162,
+          "exported": false,
+          "endLine": 162
+        },
+        {
+          "name": "OutcomeBase",
+          "kind": "interface",
+          "line": 169,
+          "exported": false,
+          "endLine": 169
+        },
+        {
+          "name": "RecursiveSynthesisOutcome",
+          "kind": "type",
+          "line": 174,
+          "exported": true,
+          "endLine": 174
+        },
+        {
+          "name": "hash",
+          "kind": "function",
+          "line": 189,
+          "exported": false,
+          "endLine": 189,
+          "signature": "(value: string)"
+        },
+        {
+          "name": "inputDigest",
+          "kind": "function",
+          "line": 193,
+          "exported": false,
+          "endLine": 193,
+          "signature": "(input: typeof RecursiveNodeSynthesisInput.Type)"
+        },
+        {
+          "name": "commitDigest",
+          "kind": "function",
+          "line": 197,
+          "exported": false,
+          "endLine": 197
+        },
+        {
+          "name": "stageCommitDigest",
+          "kind": "function",
+          "line": 204,
+          "exported": false,
+          "endLine": 204
+        },
+        {
+          "name": "promptBytes",
+          "kind": "function",
+          "line": 222,
+          "exported": false,
+          "endLine": 222,
+          "signature": "(input: unknown, systemMessage: string)"
+        },
+        {
+          "name": "lineage",
+          "kind": "function",
+          "line": 229,
+          "exported": false,
+          "endLine": 229
+        },
+        {
+          "name": "stopped",
+          "kind": "function",
+          "line": 255,
+          "exported": false,
+          "endLine": 255
+        },
+        {
+          "name": "promptBudgetResource",
+          "kind": "function",
+          "line": 299,
+          "exported": false,
+          "endLine": 299
+        },
+        {
+          "name": "reserveCall",
+          "kind": "function",
+          "line": 313,
+          "exported": false,
+          "endLine": 313
+        },
+        {
+          "name": "cancelled",
+          "kind": "function",
+          "line": 332,
+          "exported": false,
+          "endLine": 332,
+          "signature": "(signal: AbortSignal)"
+        },
+        {
+          "name": "uniqueSorted",
+          "kind": "function",
+          "line": 336,
+          "exported": false,
+          "endLine": 336
+        },
+        {
+          "name": "normalizeAnalysis",
+          "kind": "function",
+          "line": 340,
+          "exported": false,
+          "endLine": 340,
+          "signature": "(output: CorpusAnalystOutput)"
+        },
+        {
+          "name": "normalizeCritique",
+          "kind": "function",
+          "line": 355,
+          "exported": false,
+          "endLine": 355
+        },
+        {
+          "name": "normalizeSynthesis",
+          "kind": "function",
+          "line": 372,
+          "exported": false,
+          "endLine": 372
+        },
+        {
+          "name": "partialResult",
+          "kind": "function",
+          "line": 381,
+          "exported": false,
+          "endLine": 381
+        },
+        {
+          "name": "progressAt",
+          "kind": "function",
+          "line": 415,
+          "exported": false,
+          "endLine": 415
+        },
+        {
+          "name": "makeRecursiveSynthesisJob",
+          "kind": "function",
+          "line": 430,
+          "exported": true,
+          "endLine": 430
+        },
+        {
+          "name": "makeFredRecursiveSynthesisJob",
+          "kind": "function",
+          "line": 1461,
+          "exported": true,
+          "endLine": 1461
+        }
+      ],
+      "imports": [
+        {
+          "source": "canonicalJson, compareCanonicalText",
+          "specifier": "@struct/retrieval",
+          "imported": [
+            "canonicalJson",
+            "compareCanonicalText"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect, Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "0ee9b2a08a7ef5463797b7dd7c74bc7c8e98752dff99bda94766f09f347f8e73",
+      "mtimeMs": 1784542137170.5667,
+      "size": 49503,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -14377,6 +14605,59 @@
       "parser": "regex"
     },
     {
+      "path": "packages/research-engine/src/contradiction-detection.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ContradictionProposal",
+          "kind": "interface",
+          "line": 16,
+          "exported": true,
+          "endLine": 16
+        },
+        {
+          "name": "invalid",
+          "kind": "function",
+          "line": 24,
+          "exported": false,
+          "endLine": 24,
+          "signature": "(path: string, message: string)"
+        },
+        {
+          "name": "compareUtf8",
+          "kind": "function",
+          "line": 33,
+          "exported": false,
+          "endLine": 33,
+          "signature": "(left: string, right: string)"
+        },
+        {
+          "name": "materializeContradictions",
+          "kind": "const",
+          "line": 45,
+          "exported": true,
+          "endLine": 45
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "b3c69bdc396abf9c55740d754a4f0a7cbecf25777d06ff774edc5649c6e50b93",
+      "mtimeMs": 1784541684120.0557,
+      "size": 4036,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/research-engine/src/coverage-metadata.ts",
       "language": "TypeScript",
       "symbols": [
@@ -14534,7 +14815,7 @@
       ],
       "exports": [],
       "hash": "894fca133ab3c224f7b8942c9191573c8a3a2d3819a47deee870113938429813",
-      "mtimeMs": 1784538139778.4678,
+      "mtimeMs": 1784539693232.3682,
       "size": 11461,
       "generated": false,
       "vendor": false,
@@ -14858,6 +15139,133 @@
       "hash": "770e1bf271bc8eb715da18e1868a25bccc9c91273edb82880e6c0928ae79ad04",
       "mtimeMs": 1784525583170.3396,
       "size": 6199,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/research-engine/src/merge-findings.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "FindingProposal",
+          "kind": "interface",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "digestText",
+          "kind": "function",
+          "line": 38,
+          "exported": false,
+          "endLine": 38,
+          "signature": "(value: string)"
+        },
+        {
+          "name": "invalid",
+          "kind": "function",
+          "line": 44,
+          "exported": false,
+          "endLine": 44,
+          "signature": "(path: string, message: string)"
+        },
+        {
+          "name": "canonicalClaim",
+          "kind": "function",
+          "line": 53,
+          "exported": false,
+          "endLine": 53,
+          "signature": "(claim: string)"
+        },
+        {
+          "name": "compareUtf8",
+          "kind": "function",
+          "line": 57,
+          "exported": false,
+          "endLine": 57,
+          "signature": "(left: string, right: string)"
+        },
+        {
+          "name": "validateCoverageBoundary",
+          "kind": "const",
+          "line": 69,
+          "exported": false,
+          "endLine": 69
+        },
+        {
+          "name": "validateFindingBoundary",
+          "kind": "const",
+          "line": 83,
+          "exported": false,
+          "endLine": 83
+        },
+        {
+          "name": "mergeContradictionVariants",
+          "kind": "const",
+          "line": 130,
+          "exported": false,
+          "endLine": 130
+        },
+        {
+          "name": "materializeFinding",
+          "kind": "function",
+          "line": 188,
+          "exported": false,
+          "endLine": 188
+        },
+        {
+          "name": "materializeFindingProposals",
+          "kind": "const",
+          "line": 220,
+          "exported": true,
+          "endLine": 220
+        },
+        {
+          "name": "attachContradictions",
+          "kind": "const",
+          "line": 291,
+          "exported": true,
+          "endLine": 291
+        },
+        {
+          "name": "mergeCoverage",
+          "kind": "const",
+          "line": 341,
+          "exported": true,
+          "endLine": 341
+        },
+        {
+          "name": "mergeResearchFindings",
+          "kind": "const",
+          "line": 389,
+          "exported": true,
+          "endLine": 389
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "materializeContradictions",
+          "specifier": "./contradiction-detection.js",
+          "imported": [
+            "materializeContradictions"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "820889f4486ebcc410d68fcee5ebc81e861a5fcaf7cadb97479936e12b516316",
+      "mtimeMs": 1784542390126.7737,
+      "size": 14600,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -15865,7 +16273,7 @@
       ],
       "exports": [],
       "hash": "eecf935b89c5e4893728caaccf76bdf38ea94cc369ac5988ee5d8c0c6c60b83e",
-      "mtimeMs": 1784538808072.0645,
+      "mtimeMs": 1784539693233.6064,
       "size": 24676,
       "generated": false,
       "vendor": false,
@@ -16704,7 +17112,7 @@
       ],
       "exports": [],
       "hash": "7bc333b1448b765bb61e9f3a6f1fc6d8846cdb6b251280cd6065b4c49a56a8b5",
-      "mtimeMs": 1784537549409.0166,
+      "mtimeMs": 1784539693234.1975,
       "size": 2597,
       "generated": false,
       "vendor": false,
@@ -17075,129 +17483,164 @@
         {
           "name": "FredRuntimeConfig",
           "kind": "interface",
-          "line": 61,
+          "line": 79,
           "exported": true,
-          "endLine": 61
+          "endLine": 79
         },
         {
           "name": "fredRuntimeConfig",
           "kind": "const",
-          "line": 68,
+          "line": 86,
           "exported": true,
-          "endLine": 68
+          "endLine": 86
         },
         {
           "name": "FredClientFactory",
           "kind": "interface",
-          "line": 81,
+          "line": 99,
           "exported": true,
-          "endLine": 81
+          "endLine": 99
         },
         {
           "name": "DocumentResearchFailure",
           "kind": "type",
-          "line": 95,
+          "line": 116,
           "exported": true,
-          "endLine": 95
+          "endLine": 116
         },
         {
           "name": "documentResearchFailure",
           "kind": "function",
-          "line": 102,
+          "line": 123,
           "exported": false,
-          "endLine": 102
+          "endLine": 123
         },
         {
           "name": "assertActive",
           "kind": "function",
-          "line": 131,
+          "line": 152,
           "exported": false,
-          "endLine": 131,
+          "endLine": 152,
           "signature": "(signal: AbortSignal)"
         },
         {
           "name": "EMERGENCY_SHUTDOWN_MS",
           "kind": "const",
-          "line": 142,
-          "exported": false,
-          "endLine": 142
-        },
-        {
-          "name": "boundedShutdown",
-          "kind": "function",
-          "line": 144,
-          "exported": false,
-          "endLine": 144
-        },
-        {
-          "name": "createFredBeforeDeadline",
-          "kind": "function",
           "line": 163,
           "exported": false,
           "endLine": 163
         },
         {
+          "name": "boundedShutdown",
+          "kind": "function",
+          "line": 165,
+          "exported": false,
+          "endLine": 165
+        },
+        {
+          "name": "createFredBeforeDeadline",
+          "kind": "function",
+          "line": 184,
+          "exported": false,
+          "endLine": 184
+        },
+        {
           "name": "shutdownWithinDeadline",
           "kind": "function",
-          "line": 215,
+          "line": 236,
           "exported": false,
-          "endLine": 215
+          "endLine": 236
         },
         {
           "name": "makeDefaultFactory",
           "kind": "const",
-          "line": 231,
+          "line": 252,
           "exported": false,
-          "endLine": 231
+          "endLine": 252
         },
         {
           "name": "preflightFredRuntime",
           "kind": "const",
-          "line": 277,
+          "line": 298,
           "exported": true,
-          "endLine": 277
+          "endLine": 298
         },
         {
           "name": "runFredResearchPlanning",
           "kind": "const",
-          "line": 329,
+          "line": 350,
           "exported": true,
-          "endLine": 329
+          "endLine": 350
         },
         {
           "name": "runFredBoundedResearchGraph",
           "kind": "const",
-          "line": 413,
+          "line": 434,
           "exported": true,
-          "endLine": 413
+          "endLine": 434
+        },
+        {
+          "name": "RecursiveFocusedInput",
+          "kind": "type",
+          "line": 520,
+          "exported": false,
+          "endLine": 520
+        },
+        {
+          "name": "runFredRecursiveFocusedWorkflow",
+          "kind": "const",
+          "line": 525,
+          "exported": false,
+          "endLine": 525
+        },
+        {
+          "name": "runFredCorpusAnalysis",
+          "kind": "const",
+          "line": 591,
+          "exported": true,
+          "endLine": 591
+        },
+        {
+          "name": "runFredRecursiveCritique",
+          "kind": "const",
+          "line": 621,
+          "exported": true,
+          "endLine": 621
+        },
+        {
+          "name": "runFredHierarchicalSynthesis",
+          "kind": "const",
+          "line": 653,
+          "exported": true,
+          "endLine": 653
         },
         {
           "name": "runFredResearchCritique",
           "kind": "const",
-          "line": 499,
+          "line": 685,
           "exported": true,
-          "endLine": 499
+          "endLine": 685
         },
         {
           "name": "runFredResearchSynthesis",
           "kind": "const",
-          "line": 555,
+          "line": 741,
           "exported": true,
-          "endLine": 555
+          "endLine": 741
         },
         {
           "name": "runFredWalkingSkeleton",
           "kind": "const",
-          "line": 607,
+          "line": 793,
           "exported": true,
-          "endLine": 607
+          "endLine": 793
         },
         {
           "name": "runFredDocumentResearch",
           "kind": "const",
-          "line": 680,
+          "line": 866,
           "exported": true,
-          "endLine": 680
+          "endLine": 866
         }
       ],
       "imports": [
@@ -17233,9 +17676,279 @@
         }
       ],
       "exports": [],
-      "hash": "8a9973d48f407807f267df09d4de6e163c20642e1fdddcd44c77eadfb543fa47",
-      "mtimeMs": 1784525583171.661,
-      "size": 24685,
+      "hash": "e852be0b153d1eb7e60990986f660a904b27e12ecc90c4947b427b10bad95c95",
+      "mtimeMs": 1784541658229.0376,
+      "size": 30024,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/workflows/src/agents/corpus-analyst.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "BoundedText",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "BoundedLimitation",
+          "kind": "const",
+          "line": 21,
+          "exported": false,
+          "endLine": 21
+        },
+        {
+          "name": "RecursiveEvidenceExcerpt",
+          "kind": "const",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "RecursiveEvidenceExcerpt",
+          "kind": "type",
+          "line": 34,
+          "exported": true,
+          "endLine": 34
+        },
+        {
+          "name": "RecursiveFindingProposal",
+          "kind": "const",
+          "line": 37,
+          "exported": true,
+          "endLine": 37
+        },
+        {
+          "name": "RecursiveFindingProposal",
+          "kind": "type",
+          "line": 51,
+          "exported": true,
+          "endLine": 51
+        },
+        {
+          "name": "CorpusAnalystInput",
+          "kind": "const",
+          "line": 54,
+          "exported": true,
+          "endLine": 54
+        },
+        {
+          "name": "CorpusAnalystInput",
+          "kind": "type",
+          "line": 74,
+          "exported": true,
+          "endLine": 74
+        },
+        {
+          "name": "CorpusAnalystOutput",
+          "kind": "const",
+          "line": 76,
+          "exported": true,
+          "endLine": 76
+        },
+        {
+          "name": "CorpusAnalystOutput",
+          "kind": "type",
+          "line": 81,
+          "exported": true,
+          "endLine": 81
+        },
+        {
+          "name": "CORPUS_ANALYST_AGENT_ID",
+          "kind": "const",
+          "line": 83,
+          "exported": true,
+          "endLine": 83
+        },
+        {
+          "name": "CORPUS_ANALYST_SYSTEM_MESSAGE",
+          "kind": "const",
+          "line": 84,
+          "exported": true,
+          "endLine": 84
+        },
+        {
+          "name": "corpusAnalystAgent",
+          "kind": "function",
+          "line": 87,
+          "exported": true,
+          "endLine": 87
+        },
+        {
+          "name": "RecursiveSynthesisSelection",
+          "kind": "const",
+          "line": 103,
+          "exported": true,
+          "endLine": 103
+        },
+        {
+          "name": "RecursiveSynthesisSelection",
+          "kind": "type",
+          "line": 107,
+          "exported": true,
+          "endLine": 107
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "c44d4b0fb1c8e5a27f78cd0ae87c2c458deea7b23ef45bfe2dffec27699e7323",
+      "mtimeMs": 1784542137169.1375,
+      "size": 4082,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/workflows/src/agents/evidence-critic.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "BoundedLimitation",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "RecursiveContradictionProposal",
+          "kind": "const",
+          "line": 23,
+          "exported": true,
+          "endLine": 23
+        },
+        {
+          "name": "RecursiveContradictionProposal",
+          "kind": "type",
+          "line": 36,
+          "exported": true,
+          "endLine": 36
+        },
+        {
+          "name": "RecursiveEvidenceCriticInput",
+          "kind": "const",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "RecursiveEvidenceCriticInput",
+          "kind": "type",
+          "line": 50,
+          "exported": true,
+          "endLine": 50
+        },
+        {
+          "name": "RecursiveEvidenceCriticOutput",
+          "kind": "const",
+          "line": 53,
+          "exported": true,
+          "endLine": 53
+        },
+        {
+          "name": "RecursiveEvidenceCriticOutput",
+          "kind": "type",
+          "line": 61,
+          "exported": true,
+          "endLine": 61
+        },
+        {
+          "name": "RECURSIVE_EVIDENCE_CRITIC_AGENT_ID",
+          "kind": "const",
+          "line": 64,
+          "exported": true,
+          "endLine": 64
+        },
+        {
+          "name": "RECURSIVE_EVIDENCE_CRITIC_SYSTEM_MESSAGE",
+          "kind": "const",
+          "line": 66,
+          "exported": true,
+          "endLine": 66
+        },
+        {
+          "name": "recursiveEvidenceCriticAgent",
+          "kind": "function",
+          "line": 69,
+          "exported": true,
+          "endLine": 69
+        },
+        {
+          "name": "HierarchicalSynthesisInput",
+          "kind": "const",
+          "line": 88,
+          "exported": true,
+          "endLine": 88
+        },
+        {
+          "name": "HierarchicalSynthesisInput",
+          "kind": "type",
+          "line": 100,
+          "exported": true,
+          "endLine": 100
+        },
+        {
+          "name": "HierarchicalSynthesisOutput",
+          "kind": "const",
+          "line": 103,
+          "exported": true,
+          "endLine": 103
+        },
+        {
+          "name": "HierarchicalSynthesisOutput",
+          "kind": "type",
+          "line": 107,
+          "exported": true,
+          "endLine": 107
+        },
+        {
+          "name": "HIERARCHICAL_SYNTHESIZER_AGENT_ID",
+          "kind": "const",
+          "line": 110,
+          "exported": true,
+          "endLine": 110
+        },
+        {
+          "name": "HIERARCHICAL_SYNTHESIZER_SYSTEM_MESSAGE",
+          "kind": "const",
+          "line": 112,
+          "exported": true,
+          "endLine": 112
+        },
+        {
+          "name": "hierarchicalSynthesizerAgent",
+          "kind": "function",
+          "line": 115,
+          "exported": true,
+          "endLine": 115
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "f3c4a769aeeb240e04f4beced0195d71ba7d3bd47768ccc0aaf8efe8fb062df2",
+      "mtimeMs": 1784542137169.7996,
+      "size": 4984,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -17646,6 +18359,137 @@
       "hash": "1af3e5b92dbd8a1e2da8bfebe33a9fb37f7cb768186cd3df5bd40e196437ca25",
       "mtimeMs": 1784536881002.1768,
       "size": 827,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/workflows/src/graphs/recursive-synthesis.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "SafeCounter",
+          "kind": "const",
+          "line": 29,
+          "exported": false,
+          "endLine": 29
+        },
+        {
+          "name": "SafePositiveInteger",
+          "kind": "const",
+          "line": 35,
+          "exported": false,
+          "endLine": 35
+        },
+        {
+          "name": "RecursiveNodeBudget",
+          "kind": "const",
+          "line": 37,
+          "exported": true,
+          "endLine": 37
+        },
+        {
+          "name": "RecursiveNodeBudget",
+          "kind": "type",
+          "line": 47,
+          "exported": true,
+          "endLine": 47
+        },
+        {
+          "name": "RecursiveNodeSynthesisInput",
+          "kind": "const",
+          "line": 50,
+          "exported": true,
+          "endLine": 50
+        },
+        {
+          "name": "RecursiveNodeSynthesisInput",
+          "kind": "type",
+          "line": 75,
+          "exported": true,
+          "endLine": 75
+        },
+        {
+          "name": "RecursiveNodeSynthesisOutput",
+          "kind": "const",
+          "line": 78,
+          "exported": true,
+          "endLine": 78
+        },
+        {
+          "name": "RecursiveNodeSynthesisOutput",
+          "kind": "type",
+          "line": 142,
+          "exported": true,
+          "endLine": 142
+        },
+        {
+          "name": "CORPUS_ANALYSIS_WORKFLOW_ID",
+          "kind": "const",
+          "line": 145,
+          "exported": true,
+          "endLine": 145
+        },
+        {
+          "name": "RECURSIVE_CRITIQUE_WORKFLOW_ID",
+          "kind": "const",
+          "line": 147,
+          "exported": true,
+          "endLine": 147
+        },
+        {
+          "name": "HIERARCHICAL_SYNTHESIS_WORKFLOW_ID",
+          "kind": "const",
+          "line": 149,
+          "exported": true,
+          "endLine": 149
+        },
+        {
+          "name": "oneAgentWorkflow",
+          "kind": "function",
+          "line": 152,
+          "exported": false,
+          "endLine": 152
+        },
+        {
+          "name": "makeCorpusAnalysisWorkflow",
+          "kind": "function",
+          "line": 169,
+          "exported": true,
+          "endLine": 169,
+          "signature": "()"
+        },
+        {
+          "name": "makeRecursiveCritiqueWorkflow",
+          "kind": "function",
+          "line": 178,
+          "exported": true,
+          "endLine": 178,
+          "signature": "()"
+        },
+        {
+          "name": "makeHierarchicalSynthesisWorkflow",
+          "kind": "function",
+          "line": 187,
+          "exported": true,
+          "endLine": 187,
+          "signature": "()"
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "9cf1233807768c6965c3c04528121b3050f7ef5629b6f4c0dcf3f0108a092598",
+      "mtimeMs": 1784542137170.1511,
+      "size": 6630,
       "generated": false,
       "vendor": false,
       "parser": "regex"
