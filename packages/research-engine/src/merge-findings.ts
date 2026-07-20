@@ -298,12 +298,28 @@ export const attachContradictions = Effect.fn(
   for (const [index, finding] of findings.entries()) {
     validatedFindings.push(yield* validateFindingBoundary(finding, index))
   }
-  const contradictions = yield* materializeContradictions(
+  if (validatedFindings.length === 0) {
+    const contradictions = yield* materializeContradictions([], proposals)
+    return { contradictions, findings: [] }
+  }
+  const sharedCoverage = validatedFindings[0]!.coverage
+  if (validatedFindings.some((finding) =>
+    finding.coverage.id !== sharedCoverage.id)) {
+    return yield* invalid(
+      'findings.coverage',
+      'Findings in one contradiction boundary must share a coverage snapshot',
+    )
+  }
+  const mergedFindings = yield* mergeResearchFindings(
     validatedFindings,
+    sharedCoverage,
+  )
+  const contradictions = yield* materializeContradictions(
+    mergedFindings,
     proposals,
   )
   const attachedFindings: ResearchFinding[] = []
-  for (const finding of validatedFindings) {
+  for (const finding of mergedFindings) {
     const attached = yield* mergeContradictionVariants([
       ...finding.contradictions,
       ...contradictions.filter(

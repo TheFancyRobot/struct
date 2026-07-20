@@ -1035,19 +1035,19 @@ export function makeRecursiveSynthesisJob(
         findingsResult.right,
         critiqueOutput.contradictions,
       ))
+      const analysisOnlyPartial = partialResult(
+        input,
+        analysisOutput,
+        findingsResult.right,
+        1,
+      )
       if (attachedResult._tag === 'Left') {
         return stopped('failed', progressAt(
           input,
-          2,
+          1,
           reusedStage,
           attemptedModelCalls,
-        ), partialResult(
-          input,
-          analysisOutput,
-          findingsResult.right,
-          2,
-          critiqueOutput,
-        ), {
+        ), analysisOnlyPartial, {
           errorTag: attachedResult.left._tag,
           retryEligible: false,
         })
@@ -1065,17 +1065,10 @@ export function makeRecursiveSynthesisJob(
       ) {
         return stopped('failed', progressAt(
           input,
-          2,
+          1,
           reusedStage,
           attemptedModelCalls,
-        ), partialResult(
-          input,
-          analysisOutput,
-          attached.findings,
-          2,
-          critiqueOutput,
-          attached.contradictions,
-        ), {
+        ), analysisOnlyPartial, {
           errorTag: 'ResearchContractValidationError',
           retryEligible: false,
         })
@@ -1266,11 +1259,11 @@ export function makeRecursiveSynthesisJob(
               cancelled(signal) ? 'cancelled' : 'failed',
               progressAt(
                 input,
-                3,
+                2,
                 reusedStage,
                 thirdReservation.right.attemptedModelCalls,
               ),
-              { ...critiquePartial, modelCalls: 3 },
+              critiquePartial,
               cancelled(signal)
                 ? {}
                 : { errorTag: synthesis.left._tag, retryEligible: true },
@@ -1300,8 +1293,8 @@ export function makeRecursiveSynthesisJob(
           ) {
             return stopped(
               'failed',
-              progressAt(input, 3, reusedStage, attemptedModelCalls),
-              { ...critiquePartial, modelCalls: 3 },
+              progressAt(input, 2, reusedStage, attemptedModelCalls),
+              critiquePartial,
               {
                 errorTag: committedStage._tag === 'Left'
                   ? committedStage.left._tag
@@ -1335,8 +1328,8 @@ export function makeRecursiveSynthesisJob(
           ) {
             return stopped(
               'failed',
-              progressAt(input, 3, reusedStage, attemptedModelCalls),
-              { ...critiquePartial, modelCalls: 3 },
+              progressAt(input, 2, reusedStage, attemptedModelCalls),
+              critiquePartial,
               {
                 errorTag: 'ResearchContractValidationError',
                 retryEligible: false,
@@ -1355,13 +1348,10 @@ export function makeRecursiveSynthesisJob(
         ) {
           return stopped('failed', progressAt(
             input,
-            3,
+            2,
             reusedStage,
             attemptedModelCalls,
-          ), {
-            ...critiquePartial,
-            modelCalls: 3,
-          }, {
+          ), critiquePartial, {
             errorTag: 'ResearchContractValidationError',
             retryEligible: false,
           })

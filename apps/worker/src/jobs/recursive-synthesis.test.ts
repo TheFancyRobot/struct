@@ -3,6 +3,7 @@ import {
   RecursiveAnalysisRequestId,
   RecursiveBatchId,
   RecursiveDecompositionNodeId,
+  RecursiveEvidenceId,
   ResearchRunId,
   Sha256Digest,
   SourceVersionId,
@@ -373,6 +374,136 @@ describe('recursive synthesis worker orchestration', () => {
       'synthesize',
       'synthesize',
     ])
+  })
+
+  it('retains the validated critique partial when synthesis fails', async () => {
+    const calls: string[] = []
+    const baseAgents = agents('sufficient', calls)
+    const failing: RecursiveSynthesisAgents = {
+      ...baseAgents,
+      synthesize: () => {
+        calls.push('synthesize')
+        return Effect.fail(new ResearchProviderFailure({
+          message: 'synthesizer unavailable',
+        }))
+      },
+    }
+    const outcome = await Effect.runPromise(
+      makeRecursiveSynthesisJob(memoryJournal().journal, failing)
+        .execute(input(), new AbortController().signal),
+    )
+
+    expect(outcome).toMatchObject({
+      status: 'failed',
+      errorTag: 'ResearchProviderFailure',
+      retryEligible: true,
+    })
+    expect(outcome.progress[0]).toMatchObject({
+      modelCalls: 2,
+      attemptedModelCalls: 3,
+    })
+    expect(outcome.result?.modelCalls).toBe(2)
+    expect(
+      Schema.decodeUnknownEither(RecursiveNodeSynthesisOutput)(outcome.result)
+        ._tag,
+    ).toBe('Right')
+    expect(calls).toEqual(['analyze', 'criticize', 'synthesize'])
+
+    const controller = new AbortController()
+    const cancelling: RecursiveSynthesisAgents = {
+      ...baseAgents,
+      synthesize: () => {
+        controller.abort()
+        return Effect.fail(new ResearchProviderFailure({
+          message: 'synthesizer cancelled',
+        }))
+      },
+    }
+    const cancelled = await Effect.runPromise(
+      makeRecursiveSynthesisJob(memoryJournal().journal, cancelling)
+        .execute(input(), controller.signal),
+    )
+    expect(cancelled.status).toBe('cancelled')
+    expect(cancelled.progress[0]).toMatchObject({
+      modelCalls: 2,
+      attemptedModelCalls: 3,
+    })
+    expect(cancelled.result?.modelCalls).toBe(2)
+    expect(
+      Schema.decodeUnknownEither(RecursiveNodeSynthesisOutput)(
+        cancelled.result,
+      )._tag,
+    ).toBe('Right')
+  })
+
+  it('returns an analysis-only partial when critique semantics are invalid', async () => {
+    const malformedEvidence = agents('sufficient', [])
+    const malformedAgents: RecursiveSynthesisAgents = {
+      ...malformedEvidence,
+      criticize: (value) => Effect.succeed({
+        contradictions: [{
+          claimSignature: Sha256Digest.make(
+            value.findings[0]!.claimSignature,
+          ),
+          supportingEvidence: [value.findings[0]!.evidence[0]!.id],
+          conflictingEvidence: [RecursiveEvidenceId.make(sha('f'))],
+          status: 'unresolved',
+          limitations: [],
+        }],
+        sufficiency: 'contradictory',
+        evidenceIds: [RecursiveEvidenceId.make(sha('f'))],
+        limitations: [],
+      }),
+    }
+    const malformed = await Effect.runPromise(
+      makeRecursiveSynthesisJob(memoryJournal().journal, malformedAgents)
+        .execute(input(), new AbortController().signal),
+    )
+    expect(malformed).toMatchObject({
+      status: 'failed',
+      errorTag: 'ResearchContractValidationError',
+      retryEligible: false,
+    })
+    expect(malformed.progress[0]).toMatchObject({
+      modelCalls: 1,
+      attemptedModelCalls: 2,
+    })
+    expect(malformed.result).toMatchObject({
+      sufficiency: 'insufficient',
+      contradictions: [],
+      modelCalls: 1,
+    })
+    expect(
+      Schema.decodeUnknownEither(RecursiveNodeSynthesisOutput)(malformed.result)
+        ._tag,
+    ).toBe('Right')
+
+    const contradictoryWithoutEvidence: RecursiveSynthesisAgents = {
+      ...agents('sufficient', []),
+      criticize: (value) => Effect.succeed({
+        contradictions: [],
+        sufficiency: 'contradictory',
+        evidenceIds: value.findings.flatMap((finding) =>
+          finding.evidence.map((item) => item.id)),
+        limitations: [],
+      }),
+    }
+    const contradictory = await Effect.runPromise(
+      makeRecursiveSynthesisJob(
+        memoryJournal().journal,
+        contradictoryWithoutEvidence,
+      ).execute(input(), new AbortController().signal),
+    )
+    expect(contradictory.result).toMatchObject({
+      sufficiency: 'insufficient',
+      contradictions: [],
+      modelCalls: 1,
+    })
+    expect(
+      Schema.decodeUnknownEither(RecursiveNodeSynthesisOutput)(
+        contradictory.result,
+      )._tag,
+    ).toBe('Right')
   })
 
   it('counts failed attempts against the durable model-call budget', async () => {

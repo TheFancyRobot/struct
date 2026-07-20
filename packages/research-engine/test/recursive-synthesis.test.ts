@@ -313,6 +313,36 @@ describe('recursive synthesis deterministic boundaries', () => {
     })
   })
 
+  it('merges same-signature evidence before attaching spanning contradictions', async () => {
+    const supporting = evidence('1')
+    const conflicting = evidence('2')
+    const signature = Sha256Digest.make(sha('f'))
+    const proposal = {
+      claimSignature: signature,
+      supportingEvidence: [supporting.id],
+      conflictingEvidence: [conflicting.id],
+      status: 'unresolved' as const,
+      limitations: ['spans merged evidence'],
+    }
+
+    const attached = await Effect.runPromise(attachContradictions([
+      finding('Later display', signature, [supporting]),
+      finding('Earlier display', signature, [conflicting]),
+    ], [proposal]))
+
+    expect(attached.findings).toHaveLength(1)
+    expect(attached.contradictions).toHaveLength(1)
+    expect(attached.findings[0]?.evidence.map((item) => item.id)).toEqual(
+      [supporting.id, conflicting.id].sort(),
+    )
+    expect(attached.findings[0]?.contradictions).toEqual(
+      attached.contradictions,
+    )
+    expect(attached.findings[0]?.id).toBe(
+      computeRecursiveFindingId(attached.findings[0]!),
+    )
+  })
+
   it('rejects contradictions bound to a different semantic claim', async () => {
     const itemA = evidence('1')
     const itemB = evidence('2')

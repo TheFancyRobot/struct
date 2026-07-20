@@ -59,6 +59,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Implemented the worker `makeRecursiveSynthesisJob` and Fred-backed factory with per-stage commit-or-load checkpoints, contract fingerprints, durable attempt reservations, cancellation before every call, system-inclusive prompt budgets, typed terminal outcomes, partial progress, and replacement-worker resume.
 - Root self-review remediations included explicit claim signatures, shared-evidence disambiguation, canonical UTF-8 ordering, dynamic 0/1/2/3 stop transitions, delayed-registration timeout fencing, durable failed-attempt accounting, composite journal identities, and corrupt/incompatible checkpoint rejection.
 - Existing STEP-06-02 atomic partition lease tests prove one active worker owns a claimed node; the stage journal composes with that lease instead of introducing a second executor or lease system.
+- PR #37 Codex review produced three validated findings. Remediated same-signature evidence merging before contradiction attachment, schema-valid two-stage partials after failed/cancelled synthesis, and analysis-only partials after semantically rejected critique output. Added regression coverage for each path and checked the sole production caller for downstream impact.
 
 ## Findings
 
@@ -103,6 +104,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Result: passed.
 - Notes: 603 repository tests passed with 164 opt-in integration skips; 23 focused recursive/Fred tests passed; replay/restart passed; Phase 05 evaluation passed 17/17; isolated sidecar integration passed 2/2. Typecheck, build, ESLint with zero warnings, dependency boundaries, docs links, secrets scan, and vault doctor passed. A sidecar run overlapped the replay test's intentional container restart and was discarded as test interference before the isolated 2/2 rerun.
 <!-- AGENT-END:session-validation-run -->
+- Post-review gate: 606 repository tests passed with 164 opt-in skips and 0 failures; 26 focused recursive/Fred tests passed with 0 failures; typecheck, build, lint, import/boundary checks, docs lint, secrets scan, and diff check passed.
 
 ## Bugs Encountered
 
