@@ -14,6 +14,8 @@ import {
 import { tracingOtlpEndpointConfig } from '@struct/observability'
 import {
   DocumentResearchWorkflowResult,
+  type HybridSynthesisDraft as typeHybridSynthesisDraft,
+  type HybridSynthesisPrompt as typeHybridSynthesisPrompt,
   type ResearchExecutionPolicy as typeResearchExecutionPolicy,
   ResearchGraphState,
   ResearchProviderFailure,
@@ -55,6 +57,7 @@ import {
   type ResearchPlannerInput as typeResearchPlannerInput,
 } from '../agents/research-planner.js'
 import {
+  hybridResearchAnswerAgent,
   researchAnswerAgent,
   researchEvidenceCriticAgent,
   type ResearchEvidenceAgentInput as typeResearchEvidenceAgentInput,
@@ -800,6 +803,62 @@ export const runFredResearchSynthesis = (
       onTimeout: () =>
         new ResearchProviderFailure({
           message: 'Synthesis model exceeded elapsed-time budget',
+        }),
+    }),
+  )
+
+export const runFredHybridResearchSynthesis = (
+  input: typeHybridSynthesisPrompt,
+  model: string,
+  config: FredRuntimeConfig,
+  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+): Effect.Effect<
+  typeHybridSynthesisDraft,
+  ResearchProviderFailure,
+  never
+> =>
+  Effect.acquireUseRelease(
+    Effect.tryPromise({
+      try: (signal) => createFredBeforeDeadline(
+        factory,
+        config.maxElapsedMs,
+        signal,
+      ),
+      catch: () =>
+        new ResearchProviderFailure({
+          message: 'Hybrid synthesis model runtime failed',
+        }),
+    }),
+    (fred) =>
+      Effect.tryPromise({
+        try: async (signal) => {
+          const provider = await fred.providers.use(config.providerPackage)
+          const agent = await fred.agents.register(
+            hybridResearchAnswerAgent(provider.id, model),
+          )
+          const response = await Runtime.runPromise(fred.runtime)(
+            agent.run(input),
+            { signal },
+          )
+          if (response.output === undefined) {
+            throw new Error('Hybrid synthesis model returned no typed output')
+          }
+          return response.output
+        },
+        catch: () =>
+          new ResearchProviderFailure({
+            message: 'Hybrid synthesis model failed',
+          }),
+      }),
+    (fred) => Effect.promise(() =>
+      boundedShutdown(fred, EMERGENCY_SHUTDOWN_MS)
+    ),
+  ).pipe(
+    Effect.timeoutFail({
+      duration: config.maxElapsedMs,
+      onTimeout: () =>
+        new ResearchProviderFailure({
+          message: 'Hybrid synthesis exceeded elapsed-time budget',
         }),
     }),
   )

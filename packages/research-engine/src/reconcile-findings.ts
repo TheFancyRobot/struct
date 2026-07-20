@@ -136,7 +136,7 @@ function findConflict(
 }
 
 export function computeCrossSourceReconciliationId(
-  result: Omit<typeCrossSourceReconciliationResult, 'id' | 'limitations'>,
+  result: Omit<typeCrossSourceReconciliationResult, 'id'>,
 ): typeof CrossSourceReconciliationId.Type {
   return CrossSourceReconciliationId.make(digestFields([
     result.claimSignature,
@@ -150,6 +150,7 @@ export function computeCrossSourceReconciliationId(
       ...conflict.supportingEvidence,
       ...conflict.conflictingEvidence,
     ]),
+    ...result.limitations,
   ]))
 }
 
@@ -244,13 +245,13 @@ export const reconcileCrossSourceEvidence = Effect.fn(
     evidence: canonicalEvidence,
     mismatches,
     conflicts: conflict === undefined ? [] : [conflict],
+    limitations,
   }
   return yield* Schema.decodeUnknown(
     Schema.typeSchema(CrossSourceReconciliationResult),
   )({
     ...withoutId,
     id: computeCrossSourceReconciliationId(withoutId),
-    limitations,
   }).pipe(Effect.mapError(() =>
     invalid(
       'malformed',

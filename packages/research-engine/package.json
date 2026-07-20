@@ -10,6 +10,7 @@
     "test": "bun test --max-concurrency 1 ."
   },
   "dependencies": {
+    "@struct/data-engine": "workspace:*",
     "@struct/domain": "workspace:*",
     "@struct/observability": "workspace:*",
     "@struct/retrieval": "workspace:*",
