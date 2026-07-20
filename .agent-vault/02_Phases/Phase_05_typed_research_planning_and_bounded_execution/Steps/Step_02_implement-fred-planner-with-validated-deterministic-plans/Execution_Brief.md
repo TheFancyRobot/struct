@@ -40,7 +40,8 @@
 - First, produce an evidence-backed validation pass for Fred Planner with Validated Deterministic Plans, with explicit pass/fail criteria and durable output artifacts.
 - Then, capture the orchestration or synthesis rules in `packages/research-engine/src/validate-plan.ts`, `packages/research-engine/src/plan-revision.ts` without moving deterministic work out of services/tools.
 - Next, keep Fred-specific graph/agent wiring isolated to `packages/workflows/src/agents/research-planner.ts` and typed at every boundary.
-- Finish by leaving one observable typed path—test, route, worker flow, or UI state—that proves the slice is ready for the next dependent step.
+- Then, constrain worker-side execution in `apps/worker/src/jobs/plan-research.ts` to one resumable, observable path for this slice.
+- Finish by proving that worker path with one observable typed test or event lifecycle that leaves the slice ready for the next dependent step.
 
 ## Constraints and Non-Goals
 

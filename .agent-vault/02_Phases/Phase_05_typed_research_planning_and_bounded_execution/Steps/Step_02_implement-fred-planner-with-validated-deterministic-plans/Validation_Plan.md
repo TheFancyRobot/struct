@@ -5,6 +5,7 @@
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: An evidence-backed validation pass for Fred Planner with Validated Deterministic Plans, with explicit pass/fail criteria and durable output artifacts.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The orchestration or synthesis rules in `packages/research-engine/src/validate-plan.ts`, `packages/research-engine/src/plan-revision.ts` without moving deterministic work out of services/tools.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: Fred-specific graph/agent wiring isolated to `packages/workflows/src/agents/research-planner.ts` and typed at every boundary.
+- Confirm this deliverable is present, testable where applicable, and bounded to the step: Worker-side execution in `apps/worker/src/jobs/plan-research.ts` follows one resumable, observable path for this slice.
 - The output includes a clear pass/fail signal, recorded defects or blockers, and the next action for anything intentionally left unresolved.
 
 ## Planned Verification
