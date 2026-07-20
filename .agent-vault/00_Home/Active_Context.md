@@ -22,7 +22,7 @@ Keep this note short and current.
 _Last refreshed: 2026-07-20._
 - Session in progress: none.
 - Current step: [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_01_harden-authentication-workspace-isolation-and-secrets|STEP-09-01 Harden Authentication Workspace Isolation and Secrets]] - status: planned - phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]]
-- Active phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]] - status: planned - updated: 2026-07-17
+- Active phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]] - status: in_progress - owner: Codex - updated: 2026-07-20
 - Also active: 23 more additional steps.
 <!-- AGENT-END:current-focus -->
 

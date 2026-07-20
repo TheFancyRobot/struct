@@ -8,14 +8,19 @@ phase: '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_06_evaluate-report-fidelity-version-drift-and-auditability|STEP-08-06 Evaluate Report Fidelity Version Drift and Auditability]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-20-211503-harden-authentication-workspace-isolation-and-secrets-phase-09-refinement|SESSION-2026-07-20-211503 phase-09-refinement session for Harden Authentication Workspace Isolation and Secrets]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-20-211503
+active_session_id: SESSION-2026-07-20-211503
+context_status: ready
+context_summary: Phase 09 is refined; STEP-09-01 is execution-ready after the refinement is reviewed and committed.
 ---
 
 # Step 01 - Harden Authentication Workspace Isolation and Secrets
@@ -27,6 +32,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - Outcome: Validate and harden Authentication Workspace Isolation and Secrets with explicit evidence, remaining gaps, and next actions before the roadmap moves past v1 Production Hardening and Release.
 - Parent phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]].
 - Sequencing: start after [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_06_evaluate-report-fidelity-version-drift-and-auditability|STEP-08-06 Evaluate Report Fidelity Version Drift and Auditability]] has a stable outcome or handoff.
+- 2026-07-20 refined outcome: add the smallest deployable authentication boundary, enforce workspace ownership on every externally reachable read/write/event path, fail closed, and keep secrets out of source, logs, responses, and artifacts.
 
 ## Required Reading
 
@@ -36,6 +42,12 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - [[01_Architecture/System_Overview|System Overview]]
 - [[01_Architecture/Code_Map|Code Map]]
 - [[01_Architecture/Agent_Workflow|Agent Workflow]]
+### 2026-07-20 refinement additions
+
+- [[01_Architecture/Domain_Model|Domain Model]]
+- [[01_Architecture/Integration_Map|Integration Map]]
+- [[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009 Sandbox Filesystem Roots and Allowlist Read-Only SQL]]
+- [[05_Sessions/2026-07-20-211503-harden-authentication-workspace-isolation-and-secrets-phase-09-refinement|SESSION-2026-07-20-211503 Phase 09 refinement]]
 
 ## Companion Notes
 
@@ -60,7 +72,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-20 - [[05_Sessions/2026-07-20-211503-harden-authentication-workspace-isolation-and-secrets-phase-09-refinement|SESSION-2026-07-20-211503 phase-09-refinement session for Harden Authentication Workspace Isolation and Secrets]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

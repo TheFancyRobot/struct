@@ -2,38 +2,35 @@
 
 ## Acceptance Checks
 
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: The v1 gate suite across security, exact computation, retrieval, recursive analysis, hybrid research, export, accessibility, and recovery.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: A remediation log that ties each failing gate to an owner, fix path, or explicit release blocker decision.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: The evaluation report artifact that justifies the final go/no-go call with corpus assumptions and benchmark context attached.
-- The output includes a clear pass/fail signal, recorded defects or blockers, and the next action for anything intentionally left unresolved.
+- One bounded v1 command composes every shipped phase evaluator and hardening gate exactly once, including the 25,000-file corpus.
+- Machine-readable results are deterministic, versioned, hashed, environment-qualified, and contain zero failed criteria.
+- Any observed failure has a classification and remediation record; only confirmed product defects trigger code changes.
+- Unit, PostgreSQL/data-engine integration, isolated Playwright, build, lint, boundaries, docs, secrets, and vault validation are all clean.
 
 ## Planned Verification
 
-- Plan one command/category for each gate family: unit/integration/e2e, adversarial security, evaluation corpus, performance, and accessibility.
-- Plan a red-to-green remediation loop where a failing gate is fixed or explicitly waived with documented reasoning before the release checklist advances.
-- Planned command once these packages exist: `bun test packages/evaluation` plus the nearest package-level `bun run typecheck`.
-- Run the evaluation/benchmark fixture for this slice and store the corpus, seed, or hardware assumptions alongside the result.
+- Run each component gate from a clean reproducible environment, then run the composite campaign twice and compare deterministic fields/hashes.
+- Validate report schema, threshold inventory, artifact provenance, environment metadata, and failure exit status.
+- For each remediation, rerun the narrow failure, affected suite, and full campaign; self-review affected callers before PR.
 
 ## Edge Cases
 
-- A flaky or nondeterministic gate cannot be treated as evidence of quality; stabilization or quarantine rules must be documented.
-- The campaign should distinguish release blockers from post-v1 improvement items so the report is actionable.
-- If benchmark hardware changes, the report must preserve context rather than presenting new numbers as directly comparable.
+- Unavailable Compose dependency, stale artifact, partial run, duplicate evaluator, unsupported environment, nondeterministic timestamps/order, and timeout.
+- A flaky harness signal must be reproduced and classified before any product change.
 
 ## Regression Expectations
 
-- This step should remain a clean successor to [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_04_complete-observability-operations-and-incident-runbooks|STEP-09-04 Complete Observability Operations and Incident Runbooks]] rather than reworking already-planned scope upstream.
-- Do not trade away provenance, bounded workflows, or exact-computation guarantees during productionization.
-- Keep deployment and rollback procedures consistent with the repository layout and persistence model already established.
-- Avoid last-minute feature creep while closing security, performance, and documentation gaps.
+- The Phase 08 canonical 26/26 report result and all earlier versioned evaluator thresholds remain intact.
+- Thresholds cannot be weakened, failures cannot be skipped silently, and generated pass artifacts cannot be hand-edited.
+- Existing runners are composed rather than duplicated into a second evaluation framework.
 
 ## Security / Observability / Evaluation Focus
 
-- Prioritize workspace isolation, secret handling, auditability, and safe failure reporting in every hardening slice.
-- Make backup, migration, and incident workflows rehearseable before the release checklist is considered complete.
-- Use the evaluation corpus and adversarial suites as release gates, not optional confidence boosters.
+- The final artifact contains no secrets or source-sensitive payloads and links every result to reproducible evidence.
+- Any confirmed defect blocks the zero-defect gate; review-bot claims are verified before repair.
+- Final pass evidence is sufficient for STEP-09-06 to document release readiness without rerationalizing failures.
 
 ## Related Notes
 
-- Step: [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_05_run-full-evaluation-campaign-and-remediate-gates|STEP-09-05 Run Full Evaluation Campaign and Remediate Gates]]
-- Phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]]
+- [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_05_run-full-evaluation-campaign-and-remediate-gates|STEP-09-05]]
+- [[04_Decisions/DEC-0011_gate-releases-on-a-reproducible-25000-file-evaluation-corpus|DEC-0011]]

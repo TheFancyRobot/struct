@@ -2,53 +2,51 @@
 
 ## Exact Outcome
 
-- Produce the concrete contracts, artifacts, and bounded implementation/design surfaces for Authentication Workspace Isolation and Secrets that this step is responsible for before any broader follow-on work begins.
+- Ship a minimal production-usable identity boundary and enforce authenticated workspace ownership across every externally reachable HTTP, SSE, worker, persistence, artifact, citation, report, source, directory, dataset, and research path.
+- Reject missing, invalid, or cross-workspace access without leaking resource existence; centralize secret loading and redaction.
 
 ## Prerequisites
 
-- Re-read [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]] and confirm the step still matches the current roadmap sequence.
-- Confirm the handoff from [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_06_evaluate-report-fidelity-version-drift-and-auditability|STEP-08-06 Evaluate Report Fidelity Version Drift and Auditability]] before widening scope.
-- Keep deterministic work in typed Effect services, repositories, and tools; reserve Fred for agentic orchestration only.
-- Treat the listed files as planned starting points; create only the smallest set needed to land the slice.
+- Phase 08 is merged with a functional responsive application and passing 26/26 report-fidelity evaluator.
+- Inspect current route composition, ownership repository tests, configuration, `.env.example`, and the secret scan before choosing the smallest integration point.
 
 ## Planned Starting Files
 
-- These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `apps/api/src/auth/session.ts`
-- `apps/api/src/auth/authorization.ts`
-- `packages/persistence/src/workspace-scope.ts`
-- `docs/security.md`
-- `.env.example`
+- `apps/api/src/main.ts`, `apps/api/src/config.ts`, and `apps/api/src/routes/`
+- `apps/worker/src/config.ts` and worker job boundaries
+- `packages/persistence/src/repositories/ownership.ts` plus ownership integration tests
+- `.env.example`, `scripts/secrets-scan.ts`, and `docs/security-model.md`
 
 ## Required Reading
 
-- [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]]
-- [[01_Architecture/System_Overview|System Overview]]
-- [[01_Architecture/Code_Map|Code Map]]
-- [[01_Architecture/Agent_Workflow|Agent Workflow]]
-- [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_06_evaluate-report-fidelity-version-drift-and-auditability|STEP-08-06 Evaluate Report Fidelity Version Drift and Auditability]]
-- `docs/product-brief.md` sections 16, 18-25, 27, and 29-31.
+- [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09]]
+- [[01_Architecture/Domain_Model|Domain Model]]
+- [[01_Architecture/Integration_Map|Integration Map]]
+- [[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009]]
+- `docs/product-brief.md` security, isolation, and privacy requirements.
 
 ## Concrete Deliverables
 
-- Produce an evidence-backed validation pass for Authentication Workspace Isolation and Secrets, with explicit pass/fail criteria and durable output artifacts.
-- Expose only the minimal API surface in `apps/api/src/auth/session.ts`, `apps/api/src/auth/authorization.ts` needed to exercise this step end to end.
-- Capture the durable contract or operator guidance in `docs/security.md` rather than burying it in session-only notes.
+- Typed identity context with explicit unauthenticated/forbidden failures and fail-closed production configuration.
+- Workspace authorization on HTTP, SSE, persistence, and worker entry points, with negative cross-workspace tests.
+- Secret configuration/redaction covering API, worker, PostgreSQL, and data-engine credentials.
+- Focused security guidance and dependency/security scan evidence.
 
 ## Smallest Bounded Checklist
 
-- First, produce an evidence-backed validation pass for Authentication Workspace Isolation and Secrets, with explicit pass/fail criteria and durable output artifacts.
-- Then, expose only the minimal API surface in `apps/api/src/auth/session.ts`, `apps/api/src/auth/authorization.ts` needed to exercise this step end to end.
-- Next, capture the durable contract or operator guidance in `docs/security.md` rather than burying it in session-only notes.
-- Finish by leaving one observable typed path—test, route, worker flow, or UI state—that proves the slice is ready for the next dependent step.
+- Inventory externally reachable routes and durable ownership boundaries.
+- Implement one shared identity/authorization path through existing composition.
+- Add missing-workspace, cross-workspace, guessed-ID, SSE, and background-job negative coverage.
+- Run focused and repository-wide gates, secret scanning, and pre-PR affected-code review.
 
 ## Constraints and Non-Goals
 
-- Treat hardening as evidence-producing work: every claim should be backed by tests, docs, or operational artifacts.
-- Protect tenant isolation, secrets, migrations, backups, and rollback paths before optimizing for convenience.
-- Do not ship v1 until evaluation, accessibility, and operational runbooks all tell a coherent story.
+- Bun is the sole host runtime; PostgreSQL and the authenticated no-egress data-engine remain Docker Compose services.
+- Do not preserve legacy behavior or database data, or add an identity platform or speculative abstraction.
+- Use the Effect skills for Effect code and the SolidJS skill for SolidJS code.
+- Self-review the full diff and affected callers before PR; advance only with zero known confirmed defects.
 
 ## Related Notes
 
-- Step: [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_01_harden-authentication-workspace-isolation-and-secrets|STEP-09-01 Harden Authentication Workspace Isolation and Secrets]]
-- Phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]]
+- [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_01_harden-authentication-workspace-isolation-and-secrets|STEP-09-01]]
+- [[05_Sessions/2026-07-20-211503-harden-authentication-workspace-isolation-and-secrets-phase-09-refinement|Phase 09 refinement session]]

@@ -2,37 +2,36 @@
 
 ## Acceptance Checks
 
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: An evidence-backed validation pass for Authentication Workspace Isolation and Secrets, with explicit pass/fail criteria and durable output artifacts.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Only the minimal API surface in `apps/api/src/auth/session.ts`, `apps/api/src/auth/authorization.ts` needed to exercise this step end to end.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: The durable contract or operator guidance in `docs/security.md` rather than burying it in session-only notes.
-- The output includes a clear pass/fail signal, recorded defects or blockers, and the next action for anything intentionally left unresolved.
+- Every externally reachable API and SSE path requires a valid identity and enforces workspace ownership.
+- Missing/invalid credentials, guessed IDs, and cross-workspace reads/writes/streams fail closed without existence leaks.
+- Background jobs and repositories cannot cross workspace scope; representative ownership integration tests pass.
+- Required secrets are validated at startup and never appear in logs, errors, responses, artifacts, screenshots, or committed files.
 
 ## Planned Verification
 
-- Planned command once these packages exist: `bun test packages/persistence` plus the nearest package-level `bun run typecheck`.
-- Planned app/integration coverage once the app surfaces exist: `bun test apps/api` for the API/worker/web path touched here.
-- Review the paired doc/ADR/runbook output to confirm it matches the code-facing contract and names operator/developer prerequisites explicitly.
+- Add focused API, SSE, worker, and PostgreSQL ownership tests for allowed and denied paths.
+- Run `bun run secrets:scan` plus dependency/security checks supported by the repository.
+- Run `bun run typecheck`, `bun run lint`, `bun run lint:imports`, `bun run test`, `bun run test:integration`, `bun run build`, and `bun run docs:lint`.
+- Run applicable isolated Playwright journeys when authentication changes browser behavior.
 
 ## Edge Cases
 
-- Partial progress, retries, or restarts should leave this step in a typed, inspectable state rather than a silent half-success.
-- Authorization failures, secret exposure, and audit-log gaps should be treated as first-class failures, not documentation nits.
+- Missing, malformed, expired, replayed, or mismatched identity; guessed UUIDs; SSE reconnect under another workspace.
+- Worker retries after identity/workspace removal; resource relationships with mixed workspace IDs.
+- Secrets embedded in nested causes, telemetry attributes, validation errors, support diagnostics, or screenshots.
 
 ## Regression Expectations
 
-- This step should remain a clean successor to [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_06_evaluate-report-fidelity-version-drift-and-auditability|STEP-08-06 Evaluate Report Fidelity Version Drift and Auditability]] rather than reworking already-planned scope upstream.
-- Do not trade away provenance, bounded workflows, or exact-computation guarantees during productionization.
-- Keep deployment and rollback procedures consistent with the repository layout and persistence model already established.
-- Avoid last-minute feature creep while closing security, performance, and documentation gaps.
+- Existing functional report, citation, ingestion, directory, dataset, research, and recovery paths remain green for authorized users.
+- Phase 08's 26/26 evaluator and all current unit/integration/isolated Playwright baselines remain passing.
+- Review every caller affected by identity threading in the same edit round.
 
 ## Security / Observability / Evaluation Focus
 
-- Prioritize workspace isolation, secret handling, auditability, and safe failure reporting in every hardening slice.
-- Make backup, migration, and incident workflows rehearseable before the release checklist is considered complete.
-- Use the evaluation corpus and adversarial suites as release gates, not optional confidence boosters.
-- Audit all newly exposed boundaries for least privilege, secret hygiene, and safe error sanitization before widening rollout.
+- Assert least privilege, fail-closed configuration, constant-shape denied responses, correlation without secret content, and explicit audit events.
+- A confirmed defect blocks advancement; review feedback is verified before repair.
 
 ## Related Notes
 
-- Step: [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_01_harden-authentication-workspace-isolation-and-secrets|STEP-09-01 Harden Authentication Workspace Isolation and Secrets]]
-- Phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]]
+- [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_01_harden-authentication-workspace-isolation-and-secrets|STEP-09-01]]
+- [[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009]]

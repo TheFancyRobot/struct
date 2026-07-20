@@ -8,7 +8,7 @@ phase: '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_03_complete-performance-capacity-and-resilience-testing|STEP-09-03 Complete Performance Capacity and Resilience Testing]]'
 related_sessions: []
@@ -27,6 +27,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - Outcome: Validate and harden Observability Operations and Incident Runbooks with explicit evidence, remaining gaps, and next actions before the roadmap moves past v1 Production Hardening and Release.
 - Parent phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]].
 - Sequencing: start after [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_03_complete-performance-capacity-and-resilience-testing|STEP-09-03 Complete Performance Capacity and Resilience Testing]] has a stable outcome or handoff.
+- 2026-07-20 refined outcome: complete correlated, redacted API/worker/workflow/data-engine signals and concise operator runbooks for the failures the current product can actually experience.
 
 ## Required Reading
 
@@ -36,6 +37,11 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - [[01_Architecture/System_Overview|System Overview]]
 - [[01_Architecture/Code_Map|Code Map]]
 - [[01_Architecture/Agent_Workflow|Agent Workflow]]
+### 2026-07-20 refinement additions
+
+- [[01_Architecture/Agent_Workflow|Agent Workflow]]
+- [[01_Architecture/Integration_Map|Integration Map]]
+- [[05_Sessions/2026-07-20-211503-harden-authentication-workspace-isolation-and-secrets-phase-09-refinement|SESSION-2026-07-20-211503 Phase 09 refinement]]
 
 ## Companion Notes
 

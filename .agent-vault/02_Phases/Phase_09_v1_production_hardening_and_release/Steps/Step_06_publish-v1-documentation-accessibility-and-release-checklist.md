@@ -8,7 +8,7 @@ phase: '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_05_run-full-evaluation-campaign-and-remediate-gates|STEP-09-05 Run Full Evaluation Campaign and Remediate Gates]]'
 related_sessions: []
@@ -27,6 +27,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - Outcome: Validate and harden v1 Documentation Accessibility and Release Checklist with explicit evidence, remaining gaps, and next actions before the roadmap moves past v1 Production Hardening and Release.
 - Parent phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]].
 - Sequencing: start after [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_05_run-full-evaluation-campaign-and-remediate-gates|STEP-09-05 Run Full Evaluation Campaign and Remediate Gates]] has a stable outcome or handoff.
+- 2026-07-20 refined outcome: make the functional app operable and understandable, close accessibility/responsive defects with Playwright light/dark evidence, and complete a fully evidenced release checklist while stopping before the release action.
 
 ## Required Reading
 
@@ -36,6 +37,12 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - [[01_Architecture/System_Overview|System Overview]]
 - [[01_Architecture/Code_Map|Code Map]]
 - [[01_Architecture/Agent_Workflow|Agent Workflow]]
+### 2026-07-20 refinement additions
+
+- [[01_Architecture/Code_Map|Code Map]]
+- [[04_Decisions/DEC-0013_use-tailwind-css-and-daisyui-with-a-custom-theme-for-frontend-styling|DEC-0013 Tailwind CSS and DaisyUI]]
+- [[04_Decisions/DEC-0014_use-solidjs-vite-8-and-solid-router-for-frontend-runtime|DEC-0014 SolidJS Vite and Solid Router]]
+- [[05_Sessions/2026-07-20-211503-harden-authentication-workspace-isolation-and-secrets-phase-09-refinement|SESSION-2026-07-20-211503 Phase 09 refinement]]
 
 ## Companion Notes
 

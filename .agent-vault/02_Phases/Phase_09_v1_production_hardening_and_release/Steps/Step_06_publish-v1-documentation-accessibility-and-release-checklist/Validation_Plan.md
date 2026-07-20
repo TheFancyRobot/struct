@@ -2,36 +2,37 @@
 
 ## Acceptance Checks
 
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: An evidence-backed validation pass for v1 Documentation Accessibility and Release Checklist, with explicit pass/fail criteria and durable output artifacts.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: The durable contract or operator guidance in `docs/setup.md`, `docs/architecture.md`, `docs/accessibility.md` rather than burying it in session-only notes.
-- The output includes a clear pass/fail signal, recorded defects or blockers, and the next action for anything intentionally left unresolved.
+- Setup, configuration, security, backup/restore, recovery, troubleshooting, architecture, workflows, and known limits match executable repository behavior.
+- Critical journeys are operable by keyboard and have correct focus, dialogs, structure, names/labels, live status, contrast, reduced motion, and error recovery.
+- Playwright passes at representative 1440×900, 1024×768, and 390×844 viewports in light and dark mode; screenshots are visually reviewed for overflow, clipping, contrast, and usable density.
+- Every release-checklist item links reproducible evidence and is complete except the explicit v1.0 release action.
 
 ## Planned Verification
 
-- Run the nearest repo-wide or package-targeted `bun run typecheck` command once the touched packages and apps exist.
-- Review the paired doc/ADR/runbook output to confirm it matches the code-facing contract and names operator/developer prerequisites explicitly.
+- Follow setup and operator procedures from a clean environment and run every documented command.
+- Use the SolidJS skill for any UI repair; use Playwright for full journeys, keyboard-only interaction, focus restoration/trapping, both themes, and all three viewport classes.
+- Run automated accessibility checks where available and manually inspect responsive screenshots.
+- Run the complete v1 campaign plus repository-wide typecheck, lint, boundaries, unit/integration, isolated Playwright, build, docs, secret scan, and vault doctor.
 
 ## Edge Cases
 
-- Partial progress, retries, or restarts should leave this step in a typed, inspectable state rather than a silent half-success.
-- Unsupported formats, stale chunk references, and citation-open failures should surface explicitly instead of degrading to uncited answers.
-- A green-looking summary with missing evidence, flaky metrics, or inaccessible states should fail the step until the gap is explicit.
+- Empty/loading/error/offline/historical states; long titles/citations; dialog open/close; focus after repair; zoom/reduced motion; mobile overflow.
+- Fresh clone/setup, missing optional configuration, failed dependency health, restore/rollback troubleshooting, and broken documentation links.
 
 ## Regression Expectations
 
-- This step should remain a clean successor to [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_05_run-full-evaluation-campaign-and-remediate-gates|STEP-09-05 Run Full Evaluation Campaign and Remediate Gates]] rather than reworking already-planned scope upstream.
-- Do not trade away provenance, bounded workflows, or exact-computation guarantees during productionization.
-- Keep deployment and rollback procedures consistent with the repository layout and persistence model already established.
-- Avoid last-minute feature creep while closing security, performance, and documentation gaps.
+- Preserve the functional NotebookLM-like slate/blue report workspace and its exact citation/back-navigation semantics.
+- A visual or accessibility fix must be checked across affected components/routes/tests in the same round.
+- Do not add features or redesign the product during release closure.
 
 ## Security / Observability / Evaluation Focus
 
-- Prioritize workspace isolation, secret handling, auditability, and safe failure reporting in every hardening slice.
-- Make backup, migration, and incident workflows rehearseable before the release checklist is considered complete.
-- Use the evaluation corpus and adversarial suites as release gates, not optional confidence boosters.
-- Evaluation should verify provenance opening paths, contradiction reporting, and prompt-injection resistance for the evidence types touched here.
+- Screenshots/docs contain no secrets or private source content; operator errors remain actionable and redacted.
+- Accessibility and browser evidence are release gates, not optional polish.
+- Zero known confirmed defects and completed pre-PR self-review are mandatory.
 
 ## Related Notes
 
-- Step: [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist|STEP-09-06 Publish v1 Documentation Accessibility and Release Checklist]]
-- Phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]]
+- [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist|STEP-09-06]]
+- [[04_Decisions/DEC-0013_use-tailwind-css-and-daisyui-with-a-custom-theme-for-frontend-styling|DEC-0013]]
+- [[04_Decisions/DEC-0014_use-solidjs-vite-8-and-solid-router-for-frontend-runtime|DEC-0014]]
