@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T03:09:34.250Z",
+  "generatedAt": "2026-07-20T03:11:46.950Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -12016,16 +12016,16 @@
         {
           "name": "beginResearchAction",
           "kind": "const",
-          "line": 150,
+          "line": 152,
           "exported": true,
-          "endLine": 150
+          "endLine": 152
         },
         {
           "name": "completeResearchAction",
           "kind": "const",
-          "line": 198,
+          "line": 200,
           "exported": true,
-          "endLine": 198
+          "endLine": 200
         }
       ],
       "imports": [
@@ -12048,9 +12048,9 @@
         }
       ],
       "exports": [],
-      "hash": "f0507327503233b469d71fa8cd957ced80e11b7003c4e9e667713753331e331e",
-      "mtimeMs": 1784516791790.4941,
-      "size": 9328,
+      "hash": "de718c669cfd36a1cb03c1a33c7dfa7c0587212ff52432158718a2d50cd5e4a0",
+      "mtimeMs": 1784517090203.651,
+      "size": 9400,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -12277,86 +12277,86 @@
         {
           "name": "ResearchStopReason",
           "kind": "type",
-          "line": 119,
+          "line": 126,
           "exported": true,
-          "endLine": 119
+          "endLine": 126
         },
         {
           "name": "ResearchExecutionStopped",
           "kind": "class",
-          "line": 121,
+          "line": 128,
           "exported": true,
-          "endLine": 121
+          "endLine": 128
         },
         {
           "name": "ResearchProviderFailure",
           "kind": "class",
-          "line": 129,
-          "exported": true,
-          "endLine": 129
-        },
-        {
-          "name": "ResearchAction",
-          "kind": "const",
           "line": 136,
           "exported": true,
           "endLine": 136
         },
         {
           "name": "ResearchAction",
-          "kind": "type",
-          "line": 153,
-          "exported": true,
-          "endLine": 153
-        },
-        {
-          "name": "ResearchActionResult",
           "kind": "const",
-          "line": 155,
+          "line": 143,
           "exported": true,
-          "endLine": 155
+          "endLine": 143
+        },
+        {
+          "name": "ResearchAction",
+          "kind": "type",
+          "line": 160,
+          "exported": true,
+          "endLine": 160
         },
         {
           "name": "ResearchActionResult",
-          "kind": "type",
-          "line": 159,
-          "exported": true,
-          "endLine": 159
-        },
-        {
-          "name": "ResearchToolGrantUsage",
           "kind": "const",
           "line": 162,
           "exported": true,
           "endLine": 162
         },
         {
+          "name": "ResearchActionResult",
+          "kind": "type",
+          "line": 166,
+          "exported": true,
+          "endLine": 166
+        },
+        {
+          "name": "ResearchToolGrantUsage",
+          "kind": "const",
+          "line": 169,
+          "exported": true,
+          "endLine": 169
+        },
+        {
           "name": "ResearchToolGrantUsage",
           "kind": "type",
-          "line": 167,
+          "line": 174,
           "exported": true,
-          "endLine": 167
+          "endLine": 174
         },
         {
           "name": "ResearchGraphState",
           "kind": "const",
-          "line": 170,
+          "line": 177,
           "exported": true,
-          "endLine": 170
+          "endLine": 177
         },
         {
           "name": "ResearchGraphState",
           "kind": "type",
-          "line": 193,
+          "line": 200,
           "exported": true,
-          "endLine": 193
+          "endLine": 200
         },
         {
           "name": "initialResearchGraphState",
           "kind": "function",
-          "line": 196,
+          "line": 203,
           "exported": true,
-          "endLine": 196
+          "endLine": 203
         }
       ],
       "imports": [
@@ -12370,9 +12370,9 @@
         }
       ],
       "exports": [],
-      "hash": "24937f9f8c427a4cda9937db0dc62518c0105c7045754a77258ed32eb416681f",
-      "mtimeMs": 1784516791790.0964,
-      "size": 6016,
+      "hash": "adebba1a49d6e42a9094116fbaba449e4c146c43ffcd2cceb51b41b678fdb9bc",
+      "mtimeMs": 1784517090203.2375,
+      "size": 6199,
       "generated": false,
       "vendor": false,
       "parser": "regex"

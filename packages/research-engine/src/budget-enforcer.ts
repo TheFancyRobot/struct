@@ -139,7 +139,9 @@ function declarationReason(
   )?.count ?? 0
   if (grant !== undefined && callsForGrant + 1 > grant.maximumCalls) {
     return {
-      kind: 'tool-budget',
+      kind: 'tool-grant-budget',
+      toolId: action.toolId,
+      capability: action.capability,
       limit: grant.maximumCalls,
       attempted: callsForGrant + 1,
     }

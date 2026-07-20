@@ -63,6 +63,13 @@ export const ResearchStopReason = Schema.Union(
     attempted: Counter,
   }),
   Schema.Struct({
+    kind: Schema.Literal('tool-grant-budget'),
+    toolId: ResearchToolId,
+    capability: ResearchToolCapability,
+    limit: Counter,
+    attempted: Counter,
+  }),
+  Schema.Struct({
     kind: Schema.Literal('cost-budget'),
     limit: Counter,
     attempted: Counter,

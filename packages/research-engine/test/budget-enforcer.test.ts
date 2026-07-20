@@ -278,7 +278,9 @@ describe('research budget enforcer', () => {
       1_003,
     )
     expect(reason).toEqual({
-      kind: 'tool-budget',
+      kind: 'tool-grant-budget',
+      toolId: 'hybrid-retrieval',
+      capability: 'document:retrieve',
       limit: 1,
       attempted: 2,
     })
