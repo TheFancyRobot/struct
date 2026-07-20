@@ -1,5 +1,11 @@
 /* eslint-disable no-unused-vars -- Babel does not mark Solid JSX imports as used. */
-import type { Finding, ProjectId, Report, WorkspaceId } from '@struct/domain'
+import type {
+  ExportBundleStatus,
+  Finding,
+  ProjectId,
+  Report,
+  WorkspaceId,
+} from '@struct/domain'
 import {
   For,
   Show,
@@ -8,6 +14,8 @@ import {
   createSignal,
   type Component,
 } from 'solid-js'
+import type { ReportMutation } from '../api/artifacts'
+import { ReportEditor } from './ReportEditor'
 
 export interface NotebookViewProps {
   readonly workspaceId: typeof WorkspaceId.Type
@@ -15,10 +23,20 @@ export interface NotebookViewProps {
   readonly threadId?: string
   readonly runId?: string
   readonly initialFindings?: ReadonlyArray<Finding>
+  readonly initialReport?: Report
   readonly loadFindings: () => Promise<ReadonlyArray<Finding>>
   readonly composeReport: (
     findings: ReadonlyArray<Finding>,
   ) => Promise<Report>
+  readonly mutateReport: (
+    report: Report,
+    mutation: ReportMutation,
+  ) => Promise<Report>
+  readonly loadReportRevision: (
+    report: Report,
+    revision: number,
+  ) => Promise<Report>
+  readonly exportReport: (report: Report) => Promise<ExportBundleStatus>
 }
 
 function currentTitle(finding: Finding): string {
@@ -39,7 +57,9 @@ export const NotebookView: Component<NotebookViewProps> = (props) => {
   )
   const visibleFindings = () => props.initialFindings ?? findings() ?? []
   const [selected, setSelected] = createSignal<ReadonlySet<string>>(new Set())
-  const [report, setReport] = createSignal<Report | null>(null)
+  const [report, setReport] = createSignal<Report | null>(
+    props.initialReport ?? null,
+  )
   const [saving, setSaving] = createSignal(false)
   const [saveError, setSaveError] = createSignal('')
   const selectedFindings = createMemo(() =>
@@ -58,7 +78,11 @@ export const NotebookView: Component<NotebookViewProps> = (props) => {
     setSaving(true)
     setSaveError('')
     try {
-      setReport(await props.composeReport(selectedFindings()))
+      const saved = await props.composeReport(selectedFindings())
+      setReport(saved)
+      const url = new URL(window.location.href)
+      url.searchParams.set('reportId', saved.id)
+      window.history.replaceState({}, '', url)
     } catch (error) {
       setSaveError(
         error instanceof Error
@@ -169,28 +193,15 @@ export const NotebookView: Component<NotebookViewProps> = (props) => {
             }
           >
             {(current) => (
-              <>
-                <p class="eyebrow">Draft report · revision {current().revision}</p>
-                <h2>
-                  {current().titleRevisions[current().currentTitleRevision]?.content}
-                </h2>
-                <For each={current().sections}>
-                  {(section) => (
-                    <section class="report-section-card">
-                      <span>{String(section.ordinal + 1).padStart(2, '0')}</span>
-                      <div>
-                        <h3>{section.heading}</h3>
-                        <Show when={
-                          section.revisions[section.currentRevision]?.content
-                            .trim() !== section.heading.trim()
-                        }>
-                          <p>{section.revisions[section.currentRevision]?.content}</p>
-                        </Show>
-                      </div>
-                    </section>
-                  )}
-                </For>
-              </>
+              <ReportEditor
+                initialReport={current()}
+                findings={visibleFindings()}
+                threadId={props.threadId}
+                mutate={props.mutateReport}
+                loadRevision={(revision) =>
+                  props.loadReportRevision(current(), revision)}
+                exportCurrent={props.exportReport}
+              />
             )}
           </Show>
         </aside>

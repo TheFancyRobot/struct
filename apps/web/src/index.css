@@ -222,6 +222,14 @@ summary {
 .notebook-workspace {
   display: grid;
   gap: 1.25rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.notebook-workspace > *,
+.notebook-grid > * {
+  min-width: 0;
 }
 
 .notebook-hero {
@@ -235,6 +243,10 @@ summary {
     linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 12%, var(--color-base-100)), var(--color-base-100));
   padding: clamp(1.25rem, 3vw, 2.2rem);
   box-shadow: 0 24px 70px color-mix(in oklab, var(--color-neutral) 10%, transparent);
+}
+
+.notebook-hero > * {
+  min-width: 0;
 }
 
 .notebook-hero h1 {
@@ -266,7 +278,9 @@ summary {
 
 .notebook-compose:disabled {
   cursor: not-allowed;
-  opacity: .45;
+  background: var(--color-base-300);
+  color: var(--color-base-content);
+  box-shadow: none;
 }
 
 .notebook-state {
@@ -295,6 +309,14 @@ summary {
 .notebook-finding-list {
   display: grid;
   gap: .75rem;
+}
+
+.notebook-grid:has(.report-workspace) {
+  display: block;
+}
+
+.notebook-grid:has(.report-workspace) .notebook-finding-list {
+  display: none;
 }
 
 .notebook-finding-card,
@@ -425,8 +447,35 @@ summary {
     grid-template-columns: 1fr;
   }
 
+  .notebook-hero {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .notebook-hero h1,
+  .notebook-hero p {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .notebook-compose {
+    width: 100%;
+    max-width: 100%;
+    white-space: normal;
+  }
+
   .report-composer {
     min-height: 24rem;
+  }
+
+  .report-workspace,
+  .report-workspace-header,
+  .report-primary-actions,
+  .editable-report-section textarea {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 }
 
@@ -1507,6 +1556,692 @@ summary {
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
+  }
+}
+
+/* Report workspace — extends the shared slate/blue notebook system. */
+.report-composer:has(.report-workspace) {
+  grid-column: 1 / -1;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+}
+
+.report-workspace {
+  --report-line: color-mix(in oklab, var(--color-base-content) 13%, transparent);
+  --report-muted: color-mix(in oklab, var(--color-base-content) 62%, transparent);
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--report-line);
+  border-radius: 1.35rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 78% -20%, color-mix(in oklab, var(--color-primary) 16%, transparent), transparent 34rem),
+    var(--color-base-100);
+  box-shadow: 0 24px 70px color-mix(in oklab, #07111f 16%, transparent);
+}
+
+.report-workspace-header,
+.report-outline > header,
+.report-inspector > header,
+.repair-dialog > header,
+.report-evidence-drawer > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.report-workspace-header {
+  min-height: 7.5rem;
+  padding: 1.35rem 1.5rem;
+  border-bottom: 1px solid var(--report-line);
+}
+
+.report-workspace-header h1 {
+  max-width: 48rem;
+  margin: .15rem 0 .3rem;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(1.45rem, 2.4vw, 2.35rem);
+  line-height: 1.06;
+  letter-spacing: -.035em;
+}
+
+.report-workspace-header p:last-child {
+  color: var(--report-muted);
+  font-size: .78rem;
+}
+
+.report-primary-actions,
+.section-edit-actions,
+.report-banner {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+}
+
+.report-primary-actions button,
+.section-edit-actions button,
+.return-current,
+.evidence-open-source {
+  min-height: 2.55rem;
+  padding: .6rem .9rem;
+  border: 1px solid var(--report-line);
+  border-radius: .75rem;
+  background: color-mix(in oklab, var(--color-base-200) 72%, transparent);
+  font-size: .76rem;
+  font-weight: 700;
+}
+
+.report-primary-actions .report-publish {
+  color: white;
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+}
+
+.report-primary-actions .report-publish:disabled {
+  border-color: var(--report-line);
+  background: var(--color-base-300);
+  color: var(--color-base-content);
+}
+
+.report-primary-actions button:disabled,
+.section-edit-actions button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.report-banner {
+  justify-content: space-between;
+  min-height: 2.75rem;
+  padding: .55rem 1.5rem;
+  border-bottom: 1px solid var(--report-line);
+  background: color-mix(in oklab, var(--color-info) 13%, var(--color-base-100));
+  font-size: .78rem;
+}
+
+.report-banner.success {
+  background: color-mix(in oklab, var(--color-success) 13%, var(--color-base-100));
+}
+
+.report-banner.error {
+  background: color-mix(in oklab, var(--color-error) 13%, var(--color-base-100));
+}
+
+.report-banner button {
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+
+.report-workspace-layout {
+  display: grid;
+  grid-template-columns: minmax(12rem, 17rem) minmax(24rem, 1fr) minmax(13rem, 19rem);
+  min-height: 39rem;
+}
+
+.report-outline,
+.report-inspector {
+  min-width: 0;
+  padding: 1.15rem;
+  background: color-mix(in oklab, var(--color-base-200) 58%, transparent);
+}
+
+.report-outline {
+  border-right: 1px solid var(--report-line);
+}
+
+.report-inspector {
+  border-left: 1px solid var(--report-line);
+}
+
+.report-outline > header h2,
+.report-inspector > header h2,
+.revision-history h3 {
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.report-outline > header span,
+.report-inspector > header span {
+  color: var(--report-muted);
+  font-size: .7rem;
+}
+
+.report-outline ol {
+  display: grid;
+  gap: .35rem;
+  margin-top: 1rem;
+}
+
+.report-outline li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: .8rem;
+}
+
+.report-outline li.active {
+  border-color: color-mix(in oklab, var(--color-primary) 42%, transparent);
+  background: color-mix(in oklab, var(--color-primary) 10%, transparent);
+}
+
+.report-outline li > button {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr);
+  gap: .45rem;
+  width: 100%;
+  padding: .65rem;
+  text-align: left;
+}
+
+.report-outline li > button span {
+  color: var(--color-primary);
+  font: 700 .65rem/1.4 ui-monospace, monospace;
+}
+
+.report-outline li > button strong {
+  overflow: hidden;
+  font-size: .78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.outline-reorder {
+  display: grid;
+  padding-right: .25rem;
+}
+
+.outline-reorder button {
+  width: 1.6rem;
+  height: 1.35rem;
+  color: var(--report-muted);
+  font-size: .7rem;
+}
+
+.outline-reorder button:disabled {
+  opacity: .25;
+}
+
+.revision-history {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--report-line);
+}
+
+.revision-history > div {
+  display: grid;
+  gap: .3rem;
+  max-height: 16rem;
+  margin-top: .7rem;
+  overflow-y: auto;
+}
+
+.revision-history button {
+  display: flex;
+  justify-content: space-between;
+  gap: .5rem;
+  padding: .55rem .65rem;
+  border-radius: .65rem;
+  text-align: left;
+}
+
+.revision-history button[aria-current="true"] {
+  color: var(--color-primary);
+  background: color-mix(in oklab, var(--color-primary) 10%, transparent);
+}
+
+.revision-history span {
+  font-size: .73rem;
+  font-weight: 700;
+}
+
+.revision-history small {
+  color: var(--report-muted);
+  font-size: .6rem;
+}
+
+.report-editor-canvas {
+  min-width: 0;
+  padding: clamp(1rem, 3vw, 2.5rem);
+}
+
+.return-current {
+  margin-bottom: 1rem;
+}
+
+.editable-report-section {
+  padding: 1.35rem 0 1.7rem;
+  border-bottom: 1px solid var(--report-line);
+}
+
+.editable-report-section:first-of-type {
+  padding-top: 0;
+}
+
+.editable-report-section > header {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: .65rem;
+  align-items: start;
+  margin-bottom: 1rem;
+}
+
+.editable-report-section > header > span {
+  color: var(--color-primary);
+  font: 700 .7rem/1.7 ui-monospace, monospace;
+}
+
+.editable-report-section h2 {
+  font: 700 clamp(1.05rem, 1.8vw, 1.4rem)/1.2 "Fraunces", Georgia, serif;
+}
+
+.editable-report-section header small {
+  color: var(--report-muted);
+  font-size: .65rem;
+}
+
+.editable-report-section > p {
+  color: color-mix(in oklab, var(--color-base-content) 88%, transparent);
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.editable-report-section textarea {
+  width: 100%;
+  min-height: 9rem;
+  resize: vertical;
+  padding: 1rem;
+  border: 1px solid color-mix(in oklab, var(--color-primary) 32%, var(--report-line));
+  border-radius: .85rem;
+  outline: 0;
+  background: color-mix(in oklab, var(--color-base-200) 38%, transparent);
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.editable-report-section textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 17%, transparent);
+}
+
+.section-edit-actions {
+  justify-content: flex-end;
+  margin-top: .55rem;
+}
+
+.report-claims {
+  display: grid;
+  gap: .55rem;
+  margin-top: 1.15rem;
+}
+
+.report-claim {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .75rem;
+  padding: .75rem;
+  border: 1px solid var(--report-line);
+  border-radius: .8rem;
+  background: color-mix(in oklab, var(--color-base-200) 42%, transparent);
+}
+
+.report-claim > p {
+  align-self: center;
+  overflow: hidden;
+  font-size: .74rem;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-claim > div {
+  display: flex;
+  gap: .35rem;
+}
+
+.report-claim button {
+  padding: .35rem .5rem;
+  border-radius: .5rem;
+  color: var(--report-muted);
+  background: color-mix(in oklab, var(--color-base-100) 74%, transparent);
+  font-size: .62rem;
+  font-weight: 750;
+}
+
+.report-claim .repair-trigger {
+  color: color-mix(in oklab, var(--color-warning) 72%, var(--color-base-content));
+}
+
+.publish-blockers {
+  display: grid;
+  gap: .45rem;
+  margin-top: 1rem;
+}
+
+.publish-blockers button {
+  display: grid;
+  gap: .25rem;
+  width: 100%;
+  padding: .7rem;
+  border: 1px solid color-mix(in oklab, var(--color-warning) 34%, var(--report-line));
+  border-radius: .7rem;
+  text-align: left;
+  background: color-mix(in oklab, var(--color-warning) 8%, transparent);
+}
+
+.publish-blockers strong {
+  font-size: .68rem;
+}
+
+.publish-blockers span {
+  overflow: hidden;
+  color: var(--report-muted);
+  font-size: .64rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.publish-ready {
+  margin-top: 1rem;
+  padding: .8rem;
+  border: 1px solid color-mix(in oklab, var(--color-success) 38%, var(--report-line));
+  border-radius: .75rem;
+  background: color-mix(in oklab, var(--color-success) 8%, transparent);
+}
+
+.publish-ready strong,
+.publish-ready p {
+  font-size: .68rem;
+}
+
+.publish-ready p {
+  margin-top: .3rem;
+  color: var(--report-muted);
+  line-height: 1.45;
+}
+
+.report-metadata {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--report-line);
+}
+
+.report-metadata dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .45rem;
+}
+
+.report-metadata div {
+  padding: .65rem;
+  border-radius: .65rem;
+  background: color-mix(in oklab, var(--color-base-100) 62%, transparent);
+}
+
+.report-metadata dt {
+  color: var(--report-muted);
+  font-size: .58rem;
+  text-transform: uppercase;
+}
+
+.report-metadata dd {
+  margin-top: .15rem;
+  font: 700 1rem/1 ui-monospace, monospace;
+}
+
+.report-evidence-drawer {
+  position: fixed;
+  z-index: 80;
+  top: 0;
+  right: 0;
+  width: min(31rem, 100vw);
+  height: 100dvh;
+  padding: 1.4rem;
+  overflow-y: auto;
+  border-left: 1px solid var(--report-line);
+  transform: translateX(102%);
+  background: var(--color-base-100);
+  box-shadow: -24px 0 60px color-mix(in oklab, #07111f 28%, transparent);
+  transition: transform .22s ease;
+}
+
+.report-evidence-drawer.open {
+  transform: translateX(0);
+}
+
+.report-evidence-drawer > header button,
+.repair-dialog > header button {
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid var(--report-line);
+  border-radius: 999px;
+  font-size: 1.15rem;
+}
+
+.claim-state {
+  display: flex;
+  justify-content: space-between;
+  gap: .75rem;
+  margin: 1.2rem 0;
+  padding: .7rem;
+  border-radius: .7rem;
+  background: color-mix(in oklab, var(--color-warning) 10%, var(--color-base-200));
+  font-size: .7rem;
+  text-transform: capitalize;
+}
+
+.report-evidence-drawer > blockquote {
+  padding-left: 1rem;
+  border-left: 2px solid var(--color-primary);
+  font-family: "Source Serif 4", Georgia, serif;
+  line-height: 1.65;
+}
+
+.report-evidence-list {
+  display: grid;
+  gap: .65rem;
+  margin-top: 1rem;
+}
+
+.report-evidence-card {
+  padding: .9rem;
+  border: 1px solid var(--report-line);
+  border-radius: .8rem;
+  background: color-mix(in oklab, var(--color-base-200) 54%, transparent);
+}
+
+.report-evidence-card header {
+  display: flex;
+  justify-content: space-between;
+  font-size: .65rem;
+  text-transform: uppercase;
+}
+
+.report-evidence-card p,
+.report-evidence-card code,
+.report-evidence-card small {
+  display: block;
+  margin-top: .55rem;
+  overflow-wrap: anywhere;
+  font-size: .69rem;
+}
+
+.report-evidence-card code,
+.report-evidence-card small {
+  color: var(--report-muted);
+}
+
+.evidence-invalid {
+  margin-top: 1rem;
+  padding: .9rem;
+  border-radius: .8rem;
+  background: color-mix(in oklab, var(--color-error) 11%, var(--color-base-200));
+}
+
+.evidence-invalid p {
+  margin-top: .3rem;
+  font-size: .75rem;
+}
+
+.evidence-open-source {
+  display: block;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.repair-backdrop {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: color-mix(in oklab, #07111f 62%, transparent);
+  backdrop-filter: blur(7px);
+}
+
+.repair-dialog {
+  width: min(38rem, 100%);
+  max-height: min(43rem, 90dvh);
+  padding: 1.35rem;
+  overflow-y: auto;
+  border: 1px solid var(--report-line);
+  border-radius: 1.1rem;
+  background: var(--color-base-100);
+  box-shadow: 0 28px 90px color-mix(in oklab, #07111f 46%, transparent);
+}
+
+.repair-dialog > p {
+  margin: 1rem 0;
+  color: var(--report-muted);
+  font-size: .78rem;
+  line-height: 1.55;
+}
+
+.repair-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .6rem;
+}
+
+.repair-actions button,
+.replacement-list button {
+  display: grid;
+  gap: .25rem;
+  padding: .85rem;
+  border: 1px solid var(--report-line);
+  border-radius: .8rem;
+  text-align: left;
+  background: color-mix(in oklab, var(--color-base-200) 54%, transparent);
+}
+
+.repair-actions strong,
+.replacement-list h3 {
+  font-size: .76rem;
+}
+
+.repair-actions span,
+.replacement-list small,
+.replacement-list p {
+  color: var(--report-muted);
+  font-size: .67rem;
+}
+
+.replacement-list {
+  display: grid;
+  gap: .45rem;
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--report-line);
+}
+
+@media (max-width: 1100px) {
+  .report-workspace-layout {
+    grid-template-columns: 13rem minmax(0, 1fr);
+  }
+
+  .report-inspector {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--report-line);
+    border-left: 0;
+  }
+
+  .publish-blockers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .report-workspace-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .report-primary-actions {
+    width: 100%;
+  }
+
+  .report-primary-actions button {
+    flex: 1;
+  }
+
+  .report-workspace-layout {
+    display: block;
+  }
+
+  .report-outline {
+    border-right: 0;
+    border-bottom: 1px solid var(--report-line);
+  }
+
+  .report-outline ol {
+    grid-auto-columns: minmax(11rem, 70vw);
+    grid-auto-flow: column;
+    overflow-x: auto;
+    padding-bottom: .35rem;
+  }
+
+  .revision-history {
+    margin-top: 1rem;
+  }
+
+  .revision-history > div {
+    grid-auto-columns: 9rem;
+    grid-auto-flow: column;
+    overflow-x: auto;
+  }
+
+  .report-editor-canvas {
+    padding: 1rem;
+  }
+
+  .report-claim {
+    grid-template-columns: 1fr;
+  }
+
+  .report-claim > p {
+    white-space: normal;
+  }
+
+  .publish-blockers {
+    grid-template-columns: 1fr;
+  }
+
+  .repair-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-evidence-drawer {
+    transition: none;
   }
 }
 

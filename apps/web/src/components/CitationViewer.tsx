@@ -18,6 +18,7 @@ interface CitationViewerProps {
   readonly projectId: ProjectId
   readonly threadId: ResearchThreadId
   readonly citationId: CitationId
+  readonly returnTo?: string
 }
 
 export const CitationViewer: Component<CitationViewerProps> = (props) => {
@@ -44,9 +45,10 @@ export const CitationViewer: Component<CitationViewerProps> = (props) => {
             <>
               <A
                 class="link link-hover"
-                href={`/projects/${props.projectId}/research/${props.threadId}/runs/${detail().runId}`}
+                href={props.returnTo
+                  ?? `/projects/${props.projectId}/research/${props.threadId}/runs/${detail().runId}`}
               >
-                ← Back to research
+                ← {props.returnTo === undefined ? 'Back to research' : 'Back to report'}
               </A>
               <article class="card border border-base-300 bg-base-200">
                 <div class="card-body">

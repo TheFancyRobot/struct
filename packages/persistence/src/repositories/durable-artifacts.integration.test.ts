@@ -569,4 +569,76 @@ describeIf('DurableArtifactsRepo with PostgreSQL', () => {
     expect(revisions.map((row) => Number(row['revision']))).toEqual([0, 1])
   }))
 
+  it('persists exact claim subsets without weakening immutable claim identity', async () =>
+    withFixture(async () => {
+      const first = finding('2')
+      const second = finding('3')
+      await Effect.runPromise(DurableArtifactsRepo.saveFinding(
+        first,
+        'subset:first',
+      ).pipe(Effect.provide(artifactLayer)))
+      await Effect.runPromise(DurableArtifactsRepo.saveFinding(
+        second,
+        'subset:second',
+      ).pipe(Effect.provide(artifactLayer)))
+      const initial = report(first, second)
+      await Effect.runPromise(DurableArtifactsRepo.saveReport(
+        initial,
+        null,
+        'subset:report',
+      ).pipe(Effect.provide(artifactLayer)))
+      const subset = Report.make({
+        ...initial,
+        claims: [initial.claims[0]!],
+        sections: initial.sections.map((section, index) => index === 1
+          ? { ...section, claimIds: [] }
+          : section),
+        revision: 1,
+        publicationState: 'draft',
+        updatedAt: 3n,
+      })
+      await Effect.runPromise(DurableArtifactsRepo.saveReport(
+        subset,
+        0,
+        'subset:remove-claim',
+      ).pipe(Effect.provide(artifactLayer)))
+
+      expect((await Effect.runPromise(DurableArtifactsRepo.findReportRevision(
+        workspaceId,
+        projectId,
+        initial.id,
+        0,
+      ).pipe(Effect.provide(artifactLayer)))).claims).toEqual(initial.claims)
+      expect((await Effect.runPromise(DurableArtifactsRepo.findReport(
+        workspaceId,
+        projectId,
+        initial.id,
+      ).pipe(Effect.provide(artifactLayer)))).claims).toEqual(subset.claims)
+
+      const tamperedClaim = Schema.decodeUnknownSync(Schema.typeSchema(Claim))({
+        ...subset.claims[0]!,
+        citation: {
+          ...subset.claims[0]!.citation,
+          state: 'valid',
+        },
+      })
+      const tampered = Report.make({
+        ...subset,
+        claims: [tamperedClaim],
+        revision: 2,
+        updatedAt: 4n,
+      })
+      expect(Exit.isFailure(await Effect.runPromiseExit(
+        DurableArtifactsRepo.saveReport(
+          tampered,
+          1,
+          'subset:tampered',
+        ).pipe(Effect.provide(artifactLayer)),
+      ))).toBe(true)
+      expect((await Effect.runPromise(DurableArtifactsRepo.findReport(
+        workspaceId,
+        projectId,
+        initial.id,
+      ).pipe(Effect.provide(artifactLayer)))).revision).toBe(1)
+    }))
 })

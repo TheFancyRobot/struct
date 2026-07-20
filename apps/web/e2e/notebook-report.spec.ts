@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, rm } from 'node:fs/promises'
 import path from 'node:path'
 import {
+  Claim,
   Finding,
-  FindingId,
   Report,
-  ResearchRunId,
+  ReportSection,
 } from '@struct/domain'
 import { Schema } from 'effect'
 /* eslint-disable no-unused-vars -- Babel does not mark type-only imports as used. */
@@ -14,209 +14,539 @@ import { chromium, type Page } from 'playwright'
 
 const uuid = (suffix: string) =>
   `d80e8400-e29b-41d4-a716-${suffix.padStart(12, '0')}`
+const hash = (character: string) => `sha256:${character.repeat(64)}`
+const digest = (character: string) => character.repeat(64)
 const workspaceId = uuid('1')
 const projectId = uuid('2')
 const threadId = uuid('3')
 const runId = uuid('4')
-const citationId = uuid('5')
-const sourceVersionId = uuid('6')
-const eventId = uuid('7')
-const jobId = uuid('8')
+const sourceVersionId = uuid('5')
+const reportId = uuid('6')
 const origin = 'http://127.0.0.1:4177'
-const runUrl = `${origin}/projects/${projectId}/research/${threadId}/runs/${runId}`
-  + `?workspaceId=${workspaceId}`
 const notebookUrl = `${origin}/projects/${projectId}/notebook`
-  + `?workspaceId=${workspaceId}&threadId=${threadId}&runId=${runId}`
+  + `?workspaceId=${workspaceId}&threadId=${threadId}&reportId=${reportId}`
 const screenshotRoot = path.resolve(
   new URL('../../..', import.meta.url).pathname,
-  'docs/demos/durable-notebook',
+  'docs/demos/report-workspace',
 )
+const semantics = {
+  unit: null,
+  timeWindow: null,
+  version: '2026-Q2',
+  filters: [],
+  cohort: null,
+  denominator: null,
+  joinKeys: [],
+}
 
 let browser: Awaited<ReturnType<typeof chromium.launch>>
 let web: ReturnType<typeof Bun.spawn>
 
+function documentEvidence(suffix: string, claimSignature: string) {
+  return {
+    id: hash(suffix),
+    claimSignature,
+    stance: 'supports' as const,
+    semantics,
+    payload: {
+      kind: 'document' as const,
+      chunkId: uuid(`${suffix}01`),
+      documentId: uuid(`${suffix}02`),
+      sourceVersionId,
+      chunkingVersion: 'v1',
+      ordinal: 0,
+      locator: {
+        page: 2,
+        section: 'Renewal analysis',
+        paragraph: 3,
+        charStart: 0,
+        charEnd: 24,
+        byteStart: 0,
+        byteEnd: 24,
+      },
+      citationLocator: 'document:page:2,chars:0-24,bytes:0-24',
+      excerpt: 'Implementation delays predict renewal risk.',
+      trust: 'untrusted-evidence' as const,
+    },
+    limitations: [],
+  }
+}
+
+function datasetEvidence(suffix: string, claimSignature: string) {
+  return {
+    id: hash(suffix),
+    claimSignature,
+    stance: 'supports' as const,
+    semantics: { ...semantics, unit: 'accounts', denominator: '73 accounts' },
+    payload: {
+      kind: 'dataset' as const,
+      evidence: {
+        citation: {
+          id: uuid(`${suffix}03`),
+          queryResultSnapshotId: uuid(`${suffix}04`),
+          workspaceId,
+          projectId,
+          datasetId: uuid(`${suffix}05`),
+          datasetSnapshotId: uuid(`${suffix}06`),
+          schemaHash: hash('c'),
+          parquetDigest: digest('d'),
+          resultHash: hash('e'),
+          resultArtifactHash: hash('f'),
+          canonicalSql: 'SELECT COUNT(*) AS accounts FROM renewal_risk',
+          selectedColumns: ['accounts'],
+          rowStart: 0,
+          rowEndExclusive: 1,
+          createdAt: 1n,
+        },
+        snapshot: {
+          id: uuid(`${suffix}04`),
+          workspaceId,
+          projectId,
+          requestHash: hash('1'),
+          protocolVersion: '1' as const,
+          engineVersion: 'duckdb-test',
+          engineConfigHash: hash('2'),
+          canonicalSql: 'SELECT COUNT(*) AS accounts FROM renewal_risk',
+          snapshots: [{
+            alias: 'renewal_risk',
+            datasetId: uuid(`${suffix}05`),
+            snapshotId: uuid(`${suffix}06`),
+            schemaHash: hash('c'),
+            parquetDigest: digest('d'),
+          }],
+          schemaHash: hash('3'),
+          resultHash: hash('e'),
+          resultArtifactHash: hash('f'),
+          columns: [{ ordinal: 0, name: 'accounts', type: 'BIGINT' }],
+          rows: [['18']],
+          rowCount: 1,
+          truncated: false,
+          executedAt: 1n,
+          createdAt: 1n,
+        },
+        columns: [{ ordinal: 0, name: 'accounts', type: 'BIGINT' }],
+        rows: [['18']],
+      },
+      exactness: 'exact-immutable-query-result' as const,
+    },
+    limitations: [],
+  }
+}
+
+function recursiveEvidence(suffix: string, claimSignature: string) {
+  return {
+    id: hash(suffix),
+    claimSignature,
+    stance: 'supports' as const,
+    semantics,
+    payload: {
+      kind: 'recursive' as const,
+      reference: {
+        id: hash('9'),
+        sourceVersionId,
+        artifact: {
+          digest: hash('8'),
+          byteLength: 284,
+          mediaType: 'application/json',
+        },
+        locator: 'partition:enterprise/summary',
+      },
+      excerpt: 'Four partitions independently identify delayed handoffs.',
+      trust: 'untrusted-evidence' as const,
+    },
+    limitations: [],
+  }
+}
+
+function claim(
+  suffix: string,
+  mode: 'document' | 'dataset' | 'recursive' | 'hybrid',
+  state: 'publishable' | 'stale' = 'publishable',
+): Claim {
+  const signature = hash(String.fromCharCode(96 + Number(suffix)))
+  const evidence = mode === 'document'
+    ? [documentEvidence(suffix, signature)]
+    : mode === 'dataset'
+      ? [datasetEvidence(suffix, signature)]
+      : mode === 'recursive'
+        ? [recursiveEvidence(suffix, signature)]
+        : [
+          documentEvidence(suffix, signature),
+          datasetEvidence(String(Number(suffix) + 1), signature),
+        ]
+  return Schema.decodeUnknownSync(Schema.typeSchema(Claim))({
+    id: uuid(`${suffix}10`),
+    claimSignature: signature,
+    citation: {
+      citationId: uuid(`${suffix}11`),
+      state,
+      revision: 0,
+      supersededBy: null,
+      lastIdempotencyKey: null,
+      updatedAt: 1n,
+    },
+    origin: { kind: 'research-run', runId },
+    revisions: [{
+      id: uuid(`${suffix}12`),
+      revision: 0,
+      content: `${mode[0]?.toUpperCase()}${mode.slice(1)} evidence establishes the retained finding.`,
+      authorship: {
+        kind: 'generated',
+        runId,
+        model: 'fixture',
+        promptVersion: 'v1',
+      },
+      idempotencyKey: `claim:${suffix}`,
+      createdAt: 1n,
+    }],
+    currentRevision: 0,
+    support: { kind: 'supported', mode, evidence },
+    createdAt: 1n,
+  })
+}
+
+function finding(
+  suffix: string,
+  title: string,
+  claims: ReadonlyArray<Claim>,
+): Finding {
+  return Schema.decodeUnknownSync(Schema.typeSchema(Finding))({
+    id: uuid(`${suffix}20`),
+    workspaceId,
+    projectId,
+    runId,
+    sourceVersionIds: [sourceVersionId],
+    titleRevisions: [{
+      id: uuid(`${suffix}21`),
+      revision: 0,
+      content: title,
+      authorship: {
+        kind: 'generated',
+        runId,
+        model: 'fixture',
+        promptVersion: 'v1',
+      },
+      idempotencyKey: `finding:${suffix}`,
+      createdAt: 1n,
+    }],
+    currentRevision: 0,
+    claims,
+    supersededBy: null,
+    createdAt: 1n,
+    updatedAt: 1n,
+  })
+}
+
+const documentClaim = claim('1', 'document')
+const datasetClaim = claim('2', 'dataset')
+const recursiveClaim = claim('3', 'recursive')
+const hybridClaim = claim('4', 'hybrid')
+const staleClaim = claim('5', 'document', 'stale')
+const replacementClaim = claim('6', 'document')
+const findings = [
+  finding('1', 'Customer narrative', [documentClaim]),
+  finding('2', 'Affected cohort', [datasetClaim]),
+  finding('3', 'Corpus-wide pattern', [recursiveClaim]),
+  finding('4', 'Reconciled conclusion', [hybridClaim]),
+  finding('5', 'Evidence requiring repair', [staleClaim, replacementClaim]),
+]
+
+function initialReport(): Report {
+  const visibleClaims = [
+    documentClaim,
+    datasetClaim,
+    recursiveClaim,
+    hybridClaim,
+    staleClaim,
+  ]
+  return Schema.decodeUnknownSync(Schema.typeSchema(Report))({
+    id: reportId,
+    workspaceId,
+    projectId,
+    runId,
+    sourceVersionIds: [sourceVersionId],
+    findingIds: findings.map((item) => item.id),
+    titleRevisions: [{
+      id: uuid('70'),
+      revision: 0,
+      content: 'Enterprise renewal risk brief',
+      authorship: {
+        kind: 'generated',
+        runId,
+        model: 'fixture',
+        promptVersion: 'v1',
+      },
+      idempotencyKey: 'report:title',
+      createdAt: 1n,
+    }],
+    currentTitleRevision: 0,
+    claims: visibleClaims,
+    sections: findings.map((item, ordinal) => {
+      const currentClaim = visibleClaims[ordinal]!
+      return {
+        id: uuid(String(80 + ordinal)),
+        ordinal,
+        heading: item.titleRevisions[0]!.content,
+        revisions: [{
+          id: uuid(String(90 + ordinal)),
+          revision: 0,
+          content: currentClaim.revisions[0]!.content,
+          authorship: {
+            kind: 'generated' as const,
+            runId,
+            model: 'fixture',
+            promptVersion: 'v1',
+          },
+          idempotencyKey: `section:${ordinal}`,
+          createdAt: 1n,
+        }],
+        currentRevision: 0,
+        findingIds: [item.id],
+        claimIds: [currentClaim.id],
+        lastRegenerationKey: null,
+      }
+    }),
+    revision: 0,
+    publicationState: 'draft',
+    supersededBy: null,
+    lastPublicationKey: null,
+    createdAt: 1n,
+    updatedAt: 1n,
+  })
+}
+
+function encoded(value: Report): string {
+  return JSON.stringify(Schema.encodeSync(Report)(value))
+}
+
+function appendSectionRevision(
+  report: Report,
+  section: ReportSection,
+  content: string,
+  authorship: 'user' | 'generated',
+): ReportSection {
+  const nextRevision = section.currentRevision + 1
+  return Schema.decodeUnknownSync(Schema.typeSchema(ReportSection))({
+    ...section,
+    revisions: [...section.revisions, {
+      id: uuid(String(200 + report.revision)),
+      revision: nextRevision,
+      content,
+      authorship: authorship === 'user'
+        ? { kind: 'user', actorId: workspaceId }
+        : {
+          kind: 'generated',
+          runId,
+          model: 'deterministic-report-repair',
+          promptVersion: 'immutable-claims-v1',
+        },
+      idempotencyKey: `mutation:${report.revision + 1}`,
+      createdAt: BigInt(10 + report.revision),
+    }],
+    currentRevision: nextRevision,
+    lastRegenerationKey: `mutation:${report.revision + 1}`,
+  })
+}
+
+async function installApi(page: Page, options: {
+  readonly failExport?: boolean
+  readonly staleEdit?: boolean
+} = {}) {
+  let current = initialReport()
+  const snapshots = new Map<number, Report>([[0, current]])
+  const save = (next: Report) => {
+    current = next
+    snapshots.set(next.revision, next)
+  }
+  await page.route(`**/api/projects/${projectId}/findings*`, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(Schema.encodeSync(Schema.Array(Finding))(findings)),
+    }))
+  await page.route(`**/api/projects/${projectId}/reports`, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: encoded(current),
+    }))
+  await page.route(
+    `**/api/projects/${projectId}/research/${threadId}/citation/*`,
+    (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: documentClaim.citation.citationId,
+        runId,
+        sourceVersionId,
+        sourceName: 'customer-success-review.md',
+        sourceVersion: 4,
+        locator: 'lines:118-123',
+        contextLines: [{
+          lineNumber: 118,
+          segments: [{
+            text: 'Implementation delays predict renewal risk.',
+            cited: true,
+          }],
+        }],
+        startLine: 118,
+        endLine: 123,
+      }),
+    }),
+  )
+  await page.route(`**/api/projects/${projectId}/reports/${reportId}**`, async (route) => {
+    const request = route.request()
+    const url = new URL(request.url())
+    if (url.pathname.endsWith('/exports')) {
+      if (options.failExport) {
+        await route.fulfill({
+          status: 409,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'ReportExportBlockedError' }),
+        })
+        return
+      }
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'completed',
+          workspaceId,
+          projectId,
+          reportId,
+          reportRevision: current.revision,
+          digest: hash('a'),
+          artifactRef: `artifact://sha256/${'a'.repeat(64)}`,
+          byteLength: 4096,
+          mediaType: 'application/vnd.struct.report-bundle+json',
+        }),
+      })
+      return
+    }
+    if (url.pathname.includes('/exports/')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/vnd.struct.report-bundle+json',
+        body: '{}',
+      })
+      return
+    }
+    if (request.method() === 'GET') {
+      const revision = url.searchParams.get('revision')
+      const selected = revision === null ? current : snapshots.get(Number(revision))
+      await route.fulfill({
+        status: selected === undefined ? 404 : 200,
+        contentType: 'application/json',
+        body: selected === undefined
+          ? JSON.stringify({ error: 'ArtifactNotFound' })
+          : encoded(selected),
+      })
+      return
+    }
+    const body = JSON.parse(request.postData() ?? '{}')
+    if (options.staleEdit && body.kind === 'edit') {
+      await route.fulfill({
+        status: 409,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'StaleReportRevisionError' }),
+      })
+      return
+    }
+    let next = current
+    if (body.kind === 'edit') {
+      next = Report.make({
+        ...current,
+        sections: current.sections.map((section) =>
+          section.id === body.input.sectionId
+            ? appendSectionRevision(current, section, body.input.content, 'user')
+            : section),
+        revision: current.revision + 1,
+        publicationState: 'draft',
+        updatedAt: BigInt(body.input.occurredAt),
+      })
+    } else if (body.kind === 'reorder') {
+      next = Report.make({
+        ...current,
+        sections: body.orderedSectionIds.map((id: string, ordinal: number) => ({
+          ...current.sections.find((section) => section.id === id)!,
+          ordinal,
+        })),
+        revision: current.revision + 1,
+        publicationState: 'draft',
+        updatedAt: BigInt(body.occurredAt),
+      })
+    } else if (body.kind === 'replace-claim') {
+      const section = current.sections.find((item) =>
+        item.claimIds.includes(body.claimId))!
+      next = Report.make({
+        ...current,
+        claims: current.claims.map((item) =>
+          item.id === body.claimId ? replacementClaim : item),
+        sections: current.sections.map((item) => item.id === section.id
+          ? appendSectionRevision(
+            current,
+            { ...item, claimIds: [replacementClaim.id] },
+            replacementClaim.revisions[0]!.content,
+            'generated',
+          )
+          : item),
+        revision: current.revision + 1,
+        publicationState: 'draft',
+        updatedAt: BigInt(body.occurredAt),
+      })
+    } else if (body.kind === 'prepare-publication') {
+      next = Report.make({
+        ...current,
+        revision: current.revision + 1,
+        publicationState: 'publishable',
+        lastPublicationKey: request.headers()['idempotency-key'] ?? null,
+        updatedAt: BigInt(body.occurredAt),
+      })
+    } else if (body.kind === 'publish') {
+      next = Report.make({
+        ...current,
+        revision: current.revision + 1,
+        publicationState: 'published',
+        lastPublicationKey: request.headers()['idempotency-key'] ?? null,
+        updatedAt: BigInt(body.occurredAt),
+      })
+    }
+    save(next)
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: encoded(next),
+    })
+  })
+  return { current: () => current }
+}
+
 async function noOverflow(page: Page): Promise<void> {
-  const sizes = await page.evaluate(() => ({
+  const width = await page.evaluate(() => ({
     viewport: window.innerWidth,
     html: document.documentElement.scrollWidth,
     body: document.body.scrollWidth,
   }))
-  expect(sizes.html).toBeLessThanOrEqual(sizes.viewport)
-  expect(sizes.body).toBeLessThanOrEqual(sizes.viewport)
-}
-
-function completedEvent(): string {
-  return [
-    'id: 1',
-    'event: research-completed',
-    `data: ${JSON.stringify({
-      id: eventId,
-      cursor: '1',
-      runId,
-      createdAt: 1,
-      type: 'research-completed',
-      data: {
-        jobId,
-        attempt: 0,
-        answer: 'The customer evidence supports a focused renewal intervention.',
-        citations: [{
-          id: citationId,
-          sourceVersionId,
-          locator: 'lines:1-1',
-        }],
-        datasetCitations: [],
-      },
-    })}`,
-    '',
-    '',
-  ].join('\n')
-}
-
-async function installNotebookApi(
-  page: Page,
-  options: {
-    readonly initial?: readonly Finding[]
-    readonly failReport?: boolean
-    readonly malformedReport?: boolean
-    readonly delayFindings?: boolean
-  } = {},
-) {
-  let findings = [...(options.initial ?? [])]
-  await page.route(`**/api/projects/${projectId}/findings*`, async (route) => {
-    if (route.request().method() === 'POST') {
-      const finding = JSON.parse(route.request().postData() ?? '{}')
-      const decoded = Schema.decodeUnknownSync(Finding)(finding)
-      findings = [decoded]
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(Schema.encodeSync(Finding)(decoded)),
-      })
-      return
+  expect(width.html).toBeLessThanOrEqual(width.viewport)
+  expect(width.body).toBeLessThanOrEqual(width.viewport)
+  for (const selector of [
+    '.notebook-hero',
+    '.notebook-compose',
+    '.report-workspace',
+    '.report-primary-actions',
+    '.report-editor-canvas',
+  ]) {
+    const box = await page.locator(selector).boundingBox()
+    expect(box).not.toBeNull()
+    if (box !== null) {
+      expect(box.x).toBeGreaterThanOrEqual(0)
+      expect(box.x + box.width).toBeLessThanOrEqual(width.viewport + 0.5)
     }
-    if (options.delayFindings) await new Promise((resolve) => setTimeout(resolve, 350))
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(Schema.encodeSync(Schema.Array(Finding))(findings)),
-    })
-  })
-  await page.route(`**/api/projects/${projectId}/reports`, async (route) => {
-    if (options.failReport) {
-      await route.fulfill({
-        status: 503,
-        contentType: 'application/json',
-        body: JSON.stringify({ error: 'ArtifactServiceUnavailable' }),
-      })
-      return
-    }
-    if (options.malformedReport) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: '{',
-      })
-      return
-    }
-    const body = Schema.decodeUnknownSync(Schema.Struct({
-      composition: Schema.Struct({
-        id: Schema.UUID,
-        title: Schema.String,
-        titleRevisionId: Schema.UUID,
-        idempotencyKey: Schema.String,
-        model: Schema.String,
-        promptVersion: Schema.String,
-        occurredAt: Schema.Number,
-        sections: Schema.Array(Schema.Struct({
-          id: Schema.UUID,
-          revisionId: Schema.UUID,
-          heading: Schema.String,
-          findingIds: Schema.Array(Schema.UUID),
-        })),
-      }),
-    }))(JSON.parse(route.request().postData() ?? '{}'))
-    const finding = findings[0]!
-    const composition = body.composition
-    const report = {
-      id: composition.id,
-      workspaceId,
-      projectId,
-      runId,
-      sourceVersionIds: finding.sourceVersionIds,
-      findingIds: [finding.id],
-      titleRevisions: [{
-        id: composition.titleRevisionId,
-        revision: 0,
-        content: composition.title,
-        authorship: {
-          kind: 'generated',
-          runId,
-          model: composition.model,
-          promptVersion: composition.promptVersion,
-        },
-        idempotencyKey: `${composition.idempotencyKey}:title`,
-        createdAt: composition.occurredAt,
-      }],
-      currentTitleRevision: 0,
-      claims: finding.claims,
-      sections: composition.sections.map((
-        section: Record<string, unknown>,
-        ordinal: number,
-      ) => ({
-        id: section.id,
-        ordinal,
-        heading: section.heading,
-        revisions: [{
-          id: section.revisionId,
-          revision: 0,
-          content: finding.claims[0]!.revisions[0]!.content,
-          authorship: {
-            kind: 'generated',
-            runId,
-            model: composition.model,
-            promptVersion: composition.promptVersion,
-          },
-          idempotencyKey: `${composition.idempotencyKey}:section:${ordinal}`,
-          createdAt: composition.occurredAt,
-        }],
-        currentRevision: 0,
-        findingIds: section.findingIds,
-        claimIds: [finding.claims[0]!.id],
-        lastRegenerationKey: null,
-      })),
-      revision: 0,
-      publicationState: 'draft',
-      supersededBy: null,
-      lastPublicationKey: null,
-      createdAt: composition.occurredAt,
-      updatedAt: composition.occurredAt,
-    }
-    const decodedReport = Schema.decodeUnknownSync(Schema.typeSchema(Report))({
-      ...report,
-      titleRevisions: report.titleRevisions.map((revision) => ({
-        ...revision,
-        createdAt: BigInt(revision.createdAt),
-      })),
-      sections: report.sections.map((section) => ({
-        ...section,
-        revisions: section.revisions.map((revision) => ({
-          ...revision,
-          createdAt: BigInt(revision.createdAt),
-        })),
-      })),
-      createdAt: BigInt(report.createdAt),
-      updatedAt: BigInt(report.updatedAt),
-    })
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(Schema.encodeSync(Report)(decodedReport)),
-    })
-  })
-  return () => findings
+  }
 }
 
 beforeAll(async () => {
+  await rm(screenshotRoot, { recursive: true, force: true })
   await mkdir(screenshotRoot, { recursive: true })
   web = Bun.spawn(
     ['bun', 'run', 'dev', '--', '--host', '127.0.0.1', '--port', '4177'],
@@ -243,158 +573,237 @@ afterAll(async () => {
   await web?.exited
 })
 
-describe('durable finding and report browser workflow', () => {
-  it('saves a completed run, opens its notebook, and composes a draft report', async () => {
+describe('report workspace browser workflow', () => {
+  it('creates a report from the finding picker and preserves its reload identity', async () => {
+    const page = await browser.newPage()
+    await installApi(page)
+    await page.goto(
+      `${origin}/projects/${projectId}/notebook`
+      + `?workspaceId=${workspaceId}&threadId=${threadId}`,
+    )
+    const checks = page.getByRole('checkbox')
+    for (let index = 0; index < await checks.count(); index += 1) {
+      await checks.nth(index).check()
+    }
+    await page.getByRole('button', { name: 'Compose report (5)' }).click()
+    await page.getByRole('heading', {
+      name: 'Enterprise renewal risk brief',
+    }).waitFor()
+    expect(new URL(page.url()).searchParams.get('reportId')).toBe(reportId)
+    await page.reload()
+    await page.getByText('Revision 0 · draft').waitFor()
+    await page.close()
+  })
+
+  it('opens, repairs, edits, reorders, reloads, navigates history, publishes, and exports', async () => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
-    await installNotebookApi(page)
-    await page.route(`**/api/projects/${projectId}/runs/${runId}/events*`, (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'text/event-stream',
-        body: completedEvent(),
-      }))
-    await page.route(`**/api/projects/${projectId}/runs/${runId}/recursive-analysis`, (route) =>
-      route.fulfill({ status: 404, body: '' }))
-    await page.goto(runUrl)
-    await page.getByText('The customer evidence supports').waitFor()
-    await page.getByRole('button', { name: 'Save finding' }).click()
-    await page.getByRole('link', { name: 'Open project notebook' }).click()
-    await page.waitForURL('**/notebook?*')
-    await page.getByRole('checkbox', {
-      name: /Select The customer evidence supports/,
-    }).check()
-    await page.getByRole('button', { name: 'Compose report (1)' }).click()
-    await page.getByRole('heading', { name: 'Research notebook report' }).waitFor()
-    expect(await page.locator('.report-composer').getByText(
-      'The customer evidence supports a focused renewal intervention.',
-      { exact: true },
-    ).count()).toBe(1)
-    await page.getByText('Citation needs validation').waitFor()
-    await noOverflow(page)
-    await page.screenshot({
-      path: path.join(screenshotRoot, '1440x900-light.png'),
-      fullPage: false,
-    })
-    await page.close()
-  })
-
-  it('is responsive in dark mode and never links a citation to the wrong run', async () => {
-    const page = await browser.newPage({ viewport: { width: 390, height: 844 } })
-    await page.addInitScript(() =>
-      localStorage.setItem('struct-theme', 'struct-dark'))
-    const getFindings = await installNotebookApi(page)
-    await page.route(`**/api/projects/${projectId}/runs/${runId}/events*`, (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'text/event-stream',
-        body: completedEvent(),
-      }))
-    await page.route(`**/api/projects/${projectId}/runs/${runId}/recursive-analysis`, (route) =>
-      route.fulfill({ status: 404, body: '' }))
-    await page.goto(runUrl)
-    await page.getByRole('button', { name: 'Save finding' }).click()
-    const first = getFindings()[0]!
-    const foreignRunId = uuid('91')
-    const foreign = Finding.make({
-      ...first,
-      id: FindingId.make(uuid('90')),
-      runId: ResearchRunId.make(foreignRunId),
-      titleRevisions: first.titleRevisions.map((revision) => ({
-        ...revision,
-        content: 'Finding from another run',
-        authorship: {
-          kind: 'generated',
-          runId: ResearchRunId.make(foreignRunId),
-          model: 'completed-run',
-          promptVersion: 'persisted-output-v1',
-        },
-      })),
-      claims: first.claims.map((claim) => ({
-        ...claim,
-        origin: {
-          kind: 'research-run',
-          runId: ResearchRunId.make(foreignRunId),
-        },
-        revisions: claim.revisions.map((revision) => ({
-          ...revision,
-          authorship: {
-            kind: 'generated',
-            runId: ResearchRunId.make(foreignRunId),
-            model: 'completed-run',
-            promptVersion: 'persisted-output-v1',
-          },
-        })),
-      })),
-    })
-    await page.unrouteAll()
-    await installNotebookApi(page, { initial: [first, foreign] })
+    const api = await installApi(page)
     await page.goto(notebookUrl)
-    expect(await page.getByRole('link', { name: /Open citation/ }).count()).toBe(1)
-    await noOverflow(page)
-    await page.screenshot({
-      path: path.join(screenshotRoot, '390x844-dark.png'),
-      fullPage: false,
+    await page.getByRole('heading', { name: 'Enterprise renewal risk brief' }).waitFor()
+    await page.getByText('Stale citation').waitFor()
+
+    for (const name of [
+      'document · publishable',
+      'dataset · publishable',
+      'recursive · publishable',
+      'hybrid · publishable',
+    ]) {
+      await page.getByRole('button', { name }).first().click()
+      await page.locator('.report-evidence-drawer')
+        .getByRole('heading', { name: /evidence/i }).waitFor()
+      await page.getByRole('button', { name: 'Close evidence' }).click()
+    }
+    await page.getByRole('button', { name: 'document · publishable' })
+      .first().click()
+    const sourceLink = page.getByRole('link', { name: 'Open source citation' })
+    await sourceLink.focus()
+    await page.keyboard.press('Enter')
+    await page.getByRole('link', { name: 'Back to report' }).waitFor()
+    expect(new URL(page.url()).searchParams.get('returnTo')).toContain(
+      `/projects/${projectId}/notebook`,
+    )
+    expect(new URL(page.url()).searchParams.get('returnTo')).toContain(
+      `reportId=${reportId}`,
+    )
+    await page.getByRole('link', { name: 'Back to report' }).press('Enter')
+    await page.getByRole('heading', {
+      name: 'Enterprise renewal risk brief',
+    }).waitFor()
+
+    const repairButton = page.getByRole('button', {
+      name: 'Repair',
+      exact: true,
     })
+    await repairButton.focus()
+    await repairButton.press('Enter')
+    let dialog = page.getByRole('dialog', { name: 'Resolve this claim' })
+    await dialog.waitFor()
+    await page.keyboard.press('Escape')
+    expect(await repairButton.evaluate(
+      (element) => element === document.activeElement,
+    )).toBe(true)
+    await repairButton.press('Enter')
+    dialog = page.getByRole('dialog', { name: 'Resolve this claim' })
+    await dialog.waitFor()
+    expect(await dialog.getByRole('button', { name: /Remove claim/ }).count()).toBe(1)
+    expect(await dialog.getByRole('button', { name: /Regenerate this section/ }).count()).toBe(1)
+    expect(await dialog.getByText('Newly validated evidence').count()).toBe(1)
+    await dialog.getByRole('button', {
+      name: /Document evidence establishes the retained finding/,
+    }).click()
+    await page.getByText('Saved revision 1').waitFor()
+    expect(await page.getByRole('status').filter({
+      hasText: 'Saved revision 1',
+    }).evaluate((element) => element === document.activeElement)).toBe(true)
+    expect(api.current().claims.some((item) => item.id === staleClaim.id)).toBe(false)
+
+    const section = page.locator('.editable-report-section').first()
+    await section.click()
+    const editor = section.getByRole('textbox')
+    await editor.fill('A focused user-authored executive summary.')
+    await section.getByRole('button', { name: 'Save user revision' }).click()
+    await page.getByText('Saved revision 2').waitFor()
+
+    await page.getByRole('button', { name: 'Move Customer narrative down' }).click()
+    await page.getByText('Saved revision 3').waitFor()
+    await page.reload()
+    await page.getByText('A focused user-authored executive summary.').waitFor()
+
+    await page.getByRole('button', { name: 'Revision 0 Immutable snapshot' }).click()
+    await page.getByText('read-only history').waitFor()
+    expect(await page.getByRole('button', {
+      name: 'Publish',
+      exact: true,
+    }).isDisabled()).toBe(true)
+    expect(await page.getByRole('button', { name: 'Export' }).isDisabled()).toBe(true)
+    await page.getByRole('button', { name: 'Return to current report' }).click()
+
+    await page.getByRole('button', { name: 'Publish', exact: true }).click()
+    await page.getByText('Saved revision 5').waitFor()
+    expect(api.current().publicationState).toBe('published')
+    await page.getByRole('button', { name: 'Export' }).click()
+    await page.getByText(/Export ready/).waitFor()
+
+    await page.keyboard.press('Shift+Tab')
+    await noOverflow(page)
     await page.close()
   })
 
-  it('shows loading, empty, invalid-citation, and persistence-failure states', async () => {
-    const loading = await browser.newPage()
-    await installNotebookApi(loading, { delayFindings: true })
-    await loading.goto(notebookUrl)
-    await loading.getByText('Loading durable findings…').waitFor()
-    await loading.close()
-
-    const empty = await browser.newPage()
-    await installNotebookApi(empty)
-    await empty.goto(notebookUrl)
-    await empty.getByText('No saved findings yet').waitFor()
-    await empty.close()
-
-    const failure = await browser.newPage()
-    await installNotebookApi(failure, { failReport: true })
-    await failure.route(`**/api/projects/${projectId}/runs/${runId}/events*`, (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'text/event-stream',
-        body: completedEvent(),
-      }))
-    await failure.route(`**/api/projects/${projectId}/runs/${runId}/recursive-analysis`, (route) =>
-      route.fulfill({ status: 404, body: '' }))
-    await failure.goto(runUrl)
-    await failure.getByRole('button', { name: 'Save finding' }).click()
-    await failure.getByRole('link', { name: 'Open project notebook' }).click()
-    await failure.getByRole('checkbox').check()
-    await failure.getByRole('button', { name: 'Compose report (1)' }).click()
-    await failure.getByRole('alert').getByText(
-      'The notebook could not be saved. Try again.',
+  it('surfaces offline, stale-write, and export blockers', async () => {
+    const offline = await browser.newPage()
+    await installApi(offline)
+    await offline.goto(notebookUrl)
+    const offlineSection = offline.locator('.editable-report-section').first()
+    await offlineSection.click()
+    await offlineSection.getByRole('textbox').fill('Pending offline edit')
+    await offline.getByRole('button', {
+      name: 'Repair',
+      exact: true,
+    }).click()
+    await offline.context().setOffline(true)
+    await offline.getByRole('alert').getByText(
+      'Offline. Editing, repair, publish, and export are paused.',
     ).waitFor()
-    await failure.close()
+    expect(await offline.getByRole('button', {
+      name: 'Publish',
+      exact: true,
+    }).isDisabled()).toBe(true)
+    expect(await offline.getByRole('button', { name: 'Export' }).isDisabled()).toBe(true)
+    expect(await offline.getByRole('button', {
+      name: 'Save user revision',
+    }).isDisabled()).toBe(true)
+    expect(await offline.getByRole('button', {
+      name: 'Move Customer narrative down',
+    }).isDisabled()).toBe(true)
+    const offlineDialog = offline.getByRole('dialog')
+    expect(await offlineDialog.getByRole('button', {
+      name: /Remove claim/,
+    }).isDisabled()).toBe(true)
+    expect(await offlineDialog.getByRole('button', {
+      name: /Regenerate this section/,
+    }).isDisabled()).toBe(true)
+    expect(await offlineDialog.getByRole('button', {
+      name: /Document evidence establishes/,
+    }).isDisabled()).toBe(true)
+    expect(await offline.getByRole('button', {
+      name: 'Repair',
+      exact: true,
+    }).isDisabled()).toBe(true)
+    await offline.context().setOffline(false)
+    await offline.close()
 
-    const malformed = await browser.newPage()
-    await installNotebookApi(malformed, { malformedReport: true })
-    await malformed.route(
-      `**/api/projects/${projectId}/runs/${runId}/events*`,
-      (route) => route.fulfill({
-        status: 200,
-        contentType: 'text/event-stream',
-        body: completedEvent(),
-      }),
-    )
-    await malformed.route(
-      `**/api/projects/${projectId}/runs/${runId}/recursive-analysis`,
-      (route) => route.fulfill({ status: 404, body: '' }),
-    )
-    await malformed.goto(runUrl)
-    await malformed.getByRole('button', { name: 'Save finding' }).click()
-    await malformed.getByRole('link', { name: 'Open project notebook' }).click()
-    await malformed.getByRole('checkbox').check()
-    await malformed.getByRole('button', { name: 'Compose report (1)' }).click()
-    const malformedAlert = malformed.getByRole('alert')
-    await malformedAlert.getByText(
-      'The notebook returned an invalid persistence response.',
+    const stale = await browser.newPage()
+    await installApi(stale, { staleEdit: true })
+    await stale.goto(notebookUrl)
+    const section = stale.locator('.editable-report-section').first()
+    await section.click()
+    await section.getByRole('textbox').fill('Conflicting edit')
+    await section.getByRole('button', { name: 'Save user revision' }).click()
+    await stale.getByRole('alert').getByText(
+      'The report changed. Reload before editing again.',
     ).waitFor()
-    expect(await malformedAlert.textContent()).not.toContain('ParseError')
-    await malformed.close()
+    await stale.close()
+
+    const failedExport = await browser.newPage()
+    await installApi(failedExport, { failExport: true })
+    await failedExport.goto(notebookUrl)
+    await failedExport.getByRole('button', {
+      name: 'Repair',
+      exact: true,
+    }).click()
+    await failedExport.getByRole('dialog').getByRole('button', {
+      name: /Document evidence establishes/,
+    }).click()
+    await failedExport.getByText('Saved revision 1').waitFor()
+    await failedExport.getByRole('button', { name: 'Export' }).click()
+    await failedExport.getByRole('alert').getByText(
+      'Publication is blocked by the claim states listed in the report.',
+    ).waitFor()
+    await failedExport.close()
+  }, 15_000)
+
+  it('retains exactly six reviewed responsive light/dark screenshots', async () => {
+    const viewports = [
+      { width: 1440, height: 900 },
+      { width: 1024, height: 768 },
+      { width: 390, height: 844 },
+    ]
+    for (const theme of ['light', 'dark'] as const) {
+      for (const viewport of viewports) {
+        const page = await browser.newPage({ viewport })
+        await page.addInitScript((selectedTheme) => {
+          localStorage.setItem(
+            'struct-theme',
+            selectedTheme === 'dark' ? 'struct-dark' : 'struct-light',
+          )
+        }, theme)
+        await installApi(page)
+        await page.goto(notebookUrl)
+        await page.getByRole('heading', {
+          name: 'Enterprise renewal risk brief',
+        }).waitFor()
+        await page.evaluate(() => {
+          document.documentElement.style.setProperty('scroll-behavior', 'auto')
+        })
+        await noOverflow(page)
+        const contrast = await page.locator('.report-workspace').evaluate((root) => ({
+          background: getComputedStyle(root).backgroundColor,
+          text: getComputedStyle(root).color,
+          focus: getComputedStyle(
+            root.querySelector<HTMLButtonElement>('.report-publish')!,
+          ).color,
+        }))
+        expect(contrast.background).not.toBe('rgba(0, 0, 0, 0)')
+        expect(contrast.text).not.toBe(contrast.background)
+        await page.screenshot({
+          path: path.join(
+            screenshotRoot,
+            `${viewport.width}x${viewport.height}-${theme}.png`,
+          ),
+          fullPage: false,
+        })
+        await page.close()
+      }
+    }
   })
 })

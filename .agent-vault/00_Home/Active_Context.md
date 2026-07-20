@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-20._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_04_build-export-and-share-bundles-with-source-snapshots|STEP-08-04 Build Export and Share Bundles with Source Snapshots]] - status: in_review - phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]] - owner: export-share-bundles
+- Current step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_05_add-report-ux-citation-navigation-and-repair|STEP-08-05 Add Report UX Citation Navigation and Repair]] - status: in-review - phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]] - owner: report-workspace-repair
 - Active phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|PHASE-08 Citation-Backed Reports and Durable Findings]] - status: in_progress - owner: Codex - updated: 2026-07-20
-- Also active: 26 more additional steps.
+- Also active: 25 more additional steps.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot

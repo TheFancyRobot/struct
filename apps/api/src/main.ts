@@ -968,6 +968,17 @@ const server = Effect.gen(function* () {
               projectId,
               reportId,
             ).pipe(Effect.provide(durableArtifactLayer)),
+          findReportRevision: (
+            workspaceId,
+            projectId,
+            reportId,
+            revision,
+          ) => DurableArtifactsRepo.findReportRevision(
+            workspaceId,
+            projectId,
+            reportId,
+            revision,
+          ).pipe(Effect.provide(durableArtifactLayer)),
           findReportRevisionByKey: (
             workspaceId,
             projectId,

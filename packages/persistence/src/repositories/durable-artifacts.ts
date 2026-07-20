@@ -820,7 +820,6 @@ export class DurableArtifactsRepo
                 if (
                   expectedSources.size !== report.sourceVersionIds.length
                   || report.sourceVersionIds.some((id) => !expectedSources.has(id))
-                  || expectedClaims.size !== report.claims.length
                   || report.claims.some((claim) => !expectedClaims.has(claim.id))
                   || report.claims.some((claim) =>
                     expectedClaimHashes.get(claim.id)
