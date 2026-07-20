@@ -560,8 +560,9 @@ describe('Fred walking-skeleton workflow', () => {
     expect(calls).not.toContain('non-cancellable-run')
   })
 
-  it('does not grant hanging cleanup a fresh workflow-sized deadline', async () => {
+  it('does not grant delayed cleanup a fresh workflow-sized deadline', async () => {
     let shutdownCalls = 0
+    let shutdownFinished = false
     const client = {
       providers: { use: async () => MockModelProvider },
       tools: { register: async () => undefined },
@@ -569,10 +570,10 @@ describe('Fred walking-skeleton workflow', () => {
       workflows: { define: async () => undefined },
       shutdown: async () => {
         shutdownCalls += 1
-        await new Promise<never>(() => undefined)
+        await new Promise((resolve) => setTimeout(resolve, 15))
+        shutdownFinished = true
       },
     } as unknown as FredClient
-    const startedAt = performance.now()
     const exit = await Effect.runPromiseExit(
       runFredWalkingSkeleton(
         input,
@@ -591,10 +592,11 @@ describe('Fred walking-skeleton workflow', () => {
         },
       ),
     )
-    const elapsedMs = performance.now() - startedAt
 
     expect(Exit.isFailure(exit)).toBe(true)
     expect(shutdownCalls).toBe(1)
-    expect(elapsedMs).toBeLessThan(75)
+    expect(shutdownFinished).toBe(false)
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    expect(shutdownFinished).toBe(true)
   })
 })

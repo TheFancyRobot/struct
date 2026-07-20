@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-20._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_05_deliver-mixed-source-demo-and-explorable-report|STEP-07-05 Deliver Mixed-Source Demo and Explorable Report]] - status: planned - phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]
+- Current step: [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_06_evaluate-hybrid-correctness-provenance-and-security|STEP-07-06 Evaluate Hybrid Correctness Provenance and Security]] - status: planned - phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]
 - Active phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|PHASE-07 Hybrid Cross-Source Research]] - status: planned - updated: 2026-07-20
-- Also active: 31 more additional steps.
+- Also active: 30 more additional steps.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -40,7 +40,7 @@ _Last refreshed: 2026-07-20._
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
 - Phase 06 is completed, reviewed, and merged through STEP-06-06.
-- Phase 07 is refined; STEP-07-01 through STEP-07-04 are completed, and STEP-07-05 is the next implementation unit.
+- Phase 07 is refined; STEP-07-01 through STEP-07-05 are completed, and STEP-07-06 is the next implementation unit after root review and merge.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 
 ## Out Of Scope Right Now
@@ -62,7 +62,7 @@ _Last refreshed: 2026-07-20._
 
 ## Open Questions
 
-- No unresolved design question or confirmed defect blocks STEP-07-05.
+- No unresolved design question or confirmed defect blocks STEP-07-06 after STEP-07-05 clears root review and merge.
 
 ## Critical Bugs
 
@@ -72,5 +72,5 @@ _Last refreshed: 2026-07-20._
 
 ## Next Actions
 
-- Execute STEP-07-05 on a dedicated branch using the refined SolidJS and Playwright-aware execution brief and validation plan.
+- Root-review, publish, and merge STEP-07-05, then execute STEP-07-06 on its dedicated branch.
 - Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.
