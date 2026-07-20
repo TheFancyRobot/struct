@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T00:08:16.679Z",
+  "generatedAt": "2026-07-20T00:46:23.711Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -2505,7 +2505,7 @@
       ],
       "exports": [],
       "hash": "08daab8d70177911714acfaa31814d0863b8d6fec075f9e294176898e8e96c60",
-      "mtimeMs": 1784504695471.5906,
+      "mtimeMs": 1784506183886.196,
       "size": 13834,
       "generated": false,
       "vendor": false,
@@ -4151,144 +4151,200 @@
           "endLine": 53
         },
         {
-          "name": "CitationId",
+          "name": "ResearchPlanId",
           "kind": "const",
           "line": 56,
           "exported": true,
           "endLine": 56
         },
         {
-          "name": "CitationId",
+          "name": "ResearchPlanId",
           "kind": "type",
           "line": 57,
           "exported": true,
           "endLine": 57
         },
         {
-          "name": "FindingId",
+          "name": "ResearchPlanNodeId",
           "kind": "const",
           "line": 60,
           "exported": true,
           "endLine": 60
         },
         {
-          "name": "FindingId",
+          "name": "ResearchPlanNodeId",
           "kind": "type",
           "line": 61,
           "exported": true,
           "endLine": 61
         },
         {
-          "name": "ReportId",
+          "name": "EvidenceRequirementId",
           "kind": "const",
           "line": 64,
           "exported": true,
           "endLine": 64
         },
         {
-          "name": "ReportId",
+          "name": "EvidenceRequirementId",
           "kind": "type",
           "line": 65,
           "exported": true,
           "endLine": 65
         },
         {
-          "name": "DatasetId",
+          "name": "ResearchCheckpointId",
           "kind": "const",
           "line": 68,
           "exported": true,
           "endLine": 68
         },
         {
-          "name": "DatasetId",
+          "name": "ResearchCheckpointId",
           "kind": "type",
           "line": 69,
           "exported": true,
           "endLine": 69
         },
         {
-          "name": "DatasetSnapshotId",
+          "name": "CitationId",
           "kind": "const",
           "line": 72,
           "exported": true,
           "endLine": 72
         },
         {
-          "name": "DatasetSnapshotId",
+          "name": "CitationId",
           "kind": "type",
           "line": 73,
           "exported": true,
           "endLine": 73
         },
         {
-          "name": "DatasetSchemaFamilyId",
+          "name": "FindingId",
           "kind": "const",
           "line": 76,
           "exported": true,
           "endLine": 76
         },
         {
-          "name": "DatasetSchemaFamilyId",
+          "name": "FindingId",
           "kind": "type",
-          "line": 79,
+          "line": 77,
           "exported": true,
-          "endLine": 79
+          "endLine": 77
         },
         {
-          "name": "QueryResultSnapshotId",
+          "name": "ReportId",
           "kind": "const",
-          "line": 83,
+          "line": 80,
           "exported": true,
-          "endLine": 83
+          "endLine": 80
         },
         {
-          "name": "QueryResultSnapshotId",
+          "name": "ReportId",
           "kind": "type",
+          "line": 81,
+          "exported": true,
+          "endLine": 81
+        },
+        {
+          "name": "DatasetId",
+          "kind": "const",
           "line": 84,
           "exported": true,
           "endLine": 84
         },
         {
-          "name": "DatasetCitationId",
-          "kind": "const",
-          "line": 87,
+          "name": "DatasetId",
+          "kind": "type",
+          "line": 85,
           "exported": true,
-          "endLine": 87
+          "endLine": 85
         },
         {
-          "name": "DatasetCitationId",
-          "kind": "type",
+          "name": "DatasetSnapshotId",
+          "kind": "const",
           "line": 88,
           "exported": true,
           "endLine": 88
         },
         {
-          "name": "EventJournalId",
-          "kind": "const",
-          "line": 91,
+          "name": "DatasetSnapshotId",
+          "kind": "type",
+          "line": 89,
           "exported": true,
-          "endLine": 91
+          "endLine": 89
         },
         {
-          "name": "EventJournalId",
-          "kind": "type",
+          "name": "DatasetSchemaFamilyId",
+          "kind": "const",
           "line": 92,
           "exported": true,
           "endLine": 92
         },
         {
-          "name": "JobQueueId",
-          "kind": "const",
+          "name": "DatasetSchemaFamilyId",
+          "kind": "type",
           "line": 95,
           "exported": true,
           "endLine": 95
         },
         {
+          "name": "QueryResultSnapshotId",
+          "kind": "const",
+          "line": 99,
+          "exported": true,
+          "endLine": 99
+        },
+        {
+          "name": "QueryResultSnapshotId",
+          "kind": "type",
+          "line": 100,
+          "exported": true,
+          "endLine": 100
+        },
+        {
+          "name": "DatasetCitationId",
+          "kind": "const",
+          "line": 103,
+          "exported": true,
+          "endLine": 103
+        },
+        {
+          "name": "DatasetCitationId",
+          "kind": "type",
+          "line": 104,
+          "exported": true,
+          "endLine": 104
+        },
+        {
+          "name": "EventJournalId",
+          "kind": "const",
+          "line": 107,
+          "exported": true,
+          "endLine": 107
+        },
+        {
+          "name": "EventJournalId",
+          "kind": "type",
+          "line": 108,
+          "exported": true,
+          "endLine": 108
+        },
+        {
+          "name": "JobQueueId",
+          "kind": "const",
+          "line": 111,
+          "exported": true,
+          "endLine": 111
+        },
+        {
           "name": "JobQueueId",
           "kind": "type",
-          "line": 96,
+          "line": 112,
           "exported": true,
-          "endLine": 96
+          "endLine": 112
         }
       ],
       "imports": [
@@ -4302,9 +4358,9 @@
         }
       ],
       "exports": [],
-      "hash": "41fc7e81a4ccfc102243611627bc8f6c7f4f73bc9400c5bda96b1e3dc3d457e2",
-      "mtimeMs": 1784499619864.7275,
-      "size": 4751,
+      "hash": "2ae6bde93e2dbeac0c6905586fa133269d3d2b8ec497b7d363ec57507f3a4518",
+      "mtimeMs": 1784507915875.7642,
+      "size": 5744,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -5342,6 +5398,369 @@
       "parser": "regex"
     },
     {
+      "path": "packages/domain/src/research-execution.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "Counter",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "MAX_CHECKPOINT_BYTES",
+          "kind": "const",
+          "line": 20,
+          "exported": false,
+          "endLine": 20
+        },
+        {
+          "name": "ResearchBudgetUsage",
+          "kind": "const",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "ResearchBudgetUsage",
+          "kind": "type",
+          "line": 31,
+          "exported": true,
+          "endLine": 31
+        },
+        {
+          "name": "ResearchArtifactRef",
+          "kind": "const",
+          "line": 34,
+          "exported": true,
+          "endLine": 34
+        },
+        {
+          "name": "ResearchArtifactRef",
+          "kind": "type",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "ResearchExecutionState",
+          "kind": "const",
+          "line": 42,
+          "exported": true,
+          "endLine": 42
+        },
+        {
+          "name": "ResearchExecutionState",
+          "kind": "type",
+          "line": 70,
+          "exported": true,
+          "endLine": 70
+        },
+        {
+          "name": "ResearchExecutionCheckpoint",
+          "kind": "const",
+          "line": 73,
+          "exported": true,
+          "endLine": 73
+        },
+        {
+          "name": "ResearchExecutionCheckpoint",
+          "kind": "type",
+          "line": 78,
+          "exported": true,
+          "endLine": 78
+        },
+        {
+          "name": "executionFailure",
+          "kind": "function",
+          "line": 81,
+          "exported": false,
+          "endLine": 81
+        },
+        {
+          "name": "exceedsBudget",
+          "kind": "function",
+          "line": 98,
+          "exported": false,
+          "endLine": 98,
+          "signature": "(state: ResearchExecutionState)"
+        },
+        {
+          "name": "decodeResearchExecutionCheckpoint",
+          "kind": "const",
+          "line": 109,
+          "exported": true,
+          "endLine": 109
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, ParseResult, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "ParseResult",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Sha256Digest",
+          "specifier": "./directory-manifest.js",
+          "imported": [
+            "Sha256Digest"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ResearchContractValidationError",
+          "specifier": "./typed-errors.js",
+          "imported": [
+            "ResearchContractValidationError"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "33773fd222a9be022e3bee2422ed24205e076acbce6d8ebaf7e22fb5abab17e8",
+      "mtimeMs": 1784508285726.6033,
+      "size": 4649,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/research-plan.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonBlankString",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "BoundedInteger",
+          "kind": "const",
+          "line": 20,
+          "exported": false,
+          "endLine": 20
+        },
+        {
+          "name": "ResearchContractVersion",
+          "kind": "const",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
+          "name": "QuestionClassification",
+          "kind": "const",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "QuestionClassification",
+          "kind": "type",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        },
+        {
+          "name": "ResearchSourceScope",
+          "kind": "const",
+          "line": 38,
+          "exported": true,
+          "endLine": 38
+        },
+        {
+          "name": "ResearchSourceScope",
+          "kind": "type",
+          "line": 50,
+          "exported": true,
+          "endLine": 50
+        },
+        {
+          "name": "ResearchEvidenceRequirement",
+          "kind": "const",
+          "line": 53,
+          "exported": true,
+          "endLine": 53
+        },
+        {
+          "name": "ResearchEvidenceRequirement",
+          "kind": "type",
+          "line": 68,
+          "exported": true,
+          "endLine": 68
+        },
+        {
+          "name": "ResearchToolId",
+          "kind": "const",
+          "line": 71,
+          "exported": true,
+          "endLine": 71
+        },
+        {
+          "name": "ResearchToolId",
+          "kind": "type",
+          "line": 76,
+          "exported": true,
+          "endLine": 76
+        },
+        {
+          "name": "ResearchToolCapability",
+          "kind": "const",
+          "line": 78,
+          "exported": true,
+          "endLine": 78
+        },
+        {
+          "name": "ResearchToolCapability",
+          "kind": "type",
+          "line": 83,
+          "exported": true,
+          "endLine": 83
+        },
+        {
+          "name": "ResearchToolPolicy",
+          "kind": "const",
+          "line": 86,
+          "exported": true,
+          "endLine": 86
+        },
+        {
+          "name": "ResearchToolPolicy",
+          "kind": "type",
+          "line": 96,
+          "exported": true,
+          "endLine": 96
+        },
+        {
+          "name": "ResearchPlanInputRef",
+          "kind": "const",
+          "line": 98,
+          "exported": true,
+          "endLine": 98
+        },
+        {
+          "name": "ResearchPlanInputRef",
+          "kind": "type",
+          "line": 113,
+          "exported": true,
+          "endLine": 113
+        },
+        {
+          "name": "ResearchPlanNode",
+          "kind": "const",
+          "line": 116,
+          "exported": true,
+          "endLine": 116
+        },
+        {
+          "name": "ResearchPlanNode",
+          "kind": "type",
+          "line": 130,
+          "exported": true,
+          "endLine": 130
+        },
+        {
+          "name": "ResearchBudget",
+          "kind": "const",
+          "line": 132,
+          "exported": true,
+          "endLine": 132
+        },
+        {
+          "name": "ResearchBudget",
+          "kind": "type",
+          "line": 146,
+          "exported": true,
+          "endLine": 146
+        },
+        {
+          "name": "ResearchPlan",
+          "kind": "const",
+          "line": 148,
+          "exported": true,
+          "endLine": 148
+        },
+        {
+          "name": "ResearchPlan",
+          "kind": "type",
+          "line": 169,
+          "exported": true,
+          "endLine": 169
+        },
+        {
+          "name": "ValidationReason",
+          "kind": "type",
+          "line": 171,
+          "exported": false,
+          "endLine": 171
+        },
+        {
+          "name": "parseFailure",
+          "kind": "function",
+          "line": 174,
+          "exported": false,
+          "endLine": 174
+        },
+        {
+          "name": "graphFailure",
+          "kind": "function",
+          "line": 198,
+          "exported": false,
+          "endLine": 198,
+          "signature": "(plan: ResearchPlan)"
+        },
+        {
+          "name": "decodeQuestionClassification",
+          "kind": "const",
+          "line": 305,
+          "exported": true,
+          "endLine": 305
+        },
+        {
+          "name": "decodeResearchPlan",
+          "kind": "const",
+          "line": 313,
+          "exported": true,
+          "endLine": 313
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, ParseResult, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "ParseResult",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ResearchContractValidationError",
+          "specifier": "./typed-errors.js",
+          "imported": [
+            "ResearchContractValidationError"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "bfcd502a7e3a22e7674c446f6a385ad9487e8b9092da7e597a044f3efa8a1d1b",
+      "mtimeMs": 1784508326234.8845,
+      "size": 10487,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/domain/src/schemas.ts",
       "language": "TypeScript",
       "symbols": [
@@ -5802,6 +6221,13 @@
           "line": 102,
           "exported": true,
           "endLine": 102
+        },
+        {
+          "name": "ResearchContractValidationError",
+          "kind": "class",
+          "line": 108,
+          "exported": true,
+          "endLine": 108
         }
       ],
       "imports": [
@@ -5815,9 +6241,9 @@
         }
       ],
       "exports": [],
-      "hash": "73726e6a2422e0c310f24930774ad45411055602f4f029f0ee8cbacd6f3994e7",
-      "mtimeMs": 1784457202196.7424,
-      "size": 3532,
+      "hash": "ba1c333c2d49a255dc1fd4a784a44d3d595075e9210146d9281ab0e990d5bb43",
+      "mtimeMs": 1784508285725.956,
+      "size": 4084,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -7754,7 +8180,7 @@
       ],
       "exports": [],
       "hash": "2557ac324971121277832a85e104f3e7ddb47b687a2a9496c747ee245aa52954",
-      "mtimeMs": 1784504695472.7366,
+      "mtimeMs": 1784506183889.722,
       "size": 3571,
       "generated": false,
       "vendor": false,
@@ -12917,7 +13343,7 @@
       ],
       "exports": [],
       "hash": "17ef3333857f59b2c5c79f6671e92a1e0844263d55fd271d9f860b25b676dd4d",
-      "mtimeMs": 1784499619865.2515,
+      "mtimeMs": 1784506183889.9766,
       "size": 982,
       "generated": false,
       "vendor": false,
@@ -13061,7 +13487,7 @@
       ],
       "exports": [],
       "hash": "de82e372cde7e3dee142cfd0ed5f0e85ccf89aa1ba985af2516966e9ccaf556e",
-      "mtimeMs": 1784504695471.178,
+      "mtimeMs": 1784506183890.0776,
       "size": 15044,
       "generated": false,
       "vendor": false,
@@ -13227,7 +13653,7 @@
       ],
       "exports": [],
       "hash": "83e2a3744c09c1b92e8f0fa200bd517c778d28eef5fcc40bc0cad4394f26e90d",
-      "mtimeMs": 1784506079655.802,
+      "mtimeMs": 1784506183890.2825,
       "size": 11770,
       "generated": false,
       "vendor": false,
@@ -13324,7 +13750,7 @@
       ],
       "exports": [],
       "hash": "fc4c03dad0fff2abd117a37f2b8f09a6c39203f2ef99a49c6b15b5025f3dac98",
-      "mtimeMs": 1784433778775.1602,
+      "mtimeMs": 1784506183890.4583,
       "size": 5204,
       "generated": false,
       "vendor": false,
@@ -13355,7 +13781,7 @@
       ],
       "exports": [],
       "hash": "9384a1f20f3158861ac7c30d3ee2f1ce0f6b4c2b55ebb08115050c5e9110595c",
-      "mtimeMs": 1784433778775.3633,
+      "mtimeMs": 1784506183891.3457,
       "size": 454,
       "generated": false,
       "vendor": false,

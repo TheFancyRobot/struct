@@ -104,3 +104,23 @@ export class ResearchCitationValidationError extends Schema.TaggedError<Research
   locator: Schema.String,
   message: Schema.String,
 }) {}
+
+export class ResearchContractValidationError extends Schema.TaggedError<ResearchContractValidationError>()(
+  'ResearchContractValidationError',
+  {
+    contract: Schema.Literal('classification', 'plan', 'execution'),
+    reason: Schema.Literal(
+      'malformed',
+      'invalid-identity',
+      'unsupported-tool',
+      'unsupported-capability',
+      'missing-dependency',
+      'missing-reference',
+      'cyclic-dependency',
+      'fan-out-exceeded',
+      'invalid-budget',
+    ),
+    path: Schema.String,
+    message: Schema.String,
+  },
+) {}
