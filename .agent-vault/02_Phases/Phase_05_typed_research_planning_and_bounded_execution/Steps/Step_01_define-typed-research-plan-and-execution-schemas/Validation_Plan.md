@@ -2,14 +2,15 @@
 
 ## Acceptance Checks
 
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: The concrete contract for Typed Research Plan and Execution Schemas in the first planned domain, persistence, or documentation files so downstream implementation does not need to rediscover the boundary.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: update typed domain modules for `ResearchPlan`, `ResearchStep`, `Research Limits` in `packages/domain/src/research-plan.ts`, `packages/domain/src/research-step.ts`, `packages/domain/src/research-limits.ts`.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: The orchestration or synthesis rules in `packages/research-engine/src/plan-schema.ts`, `packages/research-engine/src/intent-classification.ts` without moving deterministic work out of services/tools.
-- The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
+- Valid mixed document/dataset plans decode with branded scope/source identities, explicit dependencies, evidence requirements, tool capabilities, and finite budgets.
+- Invalid identity, missing dependency, cycle, unknown capability/tool ID, excess fan-out, and invalid limit shapes fail with specific serializable tagged errors.
+- Plan and execution/checkpoint state encode/decode without functions, provider/tool instances, hidden model state, or large artifact bodies.
+- `@struct/domain` exports preserve existing citation, provenance, and dataset-query evidence contracts; this step adds no runtime orchestration or persistence.
 
 ## Planned Verification
 
-- Planned command once these packages exist: `bun test packages/domain packages/research-engine` plus the nearest package-level `bun run typecheck`.
+- Run `bun test packages/domain`.
+- Run `bun run typecheck`, `bun run lint`, and `bun run lint:imports`.
 
 ## Edge Cases
 

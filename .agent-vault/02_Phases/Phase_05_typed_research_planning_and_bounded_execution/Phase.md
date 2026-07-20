@@ -7,7 +7,7 @@ phase_id: PHASE-05
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-19'
 depends_on:
   - '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]]'
   - '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]]'
@@ -18,6 +18,8 @@ related_architecture:
   - '[[01_Architecture/Agent_Workflow|Agent Workflow]]'
 related_decisions:
   - '[[04_Decisions/DEC-0002_prefer-product-local-adapters-before-fred-core-changes|DEC-0002 Prefer Product-Local Adapters Before Fred Core Changes]]'
+  - '[[04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries|DEC-0003 Use TypeScript Bun and Effect with Explicit Runtime Boundaries]]'
+  - '[[04_Decisions/DEC-0005_use-duckdb-and-parquet-for-the-deterministic-data-plane|DEC-0005 Use DuckDB and Parquet for the Deterministic Data Plane]]'
   - '[[04_Decisions/DEC-0007_compose-a-product-job-journal-with-fred-checkpoints|DEC-0007 Compose a Product Job Journal with Fred Checkpoints]]'
   - '[[04_Decisions/DEC-0010_use-focused-fred-agents-with-deterministic-effect-tools|DEC-0010 Use Focused Fred Agents with Deterministic Effect Tools]]'
 related_bugs: []
@@ -45,19 +47,22 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - Use Fred agents to propose plans, then validate and normalize them deterministically before any tool executes.
 - Compile valid plans to bounded Fred workflows/graphs with capability-aware model routing and focused agents.
 - Compose Fred checkpoints with product job/event persistence, cancellation, leases, idempotency keys, and large artifacts by reference.
-- Register typed Effect tools with explicit inputs, outputs, failures, retry classes, authorization, and observability.
+- Register the document, directory, and exact-query capabilities already delivered by Phases 02-04 as typed Effect tools with explicit inputs, outputs, failures, retry classes, authorization, and observability.
 - Evaluate plan validity, budget enforcement, replay, model/provider failure, tool failure, cancellation, and restart recovery.
 
 ## Non-Goals
 
 - Unbounded autonomous loops, agent-authored executable code, or model calls for deterministic transforms.
 - Making Fred checkpoints the sole product job or event store.
+- Reimplementing Phase 02 retrieval, Phase 03 directory traversal, or Phase 04 DuckDB/Parquet behavior inside Fred.
+- Adding another maintained host runtime or changing the isolated Phase 04 data-engine topology.
 - Upstreaming product-specific behavior into Fred before a generic need is demonstrated.
 
 ## Dependencies
 
 - Depends on [[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]].
 - Depends on [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]].
+- Both dependencies are completed. Phase 04's release-authoritative evaluation passed with deterministic exact-query, security, sidecar-isolation, and recovery evidence; Phase 05 consumes those APIs rather than reopening the data plane.
 
 ## Acceptance Criteria
 
@@ -67,13 +72,24 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - [ ] Live progress derives from committed product events and survives reconnect, cancellation, worker replacement, and cross-process resume.
 - [ ] Tool and model failures preserve typed categories, retry eligibility, attempt history, evidence, and operator diagnostics.
 - [ ] Replay and golden-trace tests detect plan, routing, tool-contract, and workflow regressions.
+- [ ] Maintained applications, packages, scripts, and tests remain Bun-only; any exact-query execution continues through the authenticated isolated Node 24 LTS DuckDB sidecar delivered in Phase 04.
 - [ ] Candidate generic Fred gaps are documented with portable reproductions; product delivery does not wait for optional upstream changes.
 
 ## Delivery Strategy
 
-- **Safe parallel work:** Planner/schema work, product job journal work, and tool-registry work may proceed in parallel against agreed contracts; graph execution integrates them before evaluation.
+- **Serial handoff:** Deliver one reviewed PR per step. Each step consumes the merged contracts from its predecessor; production worker integration occurs once in STEP-05-05 after graph and durability contracts exist.
 - **Gate:** The phase closes only when all acceptance criteria have reproducible evidence and the relevant docs, migrations, security checks, telemetry, and evaluations are updated.
 - **Boundary:** Post-v1 work must not be pulled forward in a way that weakens v1 completeness or its release gates.
+
+## Refined Implementation Contract
+
+- STEP-05-01 owns only shared schemas and typed validation failures; it does not call models, compile Fred graphs, persist runs, or dispatch tools.
+- STEP-05-02 owns focused Fred classification/planning plus deterministic plan normalization and rejection; it does not add worker, checkpoint, event, or retry infrastructure.
+- STEP-05-03 owns bounded graph compilation, in-memory execution policy, and model routing against typed resolver interfaces; it does not add persistence or production worker dispatch.
+- STEP-05-04 owns durable plan/failure records, checkpoints, budgets, event ordering, reconnect reads, and cancellation intent; it does not implement tool retries or recovery dispatch.
+- STEP-05-05 owns the production registry and worker integration that binds the graph to existing deterministic capabilities and durable retry/recovery state.
+- STEP-05-06 adds no feature scope: it runs reproducible planning, execution, replay, cancellation, provider/tool-failure, and restart gates and remediates only defects exposed by those gates.
+- All maintained host code uses Bun and Effect conventions (`Effect.Service`, `Effect.fn`, `Schema.TaggedError`, explicit Layers/Config). Exact-query work crosses the existing typed `@struct/data-engine` protocol to the isolated Compose sidecar; Phase 05 must not import DuckDB or require Node on the host.
 
 ## Linear Context
 
@@ -96,6 +112,8 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-related-decisions -->
 - [[04_Decisions/DEC-0002_prefer-product-local-adapters-before-fred-core-changes|DEC-0002 Prefer Product-Local Adapters Before Fred Core Changes]]
+- [[04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries|DEC-0003 Use TypeScript Bun and Effect with Explicit Runtime Boundaries]]
+- [[04_Decisions/DEC-0005_use-duckdb-and-parquet-for-the-deterministic-data-plane|DEC-0005 Use DuckDB and Parquet for the Deterministic Data Plane]]
 - [[04_Decisions/DEC-0007_compose-a-product-job-journal-with-fred-checkpoints|DEC-0007 Compose a Product Job Journal with Fred Checkpoints]]
 - [[04_Decisions/DEC-0010_use-focused-fred-agents-with-deterministic-effect-tools|DEC-0010 Use Focused Fred Agents with Deterministic Effect Tools]]
 <!-- AGENT-END:phase-related-decisions -->

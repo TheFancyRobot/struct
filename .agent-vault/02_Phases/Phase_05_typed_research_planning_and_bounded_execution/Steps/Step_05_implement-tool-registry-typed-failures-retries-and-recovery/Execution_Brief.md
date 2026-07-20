@@ -2,23 +2,23 @@
 
 ## Exact Outcome
 
-- Produce the concrete contracts, artifacts, and bounded implementation/design surfaces for Tool Registry Typed Failures Retries and Recovery that this step is responsible for before any broader follow-on work begins.
+- Bind the merged bounded graph and durable run state to one production Bun worker path through a typed Effect tool registry, explicit failure/retry policy, and idempotent checkpoint-based recovery.
 
 ## Prerequisites
 
 - Re-read [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|Phase 05 typed research planning and bounded execution]] and confirm the step still matches the current roadmap sequence.
 - Confirm the handoff from [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_04_persist-checkpoints-events-budgets-and-cancellation|STEP-05-04 Persist Checkpoints Events Budgets and Cancellation]] before widening scope.
 - Keep deterministic work in typed Effect services, repositories, and tools; reserve Fred for agentic orchestration only.
-- Treat the listed files as planned starting points; create only the smallest set needed to land the slice.
+- Reuse the existing Phase 02 document retrieval, Phase 03 directory, and Phase 04 exact-query adapters; do not reimplement their deterministic behavior.
 
 ## Planned Starting Files
 
-- These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `packages/workflows/src/tools/index.ts`
+- `packages/workflows/src/tools/registry.ts`
 - `packages/domain/src/tool-failures.ts`
 - `packages/research-engine/src/retry-policy.ts`
-- `apps/worker/src/jobs/tool-dispatch.ts`
 - `packages/research-engine/src/recovery-policy.ts`
+- `apps/worker/src/jobs/run-research.ts`
+- Focused registry/policy/worker tests.
 
 ## Required Reading
 
@@ -31,21 +31,23 @@
 
 ## Concrete Deliverables
 
-- Create a typed tool registry that binds tool IDs to Effect Schema inputs/outputs, authorization checks, timeouts, and structured tracing.
-- Define typed failure families plus retry and recovery policies that distinguish permanent validation errors from transient infrastructure faults.
-- Keep worker dispatch logic explicit about which tools are deterministic services versus Fred-mediated agent steps.
+- Create a typed registry that binds plan-visible tool IDs to Effect Schema inputs/outputs, required capabilities, workspace/project authorization, timeout/idempotency policy, and structured tracing.
+- Define specific `Schema.TaggedError` families plus finite retry/recovery policy that distinguishes non-retryable validation/auth/cancellation failures from transient provider, transport, lease, and sidecar faults.
+- Integrate one existing `apps/worker` research-job path with planning, graph execution, checkpoints/events/budgets, cancellation, retries, and process-replacement resume without duplicate side effects.
 
 ## Smallest Bounded Checklist
 
-- First, create a typed tool registry that binds tool IDs to Effect Schema inputs/outputs, authorization checks, timeouts, and structured tracing.
-- Then, define typed failure families plus retry and recovery policies that distinguish permanent validation errors from transient infrastructure faults.
-- Next, keep worker dispatch logic explicit about which tools are deterministic services versus Fred-mediated agent steps.
-- Finish by leaving one observable typed path—test, route, worker flow, or UI state—that proves the slice is ready for the next dependent step.
+- Register the existing deterministic document/directory/dataset capabilities and reject unknown or unauthorized tool IDs before dispatch.
+- Implement finite retry classification with attempt history, idempotency requirements, backoff/stop reasons, and cancellation checks.
+- Integrate the bounded graph into the existing worker job lifecycle and resume only from committed checkpoint/event state.
+- Test one successful mixed-source run, permanent failure, transient retry, provider failure, cancellation, lease loss, and worker replacement; run focused and full repository gates.
 
 ## Constraints and Non-Goals
 
 - Research plans, tools, and workflow state must all use typed schemas and typed failures.
-- Budgets, cancellation, duplicate-action detection, and no-progress detection are product requirements, not optional polish.
+- Keep agent nodes separate from deterministic tools; only registered deterministic tools are callable through the registry.
+- Do not introduce a second worker path, execute raw model-authored SQL/code, expand source scope, or duplicate Phase 02-04 services.
+- Maintained code runs on Bun. Dataset queries use `@struct/data-engine` and its existing authenticated protocol to the isolated Node 24 LTS DuckDB Compose sidecar; no host Node/DuckDB dependency is allowed.
 - Keep deterministic inspection, retrieval, and SQL execution in Effect services/tools; Fred should orchestrate judgment, not replace core services.
 
 ## Related Notes

@@ -2,17 +2,16 @@
 
 ## Acceptance Checks
 
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Replay/recovery evaluations that prove planning and execution can resume from persisted checkpoints without duplicating side effects.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Document the exact restart, replan, and failure classes the system can recover from versus the ones that still require operator action.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Tie benchmark/report artifacts back to the planner, graph, and tool-registry contracts created earlier in Phase 05.
-- The output includes a clear pass/fail signal, recorded defects or blockers, and the next action for anything intentionally left unresolved.
+- A machine-readable report maps every Phase 05 acceptance criterion to a deterministic fixture, observed result, and explicit pass/fail gate.
+- Two runs have byte-identical deterministic report sections and zero duplicate side effects across restart after planning, mid-tool attempt, post-checkpoint/event commit, cancellation, provider failure, and sidecar failure/restart.
+- Measured checkpoint size/replay latency and exact automated/operator recovery classes are documented and meet the v1 thresholds.
+- Full repository, security, Compose/live-service, migration, and vault gates pass with no converted skips or weakened thresholds.
 
 ## Planned Verification
 
-- Plan replay tests that cover restart after planning, restart mid-tool call, restart after partial event flush, and explicit cancellation.
-- Plan benchmark/report review steps that show checkpoint size, replay latency, and failure categorization are acceptable for v1.
-- Planned command once these packages exist: `bun test packages/evaluation` plus the nearest package-level `bun run typecheck`.
-- Planned app/integration coverage once the app surfaces exist: `bun test apps/worker` for the API/worker/web path touched here.
+- Run the focused Phase 05 evaluator twice and compare deterministic report hashes.
+- Run live PostgreSQL and Compose data-engine recovery scenarios, including sidecar failure/restart while the Bun worker remains healthy.
+- Run `bun test packages/evaluation apps/worker` plus the repository's full unit/integration, typecheck, lint, import-boundary, build, security, migration, Compose, and vault gates.
 
 ## Edge Cases
 
