@@ -23,8 +23,9 @@ The last command starts the web, API, and worker applications together.
 
 Set a real provider key in `.env`, then seed the Phase 01 project fixture:
 
-Export the same API credential configured in `.env` for the direct API calls
-below:
+Keep `API_WORKSPACE_ID=310e8400-e29b-41d4-a716-446655440000` in `.env` so the
+API identity owns the fixture workspace seeded below. Export the same API
+credential configured in `.env` for the direct API calls:
 
 ```sh
 export API_AUTH_TOKEN='replace-with-the-value-from-.env'

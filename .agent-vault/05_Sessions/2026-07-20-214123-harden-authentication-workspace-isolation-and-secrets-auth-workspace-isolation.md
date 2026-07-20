@@ -65,6 +65,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - A minimal single-user production identity can remain server-side: the web server injects the bearer credential, while the API binds it to `API_WORKSPACE_ID` and never exposes it to browser JavaScript.
 - Root pre-PR review found that `docs/setup.md` direct API examples omitted the newly required bearer header; the guide and an executable regression assertion were corrected before publication.
 - Root pre-PR review also removed a PostgreSQL-dependent assertion from the unit HTTP-boundary suite; non-leaking project lookup remains covered by the explicitly real-PostgreSQL integration suite, while the unit server now uses an intentionally unreachable database URL.
+- PR review validated three follow-ups: project-scope repository failures must remain 503 rather than non-leaking 404; the step snapshot must mirror completed frontmatter; and the quickstart must explicitly retain the fixture workspace identity.
 
 ## Context Handoff
 
@@ -107,6 +108,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Root verification: `bun run secrets:scan` scanned 1,154 repository paths with no findings; 49 focused auth/config/worker tests passed with 236 assertions; focused real-PostgreSQL auth/ingestion tests passed 6/6 with 50 assertions; typecheck and documentation lint passed; `git diff --check` clean.
 - Root isolation proof: the spawned HTTP authentication suite passed 2/2 with 57 assertions against `127.0.0.1:1`; lint, import/boundary checks, and all production builds passed after remediation.
 - Final root unit gate after all pre-PR remediation: 764 passed, 171 integration-gated, 0 failed, 3,070 assertions.
+- Review remediation: 17 focused API/auth/config tests passed with 107 assertions, real-PostgreSQL workspace isolation passed 2/2, and typecheck, lint, docs lint, and diff whitespace checks passed.
+- Final review-remediation gate: 765 unit tests passed, 171 integration-gated, 0 failed, 3,073 assertions; real PostgreSQL isolation 2/2; typecheck, lint, imports/boundaries, build, docs lint, secret scan, and Vault doctor clean.
 
 ## Bugs Encountered
 

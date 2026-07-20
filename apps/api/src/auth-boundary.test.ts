@@ -94,5 +94,17 @@ describe('API HTTP authentication boundary', () => {
       '../../../docs/setup.md',
     )).text()
     expect(setup.match(/authorization: Bearer \$API_AUTH_TOKEN/g)).toHaveLength(3)
+    expect(setup).toContain(
+      'API_WORKSPACE_ID=310e8400-e29b-41d4-a716-446655440000',
+    )
+  })
+
+  it('preserves an infrastructure failure from the project ownership precheck', async () => {
+    const response = await fetch(
+      `${origin}/api/projects/${guessedProjectId}/research`,
+      { method: 'POST', headers: { authorization: `Bearer ${token}` } },
+    )
+    expect(response.status).toBe(503)
+    expect(await response.json()).toEqual({ error: 'ProjectScopeUnavailable' })
   })
 })

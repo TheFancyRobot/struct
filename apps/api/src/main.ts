@@ -294,7 +294,18 @@ const server = Effect.gen(function* () {
           }),
         )
         if (projectScope._tag === 'Failure') {
-          return jsonResponse({ error: 'ResourceNotFound' }, 404)
+          const failure = Option.getOrUndefined(
+            Cause.failureOption(projectScope.cause),
+          )
+          const isMalformedProjectId = typeof failure === 'object'
+            && failure !== null
+            && '_tag' in failure
+            && failure._tag === 'ParseError'
+          return failure instanceof EntityNotFoundError
+            || failure instanceof ApiAuthorizationError
+            || isMalformedProjectId
+            ? jsonResponse({ error: 'ResourceNotFound' }, 404)
+            : jsonResponse({ error: 'ProjectScopeUnavailable' }, 503)
         }
       }
       if (url.pathname === '/metrics' && req.method === 'GET') {
