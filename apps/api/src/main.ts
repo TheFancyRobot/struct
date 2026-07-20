@@ -75,6 +75,7 @@ import {
   resolveResearchEventScope,
 } from './routes/research-events'
 import { cancelResearch } from './routes/research-cancel'
+import { loadRecursiveAnalysis } from './routes/recursive-analysis'
 import {
   datasetQueryReadRoute,
   listDatasetQueryHistory,
@@ -778,6 +779,87 @@ const server = Effect.gen(function* () {
               : jsonResponse({ error: 'ResearchCancellationUnavailable' }, 503)
         }
         return jsonResponse(exit.value, exit.value.result === 'cancelled' ? 202 : 200)
+      }
+
+      const recursiveAnalysisRoute =
+        /^\/api\/projects\/([^/]+)\/runs\/([^/]+)\/recursive-analysis$/
+          .exec(url.pathname)
+      if (recursiveAnalysisRoute !== null && req.method === 'GET') {
+        const credential = bearerCredential(req)
+        if (
+          credential === undefined
+          || !credentialMatches(apiAuthToken, credential)
+        ) {
+          return jsonResponse({ error: 'ResearchAuthenticationRequired' }, 401)
+        }
+        const identifiers = Effect.try({
+          try: () => ({
+            projectId: Schema.decodeUnknownSync(ProjectId)(
+              recursiveAnalysisRoute[1],
+            ),
+            runId: Schema.decodeUnknownSync(ResearchRunId)(
+              recursiveAnalysisRoute[2],
+            ),
+          }),
+          catch: () => new Error('Invalid recursive analysis identifiers'),
+        })
+        const identified = await Runtime.runPromiseExit(effectRuntime)(
+          identifiers,
+        )
+        if (identified._tag === 'Failure') {
+          return jsonResponse({ error: 'ResearchRunNotFound' }, 404)
+        }
+        const scoped = await Runtime.runPromiseExit(effectRuntime)(
+          resolveResearchEventScope(
+            identified.value.projectId,
+            identified.value.runId,
+            {
+              findProject: (projectId) => ProjectRepo.findById(projectId)
+                .pipe(Effect.provide(projectLayer)),
+              runExists: (workspaceId, projectId, runId) =>
+                ResearchProjectionRepo.runExists(
+                  workspaceId,
+                  projectId,
+                  runId,
+                ).pipe(Effect.provide(projectionLayer)),
+            },
+          ),
+        )
+        if (scoped._tag === 'Failure') {
+          const failure = Option.getOrUndefined(Cause.failureOption(scoped.cause))
+          return failure === undefined
+            ? jsonResponse({ error: 'RecursiveAnalysisUnavailable' }, 503)
+            : researchEventScopeFailureResponse(failure)
+        }
+        const loaded = await Runtime.runPromiseExit(effectRuntime)(
+          loadRecursiveAnalysis(
+            scoped.value,
+            identified.value.projectId,
+            identified.value.runId,
+            {
+              listEventsAfter: (
+                workspaceId,
+                projectId,
+                runId,
+                after,
+                limit,
+              ) => ResearchProjectionRepo.listEventsAfter(
+                workspaceId,
+                projectId,
+                runId,
+                after,
+                limit,
+              ).pipe(Effect.provide(projectionLayer)),
+            },
+          ),
+        )
+        if (loaded._tag === 'Failure') {
+          return jsonResponse({ error: 'RecursiveAnalysisUnavailable' }, 503)
+        }
+        return Option.match(loaded.value, {
+          onNone: () => jsonResponse({ error: 'RecursiveAnalysisNotFound' }, 404),
+          onSome: (progress) => jsonResponse(progress),
+        })
       }
 
       const citationRoute =

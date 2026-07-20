@@ -26,6 +26,11 @@ import {
   /* eslint-enable no-unused-vars */
 } from '@struct/retrieval'
 import { Effect, Option, Schema } from 'effect'
+/* eslint-disable no-unused-vars -- Type-only import is consumed by TypeScript. */
+import type {
+  RecursiveProgressPublisher as typeRecursiveProgressPublisher,
+} from './recursive-progress.js'
+/* eslint-enable no-unused-vars */
 
 export interface CommittedPartitionEvidenceArtifact {
   readonly version: '1'
@@ -272,4 +277,54 @@ export const makeBuildPartitionArtifactsJob = (
     }
   })
   return { execute } as const
+}
+
+export const makeObservableBuildPartitionArtifactsJob = (
+  dependencies: BuildPartitionArtifactsDependencies,
+  publisher: typeRecursiveProgressPublisher,
+  now: () => number,
+) => {
+  const base = makeBuildPartitionArtifactsJob(dependencies)
+  return {
+    execute: Effect.fn('ObservableBuildPartitionArtifactsJob.execute')(
+      function* (
+        batch: RecursiveBatchInput,
+        selectionPlan: BatchSelectionPlan,
+        maximumArtifactBytes: number,
+        attempt: number,
+        startedAt: number | null,
+      ) {
+        const outcome = yield* base.execute(
+          batch,
+          selectionPlan,
+          maximumArtifactBytes,
+        )
+        const committedAt = now()
+        yield* publisher.partitionCommitted({
+          requestId: batch.requestId,
+          planId: batch.partition.planId,
+          partition: {
+            id: batch.partition.id,
+            nodeId: batch.nodeId,
+            ordinal: batch.partition.ordinal,
+            status: 'running',
+            attempt,
+            batches: [{
+              id: batch.id,
+              status: 'committed',
+              attempt,
+              evidenceIds: outcome.committed.evidence.map(
+                (evidence) => evidence.id,
+              ),
+              updatedAt: committedAt,
+            }],
+            failureTag: null,
+            startedAt,
+            updatedAt: committedAt,
+          },
+        })
+        return outcome
+      },
+    ),
+  } as const
 }

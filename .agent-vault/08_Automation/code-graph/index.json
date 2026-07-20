@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T10:15:20.476Z",
+  "generatedAt": "2026-07-20T11:05:37.082Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -76,71 +76,71 @@
         {
           "name": "RegisterRequestBody",
           "kind": "interface",
-          "line": 84,
+          "line": 85,
           "exported": false,
-          "endLine": 84
+          "endLine": 85
         },
         {
           "name": "ResearchRequestBody",
           "kind": "interface",
-          "line": 92,
+          "line": 93,
           "exported": false,
-          "endLine": 92
+          "endLine": 93
         },
         {
           "name": "jsonResponse",
           "kind": "function",
-          "line": 99,
+          "line": 100,
           "exported": false,
-          "endLine": 99,
+          "endLine": 100,
           "signature": "(body: unknown, status = 200)"
         },
         {
           "name": "credentialMatches",
           "kind": "function",
-          "line": 106,
+          "line": 107,
           "exported": false,
-          "endLine": 106,
+          "endLine": 107,
           "signature": "(expected: string, actual: string)"
         },
         {
           "name": "bearerCredential",
           "kind": "function",
-          "line": 113,
+          "line": 114,
           "exported": false,
-          "endLine": 113,
+          "endLine": 114,
           "signature": "(request: Request)"
         },
         {
           "name": "parseBody",
           "kind": "function",
-          "line": 120,
+          "line": 121,
           "exported": false,
-          "endLine": 120,
+          "endLine": 121,
           "signature": "(body: RegisterRequestBody): Effect.Effect<{"
         },
         {
           "name": "parseResearchBody",
           "kind": "function",
-          "line": 144,
+          "line": 145,
           "exported": false,
-          "endLine": 144,
+          "endLine": 145,
           "signature": "(body: ResearchRequestBody): Effect.Effect<{"
         },
         {
           "name": "researchFailureResponse",
           "kind": "function",
-          "line": 179,
+          "line": 180,
           "exported": false,
-          "endLine": 179,
+          "endLine": 180,
           "signature": "(cause: Cause.Cause<unknown>)"
         },
         {
           "name": "server",
           "kind": "const",
-          "line": 190,
+          "line": 191,
           "exported": false,
-          "endLine": 190
+          "endLine": 191
         }
       ],
       "imports": [
@@ -213,12 +213,20 @@
             "cancelResearch"
           ],
           "kind": "static"
+        },
+        {
+          "source": "loadRecursiveAnalysis",
+          "specifier": "./routes/recursive-analysis",
+          "imported": [
+            "loadRecursiveAnalysis"
+          ],
+          "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "42ee1fb3c86d911b09bdc0bcf679e5237a25bc3c9095382bbaa3aa35be32b625",
-      "mtimeMs": 1784521067927.0596,
-      "size": 33080,
+      "hash": "8ed1040fa24b5f175e300ee46b27bc7ea76262792e3ea153992eb6be5ffa1c08",
+      "mtimeMs": 1784544040676.6448,
+      "size": 36141,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -743,6 +751,88 @@
       "parser": "regex"
     },
     {
+      "path": "apps/api/src/routes/recursive-analysis.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "EVENT_PAGE_SIZE",
+          "kind": "const",
+          "line": 10,
+          "exported": false,
+          "endLine": 10
+        },
+        {
+          "name": "MAX_RECURSIVE_EVENTS",
+          "kind": "const",
+          "line": 11,
+          "exported": false,
+          "endLine": 11
+        },
+        {
+          "name": "RecursiveAnalysisReadDeps",
+          "kind": "interface",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "RecursiveProgressEvent",
+          "kind": "type",
+          "line": 27,
+          "exported": false,
+          "endLine": 27
+        },
+        {
+          "name": "decodeRecursiveEvent",
+          "kind": "function",
+          "line": 37,
+          "exported": false,
+          "endLine": 37
+        },
+        {
+          "name": "applyEvent",
+          "kind": "function",
+          "line": 72,
+          "exported": false,
+          "endLine": 72
+        },
+        {
+          "name": "loadRecursiveAnalysis",
+          "kind": "const",
+          "line": 146,
+          "exported": true,
+          "endLine": 146
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "QueryError",
+          "specifier": "@struct/persistence",
+          "imported": [
+            "QueryError"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "5d623d5b8aaa7c4e2eda8d0c955c9457539af17a5ee585800e415dd6e4be5756",
+      "mtimeMs": 1784545043783.8699,
+      "size": 6163,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "apps/api/src/routes/research-cancel.ts",
       "language": "TypeScript",
       "symbols": [
@@ -1119,9 +1209,23 @@
         {
           "name": "fetchCitation",
           "kind": "function",
-          "line": 8,
+          "line": 9,
           "exported": true,
-          "endLine": 8
+          "endLine": 9
+        },
+        {
+          "name": "fetchRecursiveAnalysis",
+          "kind": "function",
+          "line": 40,
+          "exported": true,
+          "endLine": 40
+        },
+        {
+          "name": "cancelResearchRun",
+          "kind": "function",
+          "line": 60,
+          "exported": true,
+          "endLine": 60
         }
       ],
       "imports": [
@@ -1136,9 +1240,9 @@
         }
       ],
       "exports": [],
-      "hash": "7bfc83227894dae0b425dbcf5c764db903b5e0d5ad18b8c14ff7b32053996d2a",
-      "mtimeMs": 1784442089972.0447,
-      "size": 1161,
+      "hash": "736d4293451fb07889eb8b589dc27db900c6b1dc7bb26f2517ade026268301ad",
+      "mtimeMs": 1784545217088.444,
+      "size": 2374,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1150,37 +1254,27 @@
         {
           "name": "Theme",
           "kind": "type",
-          "line": 11,
+          "line": 16,
           "exported": false,
-          "endLine": 11
+          "endLine": 16
         },
         {
           "name": "App",
           "kind": "const",
-          "line": 13,
+          "line": 18,
           "exported": false,
-          "endLine": 13
+          "endLine": 18
         }
       ],
-      "imports": [
-        {
-          "source": "type ParentComponent, createSignal",
-          "specifier": "solid-js",
-          "imported": [
-            "typeParentComponent",
-            "createSignal"
-          ],
-          "kind": "static"
-        }
-      ],
+      "imports": [],
       "exports": [
         {
           "kind": "default"
         }
       ],
-      "hash": "74166ec7250cb21bfc494133805e9f23fa6b577df1dc679f50f7ff9091b3b5af",
-      "mtimeMs": 1784494369350.94,
-      "size": 3894,
+      "hash": "cca22b05ef791dfb144728e257b374f68dbc254920979050b921f881acc2ee82",
+      "mtimeMs": 1784544191687.5647,
+      "size": 4317,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1435,36 +1529,164 @@
       "parser": "regex"
     },
     {
+      "path": "apps/web/src/components/PartialFindingsPanel.tsx",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "PartialFindingsPanelProps",
+          "kind": "interface",
+          "line": 9,
+          "exported": false,
+          "endLine": 9
+        },
+        {
+          "name": "shortIdentity",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "PartialFindingsPanel",
+          "kind": "const",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        }
+      ],
+      "imports": [
+        {
+          "source": "For, Show, createMemo, type Component",
+          "specifier": "solid-js",
+          "imported": [
+            "For",
+            "Show",
+            "createMemo",
+            "typeComponent"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "111c6600b737a6ff1ec5001606534cff5059e2642eefb2adf1212b059aa5f481",
+      "mtimeMs": 1784544352941.2341,
+      "size": 7769,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/web/src/components/recursive-progress-state.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "mergeRecursiveRead",
+          "kind": "function",
+          "line": 4,
+          "exported": true,
+          "endLine": 4
+        }
+      ],
+      "imports": [
+        {
+          "source": "RecursiveRunProgress",
+          "specifier": "@struct/domain",
+          "imported": [
+            "RecursiveRunProgress"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "caa31a8bdfb051a92f0804e59a614277d5fd6e8200bc60f14f9945747c6d8f05",
+      "mtimeMs": 1784545359877.0388,
+      "size": 601,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/web/src/components/RecursiveRunTimeline.tsx",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "RecursiveRunTimelineProps",
+          "kind": "interface",
+          "line": 10,
+          "exported": false,
+          "endLine": 10
+        },
+        {
+          "name": "statusTone",
+          "kind": "const",
+          "line": 19,
+          "exported": false,
+          "endLine": 19
+        },
+        {
+          "name": "formatTime",
+          "kind": "const",
+          "line": 26,
+          "exported": false,
+          "endLine": 26
+        },
+        {
+          "name": "RecursiveRunTimeline",
+          "kind": "const",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        }
+      ],
+      "imports": [
+        {
+          "source": "RecursiveRunProgress",
+          "specifier": "@struct/domain",
+          "imported": [
+            "RecursiveRunProgress"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "525738b3ea4a6ffa509dfd0614b05efcf035e5b9f559c0f0ddc1ab0b4cb671f7",
+      "mtimeMs": 1784544090313.9792,
+      "size": 6601,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "apps/web/src/components/ResearchStream.tsx",
       "language": "TypeScript",
       "symbols": [
         {
           "name": "ResearchStreamProps",
           "kind": "interface",
-          "line": 14,
+          "line": 31,
           "exported": false,
-          "endLine": 14
+          "endLine": 31
         },
         {
           "name": "eventLabel",
-          "kind": "const",
-          "line": 20,
-          "exported": false,
-          "endLine": 20
-        },
-        {
-          "name": "failureGuidance",
           "kind": "const",
           "line": 37,
           "exported": false,
           "endLine": 37
         },
         {
+          "name": "failureGuidance",
+          "kind": "const",
+          "line": 60,
+          "exported": false,
+          "endLine": 60
+        },
+        {
           "name": "ResearchStream",
           "kind": "const",
-          "line": 54,
+          "line": 77,
           "exported": true,
-          "endLine": 54
+          "endLine": 77
         }
       ],
       "imports": [
@@ -1473,17 +1695,6 @@
           "specifier": "@solidjs/router",
           "imported": [
             "A"
-          ],
-          "kind": "static"
-        },
-        {
-          "source": "ErrorBoundary, For, Show, type Component",
-          "specifier": "solid-js",
-          "imported": [
-            "ErrorBoundary",
-            "For",
-            "Show",
-            "typeComponent"
           ],
           "kind": "static"
         },
@@ -1518,12 +1729,36 @@
             "useSSE"
           ],
           "kind": "static"
+        },
+        {
+          "source": "RecursiveRunTimeline",
+          "specifier": "./RecursiveRunTimeline",
+          "imported": [
+            "RecursiveRunTimeline"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "PartialFindingsPanel",
+          "specifier": "./PartialFindingsPanel",
+          "imported": [
+            "PartialFindingsPanel"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "mergeRecursiveRead",
+          "specifier": "./recursive-progress-state",
+          "imported": [
+            "mergeRecursiveRead"
+          ],
+          "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "4af8810e8b8e9da8b2e72947cb4c55a14c354880fe1109852287757b0b03a959",
-      "mtimeMs": 1784521067928.1877,
-      "size": 5881,
+      "hash": "9ba03a164fdf91f84dbc619f70169ff6dad92d946edbda47ba4b3becc6b1c38c",
+      "mtimeMs": 1784545334385.393,
+      "size": 12439,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1739,9 +1974,9 @@
         }
       ],
       "exports": [],
-      "hash": "91b953cfdaf5842e3a937456ddfb3f39db5fe49743c9e06c749f1d3fd96213fb",
-      "mtimeMs": 1784459569499.2031,
-      "size": 1025,
+      "hash": "7e7fbfd037d8e1b90dfa242738b3664e559fdfffe7149a5a35efdea69a5f80b8",
+      "mtimeMs": 1784544126167.0183,
+      "size": 1023,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2046,67 +2281,74 @@
         {
           "name": "CommittedPartitionEvidenceArtifact",
           "kind": "interface",
-          "line": 30,
+          "line": 35,
           "exported": true,
-          "endLine": 30
+          "endLine": 35
         },
         {
           "name": "PartitionEvidenceArtifactEvent",
           "kind": "type",
-          "line": 46,
+          "line": 51,
           "exported": true,
-          "endLine": 46
+          "endLine": 51
         },
         {
           "name": "PartitionEvidenceArtifactJournal",
           "kind": "interface",
-          "line": 55,
+          "line": 60,
           "exported": true,
-          "endLine": 55
+          "endLine": 60
         },
         {
           "name": "BuildPartitionArtifactsDependencies",
           "kind": "interface",
-          "line": 76,
+          "line": 81,
           "exported": true,
-          "endLine": 76
+          "endLine": 81
         },
         {
           "name": "conflict",
           "kind": "function",
-          "line": 87,
+          "line": 92,
           "exported": false,
-          "endLine": 87,
+          "endLine": 92,
           "signature": "(message: string)"
         },
         {
           "name": "computeCommitDigest",
           "kind": "function",
-          "line": 95,
+          "line": 100,
           "exported": false,
-          "endLine": 95
+          "endLine": 100
         },
         {
           "name": "validateCommitted",
           "kind": "function",
-          "line": 117,
+          "line": 122,
           "exported": false,
-          "endLine": 117
+          "endLine": 122
         },
         {
           "name": "validRecordLocator",
           "kind": "function",
-          "line": 159,
+          "line": 164,
           "exported": false,
-          "endLine": 159,
+          "endLine": 164,
           "signature": "(locator: string)"
         },
         {
           "name": "makeBuildPartitionArtifactsJob",
           "kind": "const",
-          "line": 170,
+          "line": 175,
           "exported": true,
-          "endLine": 170
+          "endLine": 175
+        },
+        {
+          "name": "makeObservableBuildPartitionArtifactsJob",
+          "kind": "const",
+          "line": 282,
+          "exported": true,
+          "endLine": 282
         }
       ],
       "imports": [
@@ -2122,9 +2364,9 @@
         }
       ],
       "exports": [],
-      "hash": "ce0b08bf701422230b166c88babbebc81173d782c5adaedbd8c14a0ce2938ce5",
-      "mtimeMs": 1784539693230.663,
-      "size": 9094,
+      "hash": "b1662ed951c5c9917fbc15ea20a970752b0b9236b079948e1e064dfb22b2d91f",
+      "mtimeMs": 1784545111162.083,
+      "size": 10785,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2435,38 +2677,52 @@
         {
           "name": "PartitionAnalysisJournalEvent",
           "kind": "type",
-          "line": 11,
+          "line": 16,
           "exported": true,
-          "endLine": 11
+          "endLine": 16
         },
         {
           "name": "DurablePartitionAnalysis",
-          "kind": "interface",
-          "line": 26,
-          "exported": true,
-          "endLine": 26
-        },
-        {
-          "name": "PartitionAnalysisJournal",
           "kind": "interface",
           "line": 31,
           "exported": true,
           "endLine": 31
         },
         {
+          "name": "PartitionAnalysisJournal",
+          "kind": "interface",
+          "line": 37,
+          "exported": true,
+          "endLine": 37
+        },
+        {
           "name": "missing",
           "kind": "function",
-          "line": 58,
+          "line": 64,
           "exported": false,
-          "endLine": 58,
+          "endLine": 64,
           "signature": "(planId: string)"
         },
         {
           "name": "makePartitionAnalysisJob",
           "kind": "const",
-          "line": 66,
+          "line": 72,
           "exported": true,
-          "endLine": 66
+          "endLine": 72
+        },
+        {
+          "name": "publishedRunStatus",
+          "kind": "function",
+          "line": 171,
+          "exported": false,
+          "endLine": 171
+        },
+        {
+          "name": "makeObservablePartitionAnalysisJob",
+          "kind": "const",
+          "line": 177,
+          "exported": true,
+          "endLine": 177
         }
       ],
       "imports": [
@@ -2504,12 +2760,96 @@
           "source": "",
           "specifier": "@struct/domain",
           "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
         }
       ],
       "exports": [],
-      "hash": "a82f2cc5445935e1666672fe162b5577e5cea210a064e0114f53d2ec4dd8030c",
-      "mtimeMs": 1784536881000.7222,
-      "size": 4866,
+      "hash": "56264f6befeda0690b6d6b663ff03fcc10e4a171e2e59ebdb28c05867ece0f9c",
+      "mtimeMs": 1784545111161.764,
+      "size": 7919,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/worker/src/jobs/recursive-progress.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "OwnedRunProgress",
+          "kind": "type",
+          "line": 6,
+          "exported": false,
+          "endLine": 6
+        },
+        {
+          "name": "OwnedPartitionProgress",
+          "kind": "type",
+          "line": 10,
+          "exported": false,
+          "endLine": 10
+        },
+        {
+          "name": "OwnedResultProgress",
+          "kind": "type",
+          "line": 14,
+          "exported": false,
+          "endLine": 14
+        },
+        {
+          "name": "RecursiveProgressPublisher",
+          "kind": "interface",
+          "line": 19,
+          "exported": true,
+          "endLine": 19
+        },
+        {
+          "name": "RecursiveProgressPublisherDeps",
+          "kind": "interface",
+          "line": 31,
+          "exported": true,
+          "endLine": 31
+        },
+        {
+          "name": "makeRecursiveProgressPublisher",
+          "kind": "function",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        }
+      ],
+      "imports": [
+        {
+          "source": "EventJournalId",
+          "specifier": "@struct/domain",
+          "imported": [
+            "EventJournalId"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "3842e7e2164e9b5de648c09c90f9f590decab1a4fcac013ee9f236d725a8cf69",
+      "mtimeMs": 1784545065272.4246,
+      "size": 3329,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2521,196 +2861,203 @@
         {
           "name": "CommittedRecursiveSynthesisNode",
           "kind": "interface",
-          "line": 33,
+          "line": 34,
           "exported": true,
-          "endLine": 33
+          "endLine": 34
         },
         {
           "name": "RecursiveSynthesisStage",
           "kind": "type",
-          "line": 41,
+          "line": 42,
           "exported": true,
-          "endLine": 41
+          "endLine": 42
         },
         {
           "name": "CommittedRecursiveSynthesisStage",
           "kind": "type",
-          "line": 43,
+          "line": 44,
           "exported": true,
-          "endLine": 43
+          "endLine": 44
         },
         {
           "name": "RecursiveSynthesisJournal",
           "kind": "interface",
-          "line": 69,
+          "line": 70,
           "exported": true,
-          "endLine": 69
+          "endLine": 70
         },
         {
           "name": "RecursiveSynthesisAgents",
           "kind": "interface",
-          "line": 134,
+          "line": 135,
           "exported": true,
-          "endLine": 134
+          "endLine": 135
         },
         {
           "name": "RecursiveSynthesisProgressNode",
           "kind": "interface",
-          "line": 154,
+          "line": 155,
           "exported": true,
-          "endLine": 154
+          "endLine": 155
         },
         {
           "name": "OutcomeLineage",
           "kind": "interface",
-          "line": 162,
+          "line": 163,
           "exported": false,
-          "endLine": 162
+          "endLine": 163
         },
         {
           "name": "OutcomeBase",
           "kind": "interface",
-          "line": 169,
+          "line": 170,
           "exported": false,
-          "endLine": 169
+          "endLine": 170
         },
         {
           "name": "RecursiveSynthesisOutcome",
           "kind": "type",
-          "line": 174,
+          "line": 175,
           "exported": true,
-          "endLine": 174
+          "endLine": 175
         },
         {
           "name": "hash",
           "kind": "function",
-          "line": 189,
+          "line": 190,
           "exported": false,
-          "endLine": 189,
+          "endLine": 190,
           "signature": "(value: string)"
         },
         {
           "name": "inputDigest",
           "kind": "function",
-          "line": 193,
+          "line": 194,
           "exported": false,
-          "endLine": 193,
+          "endLine": 194,
           "signature": "(input: typeof RecursiveNodeSynthesisInput.Type)"
         },
         {
           "name": "commitDigest",
           "kind": "function",
-          "line": 197,
+          "line": 198,
           "exported": false,
-          "endLine": 197
+          "endLine": 198
         },
         {
           "name": "stageCommitDigest",
           "kind": "function",
-          "line": 204,
+          "line": 205,
           "exported": false,
-          "endLine": 204
+          "endLine": 205
         },
         {
           "name": "promptBytes",
           "kind": "function",
-          "line": 222,
+          "line": 223,
           "exported": false,
-          "endLine": 222,
+          "endLine": 223,
           "signature": "(input: unknown, systemMessage: string)"
         },
         {
           "name": "lineage",
           "kind": "function",
-          "line": 229,
+          "line": 230,
           "exported": false,
-          "endLine": 229
+          "endLine": 230
         },
         {
           "name": "stopped",
           "kind": "function",
-          "line": 255,
+          "line": 256,
           "exported": false,
-          "endLine": 255
+          "endLine": 256
         },
         {
           "name": "promptBudgetResource",
           "kind": "function",
-          "line": 299,
+          "line": 300,
           "exported": false,
-          "endLine": 299
+          "endLine": 300
         },
         {
           "name": "reserveCall",
           "kind": "function",
-          "line": 313,
+          "line": 314,
           "exported": false,
-          "endLine": 313
+          "endLine": 314
         },
         {
           "name": "cancelled",
           "kind": "function",
-          "line": 332,
+          "line": 333,
           "exported": false,
-          "endLine": 332,
+          "endLine": 333,
           "signature": "(signal: AbortSignal)"
         },
         {
           "name": "uniqueSorted",
           "kind": "function",
-          "line": 336,
+          "line": 337,
           "exported": false,
-          "endLine": 336
+          "endLine": 337
         },
         {
           "name": "normalizeAnalysis",
           "kind": "function",
-          "line": 340,
+          "line": 341,
           "exported": false,
-          "endLine": 340,
+          "endLine": 341,
           "signature": "(output: CorpusAnalystOutput)"
         },
         {
           "name": "normalizeCritique",
           "kind": "function",
-          "line": 355,
+          "line": 356,
           "exported": false,
-          "endLine": 355
+          "endLine": 356
         },
         {
           "name": "normalizeSynthesis",
           "kind": "function",
-          "line": 372,
+          "line": 373,
           "exported": false,
-          "endLine": 372
+          "endLine": 373
         },
         {
           "name": "partialResult",
           "kind": "function",
-          "line": 381,
+          "line": 382,
           "exported": false,
-          "endLine": 381
+          "endLine": 382
         },
         {
           "name": "progressAt",
           "kind": "function",
-          "line": 415,
+          "line": 416,
           "exported": false,
-          "endLine": 415
+          "endLine": 416
         },
         {
           "name": "makeRecursiveSynthesisJob",
           "kind": "function",
-          "line": 430,
+          "line": 431,
           "exported": true,
-          "endLine": 430
+          "endLine": 431
         },
         {
           "name": "makeFredRecursiveSynthesisJob",
           "kind": "function",
-          "line": 1461,
+          "line": 1452,
           "exported": true,
-          "endLine": 1461
+          "endLine": 1452
+        },
+        {
+          "name": "makeObservableRecursiveSynthesisJob",
+          "kind": "function",
+          "line": 1500,
+          "exported": true,
+          "endLine": 1500
         }
       ],
       "imports": [
@@ -2732,12 +3079,25 @@
             "Schema"
           ],
           "kind": "static"
+        },
+        {
+          "source": "RecursiveProgressPublisher",
+          "specifier": "./recursive-progress.js",
+          "imported": [
+            "RecursiveProgressPublisher"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
         }
       ],
       "exports": [],
-      "hash": "0ee9b2a08a7ef5463797b7dd7c74bc7c8e98752dff99bda94766f09f347f8e73",
-      "mtimeMs": 1784542137170.5667,
-      "size": 49503,
+      "hash": "6e23afb86de9296ec0b644e78d31e8d8a0cbd080fc7c48228160720b0724ca60",
+      "mtimeMs": 1784545077400.242,
+      "size": 50788,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -6778,113 +7138,276 @@
       "parser": "regex"
     },
     {
+      "path": "packages/domain/src/recursive-progress.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "Counter",
+          "kind": "const",
+          "line": 22,
+          "exported": false,
+          "endLine": 22
+        },
+        {
+          "name": "Timestamp",
+          "kind": "const",
+          "line": 27,
+          "exported": false,
+          "endLine": 27
+        },
+        {
+          "name": "NonBlank",
+          "kind": "const",
+          "line": 28,
+          "exported": false,
+          "endLine": 28
+        },
+        {
+          "name": "StableIdentity",
+          "kind": "const",
+          "line": 33,
+          "exported": false,
+          "endLine": 33
+        },
+        {
+          "name": "RecursiveRunProgressStatus",
+          "kind": "const",
+          "line": 37,
+          "exported": true,
+          "endLine": 37
+        },
+        {
+          "name": "RecursiveRunProgressStatus",
+          "kind": "type",
+          "line": 46,
+          "exported": true,
+          "endLine": 46
+        },
+        {
+          "name": "RecursiveBatchProgress",
+          "kind": "const",
+          "line": 49,
+          "exported": true,
+          "endLine": 49
+        },
+        {
+          "name": "RecursiveBatchProgress",
+          "kind": "type",
+          "line": 67,
+          "exported": true,
+          "endLine": 67
+        },
+        {
+          "name": "RecursivePartitionProgressDetail",
+          "kind": "const",
+          "line": 70,
+          "exported": true,
+          "endLine": 70
+        },
+        {
+          "name": "RecursivePartitionProgressDetail",
+          "kind": "type",
+          "line": 98,
+          "exported": true,
+          "endLine": 98
+        },
+        {
+          "name": "RecursiveResultProgress",
+          "kind": "const",
+          "line": 101,
+          "exported": true,
+          "endLine": 101
+        },
+        {
+          "name": "RecursiveResultProgress",
+          "kind": "type",
+          "line": 181,
+          "exported": true,
+          "endLine": 181
+        },
+        {
+          "name": "RecursiveRunProgress",
+          "kind": "const",
+          "line": 184,
+          "exported": true,
+          "endLine": 184
+        },
+        {
+          "name": "RecursiveRunProgress",
+          "kind": "type",
+          "line": 216,
+          "exported": true,
+          "endLine": 216
+        },
+        {
+          "name": "RecursiveRunProgressCommittedData",
+          "kind": "const",
+          "line": 219,
+          "exported": true,
+          "endLine": 219
+        },
+        {
+          "name": "RecursivePartitionProgressCommittedData",
+          "kind": "const",
+          "line": 233,
+          "exported": true,
+          "endLine": 233
+        },
+        {
+          "name": "RecursiveResultProgressCommittedData",
+          "kind": "const",
+          "line": 242,
+          "exported": true,
+          "endLine": 242
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "fcd9e5a33e66462a4abae6bd147776fd6a8754cccd7750a57ef03fc715a61be1",
+      "mtimeMs": 1784545092169.1663,
+      "size": 8011,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/domain/src/research-events.ts",
       "language": "TypeScript",
       "symbols": [
         {
           "name": "Cursor",
           "kind": "const",
-          "line": 14,
+          "line": 19,
           "exported": false,
-          "endLine": 14
+          "endLine": 19
         },
         {
           "name": "EventBase",
           "kind": "const",
-          "line": 16,
+          "line": 21,
           "exported": false,
-          "endLine": 16
+          "endLine": 21
         },
         {
           "name": "ResearchStartedEvent",
           "kind": "const",
-          "line": 23,
+          "line": 28,
           "exported": true,
-          "endLine": 23
+          "endLine": 28
         },
         {
           "name": "RetrievalCompletedEvent",
           "kind": "const",
-          "line": 32,
+          "line": 37,
           "exported": true,
-          "endLine": 32
+          "endLine": 37
         },
         {
           "name": "CitationsValidatedEvent",
           "kind": "const",
-          "line": 43,
+          "line": 48,
           "exported": true,
-          "endLine": 43
+          "endLine": 48
         },
         {
           "name": "ResearchPlanAcceptedEvent",
           "kind": "const",
-          "line": 53,
+          "line": 58,
           "exported": true,
-          "endLine": 53
+          "endLine": 58
         },
         {
           "name": "ResearchPlanningFailedEvent",
           "kind": "const",
-          "line": 63,
+          "line": 68,
           "exported": true,
-          "endLine": 63
+          "endLine": 68
         },
         {
           "name": "ResearchCheckpointedEvent",
           "kind": "const",
-          "line": 74,
+          "line": 79,
           "exported": true,
-          "endLine": 74
+          "endLine": 79
         },
         {
           "name": "ResearchCancelledEvent",
           "kind": "const",
-          "line": 85,
+          "line": 90,
           "exported": true,
-          "endLine": 85
+          "endLine": 90
         },
         {
           "name": "ResearchCompletedEvent",
           "kind": "const",
-          "line": 94,
+          "line": 99,
           "exported": true,
-          "endLine": 94
+          "endLine": 99
         },
         {
           "name": "ResearchFailedEvent",
           "kind": "const",
-          "line": 110,
+          "line": 115,
           "exported": true,
-          "endLine": 110
+          "endLine": 115
         },
         {
-          "name": "ResearchEvent",
+          "name": "RecursiveRunProgressCommittedEvent",
           "kind": "const",
-          "line": 121,
+          "line": 126,
           "exported": true,
-          "endLine": 121
+          "endLine": 126
         },
         {
-          "name": "ResearchEvent",
-          "kind": "type",
+          "name": "RecursivePartitionProgressCommittedEvent",
+          "kind": "const",
           "line": 132,
           "exported": true,
           "endLine": 132
         },
         {
+          "name": "RecursiveResultProgressCommittedEvent",
+          "kind": "const",
+          "line": 138,
+          "exported": true,
+          "endLine": 138
+        },
+        {
+          "name": "ResearchEvent",
+          "kind": "const",
+          "line": 144,
+          "exported": true,
+          "endLine": 144
+        },
+        {
+          "name": "ResearchEvent",
+          "kind": "type",
+          "line": 158,
+          "exported": true,
+          "endLine": 158
+        },
+        {
           "name": "CitationDetail",
           "kind": "const",
-          "line": 134,
+          "line": 160,
           "exported": true,
-          "endLine": 134
+          "endLine": 160
         },
         {
           "name": "CitationDetail",
           "kind": "type",
-          "line": 151,
+          "line": 177,
           "exported": true,
-          "endLine": 151
+          "endLine": 177
         }
       ],
       "imports": [
@@ -6906,9 +7429,9 @@
         }
       ],
       "exports": [],
-      "hash": "811c0080a48419e1a6da712fc341162965535808aba95b9bc8b81411ba73007e",
-      "mtimeMs": 1784525583167.52,
-      "size": 4319,
+      "hash": "ac83b1d55a33347359684e60fa5f92cc0b4090e0e379b1ae541d621b98272174",
+      "mtimeMs": 1784544004308.5579,
+      "size": 5198,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -13381,311 +13904,318 @@
         {
           "name": "ResearchRegistrationInput",
           "kind": "interface",
-          "line": 40,
+          "line": 43,
           "exported": true,
-          "endLine": 40
+          "endLine": 43
         },
         {
           "name": "ResearchRegistrationResult",
           "kind": "interface",
-          "line": 50,
+          "line": 53,
           "exported": true,
-          "endLine": 50
+          "endLine": 53
         },
         {
           "name": "CompleteResearchInput",
           "kind": "interface",
-          "line": 57,
+          "line": 60,
           "exported": true,
-          "endLine": 57
+          "endLine": 60
         },
         {
           "name": "FailResearchInput",
           "kind": "interface",
-          "line": 65,
+          "line": 68,
           "exported": true,
-          "endLine": 65
+          "endLine": 68
         },
         {
           "name": "PersistResearchPlanInput",
           "kind": "interface",
-          "line": 71,
+          "line": 74,
           "exported": true,
-          "endLine": 71
+          "endLine": 74
         },
         {
           "name": "PersistResearchPlanningFailureInput",
           "kind": "interface",
-          "line": 80,
+          "line": 83,
           "exported": true,
-          "endLine": 80
+          "endLine": 83
         },
         {
           "name": "PersistResearchCheckpointInput",
           "kind": "interface",
-          "line": 89,
+          "line": 92,
           "exported": true,
-          "endLine": 89
+          "endLine": 92
         },
         {
           "name": "CancelResearchInput",
           "kind": "interface",
-          "line": 98,
+          "line": 101,
           "exported": true,
-          "endLine": 98
+          "endLine": 101
         },
         {
           "name": "CancelResearchResult",
           "kind": "interface",
-          "line": 107,
+          "line": 110,
           "exported": true,
-          "endLine": 107
+          "endLine": 110
         },
         {
           "name": "DurableResearchState",
           "kind": "interface",
-          "line": 112,
+          "line": 115,
           "exported": true,
-          "endLine": 112
+          "endLine": 115
         },
         {
           "name": "ResearchScopeMismatchError",
           "kind": "class",
-          "line": 127,
+          "line": 130,
           "exported": false,
-          "endLine": 127
+          "endLine": 130
         },
         {
           "name": "ResearchAggregateMismatchError",
           "kind": "class",
-          "line": 128,
+          "line": 131,
           "exported": false,
-          "endLine": 128
+          "endLine": 131
         },
         {
           "name": "MAX_RESEARCH_EVIDENCE_COUNT",
-          "kind": "const",
-          "line": 134,
-          "exported": false,
-          "endLine": 134
-        },
-        {
-          "name": "MAX_RESEARCH_CITATION_COUNT",
-          "kind": "const",
-          "line": 135,
-          "exported": false,
-          "endLine": 135
-        },
-        {
-          "name": "MAX_RESEARCH_FAILURE_TAG_LENGTH",
-          "kind": "const",
-          "line": 136,
-          "exported": false,
-          "endLine": 136
-        },
-        {
-          "name": "RESEARCH_FAILURE_MESSAGE",
           "kind": "const",
           "line": 137,
           "exported": false,
           "endLine": 137
         },
         {
-          "name": "MAX_IDEMPOTENCY_KEY_LENGTH",
+          "name": "MAX_RESEARCH_CITATION_COUNT",
           "kind": "const",
           "line": 138,
           "exported": false,
           "endLine": 138
         },
         {
-          "name": "ResearchEventPayload",
-          "kind": "type",
+          "name": "MAX_RESEARCH_FAILURE_TAG_LENGTH",
+          "kind": "const",
+          "line": 139,
+          "exported": false,
+          "endLine": 139
+        },
+        {
+          "name": "RESEARCH_FAILURE_MESSAGE",
+          "kind": "const",
           "line": 140,
           "exported": false,
           "endLine": 140
         },
         {
+          "name": "MAX_IDEMPOTENCY_KEY_LENGTH",
+          "kind": "const",
+          "line": 141,
+          "exported": false,
+          "endLine": 141
+        },
+        {
+          "name": "ResearchEventPayload",
+          "kind": "type",
+          "line": 143,
+          "exported": false,
+          "endLine": 143
+        },
+        {
           "name": "hasExactKeys",
           "kind": "function",
-          "line": 142,
+          "line": 145,
           "exported": false,
-          "endLine": 142
+          "endLine": 145
         },
         {
           "name": "boundedInteger",
           "kind": "function",
-          "line": 152,
+          "line": 155,
           "exported": false,
-          "endLine": 152,
+          "endLine": 155,
           "signature": "(value: unknown, maximum: number)"
+        },
+        {
+          "name": "canonicalRecursiveEventPayload",
+          "kind": "function",
+          "line": 162,
+          "exported": false,
+          "endLine": 162
         },
         {
           "name": "persistedResearchScope",
           "kind": "function",
-          "line": 159,
+          "line": 186,
           "exported": false,
-          "endLine": 159,
+          "endLine": 186,
           "signature": "(payload: unknown): {"
         },
         {
           "name": "validateAppendEventPayload",
           "kind": "function",
-          "line": 186,
+          "line": 213,
           "exported": false,
-          "endLine": 186
+          "endLine": 213
         },
         {
           "name": "validateCompletedEventPayload",
           "kind": "function",
-          "line": 238,
+          "line": 275,
           "exported": false,
-          "endLine": 238
+          "endLine": 275
         },
         {
           "name": "validateFailedEventPayload",
           "kind": "function",
-          "line": 258,
+          "line": 295,
           "exported": false,
-          "endLine": 258
+          "endLine": 295
         },
         {
           "name": "ownershipLost",
           "kind": "function",
-          "line": 282,
+          "line": 319,
           "exported": false,
-          "endLine": 282
+          "endLine": 319
         },
         {
           "name": "sameIds",
           "kind": "function",
-          "line": 291,
+          "line": 328,
           "exported": false,
-          "endLine": 291
+          "endLine": 328
         },
         {
           "name": "normalizePersistedPayload",
           "kind": "function",
-          "line": 300,
+          "line": 337,
           "exported": false,
-          "endLine": 300,
+          "endLine": 337,
           "signature": "(payload: unknown)"
         },
         {
           "name": "parsePersistedJson",
           "kind": "function",
-          "line": 316,
+          "line": 353,
           "exported": false,
-          "endLine": 316,
+          "endLine": 353,
           "signature": "(payload: unknown)"
         },
         {
           "name": "assertResearchScopeRow",
           "kind": "function",
-          "line": 321,
+          "line": 358,
           "exported": false,
-          "endLine": 321
+          "endLine": 358
         },
         {
           "name": "assertOwnedDurableJob",
           "kind": "function",
-          "line": 331,
+          "line": 368,
           "exported": false,
-          "endLine": 331
+          "endLine": 368
         },
         {
           "name": "consumedBudgetFields",
           "kind": "const",
-          "line": 345,
+          "line": 382,
           "exported": false,
-          "endLine": 345
+          "endLine": 382
         },
         {
           "name": "budgetLimitFields",
           "kind": "const",
-          "line": 355,
+          "line": 392,
           "exported": false,
-          "endLine": 355
+          "endLine": 392
         },
         {
           "name": "budgetIsMonotonic",
           "kind": "function",
-          "line": 366,
+          "line": 403,
           "exported": false,
-          "endLine": 366
+          "endLine": 403
         },
         {
           "name": "budgetLimitsMatch",
           "kind": "function",
-          "line": 373,
+          "line": 410,
           "exported": false,
-          "endLine": 373
+          "endLine": 410
         },
         {
           "name": "queryFailure",
           "kind": "function",
-          "line": 382,
+          "line": 419,
           "exported": false,
-          "endLine": 382,
+          "endLine": 419,
           "signature": "(operation: string)"
         },
         {
           "name": "decodeCancellationResult",
           "kind": "function",
-          "line": 390,
+          "line": 427,
           "exported": false,
-          "endLine": 390
+          "endLine": 427
         },
         {
           "name": "completionSourceScope",
           "kind": "function",
-          "line": 403,
+          "line": 440,
           "exported": false,
-          "endLine": 403,
+          "endLine": 440,
           "signature": "(input: CompleteResearchInput): {"
         },
         {
           "name": "validateRegistrationAggregate",
           "kind": "function",
-          "line": 410,
+          "line": 447,
           "exported": false,
-          "endLine": 410,
+          "endLine": 447,
           "signature": "(input: ResearchRegistrationInput)"
         },
         {
           "name": "validateOwnedEvent",
           "kind": "function",
-          "line": 455,
+          "line": 492,
           "exported": false,
-          "endLine": 455
+          "endLine": 492
         },
         {
           "name": "validateCompletionAggregate",
           "kind": "function",
-          "line": 473,
+          "line": 510,
           "exported": false,
-          "endLine": 473,
+          "endLine": 510,
           "signature": "(input: CompleteResearchInput)"
         },
         {
           "name": "persistenceDecodeError",
           "kind": "function",
-          "line": 505,
+          "line": 542,
           "exported": false,
-          "endLine": 505
+          "endLine": 542
         },
         {
           "name": "ResearchExecutionRepo",
           "kind": "class",
-          "line": 516,
+          "line": 553,
           "exported": true,
-          "endLine": 516
+          "endLine": 553
         },
         {
           "name": "ResearchExecutionError",
           "kind": "type",
-          "line": 1912,
+          "line": 1970,
           "exported": true,
-          "endLine": 1912
+          "endLine": 1970
         }
       ],
       "imports": [
@@ -13714,9 +14244,9 @@
         }
       ],
       "exports": [],
-      "hash": "82d3d72fc14779cfca1a16dad9a6f388829a2dd166893c752d1b28a9030edc91",
-      "mtimeMs": 1784525583169.6968,
-      "size": 72501,
+      "hash": "65b99d504cb1b8b2832844e3f9ca8059a46940ffaeb11f637a359a27abe2787d",
+      "mtimeMs": 1784545172346.9487,
+      "size": 74645,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -14650,9 +15180,9 @@
         }
       ],
       "exports": [],
-      "hash": "b3c69bdc396abf9c55740d754a4f0a7cbecf25777d06ff774edc5649c6e50b93",
-      "mtimeMs": 1784541684120.0557,
-      "size": 4036,
+      "hash": "745168b4b867f5069b953cc97ee07eda0beb0436ae945051b17c6ad7e7941aea",
+      "mtimeMs": 1784543663815.623,
+      "size": 4405,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -15231,16 +15761,16 @@
         {
           "name": "mergeCoverage",
           "kind": "const",
-          "line": 341,
+          "line": 357,
           "exported": true,
-          "endLine": 341
+          "endLine": 357
         },
         {
           "name": "mergeResearchFindings",
           "kind": "const",
-          "line": 389,
+          "line": 405,
           "exported": true,
-          "endLine": 389
+          "endLine": 405
         }
       ],
       "imports": [
@@ -15263,9 +15793,9 @@
         }
       ],
       "exports": [],
-      "hash": "820889f4486ebcc410d68fcee5ebc81e861a5fcaf7cadb97479936e12b516316",
-      "mtimeMs": 1784542390126.7737,
-      "size": 14600,
+      "hash": "b5b4e354639a457bc0a98d9a9213666abfad151160d4a09663eadba32aaead5c",
+      "mtimeMs": 1784543663816.0679,
+      "size": 15150,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -17677,7 +18207,7 @@
       ],
       "exports": [],
       "hash": "e852be0b153d1eb7e60990986f660a904b27e12ecc90c4947b427b10bad95c95",
-      "mtimeMs": 1784541658229.0376,
+      "mtimeMs": 1784543663816.5498,
       "size": 30024,
       "generated": false,
       "vendor": false,
@@ -17805,7 +18335,7 @@
       ],
       "exports": [],
       "hash": "c44d4b0fb1c8e5a27f78cd0ae87c2c458deea7b23ef45bfe2dffec27699e7323",
-      "mtimeMs": 1784542137169.1375,
+      "mtimeMs": 1784543663816.7754,
       "size": 4082,
       "generated": false,
       "vendor": false,
@@ -17947,7 +18477,7 @@
       ],
       "exports": [],
       "hash": "f3c4a769aeeb240e04f4beced0195d71ba7d3bd47768ccc0aaf8efe8fb062df2",
-      "mtimeMs": 1784542137169.7996,
+      "mtimeMs": 1784543663817.4302,
       "size": 4984,
       "generated": false,
       "vendor": false,
@@ -18488,7 +19018,7 @@
       ],
       "exports": [],
       "hash": "9cf1233807768c6965c3c04528121b3050f7ef5629b6f4c0dcf3f0108a092598",
-      "mtimeMs": 1784542137170.1511,
+      "mtimeMs": 1784543663817.617,
       "size": 6630,
       "generated": false,
       "vendor": false,
