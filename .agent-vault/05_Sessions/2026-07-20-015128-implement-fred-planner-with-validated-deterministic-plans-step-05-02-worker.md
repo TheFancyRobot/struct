@@ -102,13 +102,17 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Bugs Encountered
 
 <!-- AGENT-START:session-bugs-encountered -->
-- None.
+- PR #28 review found missing exact-computation enforcement, invalid rejection of dataset version-subset narrowing, missing compatible direct-input requirements for deterministic tool nodes, a stale Active Context refresh date, and a maximum-steps regression masked by an earlier policy failure. All were fixed and covered in `77944fc`.
+- The incremental review found this session's bug and decision summaries inconsistent with its execution log; these bounded handoff blocks were corrected before merge.
 <!-- AGENT-END:session-bugs-encountered -->
 
 ## Decisions Made or Updated
 
 <!-- AGENT-START:session-decisions-made-or-updated -->
-- None.
+- Keep `QuestionClassification` inside the shared checked planning input so the planner and deterministic validator cannot drift.
+- Exact-computation plans require dataset-query output on a transitive node-output path to answer synthesis; a disconnected query node is insufficient.
+- Dataset authorization uses dataset/snapshot identity plus source-version subset checks, while normalization intentionally retains a separate full canonical ordering key.
+- Deterministic document and dataset tool nodes require nonempty, compatible, authorized direct inputs before executable output is returned.
 <!-- AGENT-END:session-decisions-made-or-updated -->
 
 ## Follow-Up Work
