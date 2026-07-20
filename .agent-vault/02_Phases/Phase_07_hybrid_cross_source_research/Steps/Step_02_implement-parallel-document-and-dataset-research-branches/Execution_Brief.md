@@ -13,11 +13,16 @@
 
 ## Planned Starting Files
 
-- These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `packages/workflows/src/graphs/hybrid-research.ts`
-- `packages/research-engine/src/run-hybrid-branches.ts`
-- `apps/worker/src/jobs/hybrid-research.ts`
-- `packages/domain/src/branch-execution.ts`
+- Start from these existing production surfaces and add files only when a cohesive boundary requires one.
+- `packages/workflows/src/graphs/research-run.ts`
+- `packages/workflows/src/graphs/document-research.ts`
+- `packages/workflows/src/adapters/dataset-query-tool.ts`
+- `apps/worker/src/jobs/research-workflow.ts`
+- `apps/worker/src/jobs/run-research.ts`
+- `packages/domain/src/research-execution.ts`
+- `packages/domain/src/research-events.ts`
+- `packages/persistence/src/repositories/research-execution.ts`
+- `packages/persistence/src/repositories/research-projections.ts`
 
 ## Required Reading
 
@@ -31,14 +36,14 @@
 ## Concrete Deliverables
 
 - Implement the narrowest typed slice for Parallel Document and Dataset Research Branches that is callable by the next step without broadening scope.
-- Define or update typed domain modules for `Branch Execution` in `packages/domain/src/branch-execution.ts`.
+- Extend current research execution, event, and artifact contracts for coordinated branch lifecycle.
 - Capture the orchestration or synthesis rules in `packages/research-engine/src/run-hybrid-branches.ts` without moving deterministic work out of services/tools.
 - Keep Fred-specific graph/agent wiring isolated to `packages/workflows/src/graphs/hybrid-research.ts` and typed at every boundary.
 
 ## Smallest Bounded Checklist
 
 - First, implement the narrowest typed slice for Parallel Document and Dataset Research Branches that is callable by the next step without broadening scope.
-- Then, define or update typed domain modules for `Branch Execution` in `packages/domain/src/branch-execution.ts`.
+- Then, extend current research execution, event, and artifact contracts for coordinated branch lifecycle.
 - Next, capture the orchestration or synthesis rules in `packages/research-engine/src/run-hybrid-branches.ts` without moving deterministic work out of services/tools.
 - Finish by leaving one observable typed path—test, route, worker flow, or UI state—that proves the slice is ready for the next dependent step.
 
@@ -52,3 +57,11 @@
 
 - Step: [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_02_implement-parallel-document-and-dataset-research-branches|STEP-07-02 Implement Parallel Document and Dataset Research Branches]]
 - Phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]
+
+## Refined Implementation Boundary — 2026-07-20
+
+- Reuse the research-run compiler, production workflow, document graph, dataset-query tool, artifacts, budgets, event journal, and Fred runtime; add only coordination for independent ready nodes.
+- Preserve source-specific provenance: document source-version locators and dataset/query snapshots, hashes, row ranges, filters, and exact SQL-derived values.
+- Use existing owned events/artifacts so replay/restart skips committed work and never duplicates citations or effects.
+- Apply project Effect patterns plus `effect-ts`/`effect-best-practices`: named effects, tagged failures, bounded concurrency, structured cancellation/finalization, and explicit interruption handling. Fred wiring remains in workflows; deterministic work in Effect services/tools.
+- Add no parallel branch-execution domain family.

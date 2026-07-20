@@ -24,7 +24,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 ## Purpose
 
-- Outcome: Implement the smallest coherent slice for and Reconcile Cross-Source Evidence that advances Hybrid Cross-Source Research while preserving safe reconciliation of quantitative and qualitative evidence.
+- Outcome: Implement the smallest coherent cross-source evidence normalization and reconciliation slice while preserving quantitative exactness, qualitative provenance, contradictions, and limitations.
 - Parent phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]].
 - Sequencing: start after [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_02_implement-parallel-document-and-dataset-research-branches|STEP-07-02 Implement Parallel Document and Dataset Research Branches]] has a stable outcome or handoff.
 

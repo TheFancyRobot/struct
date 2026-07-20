@@ -38,3 +38,11 @@
 
 - Step: [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_06_evaluate-hybrid-correctness-provenance-and-security|STEP-07-06 Evaluate Hybrid Correctness Provenance and Security]]
 - Phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]
+
+## Refined PR Gate — 2026-07-20
+
+- Require 100% exact quantitative values/units/filters/windows/snapshots/hashes/ranges, 100% resolvable claim citations, 100% injection containment, deterministic replay/recovery, and explicit latency/model-call/token/cost/concurrency/artifact limits.
+- Tamper IDs/status/count/evidence/provenance/report hash/newlines independently and prove semantic verification fails even after outer-hash recomputation.
+- Run from a clean fixture, store seed/config/results/assumptions, and cross-check report counts against actual full-suite output.
+- Run focused evaluation/API/worker/persistence/Playwright tests, `bun run typecheck`, `bun run lint`, `bun run lint:imports`, full `bun test`, and vault doctor.
+- Independently inspect derived-vs-hardcoded metrics, negative cases, timing, provenance/security, remediation blast radius, and secrets. Zero known defects may remain.

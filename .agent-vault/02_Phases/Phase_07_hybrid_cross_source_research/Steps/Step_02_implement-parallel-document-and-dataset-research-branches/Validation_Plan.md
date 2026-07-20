@@ -3,7 +3,7 @@
 ## Acceptance Checks
 
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The narrowest typed slice for Parallel Document and Dataset Research Branches that is callable by the next step without broadening scope.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: update typed domain modules for `Branch Execution` in `packages/domain/src/branch-execution.ts`.
+- Confirm current execution, event, and artifact contracts are extended narrowly without a duplicate branch-execution family.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The orchestration or synthesis rules in `packages/research-engine/src/run-hybrid-branches.ts` without moving deterministic work out of services/tools.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
 
@@ -36,3 +36,11 @@
 
 - Step: [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_02_implement-parallel-document-and-dataset-research-branches|STEP-07-02 Implement Parallel Document and Dataset Research Branches]]
 - Phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]
+
+## Refined PR Gate — 2026-07-20
+
+- Prove independent branches overlap under a bound, dependencies wait, failure/cancellation interrupts siblings safely, and restart does not replay committed work.
+- Prove typed failures, progress, artifact/citation identities, budgets, ownership, and duplicate delivery under completion-order permutations using deterministic clocks/deferreds, not sleeps.
+- Cover document-only/dataset-only regressions and a mixed workflow/worker/persistence path.
+- Run focused/integration tests, `bun run typecheck`, `bun run lint`, `bun run lint:imports`, full `bun test`, and vault doctor.
+- Inspect call sites/state transitions for races, leaks, swallowed interruption, duplicate effects, provenance drift, injection, and secrets. Zero known defects may remain.

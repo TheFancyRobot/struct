@@ -2,7 +2,7 @@
 
 ## Exact Outcome
 
-- Produce the concrete contracts, artifacts, and bounded implementation/design surfaces for and Reconcile Cross-Source Evidence that this step is responsible for before any broader follow-on work begins.
+- Produce the bounded deterministic contracts for normalizing and reconciling cross-source evidence.
 
 ## Prerequisites
 
@@ -30,14 +30,14 @@
 
 ## Concrete Deliverables
 
-- Implement the narrowest typed slice for and Reconcile Cross-Source Evidence that is callable by the next step without broadening scope.
-- Define or update typed domain modules for `Evidence`, `Reconciliation Result` in `packages/domain/src/evidence.ts`, `packages/domain/src/reconciliation-result.ts`.
+- Implement the narrowest typed slice for normalizing and reconciling cross-source evidence that the next step can call.
+- Extend existing evidence, dataset-citation, research-finding, and contradiction contracts with one cross-source envelope and reconciliation result.
 - Capture the orchestration or synthesis rules in `packages/research-engine/src/normalize-evidence.ts`, `packages/research-engine/src/reconcile-findings.ts` without moving deterministic work out of services/tools.
 
 ## Smallest Bounded Checklist
 
-- First, implement the narrowest typed slice for and Reconcile Cross-Source Evidence that is callable by the next step without broadening scope.
-- Then, define or update typed domain modules for `Evidence`, `Reconciliation Result` in `packages/domain/src/evidence.ts`, `packages/domain/src/reconciliation-result.ts`.
+- First, implement the narrowest typed slice for normalizing and reconciling cross-source evidence that the next step can call.
+- Then, extend existing evidence and contradiction contracts with one cross-source envelope and reconciliation result.
 - Next, capture the orchestration or synthesis rules in `packages/research-engine/src/normalize-evidence.ts`, `packages/research-engine/src/reconcile-findings.ts` without moving deterministic work out of services/tools.
 - Finish by leaving one observable typed path—test, route, worker flow, or UI state—that proves the slice is ready for the next dependent step.
 
@@ -51,3 +51,11 @@
 
 - Step: [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_03_normalize-and-reconcile-cross-source-evidence|STEP-07-03 Normalize and Reconcile Cross-Source Evidence]]
 - Phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]
+
+## Refined Implementation Boundary — 2026-07-20
+
+- Build one narrow envelope over existing document citations, dataset/query snapshots, recursive evidence, coverage, and contradictions while retaining original payloads and immutable identities.
+- Deterministically reconcile units, date windows, versions, filters, cohorts, and claim signatures. Outcomes are aligned, disclosed mismatch, contradictory, insufficient, or rejected; never guess conversions, joins, denominators, or time alignment.
+- Reuse Phase 06 contradiction materialization/merge invariants rather than adding a second subsystem.
+- Apply project Effect conventions plus `effect-ts`/`effect-best-practices` for tagged errors, named effects, exhaustive handling, and cancellation-safe bounded work.
+- Model calls are out of scope; this is deterministic domain/research-engine work.

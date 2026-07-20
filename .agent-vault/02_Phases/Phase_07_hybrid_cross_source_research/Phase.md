@@ -7,7 +7,7 @@ phase_id: PHASE-07
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|PHASE-05 Typed Research Planning and Bounded Execution]]'
   - '[[02_Phases/Phase_06_recursive_corpus_analysis/Phase|PHASE-06 Recursive Corpus Analysis]]'
@@ -124,3 +124,10 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - Product requirements: authoritative repository document `docs/product-brief.md`.
 - Human-readable roadmap: `docs/roadmap.md`; concise index: `docs/implementation-plan.md`.
 - Assumption policy: reversible uncertainties use the documented default until spike evidence requires a decision update; no hidden architectural assumption is carried only in chat.
+### Refinement record — 2026-07-20
+
+- Reconciled against completed Phase 06 and current production surfaces: typed `ResearchPlan`/execution/event contracts, immutable source versions, document retrieval, dataset catalog/query-result snapshots and citations, Fred research/document/recursive graphs, bounded budgets/recovery, recursive evidence/contradictions/progress, API routes, and the SolidJS workbench.
+- The six-step sequence remains valid but is integration-first: (1) extend the existing plan/routing contract, (2) coordinate existing branch executors concurrently, (3) normalize/reconcile without provenance loss, (4) guard synthesis so exact computations cannot drift, (5) deliver one polished explorable Solid UI flow, and (6) run a derived, tamper-resistant evaluation.
+- Greenfield policy applies: prefer direct contract changes and drop/recreate for any database schema change; do not add legacy compatibility, migration-preservation scripts, duplicate abstractions, object-storage systems, DuckLake, or unrelated infrastructure.
+- Effect work must follow current repository patterns plus `effect-ts`/`effect-best-practices` with typed errors, named effects, bounded concurrency, cancellation, and trusted-boundary normalization. STEP-07-05 must follow `solidjs`/`frontend-design` and the existing NotebookLM-inspired slate/blue light/dark system, with thorough Playwright responsive/accessibility verification and six inspected screenshots.
+- Every step has an explicit pre-PR self-review, focused tests, typecheck, lint, full suite, security/provenance scan, and clean vault doctor gate. No known confirmed defect may advance.

@@ -34,3 +34,11 @@
 
 - Step: [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_04_build-hybrid-synthesis-with-quantitative-guardrails|STEP-07-04 Build Hybrid Synthesis with Quantitative Guardrails]]
 - Phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]
+
+## Refined PR Gate — 2026-07-20
+
+- Prove exact values, units, filters, cohorts, windows, snapshot IDs, hashes, and ranges survive synthesis; reject altered numbers, unsupported arithmetic/joins, missing citations, and stale versions.
+- Prove narrative-only, quantitative-only, combined, contradictory, and insufficient results have correct claim citations and stop/disclosure behavior.
+- Verify untrusted document text, dataset strings, and model output cannot alter tools, permissions, budgets, citation rules, or instructions.
+- Run focused/integration tests, `bun run typecheck`, `bun run lint`, `bun run lint:imports`, full `bun test`, and vault doctor.
+- Inspect synthesis/citation consumers, output decoding, budgets/concurrency/cancellation, provenance/security, and secrets. Zero known defects may remain.

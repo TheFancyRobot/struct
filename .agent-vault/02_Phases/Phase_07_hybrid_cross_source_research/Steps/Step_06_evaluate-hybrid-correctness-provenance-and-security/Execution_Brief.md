@@ -51,3 +51,13 @@
 
 - Step: [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_06_evaluate-hybrid-correctness-provenance-and-security|STEP-07-06 Evaluate Hybrid Correctness Provenance and Security]]
 - Phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]
+
+## Refined Implementation Boundary — 2026-07-20
+
+This supersedes the earlier generic wording.
+
+- Build a deterministic checked-in fixture and machine-readable report derived from execution, not hard-coded counts. Include document-only, dataset-only, recursive-only, mixed exact-computation-plus-document, and contradiction/version-mismatch cases.
+- Evaluate DAG validity, exact quantitative claims, semantic retrieval, dual provenance, mismatch handling, contradiction/insufficiency, budgets/cost/concurrency, cancellation/restart/replay, and model routing.
+- Include document/dataset-string prompt injections attempting to alter permissions, instructions, budgets, or citation requirements; content remains untrusted data.
+- Verify criterion IDs/counts/status/evidence/hashes semantically and cryptographically so recomputed-hash tampering cannot manufacture a pass.
+- Record every failure as a confirmed bug and block completion until fixed; never waive defects or lower thresholds.

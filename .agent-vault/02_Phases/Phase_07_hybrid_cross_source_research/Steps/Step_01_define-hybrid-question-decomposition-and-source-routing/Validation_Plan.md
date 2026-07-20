@@ -3,7 +3,7 @@
 ## Acceptance Checks
 
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The concrete contract for Hybrid Question Decomposition and Source Routing in the first planned domain, persistence, or documentation files so downstream implementation does not need to rediscover the boundary.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: update typed domain modules for `HybridPlan` in `packages/domain/src/hybrid-plan.ts`.
+- Confirm existing `ResearchPlan` and routing contracts are extended narrowly without a duplicate plan abstraction.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The orchestration or synthesis rules in `packages/research-engine/src/route-sources.ts`, `packages/research-engine/src/question-decomposition.ts` without moving deterministic work out of services/tools.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
 
@@ -35,3 +35,10 @@
 
 - Step: [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_01_define-hybrid-question-decomposition-and-source-routing|STEP-07-01 Define Hybrid Question Decomposition and Source Routing]]
 - Phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]
+
+## Refined PR Gate — 2026-07-20
+
+- Prove document-only, dataset-only, recursive-only, and mixed questions produce deterministic valid DAGs with exact scopes, evidence requirements, dependencies, and bounded budgets; reject missing/ambiguous scopes, cycles, incompatible routes, and premature synthesis.
+- Prove schema round trips/stable identities and current Phase 05/06 plan validity without compatibility shims.
+- Run focused tests, `bun run typecheck`, `bun run lint`, `bun run lint:imports`, full `bun test`, and vault doctor.
+- Inspect the complete diff and every changed schema/export consumer for downstream effects, unsafe casts, thrown/generic errors, unbounded work, secrets, provenance loss, and untrusted content entering instructions. Zero known defects may remain.

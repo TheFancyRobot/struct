@@ -52,3 +52,13 @@
 
 - Step: [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_04_build-hybrid-synthesis-with-quantitative-guardrails|STEP-07-04 Build Hybrid Synthesis with Quantitative Guardrails]]
 - Phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]
+
+## Refined Implementation Boundary — 2026-07-20
+
+This supersedes the earlier generic file suggestions.
+
+- Synthesize only from STEP-07-03 typed evidence. Quantitative claims come deterministically from validated query snapshots; the model may explain but never recalculate, alter, invent, or uncite.
+- Extend current answer, citation validation, critic, synthesis, artifact, budget, and routing surfaces; add no redundant result-summary layer when snapshots already contain exact values.
+- Narrative claims cite source locators, quantitative claims cite dataset/query snapshots/hashes/ranges, and combined claims retain both. Contradiction/insufficiency prevents an unqualified conclusion.
+- Keep Fred wiring in workflows and deterministic guardrails in domain/research-engine/tools. Apply current Effect patterns plus `effect-ts`/`effect-best-practices`.
+- Persist the answer only after guardrails and citation validation pass.

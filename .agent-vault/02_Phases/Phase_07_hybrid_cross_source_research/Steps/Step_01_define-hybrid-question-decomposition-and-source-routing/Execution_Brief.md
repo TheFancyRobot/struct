@@ -13,10 +13,14 @@
 
 ## Planned Starting Files
 
-- These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `packages/domain/src/hybrid-plan.ts`
-- `packages/research-engine/src/route-sources.ts`
-- `packages/research-engine/src/question-decomposition.ts`
+- Start from these existing production surfaces and add files only when a cohesive boundary requires one.
+- `packages/domain/src/research-plan.ts`
+- `packages/research-engine/src/validate-plan.ts`
+- `packages/research-engine/src/normalize-plan.ts`
+- `packages/workflows/src/agents/question-classifier.ts`
+- `packages/workflows/src/agents/research-planner.ts`
+- `packages/workflows/src/graphs/research-run.ts`
+- `apps/worker/src/jobs/research-planning.ts`
 - `docs/hybrid-research.md`
 
 ## Required Reading
@@ -31,14 +35,14 @@
 ## Concrete Deliverables
 
 - Define the concrete contract for Hybrid Question Decomposition and Source Routing in the first planned domain, persistence, or documentation files so downstream implementation does not need to rediscover the boundary.
-- Define or update typed domain modules for `HybridPlan` in `packages/domain/src/hybrid-plan.ts`.
+- Extend the existing typed `ResearchPlan` and routing contracts in `packages/domain/src/research-plan.ts`.
 - Capture the orchestration or synthesis rules in `packages/research-engine/src/route-sources.ts`, `packages/research-engine/src/question-decomposition.ts` without moving deterministic work out of services/tools.
 - Capture the durable contract or operator guidance in `docs/hybrid-research.md` rather than burying it in session-only notes.
 
 ## Smallest Bounded Checklist
 
 - First, define the concrete contract for Hybrid Question Decomposition and Source Routing in the first planned domain, persistence, or documentation files so downstream implementation does not need to rediscover the boundary.
-- Then, define or update typed domain modules for `HybridPlan` in `packages/domain/src/hybrid-plan.ts`.
+- Then, extend the existing typed `ResearchPlan` and routing contracts in `packages/domain/src/research-plan.ts`.
 - Next, capture the orchestration or synthesis rules in `packages/research-engine/src/route-sources.ts`, `packages/research-engine/src/question-decomposition.ts` without moving deterministic work out of services/tools.
 - Finish by recording the chosen contract, recommendation, or runbook in the planned docs/ADR artifacts before expanding scope.
 
@@ -52,3 +56,11 @@
 
 - Step: [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_01_define-hybrid-question-decomposition-and-source-routing|STEP-07-01 Define Hybrid Question Decomposition and Source Routing]]
 - Phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]
+
+## Refined Implementation Boundary — 2026-07-20
+
+- Extend existing `ResearchPlan`, plan-node, `sourceScopes`, planning-policy, validation, and Fred compiler contracts; add no parallel plan abstraction.
+- Add only typed routing fields for document, dataset, optional recursive, and synthesis nodes with visible dependencies, evidence requirements, immutable source identities, and budgets.
+- Deterministically route validated nodes to existing document research, dataset-query, or Phase 06 recursive preparation; synthesis waits for required predecessors.
+- Follow repository Effect patterns plus `effect-ts`/`effect-best-practices`: schema-tagged errors, named `Effect.fn`, tagged recovery, bounded concurrency, and cancellation propagation.
+- Deliver focused domain/research-engine/workflow tests and `docs/hybrid-research.md`; persistence, execution, and UI are out of scope.

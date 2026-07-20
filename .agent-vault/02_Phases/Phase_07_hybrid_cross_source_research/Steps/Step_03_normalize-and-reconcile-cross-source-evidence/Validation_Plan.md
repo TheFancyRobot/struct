@@ -2,8 +2,8 @@
 
 ## Acceptance Checks
 
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: The narrowest typed slice for and Reconcile Cross-Source Evidence that is callable by the next step without broadening scope.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: update typed domain modules for `Evidence`, `Reconciliation Result` in `packages/domain/src/evidence.ts`, `packages/domain/src/reconciliation-result.ts`.
+- Confirm the bounded deterministic cross-source normalization/reconciliation slice is callable by the next step.
+- Confirm existing evidence and contradiction contracts are extended with one lossless cross-source envelope and reconciliation result.
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The orchestration or synthesis rules in `packages/research-engine/src/normalize-evidence.ts`, `packages/research-engine/src/reconcile-findings.ts` without moving deterministic work out of services/tools.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
 
@@ -32,3 +32,11 @@
 
 - Step: [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_03_normalize-and-reconcile-cross-source-evidence|STEP-07-03 Normalize and Reconcile Cross-Source Evidence]]
 - Phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]
+
+## Refined PR Gate — 2026-07-20
+
+- Table-test units, timezones/windows, versions, filters, cohorts, denominators, unsupported joins, duplicates, stale citations, and contradictions.
+- Prove immutable identities and exact snapshots/hashes/ranges survive, with deterministic ordering/IDs under input permutations.
+- Prove contradictory/insufficient evidence cannot become sufficient or disappear; untrusted content remains data.
+- Run focused/property tests, `bun run typecheck`, `bun run lint`, `bun run lint:imports`, full `bun test`, and vault doctor.
+- Inspect all consumers for lossy serialization, casts, guessed transformations, provenance gaps, injection, and secrets. Zero known defects may remain.

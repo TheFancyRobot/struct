@@ -3,8 +3,8 @@
 ## Acceptance Checks
 
 - Confirm this deliverable is present, testable where applicable, and bounded to the step: The narrowest typed slice for Mixed-Source Demo and Explorable Report that is callable by the next step without broadening scope.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: `apps/web/src/components/HybridReportView.tsx`, `apps/web/src/app/projects/[projectId]/reports/[reportId]/page.tsx` to expose only the UI states required to inspect this step’s output and failures.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Deterministic evaluation or benchmark artifacts in `packages/evaluation/src/hybrid-demo.ts` so this step can be judged without hand-waving.
+- Confirm the existing SolidJS research page/stream or one adjacent focused component exposes every required output and failure state.
+- Confirm a deterministic mixed-source browser fixture and Playwright suite judge the functional, accessible, responsive experience.
 - The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
 
 ## Planned Verification
@@ -37,3 +37,11 @@
 
 - Step: [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_05_deliver-mixed-source-demo-and-explorable-report|STEP-07-05 Deliver Mixed-Source Demo and Explorable Report]]
 - Phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]
+
+## Refined PR Gate — 2026-07-20
+
+- Thoroughly test via Playwright: progress, drilldown, document citations, dataset provenance, contradiction disclosure, cancellation, recovery, loading/empty/failure states, keyboard/focus/labels/landmarks, and no console/page errors.
+- Capture exactly 1440x900, 1024x768, and 390x844 in light and dark; visually inspect all six for overflow, clipping, overlap, density, controls/focus, theme leakage, and hierarchy, fixing every defect.
+- Verify explicit theme persistence, no persistence of OS-derived theme, and synchronized `html`/app-root themes.
+- Run focused Solid tests, `bun run test:e2e`, `bun run typecheck`, `bun run lint`, `bun run lint:imports`, full `bun test`, and vault doctor.
+- Inspect UI/API consumers, reactive lifecycle, SSE cleanup/reconnect, unsafe HTML, URLs/locators, provenance, responsive CSS, accessibility, security, and secrets. Zero known defects may remain.

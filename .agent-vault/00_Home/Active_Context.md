@@ -22,7 +22,7 @@ Keep this note short and current.
 _Last refreshed: 2026-07-20._
 - Session in progress: none.
 - Current step: [[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_01_define-hybrid-question-decomposition-and-source-routing|STEP-07-01 Define Hybrid Question Decomposition and Source Routing]] - status: planned - phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid cross source research]]
-- Active phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|PHASE-07 Hybrid Cross-Source Research]] - status: planned - updated: 2026-07-17
+- Active phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|PHASE-07 Hybrid Cross-Source Research]] - status: planned - updated: 2026-07-20
 - Also active: 35 more additional steps.
 <!-- AGENT-END:current-focus -->
 
@@ -39,7 +39,8 @@ _Last refreshed: 2026-07-20._
 - Phase 03 and STEP-03-01 through STEP-03-06 are completed and merged.
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
-- Phase 06 is refined and active. STEP-06-01 and its BUG-0011 remediation through STEP-06-04 are completed, reviewed, and merged; STEP-06-05 is next.
+- Phase 06 is completed, reviewed, and merged through STEP-06-06.
+- Phase 07 is refined; STEP-07-01 is the next implementation unit.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 
 ## Out Of Scope Right Now
@@ -61,7 +62,7 @@ _Last refreshed: 2026-07-20._
 
 ## Open Questions
 
-- No unresolved design question or confirmed defect blocks STEP-06-05.
+- No unresolved design question or confirmed defect blocks STEP-07-01.
 
 ## Critical Bugs
 
@@ -71,5 +72,5 @@ _Last refreshed: 2026-07-20._
 
 ## Next Actions
 
-- Execute STEP-06-05 on a dedicated branch with SolidJS/frontend skills and thorough Playwright workflow, responsive, light-mode, and dark-mode validation.
+- Execute STEP-07-01 on a dedicated branch using the refined Effect-aware execution brief and validation plan.
 - Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.
