@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'bun:test'
 import { Effect, ConfigProvider, Layer, Exit } from 'effect'
+import { resolve } from 'node:path'
 import {
   artifactStorageRootConfig,
   databaseUrlConfig,
@@ -73,7 +74,7 @@ describe('Worker ingestion config', () => {
       ]).pipe(Effect.provide(Layer.setConfigProvider(provider))),
     )
 
-    expect(root).toBe('./.local/artifacts')
+    expect(root).toBe(resolve(import.meta.dir, '../../..', '.local/artifacts'))
     expect(poll).toBe(1000)
     expect(stale).toBe(300000)
   })

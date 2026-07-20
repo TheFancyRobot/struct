@@ -5,17 +5,22 @@ contract_version: 1
 title: Evaluate Planning Execution Replay and Recovery
 step_id: STEP-05-06
 phase: '[[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|Phase 05 typed research planning and bounded execution]]'
-status: planned
-owner: ''
+status: completed
+owner: step-05-06-worker
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_05_implement-tool-registry-typed-failures-retries-and-recovery|STEP-05-05 Implement Tool Registry Typed Failures Retries and Recovery]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-20-053353-evaluate-planning-execution-replay-and-recovery-step-05-06-worker|SESSION-2026-07-20-053353 step-05-06-worker session for Evaluate Planning Execution Replay and Recovery]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-20-053353
+active_session_id: 05_Sessions/2026-07-20-053353-evaluate-planning-execution-replay-and-recovery-step-05-06-worker
+context_status: completed
+context_summary: STEP-05-06 audit remediation now proves an actual completed dataset-query artifact and idempotent durable commit, zero replacement-process dataset-provider calls, exact run/cursor suffix replay, four restart boundaries, provider/model failures, and all execution budget/policy gates; focused live and deterministic validation pass.
 ---
 
 # Step 06 - Evaluate Planning Execution Replay and Recovery
@@ -60,7 +65,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-20 - [[05_Sessions/2026-07-20-053353-evaluate-planning-execution-replay-and-recovery-step-05-06-worker|SESSION-2026-07-20-053353 step-05-06-worker session for Evaluate Planning Execution Replay and Recovery]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

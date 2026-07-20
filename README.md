@@ -2,7 +2,7 @@
 
 A trustworthy, source-grounded research workspace for documents, datasets, and directories. Documents are retrieved, datasets are queried, directories are navigated, and large corpora are recursively analyzed — with deterministic computation, verifiable citations, and durable, resumable work.
 
-> **Current state: Phase 05 typed research execution is implemented through STEP-05-04.** The monorepo includes versioned document and dataset ingestion, PostgreSQL hybrid retrieval, an isolated DuckDB data plane, schema-validated research plans, bounded core-Fred orchestration, durable checkpoints and budgets, authenticated cursor-replayable progress, idempotent cancellation, exact citations, and SolidJS research states. All gates pass when validated locally (typecheck, lint, lint:imports, build, native Bun tests, database integration tests, migration up/down/up, Compose config, and app smokes).
+> **Current state: Phase 05 typed research execution is implemented and evaluated through STEP-05-06.** The monorepo includes versioned document and dataset ingestion, PostgreSQL hybrid retrieval, an isolated DuckDB data plane, schema-validated research plans, bounded core-Fred orchestration, durable checkpoints and budgets, authenticated cursor-replayable progress, idempotent cancellation, exact citations, and SolidJS research states. All gates pass when validated locally (typecheck, lint, lint:imports, build, native Bun tests, database integration tests, migration up/down/up, Compose config, and app smokes).
 
 ## Canonical documents
 
@@ -21,6 +21,8 @@ A trustworthy, source-grounded research workspace for documents, datasets, and d
 | [docs/evaluation-strategy.md](./docs/evaluation-strategy.md) | Evaluation strategy. |
 | [docs/evaluation-corpus-generator.md](./docs/evaluation-corpus-generator.md) | Reproducible 25,000-file JSON corpus generation and verification. |
 | [docs/retrieval-evaluation.md](./docs/retrieval-evaluation.md) | Phase 02 deterministic retrieval and injection-resistance gate. |
+| [docs/benchmarks/research-planning.md](./docs/benchmarks/research-planning.md) | Phase 05 deterministic planning/replay release gate and measured evidence. |
+| [docs/operations/research-recovery.md](./docs/operations/research-recovery.md) | Automated and operator research-recovery procedures. |
 | [docs/citation-and-provenance.md](./docs/citation-and-provenance.md) | Citation and provenance. |
 | [docs/adr/](./docs/adr/) | Architecture decision records (DEC-0001 … DEC-0014). |
 | [AGENTS.md](./AGENTS.md) | Repository and Agent Vault operating instructions. |

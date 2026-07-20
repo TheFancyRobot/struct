@@ -92,6 +92,7 @@ describe('walking-skeleton browser path', () => {
                 sourceVersionId,
                 locator: 'lines 1-1',
               }],
+              datasetCitations: [],
             },
           })}`,
           '',
