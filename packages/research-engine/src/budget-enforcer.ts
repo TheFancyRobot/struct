@@ -34,6 +34,25 @@ function attemptedUsage(action: ResearchAction, state: ResearchGraphState) {
   }
 }
 
+function identityReason(
+  plan: ResearchPlan,
+  state: ResearchGraphState,
+): ResearchStopReason | undefined {
+  if (state.runId !== plan.runId) {
+    return { kind: 'state-mismatch', field: 'runId' }
+  }
+  if (state.planId !== plan.id) {
+    return { kind: 'state-mismatch', field: 'planId' }
+  }
+  if (state.workspaceId !== plan.workspaceId) {
+    return { kind: 'state-mismatch', field: 'workspaceId' }
+  }
+  if (state.projectId !== plan.projectId) {
+    return { kind: 'state-mismatch', field: 'projectId' }
+  }
+  return undefined
+}
+
 function budgetReason(
   budget: ResearchBudget,
   state: ResearchGraphState,
@@ -136,6 +155,8 @@ export const beginResearchAction = Effect.fn('ResearchExecution.beginAction')(
     action: ResearchAction,
     nowMilliseconds: number,
   ) {
+    const mismatched = identityReason(plan, state)
+    if (mismatched !== undefined) return yield* stop(mismatched)
     const declared = declarationReason(plan, state, action)
     if (declared !== undefined) return yield* stop(declared)
     const overBudget = budgetReason(
@@ -192,6 +213,57 @@ export const completeResearchAction = Effect.fn(
       kind: 'time-budget',
       limit: plan.budget.maximumElapsedMilliseconds,
       attempted: elapsedMilliseconds,
+    }))
+  }
+  const stateBudgets = [
+    {
+      resource: 'artifacts' as const,
+      limit: 256,
+      attempted: state.artifacts.length + result.artifacts.length,
+    },
+    {
+      resource: 'action-fingerprints' as const,
+      limit: 64,
+      attempted: state.actionFingerprints.length + 1,
+    },
+    {
+      resource: 'completed-node-ids' as const,
+      limit: 64,
+      attempted: state.completedNodeIds.length + 1,
+    },
+    {
+      resource: 'tool-grant-usage' as const,
+      limit: 3,
+      attempted: action.kind === 'tool'
+          && !state.toolGrantUsage.some(
+            (usage) =>
+              usage.toolId === action.toolId
+              && usage.capability === action.capability,
+          )
+        ? state.toolGrantUsage.length + 1
+        : state.toolGrantUsage.length,
+    },
+    {
+      resource: 'tool-grant-calls' as const,
+      limit: 256,
+      attempted: action.kind === 'tool'
+        ? (
+          state.toolGrantUsage.find(
+            (usage) =>
+              usage.toolId === action.toolId
+              && usage.capability === action.capability,
+          )?.count ?? 0
+        ) + 1
+        : 0,
+    },
+  ]
+  const exceededStateBudget = stateBudgets.find(
+    ({ attempted, limit }) => attempted > limit,
+  )
+  if (exceededStateBudget !== undefined) {
+    return Effect.fail(stop({
+      kind: 'state-budget',
+      ...exceededStateBudget,
     }))
   }
   const usage = attemptedUsage(action, state)

@@ -443,6 +443,35 @@ describe('bounded research run graph', () => {
     expect(resolutions).toBe(0)
   })
 
+  it.each([
+    ['runId', ResearchRunId.make('930e8400-e29b-41d4-a716-446655440000')],
+    ['planId', ResearchPlanId.make('930e8400-e29b-41d4-a716-446655440001')],
+    ['workspaceId', WorkspaceId.make('930e8400-e29b-41d4-a716-446655440002')],
+    ['projectId', ProjectId.make('930e8400-e29b-41d4-a716-446655440003')],
+  ] as const)(
+    'rejects a mismatched %s before resolving any provider',
+    async (field, mismatchedId) => {
+      let resolutions = 0
+      const graph = await workflow(dependencies(
+        {
+          resolve: () => {
+            resolutions += 1
+            return Effect.succeed({ execute: () => Effect.succeed(result) })
+          },
+        },
+        succeedingModels,
+      ))
+      await expect(functionNode(graph, ids.retrieve).fn(context({
+        ...initialState(),
+        [field]: mismatchedId,
+      }))).rejects.toMatchObject({
+        _tag: 'ResearchExecutionStopped',
+        reason: { kind: 'state-mismatch', field },
+      })
+      expect(resolutions).toBe(0)
+    },
+  )
+
   it('maps provider failures to stable typed stops without provider text', async () => {
     const secret = 'api-key=super-secret request=confidential'
     const graph = await workflow(dependencies(
@@ -544,6 +573,47 @@ describe('bounded research run graph', () => {
       reason: { kind: 'interrupted' },
     })
     expect(cancelled).toBe(true)
+    expect(starting.steps).toBe(0)
+    expect(starting.completedNodeIds).toEqual([])
+  })
+
+  it('interrupts a never-settling provider at the elapsed deadline without committing', async () => {
+    let finalized = false
+    const deadlinePlan: ResearchPlan = {
+      ...plan,
+      budget: {
+        ...plan.budget,
+        maximumElapsedMilliseconds: 20,
+      },
+    }
+    const deadlineDeps: ResearchRunGraphDependencies = {
+      tools: {
+        resolve: () => Effect.succeed({
+          execute: () => Effect.never.pipe(
+            Effect.ensuring(Effect.sync(() => {
+              finalized = true
+            })),
+          ),
+        }),
+      },
+      models: succeedingModels,
+      now: () => 1_000,
+      estimatedCostMicros: () => 1,
+    }
+    const graph = await Effect.runPromise(compileResearchRunWorkflow(
+      deadlinePlan,
+      routing,
+      policy,
+      deadlineDeps,
+    ))
+    const starting = initialState()
+    await expect(
+      functionNode(graph, ids.retrieve).fn(context(starting)),
+    ).rejects.toMatchObject({
+      _tag: 'ResearchExecutionStopped',
+      reason: { kind: 'time-budget', limit: 20 },
+    })
+    expect(finalized).toBe(true)
     expect(starting.steps).toBe(0)
     expect(starting.completedNodeIds).toEqual([])
   })

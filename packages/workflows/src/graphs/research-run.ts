@@ -138,6 +138,20 @@ function providerStopped(
   })
 }
 
+function timeBudgetStopped(
+  limit: number,
+  attempted: number,
+): ResearchExecutionStopped {
+  return new ResearchExecutionStopped({
+    reason: {
+      kind: 'time-budget',
+      limit,
+      attempted,
+    },
+    message: 'Research execution stopped: time-budget',
+  })
+}
+
 function actionForNode(
   node: ResearchPlanNode,
   estimatedCostMicros: number,
@@ -206,8 +220,20 @@ function executionEffect(
       action,
       deps.now(),
     )
-    const result = action.kind === 'tool'
-      ? yield* Effect.gen(function* () {
+    const elapsedBeforeProvider = Math.max(
+      0,
+      deps.now() - begun.startedAtMilliseconds,
+    )
+    const remainingMilliseconds =
+      plan.budget.maximumElapsedMilliseconds - elapsedBeforeProvider
+    if (remainingMilliseconds <= 0) {
+      return yield* timeBudgetStopped(
+        plan.budget.maximumElapsedMilliseconds,
+        elapsedBeforeProvider,
+      )
+    }
+    const providerEffect = action.kind === 'tool'
+      ? Effect.gen(function* () {
         const executor = yield* deps.tools.resolve(
           action.toolId,
           action.capability,
@@ -219,7 +245,7 @@ function executionEffect(
           () => providerStopped(null),
         ),
       )
-      : yield* Effect.gen(function* () {
+      : Effect.gen(function* () {
         const route = yield* resolveModelRoute(routing, action.role)
         const executor = yield* deps.models.resolve(route)
         return yield* executor.execute(node, signal)
@@ -229,6 +255,15 @@ function executionEffect(
           () => providerStopped(action.role),
         ),
       )
+    const result = yield* providerEffect.pipe(
+      Effect.timeoutFail({
+        duration: remainingMilliseconds,
+        onTimeout: () => timeBudgetStopped(
+          plan.budget.maximumElapsedMilliseconds,
+          plan.budget.maximumElapsedMilliseconds + 1,
+        ),
+      }),
+    )
     if (signal.aborted) return yield* interrupted()
     const completed = yield* completeResearchAction(
       plan,

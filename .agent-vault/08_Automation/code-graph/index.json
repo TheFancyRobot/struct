@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T02:58:37.119Z",
+  "generatedAt": "2026-07-20T03:09:34.250Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -11993,32 +11993,39 @@
           "signature": "(action: ResearchAction, state: ResearchGraphState)"
         },
         {
-          "name": "budgetReason",
+          "name": "identityReason",
           "kind": "function",
           "line": 37,
           "exported": false,
           "endLine": 37
         },
         {
+          "name": "budgetReason",
+          "kind": "function",
+          "line": 56,
+          "exported": false,
+          "endLine": 56
+        },
+        {
           "name": "declarationReason",
           "kind": "function",
-          "line": 92,
+          "line": 111,
           "exported": false,
-          "endLine": 92
+          "endLine": 111
         },
         {
           "name": "beginResearchAction",
           "kind": "const",
-          "line": 131,
+          "line": 150,
           "exported": true,
-          "endLine": 131
+          "endLine": 150
         },
         {
           "name": "completeResearchAction",
           "kind": "const",
-          "line": 177,
+          "line": 198,
           "exported": true,
-          "endLine": 177
+          "endLine": 198
         }
       ],
       "imports": [
@@ -12041,9 +12048,9 @@
         }
       ],
       "exports": [],
-      "hash": "ca054b75658b1fa233efe3ea07c752798fe794cf07d8fb9c7dd97dcf17af1951",
-      "mtimeMs": 1784516030402.838,
-      "size": 7288,
+      "hash": "f0507327503233b469d71fa8cd957ced80e11b7003c4e9e667713753331e331e",
+      "mtimeMs": 1784516791790.4941,
+      "size": 9328,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -12219,123 +12226,137 @@
           "endLine": 19
         },
         {
+          "name": "StateIdentityField",
+          "kind": "const",
+          "line": 20,
+          "exported": false,
+          "endLine": 20
+        },
+        {
+          "name": "StateResource",
+          "kind": "const",
+          "line": 26,
+          "exported": false,
+          "endLine": 26
+        },
+        {
           "name": "ResearchModelRole",
           "kind": "const",
-          "line": 21,
+          "line": 34,
           "exported": true,
-          "endLine": 21
+          "endLine": 34
         },
         {
           "name": "ResearchModelRole",
           "kind": "type",
-          "line": 27,
+          "line": 40,
           "exported": true,
-          "endLine": 27
+          "endLine": 40
         },
         {
           "name": "ResearchExecutionPolicy",
           "kind": "const",
-          "line": 29,
+          "line": 42,
           "exported": true,
-          "endLine": 29
+          "endLine": 42
         },
         {
           "name": "ResearchExecutionPolicy",
           "kind": "type",
-          "line": 33,
+          "line": 46,
           "exported": true,
-          "endLine": 33
+          "endLine": 46
         },
         {
           "name": "ResearchStopReason",
           "kind": "const",
-          "line": 36,
+          "line": 49,
           "exported": true,
-          "endLine": 36
+          "endLine": 49
         },
         {
           "name": "ResearchStopReason",
           "kind": "type",
-          "line": 96,
+          "line": 119,
           "exported": true,
-          "endLine": 96
+          "endLine": 119
         },
         {
           "name": "ResearchExecutionStopped",
           "kind": "class",
-          "line": 98,
+          "line": 121,
           "exported": true,
-          "endLine": 98
+          "endLine": 121
         },
         {
           "name": "ResearchProviderFailure",
           "kind": "class",
-          "line": 106,
+          "line": 129,
           "exported": true,
-          "endLine": 106
+          "endLine": 129
         },
         {
           "name": "ResearchAction",
           "kind": "const",
-          "line": 113,
-          "exported": true,
-          "endLine": 113
-        },
-        {
-          "name": "ResearchAction",
-          "kind": "type",
-          "line": 130,
-          "exported": true,
-          "endLine": 130
-        },
-        {
-          "name": "ResearchActionResult",
-          "kind": "const",
-          "line": 132,
-          "exported": true,
-          "endLine": 132
-        },
-        {
-          "name": "ResearchActionResult",
-          "kind": "type",
           "line": 136,
           "exported": true,
           "endLine": 136
         },
         {
+          "name": "ResearchAction",
+          "kind": "type",
+          "line": 153,
+          "exported": true,
+          "endLine": 153
+        },
+        {
+          "name": "ResearchActionResult",
+          "kind": "const",
+          "line": 155,
+          "exported": true,
+          "endLine": 155
+        },
+        {
+          "name": "ResearchActionResult",
+          "kind": "type",
+          "line": 159,
+          "exported": true,
+          "endLine": 159
+        },
+        {
           "name": "ResearchToolGrantUsage",
           "kind": "const",
-          "line": 139,
+          "line": 162,
           "exported": true,
-          "endLine": 139
+          "endLine": 162
         },
         {
           "name": "ResearchToolGrantUsage",
           "kind": "type",
-          "line": 144,
+          "line": 167,
           "exported": true,
-          "endLine": 144
+          "endLine": 167
         },
         {
           "name": "ResearchGraphState",
           "kind": "const",
-          "line": 147,
-          "exported": true,
-          "endLine": 147
-        },
-        {
-          "name": "ResearchGraphState",
-          "kind": "type",
           "line": 170,
           "exported": true,
           "endLine": 170
         },
         {
+          "name": "ResearchGraphState",
+          "kind": "type",
+          "line": 193,
+          "exported": true,
+          "endLine": 193
+        },
+        {
           "name": "initialResearchGraphState",
           "kind": "function",
-          "line": 173,
+          "line": 196,
           "exported": true,
-          "endLine": 173
+          "endLine": 196
         }
       ],
       "imports": [
@@ -12349,9 +12370,9 @@
         }
       ],
       "exports": [],
-      "hash": "9060d3a4226b35f8df6a11ad8d96d0e749089c34995f50f6721d7a580aee4c3b",
-      "mtimeMs": 1784516030402.5364,
-      "size": 5530,
+      "hash": "24937f9f8c427a4cda9937db0dc62518c0105c7045754a77258ed32eb416681f",
+      "mtimeMs": 1784516791790.0964,
+      "size": 6016,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -14268,40 +14289,47 @@
           "endLine": 127
         },
         {
-          "name": "actionForNode",
+          "name": "timeBudgetStopped",
           "kind": "function",
           "line": 141,
           "exported": false,
           "endLine": 141
         },
         {
+          "name": "actionForNode",
+          "kind": "function",
+          "line": 155,
+          "exported": false,
+          "endLine": 155
+        },
+        {
           "name": "topologicalNodes",
           "kind": "function",
-          "line": 168,
+          "line": 182,
           "exported": false,
-          "endLine": 168,
+          "endLine": 182,
           "signature": "(plan: ResearchPlan)"
         },
         {
           "name": "executionEffect",
           "kind": "function",
-          "line": 190,
+          "line": 204,
           "exported": false,
-          "endLine": 190
+          "endLine": 204
         },
         {
           "name": "compileResearchRunWorkflow",
           "kind": "const",
-          "line": 246,
+          "line": 281,
           "exported": true,
-          "endLine": 246
+          "endLine": 281
         },
         {
           "name": "ResearchRunCompilationFailure",
           "kind": "type",
-          "line": 298,
+          "line": 333,
           "exported": true,
-          "endLine": 298
+          "endLine": 333
         }
       ],
       "imports": [
@@ -14319,9 +14347,9 @@
         }
       ],
       "exports": [],
-      "hash": "f9a484f742194b3c1ef343b750f6075607a78afc9f0a78d53bbcba4892eeba87",
-      "mtimeMs": 1784516071810.877,
-      "size": 8482,
+      "hash": "6b6b3b6392663501ecbe0b390b5e6e2ec9cbc2567f0a6305b3e397ddc03dc3b8",
+      "mtimeMs": 1784516749974.5422,
+      "size": 9424,
       "generated": false,
       "vendor": false,
       "parser": "regex"

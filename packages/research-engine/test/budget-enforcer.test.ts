@@ -302,4 +302,87 @@ describe('research budget enforcer', () => {
     expect(completion.left.reason.kind).toBe('time-budget')
     expect(state().completedNodeIds).toEqual([])
   })
+
+  it('rejects aggregate state growth beyond every serialized collection limit before commit', async () => {
+    const artifact = {
+      digest: Sha256Digest.make(`sha256:${'b'.repeat(64)}`),
+      byteLength: 1,
+      mediaType: 'application/json',
+    }
+    const cases = [
+      {
+        resource: 'artifacts',
+        overrides: { artifacts: Array.from({ length: 256 }, () => artifact) },
+        result: { progressFingerprint: 'overflow', artifacts: [artifact] },
+      },
+      {
+        resource: 'action-fingerprints',
+        overrides: {
+          actionFingerprints: Array.from(
+            { length: 64 },
+            (_, index) => `previous:${index}`,
+          ),
+        },
+        result: { progressFingerprint: 'overflow', artifacts: [] },
+      },
+      {
+        resource: 'completed-node-ids',
+        overrides: {
+          completedNodeIds: Array.from({ length: 64 }, () => ids.node),
+        },
+        result: { progressFingerprint: 'overflow', artifacts: [] },
+      },
+      {
+        resource: 'tool-grant-usage',
+        overrides: {
+          toolGrantUsage: [
+            { toolId: 'dataset-query' as const, capability: 'dataset:query' as const, count: 1 },
+            { toolId: 'citation-validation' as const, capability: 'citation:validate' as const, count: 1 },
+            { toolId: 'hybrid-retrieval' as const, capability: 'citation:validate' as const, count: 1 },
+          ],
+        },
+        result: { progressFingerprint: 'overflow', artifacts: [] },
+      },
+      {
+        resource: 'tool-grant-calls',
+        overrides: {
+          toolGrantUsage: [{
+            toolId: 'hybrid-retrieval' as const,
+            capability: 'document:retrieve' as const,
+            count: 256,
+          }],
+        },
+        result: { progressFingerprint: 'overflow', artifacts: [] },
+      },
+    ] as const
+
+    for (const candidate of cases) {
+      const original: typeof ResearchGraphState.Type = {
+        ...state(),
+        ...candidate.overrides,
+      }
+      const completion = await Effect.runPromise(Effect.either(
+        completeResearchAction(
+          plan,
+          original,
+          toolAction,
+          candidate.result,
+          1_002,
+        ),
+      ))
+      expect(Either.isLeft(completion)).toBe(true)
+      if (Either.isRight(completion)) throw new Error('Expected state-budget stop')
+      expect(completion.left.reason).toMatchObject({
+        kind: 'state-budget',
+        resource: candidate.resource,
+      })
+      expect(original.steps).toBe(0)
+      expect(original.completedNodeIds.length).toBe(
+        candidate.resource === 'completed-node-ids' ? 64 : 0,
+      )
+      expect(original.artifacts.length).toBe(
+        candidate.resource === 'artifacts' ? 256 : 0,
+      )
+    }
+  })
 })

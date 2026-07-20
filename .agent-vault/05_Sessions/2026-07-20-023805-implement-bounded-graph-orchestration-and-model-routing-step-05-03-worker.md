@@ -56,6 +56,10 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Implemented bounded execution state/policy, deterministic pre-call and pre-commit enforcement, model routing, Fred graph compilation, and focused coverage.
 - Completed self-review and fixed late elapsed-time overrun before final result commit.
 - Focused, package regression, typecheck, lint, import-boundary, and dependency gates all passed.
+- PR review remediation: enforced the remaining elapsed deadline across the full resolver-plus-executor Effect, with loser interruption, finalization, typed `time-budget` termination, and no late commit.
+- Added engine-boundary identity checks for `runId`, `planId`, `workspaceId`, and `projectId`; mismatched resumed/checkpoint state now stops before any resolver call.
+- Added typed pre-commit state-budget enforcement for aggregate artifacts and every analogous growable bounded state field: action fingerprints, completed node IDs, tool-grant usage entries, and per-grant call counts.
+- Reconciled the stale Agent-Managed Snapshot with completed frontmatter and current root handoff.
 
 ## Findings
 
@@ -67,6 +71,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Provider failures cross this orchestration boundary only as stable role/provider-kind messages; raw provider text is neither persisted nor exposed in the typed stop.
 - `runPromiseExit` plus explicit Cause inspection normalizes an abort-driven Effect fiber interruption to `ResearchExecutionStopped(interrupted)` while retaining responsive cancellation and preventing result commit.
 - The compiled Fred IR intentionally serializes dependency-respecting order. Core Fred fan-out branches have independent state and mapped join outputs, and this step has no global budget-state merge protocol.
+- A post-provider elapsed check cannot bound a provider that never settles. The resolver and executor must be one interruptible Effect raced against the remaining deadline; external abort remains a distinct typed `interrupted` stop.
+- Checkpoint/resume identity is fail-closed: decoded state is reusable only for the exact captured run, plan, workspace, and project. `state-mismatch` identifies the bounded field without persisting conflicting identifiers.
+- Valid decoded state can already sit at a collection ceiling. Every append or increment that has a schema maximum must be checked before constructing the next state; silent truncation would corrupt checkpoint semantics.
 
 ## Context Handoff
 
@@ -101,6 +108,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Review-remediation validation (supersedes the earlier pre-review counts): `bun test packages/research-engine/test/budget-enforcer.test.ts packages/workflows/test/research-run.test.ts` passed 21 tests, 50 assertions, 0 failures.
 - Review-remediation package validation: `bun test packages/domain packages/workflows packages/research-engine` passed 145 tests, 355 assertions, 0 failures.
 - Review-remediation static validation: `bun run typecheck`, `bun run lint`, and `bun run lint:imports` passed with no TypeScript, ESLint, dependency, or package-boundary defects.
+- Final PR-remediation focused validation (supersedes earlier counts): `bun test packages/research-engine/test/budget-enforcer.test.ts packages/workflows/test/research-run.test.ts` passed 27 tests, 82 assertions, 0 failures.
+- Final PR-remediation package validation: `bun test packages/domain packages/workflows packages/research-engine` passed 151 tests, 392 assertions, 0 failures.
+- Final PR-remediation static validation: `bun run typecheck`, `bun run lint`, and `bun run lint:imports` passed with no TypeScript, ESLint, dependency, or package-boundary defects.
 
 ## Bugs Encountered
 

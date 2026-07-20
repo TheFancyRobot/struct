@@ -52,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_03_implement-bounded-graph-orchestration-and-model-routing/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_03_implement-bounded-graph-orchestration-and-model-routing/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: completed
+- Current owner: step-05-03-worker
+- Last touched: 2026-07-20
+- Next action: Root orchestrator revalidates and publishes the review remediation, resolves the confirmed PR findings, and merges STEP-05-03 before STEP-05-04 begins.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

@@ -17,6 +17,19 @@ const Counter = Schema.Number.pipe(
 )
 const Fingerprint = Schema.String.pipe(Schema.minLength(1), Schema.maxLength(512))
 const BoundedMessage = Schema.String.pipe(Schema.minLength(1), Schema.maxLength(512))
+const StateIdentityField = Schema.Literal(
+  'runId',
+  'planId',
+  'workspaceId',
+  'projectId',
+)
+const StateResource = Schema.Literal(
+  'artifacts',
+  'action-fingerprints',
+  'completed-node-ids',
+  'tool-grant-usage',
+  'tool-grant-calls',
+)
 
 export const ResearchModelRole = Schema.Literal(
   'classification',
@@ -91,6 +104,16 @@ export const ResearchStopReason = Schema.Union(
   Schema.Struct({
     kind: Schema.Literal('interrupted'),
     message: BoundedMessage,
+  }),
+  Schema.Struct({
+    kind: Schema.Literal('state-mismatch'),
+    field: StateIdentityField,
+  }),
+  Schema.Struct({
+    kind: Schema.Literal('state-budget'),
+    resource: StateResource,
+    limit: Counter,
+    attempted: Counter,
   }),
 )
 export type ResearchStopReason = Schema.Schema.Type<typeof ResearchStopReason>
