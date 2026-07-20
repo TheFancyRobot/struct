@@ -95,7 +95,7 @@ body {
 }
 
 html {
-  background: #101725;
+  background: var(--color-base-100);
 }
 
 body {

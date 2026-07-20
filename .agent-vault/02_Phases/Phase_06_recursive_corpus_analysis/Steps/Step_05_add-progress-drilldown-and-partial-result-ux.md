@@ -20,7 +20,7 @@ tags:
 context_id: SESSION-2026-07-20-103632
 active_session_id: 05_Sessions/2026-07-20-103632-add-progress-drilldown-and-partial-result-ux-step-06-05-worker
 context_status: active
-context_summary: Implemented and fully validated the production recursive progress/read/event/cancel surface and responsive SolidJS workbench; awaiting root review, PR, and merge.
+context_summary: Implemented and fully validated the production recursive progress/read/event/cancel surface and responsive SolidJS workbench; review remediation is in progress before merge.
 ---
 
 # Step 05 - Add Progress Drilldown and Partial Result UX
@@ -51,10 +51,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_05_add-progress-drilldown-and-partial-result-ux/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_05_add-progress-drilldown-and-partial-result-ux/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: active
+- Current owner: Codex
+- Last touched: 2026-07-20
+- Next action: Complete review remediation and validation, then publish the reviewed STEP-06-05 branch for merge.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

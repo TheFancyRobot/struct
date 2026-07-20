@@ -29,9 +29,15 @@ const App: ParentComponent = (props) => {
   })
   createEffect(() => {
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('struct-theme', theme())
+      document.documentElement.dataset.theme = theme()
     }
   })
+
+  const toggleTheme = () => {
+    const nextTheme = theme() === 'struct-light' ? 'struct-dark' : 'struct-light'
+    window.localStorage.setItem('struct-theme', nextTheme)
+    setTheme(nextTheme)
+  }
 
   return (
     <div
@@ -52,7 +58,7 @@ const App: ParentComponent = (props) => {
               type="button"
               class="theme-toggle"
               aria-label={`Switch to ${theme() === 'struct-light' ? 'dark' : 'light'} theme`}
-              onClick={() => setTheme(theme() === 'struct-light' ? 'struct-dark' : 'struct-light')}
+              onClick={toggleTheme}
             >
               <span aria-hidden="true">{theme() === 'struct-light' ? '◐' : '◑'}</span>
               <span>{theme() === 'struct-light' ? 'Dark' : 'Light'}</span>

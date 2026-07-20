@@ -248,8 +248,13 @@ describe('recursive analysis browser workflow', () => {
         await routeProgress(page)
         await page.goto(runUrl)
         await page.getByRole('heading', { name: 'Partial findings' }).waitFor()
-        expect(await page.locator('[data-theme]').getAttribute('data-theme'))
+        expect(await page.locator('.app-shell[data-theme]').getAttribute('data-theme'))
           .toBe(`struct-${theme}`)
+        expect(await page.locator('html').getAttribute('data-theme'))
+          .toBe(`struct-${theme}`)
+        expect(await page.locator('html').evaluate(
+          (element) => getComputedStyle(element).backgroundColor,
+        )).toBe(theme === 'light' ? 'rgb(247, 249, 253)' : 'rgb(16, 23, 37)')
         await assertNoOverflow(page)
         await page.screenshot({
           path: `${screenshotRoot}/${width}-${theme}.png`,
@@ -407,7 +412,7 @@ describe('recursive analysis browser workflow', () => {
     await page.goto(origin)
     await page.getByRole('button', { name: 'Switch to dark theme' }).click()
     await page.reload()
-    expect(await page.locator('[data-theme]').getAttribute('data-theme'))
+    expect(await page.locator('.app-shell[data-theme]').getAttribute('data-theme'))
       .toBe('struct-dark')
     await context.close()
   })
