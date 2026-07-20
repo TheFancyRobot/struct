@@ -18,7 +18,12 @@ CREATE TABLE provenance_graphs (
   UNIQUE (report_id, report_revision, revalidation_key),
   UNIQUE (id, report_id, report_revision),
   FOREIGN KEY (report_id, workspace_id, project_id, report_revision)
-    REFERENCES reports(id, workspace_id, project_id, revision)
+    REFERENCES report_revision_snapshots(
+      report_id,
+      workspace_id,
+      project_id,
+      revision
+    )
     ON DELETE CASCADE
 );
 CREATE INDEX idx_provenance_graphs_scope
@@ -56,8 +61,12 @@ CREATE TABLE provenance_edges (
   FOREIGN KEY (graph_id, report_id, report_revision)
     REFERENCES provenance_graphs(id, report_id, report_revision)
     ON DELETE CASCADE,
-  FOREIGN KEY (report_id, claim_id)
-    REFERENCES report_claims(report_id, claim_id) ON DELETE RESTRICT,
+  FOREIGN KEY (report_id, report_revision, claim_id)
+    REFERENCES report_revision_claims(
+      report_id,
+      report_revision,
+      claim_id
+    ) ON DELETE RESTRICT,
   FOREIGN KEY (claim_id, claim_revision_id, claim_revision)
     REFERENCES claim_revisions(claim_id, id, revision) ON DELETE RESTRICT,
   FOREIGN KEY (claim_id, evidence_id)

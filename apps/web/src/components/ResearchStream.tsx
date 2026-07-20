@@ -17,6 +17,7 @@ import type {
   ResearchRunId,
   ResearchThreadId,
   RecursiveRunProgress,
+  WorkspaceId,
 } from '@struct/domain'
 import { ResearchEvent } from '@struct/domain'
 import { useSSE } from '../hooks/useSSE'
@@ -24,6 +25,7 @@ import {
   cancelResearchRun,
   fetchRecursiveAnalysis,
 } from '../api/research'
+import { saveCompletedResearchFinding } from '../api/artifacts'
 import { RecursiveRunTimeline } from './RecursiveRunTimeline'
 import { PartialFindingsPanel } from './PartialFindingsPanel'
 import { mergeRecursiveRead } from './recursive-progress-state'
@@ -36,6 +38,7 @@ interface ResearchStreamProps {
   readonly projectId: ProjectId
   readonly threadId: ResearchThreadId
   readonly runId: ResearchRunId
+  readonly workspaceId?: WorkspaceId
   readonly demoReport?: MixedSourceReportModel
 }
 
@@ -92,6 +95,9 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
   const [recursive, setRecursive] = createSignal<RecursiveRunProgress | null>(null)
   const [cancelling, setCancelling] = createSignal(false)
   const [cancelError, setCancelError] = createSignal<string>()
+  const [savingFinding, setSavingFinding] = createSignal(false)
+  const [savedFindingId, setSavedFindingId] = createSignal<string>()
+  const [findingSaveError, setFindingSaveError] = createSignal<string>()
   const legacyEvents = createMemo(() => state.events.filter(
     (event) => !event.type.startsWith('recursive-'),
   ))
@@ -222,6 +228,31 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
     }
   }
 
+  const saveFinding = async (
+    event: Extract<ResearchEvent, { readonly type: 'research-completed' }>,
+  ) => {
+    if (props.workspaceId === undefined || savingFinding()) return
+    setSavingFinding(true)
+    setFindingSaveError(undefined)
+    try {
+      const finding = await saveCompletedResearchFinding({
+        workspaceId: props.workspaceId,
+        projectId: props.projectId,
+        runId: props.runId,
+        answer: event.data.answer,
+        completedAt: event.createdAt,
+        citations: event.data.citations,
+      })
+      setSavedFindingId(finding.id)
+    } catch (error) {
+      setFindingSaveError(error instanceof Error
+        ? error.message
+        : 'The completed result could not be saved.')
+    } finally {
+      setSavingFinding(false)
+    }
+  }
+
   return (
     <ErrorBoundary fallback={<div role="alert" class="alert alert-error">Progress could not be rendered.</div>}>
       <section aria-label="Research progress" class="space-y-5">
@@ -315,6 +346,36 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
                             </A>
                           )}
                         </For>
+                        <Show when={props.workspaceId}>
+                          <button
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            disabled={savingFinding() || savedFindingId() !== undefined}
+                            onClick={() => void saveFinding(completed())}
+                          >
+                            {savedFindingId() !== undefined
+                              ? 'Saved to notebook'
+                              : savingFinding()
+                                ? 'Saving finding…'
+                                : 'Save finding'}
+                          </button>
+                        </Show>
+                        <Show when={savedFindingId() && props.workspaceId}>
+                          <A
+                            class="link link-primary"
+                            href={
+                              `/projects/${props.projectId}/notebook`
+                              + `?workspaceId=${props.workspaceId}`
+                              + `&threadId=${props.threadId}`
+                              + `&runId=${props.runId}`
+                            }
+                          >
+                            Open project notebook
+                          </A>
+                        </Show>
+                        <Show when={findingSaveError()}>
+                          {(message) => <div role="alert">{message()}</div>}
+                        </Show>
                       </div>
                     )}
                   </Show>

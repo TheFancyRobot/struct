@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T16:53:16.194Z",
+  "generatedAt": "2026-07-20T18:39:00.328Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -76,71 +76,71 @@
         {
           "name": "RegisterRequestBody",
           "kind": "interface",
-          "line": 85,
+          "line": 87,
           "exported": false,
-          "endLine": 85
+          "endLine": 87
         },
         {
           "name": "ResearchRequestBody",
           "kind": "interface",
-          "line": 93,
+          "line": 95,
           "exported": false,
-          "endLine": 93
+          "endLine": 95
         },
         {
           "name": "jsonResponse",
           "kind": "function",
-          "line": 100,
+          "line": 102,
           "exported": false,
-          "endLine": 100,
+          "endLine": 102,
           "signature": "(body: unknown, status = 200)"
         },
         {
           "name": "credentialMatches",
           "kind": "function",
-          "line": 107,
+          "line": 109,
           "exported": false,
-          "endLine": 107,
+          "endLine": 109,
           "signature": "(expected: string, actual: string)"
         },
         {
           "name": "bearerCredential",
           "kind": "function",
-          "line": 114,
+          "line": 116,
           "exported": false,
-          "endLine": 114,
+          "endLine": 116,
           "signature": "(request: Request)"
         },
         {
           "name": "parseBody",
           "kind": "function",
-          "line": 121,
+          "line": 123,
           "exported": false,
-          "endLine": 121,
+          "endLine": 123,
           "signature": "(body: RegisterRequestBody): Effect.Effect<{"
         },
         {
           "name": "parseResearchBody",
           "kind": "function",
-          "line": 145,
+          "line": 147,
           "exported": false,
-          "endLine": 145,
+          "endLine": 147,
           "signature": "(body: ResearchRequestBody): Effect.Effect<{"
         },
         {
           "name": "researchFailureResponse",
           "kind": "function",
-          "line": 180,
+          "line": 182,
           "exported": false,
-          "endLine": 180,
+          "endLine": 182,
           "signature": "(cause: Cause.Cause<unknown>)"
         },
         {
           "name": "server",
           "kind": "const",
-          "line": 191,
+          "line": 193,
           "exported": false,
-          "endLine": 191
+          "endLine": 193
         }
       ],
       "imports": [
@@ -221,12 +221,20 @@
             "loadRecursiveAnalysis"
           ],
           "kind": "static"
+        },
+        {
+          "source": "durableArtifactRoute",
+          "specifier": "./routes/durable-artifacts",
+          "imported": [
+            "durableArtifactRoute"
+          ],
+          "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "8ed1040fa24b5f175e300ee46b27bc7ea76262792e3ea153992eb6be5ffa1c08",
-      "mtimeMs": 1784547495279.0774,
-      "size": 36141,
+      "hash": "90cf9d7b73294ddeecc991ba9b85f5e7b1fef4860d7a2c72287899946bdd96d2",
+      "mtimeMs": 1784570908416.9802,
+      "size": 38861,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -699,6 +707,115 @@
       "parser": "regex"
     },
     {
+      "path": "apps/api/src/routes/durable-artifacts.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonBlank",
+          "kind": "const",
+          "line": 22,
+          "exported": false,
+          "endLine": 22
+        },
+        {
+          "name": "CreateReportBody",
+          "kind": "const",
+          "line": 27,
+          "exported": false,
+          "endLine": 27
+        },
+        {
+          "name": "ReportMutationBody",
+          "kind": "const",
+          "line": 32,
+          "exported": false,
+          "endLine": 32
+        },
+        {
+          "name": "DurableArtifactRouteDeps",
+          "kind": "interface",
+          "line": 66,
+          "exported": true,
+          "endLine": 66
+        },
+        {
+          "name": "json",
+          "kind": "function",
+          "line": 103,
+          "exported": false,
+          "endLine": 103,
+          "signature": "(body: unknown, status = 200)"
+        },
+        {
+          "name": "credential",
+          "kind": "function",
+          "line": 110,
+          "exported": false,
+          "endLine": 110,
+          "signature": "(request: Request)"
+        },
+        {
+          "name": "failureTag",
+          "kind": "function",
+          "line": 118,
+          "exported": false,
+          "endLine": 118,
+          "signature": "(cause: Cause.Cause<unknown>)"
+        },
+        {
+          "name": "errorResponse",
+          "kind": "function",
+          "line": 127,
+          "exported": false,
+          "endLine": 127,
+          "signature": "(cause: Cause.Cause<unknown>)"
+        },
+        {
+          "name": "idempotencyKey",
+          "kind": "function",
+          "line": 145,
+          "exported": false,
+          "endLine": 145,
+          "signature": "(request: Request)"
+        },
+        {
+          "name": "requestJson",
+          "kind": "function",
+          "line": 151,
+          "exported": false,
+          "endLine": 151,
+          "signature": "(request: Request)"
+        },
+        {
+          "name": "durableArtifactRoute",
+          "kind": "const",
+          "line": 158,
+          "exported": true,
+          "endLine": 158
+        }
+      ],
+      "imports": [
+        {
+          "source": "Cause, Effect, Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Cause",
+            "Effect",
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "89273d3063a3c78424daeb1101e98a1811b2f1a52a0f728a2283099107d2b2d6",
+      "mtimeMs": 1784571156184.9512,
+      "size": 10470,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "apps/api/src/routes/ingestion-jobs.ts",
       "language": "TypeScript",
       "symbols": [
@@ -746,6 +863,91 @@
       "hash": "b17992e34ae7271c5c486f0f7b01dc0ba6ac732ecfdfb085ae9d38783e7966b7",
       "mtimeMs": 1784473831669.4395,
       "size": 2256,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/api/src/routes/provenance.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ProvenanceReadDependencies",
+          "kind": "interface",
+          "line": 21,
+          "exported": false,
+          "endLine": 21
+        },
+        {
+          "name": "resolutionFailure",
+          "kind": "function",
+          "line": 56,
+          "exported": false,
+          "endLine": 56
+        },
+        {
+          "name": "artifactRef",
+          "kind": "function",
+          "line": 71,
+          "exported": false,
+          "endLine": 71,
+          "signature": "(digest: string)"
+        },
+        {
+          "name": "RecursiveArtifactLocatorIndex",
+          "kind": "const",
+          "line": 75,
+          "exported": false,
+          "endLine": 75
+        },
+        {
+          "name": "makeCitationEvidenceResolver",
+          "kind": "function",
+          "line": 87,
+          "exported": true,
+          "endLine": 87
+        }
+      ],
+      "imports": [
+        {
+          "source": "CrossSourceEvidence",
+          "specifier": "@struct/domain",
+          "imported": [
+            "CrossSourceEvidence"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "CitationEvidenceResolverShape",
+          "specifier": "@struct/research-engine",
+          "imported": [
+            "CitationEvidenceResolverShape"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "ArtifactRef, StoredBytes",
+          "specifier": "@struct/source-storage",
+          "imported": [
+            "ArtifactRef",
+            "StoredBytes"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "4d5b70ef301743b4379a90c7f541200adadb9b0b1704aa9a3ad20b266f1f5b5b",
+      "mtimeMs": 1784569593256.9546,
+      "size": 10407,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1146,6 +1348,74 @@
       "hash": "ff88ae25d8cec0de36d1351c919903edda1f386668c7dbc489a3cf3e01af0d2a",
       "mtimeMs": 1784448731015.3618,
       "size": 4972,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/web/src/api/artifacts.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "artifactRequest",
+          "kind": "function",
+          "line": 19,
+          "exported": false,
+          "endLine": 19
+        },
+        {
+          "name": "fetchFindings",
+          "kind": "function",
+          "line": 46,
+          "exported": true,
+          "endLine": 46
+        },
+        {
+          "name": "sha256",
+          "kind": "function",
+          "line": 62,
+          "exported": false,
+          "endLine": 62,
+          "signature": "(value: string)"
+        },
+        {
+          "name": "stableUuid",
+          "kind": "function",
+          "line": 72,
+          "exported": false,
+          "endLine": 72,
+          "signature": "(value: string)"
+        },
+        {
+          "name": "saveCompletedResearchFinding",
+          "kind": "function",
+          "line": 85,
+          "exported": true,
+          "endLine": 85
+        },
+        {
+          "name": "createReportFromFindings",
+          "kind": "function",
+          "line": 179,
+          "exported": true,
+          "endLine": 179
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "c845e1aacd3da5af23d15f5cd3f5db2dd67c24f9c711eb8159722f19c5852b7d",
+      "mtimeMs": 1784572577496.9436,
+      "size": 6645,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1613,6 +1883,62 @@
       "parser": "regex"
     },
     {
+      "path": "apps/web/src/components/NotebookView.tsx",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NotebookViewProps",
+          "kind": "interface",
+          "line": 12,
+          "exported": true,
+          "endLine": 12
+        },
+        {
+          "name": "currentTitle",
+          "kind": "function",
+          "line": 24,
+          "exported": false,
+          "endLine": 24,
+          "signature": "(finding: Finding)"
+        },
+        {
+          "name": "hasInvalidCitation",
+          "kind": "function",
+          "line": 29,
+          "exported": false,
+          "endLine": 29,
+          "signature": "(finding: Finding)"
+        },
+        {
+          "name": "NotebookView",
+          "kind": "const",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        }
+      ],
+      "imports": [
+        {
+          "source": "Finding, ProjectId, Report, WorkspaceId",
+          "specifier": "@struct/domain",
+          "imported": [
+            "Finding",
+            "ProjectId",
+            "Report",
+            "WorkspaceId"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "04e17b524629a706721613e0ef0e2bade3d8c10d3508fe5920bef363b426a477",
+      "mtimeMs": 1784571530851.2847,
+      "size": 7379,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "apps/web/src/components/PartialFindingsPanel.tsx",
       "language": "TypeScript",
       "symbols": [
@@ -1747,30 +2073,30 @@
         {
           "name": "ResearchStreamProps",
           "kind": "interface",
-          "line": 35,
+          "line": 37,
           "exported": false,
-          "endLine": 35
+          "endLine": 37
         },
         {
           "name": "eventLabel",
           "kind": "const",
-          "line": 42,
+          "line": 45,
           "exported": false,
-          "endLine": 42
+          "endLine": 45
         },
         {
           "name": "failureGuidance",
           "kind": "const",
-          "line": 65,
+          "line": 68,
           "exported": false,
-          "endLine": 65
+          "endLine": 68
         },
         {
           "name": "ResearchStream",
           "kind": "const",
-          "line": 82,
+          "line": 85,
           "exported": true,
-          "endLine": 82
+          "endLine": 85
         }
       ],
       "imports": [
@@ -1815,6 +2141,14 @@
           "kind": "static"
         },
         {
+          "source": "saveCompletedResearchFinding",
+          "specifier": "../api/artifacts",
+          "imported": [
+            "saveCompletedResearchFinding"
+          ],
+          "kind": "static"
+        },
+        {
           "source": "RecursiveRunTimeline",
           "specifier": "./RecursiveRunTimeline",
           "imported": [
@@ -1840,9 +2174,9 @@
         }
       ],
       "exports": [],
-      "hash": "c8e7c4fe9a5e5708c85c06f76d9be0eff17212b887161d7cdd3dd0ac05fcb2b5",
-      "mtimeMs": 1784562443580.4749,
-      "size": 12680,
+      "hash": "123d5761fb43a7b946743df8c70f4829c3f8404c8925b924edd78e49643075f6",
+      "mtimeMs": 1784571227327.541,
+      "size": 15285,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -2020,22 +2354,88 @@
       "parser": "regex"
     },
     {
+      "path": "apps/web/src/pages/NotebookPage.tsx",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NotebookPage",
+          "kind": "const",
+          "line": 8,
+          "exported": true,
+          "endLine": 8
+        }
+      ],
+      "imports": [
+        {
+          "source": "useParams, useSearchParams",
+          "specifier": "@solidjs/router",
+          "imported": [
+            "useParams",
+            "useSearchParams"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ProjectId, WorkspaceId, type Finding",
+          "specifier": "@struct/domain",
+          "imported": [
+            "ProjectId",
+            "WorkspaceId",
+            "typeFinding"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Component",
+          "specifier": "solid-js",
+          "imported": [
+            "Component"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "createReportFromFindings, fetchFindings",
+          "specifier": "../api/artifacts",
+          "imported": [
+            "createReportFromFindings",
+            "fetchFindings"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "NotebookView",
+          "specifier": "../components/NotebookView",
+          "imported": [
+            "NotebookView"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "0ac7f724dba37e7cf1acf45f42e3bce8b42654510cb59a18380a2e343aef98d4",
+      "mtimeMs": 1784571367266.4783,
+      "size": 1725,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "apps/web/src/pages/ResearchPage.tsx",
       "language": "TypeScript",
       "symbols": [
         {
           "name": "demoStates",
           "kind": "const",
-          "line": 15,
+          "line": 16,
           "exported": false,
-          "endLine": 15
+          "endLine": 16
         },
         {
           "name": "ResearchPage",
           "kind": "const",
-          "line": 25,
+          "line": 26,
           "exported": true,
-          "endLine": 25
+          "endLine": 26
         }
       ],
       "imports": [
@@ -2067,9 +2467,9 @@
         }
       ],
       "exports": [],
-      "hash": "ad07ef897d759fb4626dbe065cc26328bd796537aae0bae0fcf3428c213e78df",
-      "mtimeMs": 1784562443580.9478,
-      "size": 1772,
+      "hash": "0348d876b0c4a1deea53c2217226880613390b1f12ba24d12e2519889c85b6c7",
+      "mtimeMs": 1784571173360.3271,
+      "size": 2093,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -5771,116 +6171,130 @@
           "endLine": 93
         },
         {
-          "name": "ActorId",
+          "name": "ProvenanceGraphId",
           "kind": "const",
           "line": 96,
           "exported": true,
           "endLine": 96
         },
         {
-          "name": "ActorId",
+          "name": "ProvenanceGraphId",
           "kind": "type",
           "line": 97,
           "exported": true,
           "endLine": 97
         },
         {
-          "name": "DatasetId",
+          "name": "ActorId",
           "kind": "const",
           "line": 100,
           "exported": true,
           "endLine": 100
         },
         {
-          "name": "DatasetId",
+          "name": "ActorId",
           "kind": "type",
           "line": 101,
           "exported": true,
           "endLine": 101
         },
         {
-          "name": "DatasetSnapshotId",
+          "name": "DatasetId",
           "kind": "const",
           "line": 104,
           "exported": true,
           "endLine": 104
         },
         {
-          "name": "DatasetSnapshotId",
+          "name": "DatasetId",
           "kind": "type",
           "line": 105,
           "exported": true,
           "endLine": 105
         },
         {
-          "name": "DatasetSchemaFamilyId",
+          "name": "DatasetSnapshotId",
           "kind": "const",
           "line": 108,
           "exported": true,
           "endLine": 108
         },
         {
-          "name": "DatasetSchemaFamilyId",
+          "name": "DatasetSnapshotId",
           "kind": "type",
-          "line": 111,
+          "line": 109,
           "exported": true,
-          "endLine": 111
+          "endLine": 109
         },
         {
-          "name": "QueryResultSnapshotId",
+          "name": "DatasetSchemaFamilyId",
           "kind": "const",
+          "line": 112,
+          "exported": true,
+          "endLine": 112
+        },
+        {
+          "name": "DatasetSchemaFamilyId",
+          "kind": "type",
           "line": 115,
           "exported": true,
           "endLine": 115
         },
         {
           "name": "QueryResultSnapshotId",
-          "kind": "type",
-          "line": 116,
-          "exported": true,
-          "endLine": 116
-        },
-        {
-          "name": "DatasetCitationId",
           "kind": "const",
           "line": 119,
           "exported": true,
           "endLine": 119
         },
         {
-          "name": "DatasetCitationId",
+          "name": "QueryResultSnapshotId",
           "kind": "type",
           "line": 120,
           "exported": true,
           "endLine": 120
         },
         {
-          "name": "EventJournalId",
+          "name": "DatasetCitationId",
           "kind": "const",
           "line": 123,
           "exported": true,
           "endLine": 123
         },
         {
-          "name": "EventJournalId",
+          "name": "DatasetCitationId",
           "kind": "type",
           "line": 124,
           "exported": true,
           "endLine": 124
         },
         {
-          "name": "JobQueueId",
+          "name": "EventJournalId",
           "kind": "const",
           "line": 127,
           "exported": true,
           "endLine": 127
         },
         {
-          "name": "JobQueueId",
+          "name": "EventJournalId",
           "kind": "type",
           "line": 128,
           "exported": true,
           "endLine": 128
+        },
+        {
+          "name": "JobQueueId",
+          "kind": "const",
+          "line": 131,
+          "exported": true,
+          "endLine": 131
+        },
+        {
+          "name": "JobQueueId",
+          "kind": "type",
+          "line": 132,
+          "exported": true,
+          "endLine": 132
         }
       ],
       "imports": [
@@ -5894,9 +6308,9 @@
         }
       ],
       "exports": [],
-      "hash": "a17b268ea589ccbcbcf3ab89304fabc7ab80df7ca44b0418861c2fe7c072b609",
-      "mtimeMs": 1784565758955.3855,
-      "size": 6624,
+      "hash": "075ea6dbcccf3f239c46e0d9bf8c1c6acfa69d308440e31102c3efc5f1287013",
+      "mtimeMs": 1784569593257.1467,
+      "size": 6870,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -6006,9 +6420,9 @@
         {
           "name": "validateCitationSupersession",
           "kind": "const",
-          "line": 184,
+          "line": 186,
           "exported": true,
-          "endLine": 184
+          "endLine": 186
         }
       ],
       "imports": [
@@ -6031,9 +6445,9 @@
         }
       ],
       "exports": [],
-      "hash": "6d726bf44ce75eb10f82338aa46f740b79743df57af0d3ea2c41c0f64f5cab82",
-      "mtimeMs": 1784565905781.1067,
-      "size": 7111,
+      "hash": "0bc1e8102bdbda8cb5c335bb0445d031febbe99e4cc82c70ef5cae7d6a25deb2",
+      "mtimeMs": 1784567036320.2283,
+      "size": 7226,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -7240,23 +7654,23 @@
         {
           "name": "Finding",
           "kind": "type",
-          "line": 209,
+          "line": 219,
           "exported": true,
-          "endLine": 209
+          "endLine": 219
         },
         {
           "name": "FindingSupersessionError",
           "kind": "class",
-          "line": 211,
+          "line": 221,
           "exported": true,
-          "endLine": 211
+          "endLine": 221
         },
         {
           "name": "validateFindingSupersession",
           "kind": "const",
-          "line": 221,
+          "line": 231,
           "exported": true,
-          "endLine": 221
+          "endLine": 231
         }
       ],
       "imports": [
@@ -7295,9 +7709,9 @@
         }
       ],
       "exports": [],
-      "hash": "618aedae73ba651aaa2dc2f874d449b836a450a7ae10cca0bfdee3c10e81ce2e",
-      "mtimeMs": 1784566189900.114,
-      "size": 8254,
+      "hash": "e2325b9b5c62518b48cd6b1eb3767e9bbad3b3fad57a0dc9177c71f632e31577",
+      "mtimeMs": 1784567036320.3484,
+      "size": 8604,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -7677,6 +8091,249 @@
       "hash": "45fddca98a372f2274e39f1aace0f203f336f16afdc36c489674d0711ef84a74",
       "mtimeMs": 1784536881000.9138,
       "size": 6220,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/provenance-graph.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "Revision",
+          "kind": "const",
+          "line": 31,
+          "exported": false,
+          "endLine": 31
+        },
+        {
+          "name": "Counter",
+          "kind": "const",
+          "line": 32,
+          "exported": false,
+          "endLine": 32
+        },
+        {
+          "name": "NonBlank",
+          "kind": "const",
+          "line": 33,
+          "exported": false,
+          "endLine": 33
+        },
+        {
+          "name": "ArtifactDigest",
+          "kind": "const",
+          "line": 38,
+          "exported": false,
+          "endLine": 38
+        },
+        {
+          "name": "ProvenanceEdgeId",
+          "kind": "const",
+          "line": 40,
+          "exported": true,
+          "endLine": 40
+        },
+        {
+          "name": "ProvenanceEdgeId",
+          "kind": "type",
+          "line": 44,
+          "exported": true,
+          "endLine": 44
+        },
+        {
+          "name": "EdgeIdentity",
+          "kind": "const",
+          "line": 46,
+          "exported": false,
+          "endLine": 46
+        },
+        {
+          "name": "ReportClaimProvenanceEdge",
+          "kind": "const",
+          "line": 55,
+          "exported": true,
+          "endLine": 55
+        },
+        {
+          "name": "ClaimRecursiveFindingProvenanceEdge",
+          "kind": "const",
+          "line": 64,
+          "exported": true,
+          "endLine": 64
+        },
+        {
+          "name": "ClaimRunProvenanceEdge",
+          "kind": "const",
+          "line": 70,
+          "exported": true,
+          "endLine": 70
+        },
+        {
+          "name": "ClaimUserProvenanceEdge",
+          "kind": "const",
+          "line": 76,
+          "exported": true,
+          "endLine": 76
+        },
+        {
+          "name": "DocumentProvenanceEdge",
+          "kind": "const",
+          "line": 82,
+          "exported": true,
+          "endLine": 82
+        },
+        {
+          "name": "DatasetProvenanceEdge",
+          "kind": "const",
+          "line": 96,
+          "exported": true,
+          "endLine": 96
+        },
+        {
+          "name": "RecursiveProvenanceEdge",
+          "kind": "const",
+          "line": 123,
+          "exported": true,
+          "endLine": 123
+        },
+        {
+          "name": "ProvenanceEdge",
+          "kind": "const",
+          "line": 136,
+          "exported": true,
+          "endLine": 136
+        },
+        {
+          "name": "ProvenanceEdge",
+          "kind": "type",
+          "line": 145,
+          "exported": true,
+          "endLine": 145
+        },
+        {
+          "name": "CitationValidationStatus",
+          "kind": "const",
+          "line": 147,
+          "exported": true,
+          "endLine": 147
+        },
+        {
+          "name": "CitationValidationStatus",
+          "kind": "type",
+          "line": 154,
+          "exported": true,
+          "endLine": 154
+        },
+        {
+          "name": "CitationValidationReason",
+          "kind": "const",
+          "line": 157,
+          "exported": true,
+          "endLine": 157
+        },
+        {
+          "name": "CitationValidationReason",
+          "kind": "type",
+          "line": 186,
+          "exported": true,
+          "endLine": 186
+        },
+        {
+          "name": "CitationValidationFact",
+          "kind": "const",
+          "line": 189,
+          "exported": true,
+          "endLine": 189
+        },
+        {
+          "name": "CitationValidationFact",
+          "kind": "type",
+          "line": 199,
+          "exported": true,
+          "endLine": 199
+        },
+        {
+          "name": "RevalidationTrigger",
+          "kind": "const",
+          "line": 202,
+          "exported": true,
+          "endLine": 202
+        },
+        {
+          "name": "RevalidationTrigger",
+          "kind": "type",
+          "line": 210,
+          "exported": true,
+          "endLine": 210
+        },
+        {
+          "name": "ProvenanceGraph",
+          "kind": "const",
+          "line": 212,
+          "exported": true,
+          "endLine": 212
+        },
+        {
+          "name": "ProvenanceGraph",
+          "kind": "type",
+          "line": 332,
+          "exported": true,
+          "endLine": 332
+        },
+        {
+          "name": "CitationPublicationGate",
+          "kind": "const",
+          "line": 334,
+          "exported": true,
+          "endLine": 334
+        },
+        {
+          "name": "CitationPublicationGate",
+          "kind": "type",
+          "line": 340,
+          "exported": true,
+          "endLine": 340
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "CrossSourceEvidenceId",
+          "specifier": "./cross-source-evidence.js",
+          "imported": [
+            "CrossSourceEvidenceId"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Sha256Digest",
+          "specifier": "./directory-manifest.js",
+          "imported": [
+            "Sha256Digest"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DocumentLocator",
+          "specifier": "./document.js",
+          "imported": [
+            "DocumentLocator"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "66d396fc2aef1585392f087a44db33a33a099d7621ee4784825e197c3e291d08",
+      "mtimeMs": 1784569593257.4302,
+      "size": 11364,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -8256,122 +8913,122 @@
         {
           "name": "ReportSection",
           "kind": "type",
-          "line": 57,
+          "line": 65,
           "exported": true,
-          "endLine": 57
+          "endLine": 65
         },
         {
           "name": "Report",
           "kind": "const",
-          "line": 59,
+          "line": 67,
           "exported": true,
-          "endLine": 59
+          "endLine": 67
         },
         {
           "name": "Report",
           "kind": "type",
-          "line": 137,
+          "line": 164,
           "exported": true,
-          "endLine": 137
+          "endLine": 164
         },
         {
           "name": "ReportSupersessionError",
           "kind": "class",
-          "line": 139,
+          "line": 166,
           "exported": true,
-          "endLine": 139
+          "endLine": 166
         },
         {
           "name": "validateReportSupersession",
           "kind": "const",
-          "line": 149,
+          "line": 176,
           "exported": true,
-          "endLine": 149
+          "endLine": 176
         },
         {
           "name": "SectionRegeneration",
           "kind": "const",
-          "line": 179,
+          "line": 206,
           "exported": true,
-          "endLine": 179
+          "endLine": 206
         },
         {
           "name": "SectionRegeneration",
           "kind": "type",
-          "line": 188,
+          "line": 215,
           "exported": true,
-          "endLine": 188
+          "endLine": 215
         },
         {
           "name": "StaleReportRevisionError",
           "kind": "class",
-          "line": 191,
+          "line": 218,
           "exported": true,
-          "endLine": 191
+          "endLine": 218
         },
         {
           "name": "ReportSectionNotFoundError",
           "kind": "class",
-          "line": 202,
+          "line": 229,
           "exported": true,
-          "endLine": 202
+          "endLine": 229
         },
         {
           "name": "ReportNotPublishableError",
           "kind": "class",
-          "line": 212,
+          "line": 239,
           "exported": true,
-          "endLine": 212
+          "endLine": 239
         },
         {
           "name": "IllegalReportStateError",
           "kind": "class",
-          "line": 222,
+          "line": 249,
           "exported": true,
-          "endLine": 222
+          "endLine": 249
         },
         {
           "name": "ReportIdempotencyConflictError",
           "kind": "class",
-          "line": 233,
+          "line": 260,
           "exported": true,
-          "endLine": 233
+          "endLine": 260
         },
         {
           "name": "blockingClaimIds",
           "kind": "function",
-          "line": 243,
+          "line": 270,
           "exported": true,
-          "endLine": 243,
+          "endLine": 270,
           "signature": "(report: Report)"
         },
         {
           "name": "sameAuthorship",
           "kind": "function",
-          "line": 251,
+          "line": 278,
           "exported": false,
-          "endLine": 251
+          "endLine": 278
         },
         {
           "name": "regenerateReportSection",
           "kind": "const",
-          "line": 267,
+          "line": 294,
           "exported": true,
-          "endLine": 267
+          "endLine": 294
         },
         {
           "name": "publishReport",
           "kind": "const",
-          "line": 339,
+          "line": 367,
           "exported": true,
-          "endLine": 339
+          "endLine": 367
         },
         {
           "name": "prepareReportPublication",
           "kind": "const",
-          "line": 398,
+          "line": 429,
           "exported": true,
-          "endLine": 398
+          "endLine": 429
         }
       ],
       "imports": [
@@ -8386,9 +9043,9 @@
         }
       ],
       "exports": [],
-      "hash": "2dffec11d99c32a484a123b60fa5681aec28b9c5482a675dc1809d40facb4654",
-      "mtimeMs": 1784566189900.4646,
-      "size": 15209,
+      "hash": "c54bf464f4fecb3fa0df88b3ac180aa9a6b068c7ffc6f301720ba33cdc229943",
+      "mtimeMs": 1784570146762.1582,
+      "size": 16646,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -9397,7 +10054,7 @@
         }
       ],
       "hash": "15a0e22cff619a14764cdaa634a01cc0f080e43d1dcc99ce5c4d77301eab6580",
-      "mtimeMs": 1784565758956.412,
+      "mtimeMs": 1784567036321.2297,
       "size": 4155,
       "generated": false,
       "vendor": false,
@@ -14067,9 +14724,9 @@
           "kind": "reexport"
         }
       ],
-      "hash": "301f690329b4dbbdb664d80da6fbb3c210097656ffca00d653cb7ba53bfae603",
-      "mtimeMs": 1784521067929.5693,
-      "size": 4519,
+      "hash": "e4166fec09c63c232f251f14b19ae0e169e19ac4b66e8db51ce8304c557d9f03",
+      "mtimeMs": 1784570103613.4211,
+      "size": 5017,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -14095,9 +14752,9 @@
       ],
       "imports": [],
       "exports": [],
-      "hash": "5e4f1540304329e246c714bb1ecfd61ac68419bf89582537bb9a742f6a9cde56",
-      "mtimeMs": 1784565977284.1313,
-      "size": 3672,
+      "hash": "6776108c9bf4e19b3e2866b0b7269e36c78e3ac9c26f209b3238bd61f7d040da",
+      "mtimeMs": 1784569887655.5486,
+      "size": 4116,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -15393,6 +16050,171 @@
       "parser": "regex"
     },
     {
+      "path": "packages/persistence/src/repositories/durable-artifacts.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DurableArtifactPersistenceError",
+          "kind": "class",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "DurableArtifactScopeError",
+          "kind": "class",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "DurableArtifactConflictError",
+          "kind": "class",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "DurableArtifactStaleWriteError",
+          "kind": "class",
+          "line": 50,
+          "exported": true,
+          "endLine": 50
+        },
+        {
+          "name": "DurableArtifactDecodeError",
+          "kind": "class",
+          "line": 61,
+          "exported": true,
+          "endLine": 61
+        },
+        {
+          "name": "DurableArtifactRepositoryError",
+          "kind": "type",
+          "line": 70,
+          "exported": true,
+          "endLine": 70
+        },
+        {
+          "name": "parseJson",
+          "kind": "function",
+          "line": 77,
+          "exported": false,
+          "endLine": 77,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "payloadHash",
+          "kind": "function",
+          "line": 86,
+          "exported": false,
+          "endLine": 86,
+          "signature": "(snapshot: unknown)"
+        },
+        {
+          "name": "resolveArtifactIdentityCollision",
+          "kind": "function",
+          "line": 92,
+          "exported": true,
+          "endLine": 92
+        },
+        {
+          "name": "decodeFinding",
+          "kind": "function",
+          "line": 111,
+          "exported": false,
+          "endLine": 111,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "decodeReport",
+          "kind": "function",
+          "line": 120,
+          "exported": false,
+          "endLine": 120,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "isRepositoryError",
+          "kind": "function",
+          "line": 129,
+          "exported": false,
+          "endLine": 129
+        },
+        {
+          "name": "assertCompletedRun",
+          "kind": "function",
+          "line": 139,
+          "exported": false,
+          "endLine": 139
+        },
+        {
+          "name": "persistClaim",
+          "kind": "function",
+          "line": 174,
+          "exported": false,
+          "endLine": 174
+        },
+        {
+          "name": "syncReportProjection",
+          "kind": "function",
+          "line": 309,
+          "exported": false,
+          "endLine": 309
+        },
+        {
+          "name": "DurableArtifactsRepo",
+          "kind": "class",
+          "line": 359,
+          "exported": true,
+          "endLine": 359
+        }
+      ],
+      "imports": [
+        {
+          "source": "FindingId",
+          "specifier": "@struct/domain",
+          "imported": [
+            "FindingId"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "Effect, Option, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlClient",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlExecutorShape",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlExecutorShape"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "012013044addd0930dc0a1aea327546ba03a064f686426629e0dd1261653e810",
+      "mtimeMs": 1784572536713.8613,
+      "size": 35741,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/persistence/src/repositories/ingestion-jobs.ts",
       "language": "TypeScript",
       "symbols": [
@@ -15828,6 +16650,140 @@
       "hash": "a5122a7d55c799bbbd3d19af57b1e2bb5c6491231015cd8c67bef71edc41f9bc",
       "mtimeMs": 1784433778779.0454,
       "size": 59808,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/persistence/src/repositories/provenance-graph.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ProvenanceGraphPersistenceError",
+          "kind": "class",
+          "line": 19,
+          "exported": true,
+          "endLine": 19
+        },
+        {
+          "name": "ProvenanceGraphScopeError",
+          "kind": "class",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "ProvenanceGraphConflictError",
+          "kind": "class",
+          "line": 36,
+          "exported": true,
+          "endLine": 36
+        },
+        {
+          "name": "ProvenanceGraphDecodeError",
+          "kind": "class",
+          "line": 47,
+          "exported": true,
+          "endLine": 47
+        },
+        {
+          "name": "ProvenanceDocumentScopeError",
+          "kind": "class",
+          "line": 56,
+          "exported": true,
+          "endLine": 56
+        },
+        {
+          "name": "ProvenanceGraphRepositoryError",
+          "kind": "type",
+          "line": 67,
+          "exported": true,
+          "endLine": 67
+        },
+        {
+          "name": "ProvenanceDocumentEvidenceProjection",
+          "kind": "interface",
+          "line": 74,
+          "exported": true,
+          "endLine": 74
+        },
+        {
+          "name": "graphHash",
+          "kind": "function",
+          "line": 84,
+          "exported": false,
+          "endLine": 84,
+          "signature": "(graph: ProvenanceGraph)"
+        },
+        {
+          "name": "parseJson",
+          "kind": "function",
+          "line": 112,
+          "exported": false,
+          "endLine": 112,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "evidenceId",
+          "kind": "function",
+          "line": 121,
+          "exported": false,
+          "endLine": 121,
+          "signature": "(edge: ProvenanceEdge)"
+        },
+        {
+          "name": "loadGraphRows",
+          "kind": "function",
+          "line": 129,
+          "exported": false,
+          "endLine": 129
+        },
+        {
+          "name": "decodeLoaded",
+          "kind": "function",
+          "line": 159,
+          "exported": false,
+          "endLine": 159
+        },
+        {
+          "name": "ProvenanceGraphRepo",
+          "kind": "class",
+          "line": 213,
+          "exported": true,
+          "endLine": 213
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlClient",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlClient"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SqlExecutorShape",
+          "specifier": "../sql-client.js",
+          "imported": [
+            "SqlExecutorShape"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "0096faaf25ee702ce6283d515675cc8a31f2fdb806afd6af705b4dafcdbf78ba",
+      "mtimeMs": 1784570438035.183,
+      "size": 18537,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -17070,6 +18026,219 @@
       "parser": "regex"
     },
     {
+      "path": "packages/research-engine/src/citation-state-machine.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "CitationPublicationBlocked",
+          "kind": "class",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "citationPublicationGate",
+          "kind": "const",
+          "line": 22,
+          "exported": true,
+          "endLine": 22
+        },
+        {
+          "name": "requireValidCitationsForPublication",
+          "kind": "const",
+          "line": 81,
+          "exported": true,
+          "endLine": 81
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "90660f36dd3bfa525d8b7391f70f7d1bd99a2b08062145adb35c6d7950ee8f99",
+      "mtimeMs": 1784569593259.0374,
+      "size": 3304,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/research-engine/src/compose-report.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonBlank",
+          "kind": "const",
+          "line": 21,
+          "exported": false,
+          "endLine": 21
+        },
+        {
+          "name": "Revision",
+          "kind": "const",
+          "line": 26,
+          "exported": false,
+          "endLine": 26
+        },
+        {
+          "name": "ReportCompositionError",
+          "kind": "class",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "ReportSectionSelection",
+          "kind": "const",
+          "line": 47,
+          "exported": true,
+          "endLine": 47
+        },
+        {
+          "name": "ReportSectionSelection",
+          "kind": "type",
+          "line": 53,
+          "exported": true,
+          "endLine": 53
+        },
+        {
+          "name": "ComposeReportInput",
+          "kind": "const",
+          "line": 56,
+          "exported": true,
+          "endLine": 56
+        },
+        {
+          "name": "ComposeReportInput",
+          "kind": "type",
+          "line": 69,
+          "exported": true,
+          "endLine": 69
+        },
+        {
+          "name": "AddReportSectionInput",
+          "kind": "const",
+          "line": 71,
+          "exported": true,
+          "endLine": 71
+        },
+        {
+          "name": "AddReportSectionInput",
+          "kind": "type",
+          "line": 81,
+          "exported": true,
+          "endLine": 81
+        },
+        {
+          "name": "EditReportSectionInput",
+          "kind": "const",
+          "line": 84,
+          "exported": true,
+          "endLine": 84
+        },
+        {
+          "name": "EditReportSectionInput",
+          "kind": "type",
+          "line": 93,
+          "exported": true,
+          "endLine": 93
+        },
+        {
+          "name": "latestContent",
+          "kind": "function",
+          "line": 96,
+          "exported": false,
+          "endLine": 96,
+          "signature": "(claim: Claim)"
+        },
+        {
+          "name": "renderFindingContent",
+          "kind": "function",
+          "line": 100,
+          "exported": false,
+          "endLine": 100,
+          "signature": "(findings: ReadonlyArray<Finding>)"
+        },
+        {
+          "name": "generatedRevision",
+          "kind": "function",
+          "line": 106,
+          "exported": false,
+          "endLine": 106
+        },
+        {
+          "name": "composeReport",
+          "kind": "const",
+          "line": 130,
+          "exported": true,
+          "endLine": 130
+        },
+        {
+          "name": "addReportSection",
+          "kind": "const",
+          "line": 241,
+          "exported": true,
+          "endLine": 241
+        },
+        {
+          "name": "reorderReportSections",
+          "kind": "const",
+          "line": 307,
+          "exported": true,
+          "endLine": 307
+        },
+        {
+          "name": "removeReportSection",
+          "kind": "const",
+          "line": 356,
+          "exported": true,
+          "endLine": 356
+        },
+        {
+          "name": "editReportSection",
+          "kind": "const",
+          "line": 434,
+          "exported": true,
+          "endLine": 434
+        }
+      ],
+      "imports": [
+        {
+          "source": "Claim, Finding",
+          "specifier": "@struct/domain",
+          "imported": [
+            "Claim",
+            "Finding"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "f57c70bef44062e1b3cd97168a79613133803215a2a1395ecdead8a657798714",
+      "mtimeMs": 1784572254812.8884,
+      "size": 14094,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/research-engine/src/contradiction-detection.ts",
       "language": "TypeScript",
       "symbols": [
@@ -17186,85 +18355,106 @@
           "endLine": 27
         },
         {
+          "name": "MAX_RECURSIVE_EVIDENCE_EXCERPT_CHARACTERS",
+          "kind": "const",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "RecursiveEvidenceArtifactRecord",
+          "kind": "interface",
+          "line": 30,
+          "exported": true,
+          "endLine": 30
+        },
+        {
+          "name": "renderRecursiveEvidenceExcerpt",
+          "kind": "function",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
           "name": "RecursiveEvidenceArtifact",
           "kind": "interface",
-          "line": 29,
+          "line": 46,
           "exported": true,
-          "endLine": 29
+          "endLine": 46
         },
         {
           "name": "BuiltRecursiveEvidenceArtifact",
           "kind": "interface",
-          "line": 62,
+          "line": 79,
           "exported": true,
-          "endLine": 62
+          "endLine": 79
         },
         {
           "name": "EvidenceArtifactValidationError",
           "kind": "class",
-          "line": 70,
+          "line": 87,
           "exported": true,
-          "endLine": 70
+          "endLine": 87
         },
         {
           "name": "failure",
           "kind": "function",
-          "line": 80,
+          "line": 97,
           "exported": false,
-          "endLine": 80,
+          "endLine": 97,
           "signature": "(path: string, reason: string, message: string)"
         },
         {
           "name": "hashBytes",
           "kind": "function",
-          "line": 84,
+          "line": 101,
           "exported": false,
-          "endLine": 84,
+          "endLine": 101,
           "signature": "(bytes: Uint8Array)"
         },
         {
           "name": "computeBatchEvidenceTransformationIdentity",
           "kind": "function",
-          "line": 90,
+          "line": 107,
           "exported": true,
-          "endLine": 90
+          "endLine": 107
         },
         {
           "name": "sourceIdentity",
           "kind": "function",
-          "line": 104,
+          "line": 121,
           "exported": false,
-          "endLine": 104,
+          "endLine": 121,
           "signature": "(source: BatchEvidenceSource)"
         },
         {
           "name": "compareIdentity",
           "kind": "function",
-          "line": 108,
+          "line": 125,
           "exported": false,
-          "endLine": 108
+          "endLine": 125
         },
         {
           "name": "encodeArtifact",
           "kind": "function",
-          "line": 115,
+          "line": 132,
           "exported": false,
-          "endLine": 115,
+          "endLine": 132,
           "signature": "(artifact: RecursiveEvidenceArtifact)"
         },
         {
           "name": "boundArtifact",
           "kind": "function",
-          "line": 119,
+          "line": 136,
           "exported": false,
-          "endLine": 119
+          "endLine": 136
         },
         {
           "name": "BatchEvidenceArtifacts",
           "kind": "class",
-          "line": 200,
+          "line": 217,
           "exported": true,
-          "endLine": 200
+          "endLine": 217
         }
       ],
       "imports": [
@@ -17279,9 +18469,9 @@
         }
       ],
       "exports": [],
-      "hash": "894fca133ab3c224f7b8942c9191573c8a3a2d3819a47deee870113938429813",
-      "mtimeMs": 1784539693232.3682,
-      "size": 11461,
+      "hash": "90df72dccb33a878a6524686f1b06e4cadb29afd546ea9d43f45bec144911bb9",
+      "mtimeMs": 1784569593259.212,
+      "size": 12182,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -18927,6 +20117,222 @@
       "hash": "b4dcfafc215ebdaeea203d4231c29dc2086b53f8adb48e26d3f3376e80c2b974",
       "mtimeMs": 1784433778781.93,
       "size": 3055,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/research-engine/src/validate-citations.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "CitationTargetResolutionError",
+          "kind": "class",
+          "line": 35,
+          "exported": true,
+          "endLine": 35
+        },
+        {
+          "name": "CitationValidationLimitExceeded",
+          "kind": "class",
+          "line": 61,
+          "exported": true,
+          "endLine": 61
+        },
+        {
+          "name": "CitationValidationScope",
+          "kind": "interface",
+          "line": 71,
+          "exported": true,
+          "endLine": 71
+        },
+        {
+          "name": "OpenDocumentEvidence",
+          "kind": "interface",
+          "line": 78,
+          "exported": true,
+          "endLine": 78
+        },
+        {
+          "name": "OpenRecursiveEvidence",
+          "kind": "interface",
+          "line": 89,
+          "exported": true,
+          "endLine": 89
+        },
+        {
+          "name": "CitationEvidenceResolverShape",
+          "kind": "interface",
+          "line": 94,
+          "exported": true,
+          "endLine": 94
+        },
+        {
+          "name": "CitationEvidenceResolver",
+          "kind": "class",
+          "line": 119,
+          "exported": true,
+          "endLine": 119
+        },
+        {
+          "name": "ValidateReportCitationsInput",
+          "kind": "interface",
+          "line": 126,
+          "exported": true,
+          "endLine": 126
+        },
+        {
+          "name": "digest",
+          "kind": "function",
+          "line": 135,
+          "exported": false,
+          "endLine": 135,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "computeProvenanceEdgeId",
+          "kind": "function",
+          "line": 143,
+          "exported": true,
+          "endLine": 143
+        },
+        {
+          "name": "withEdgeId",
+          "kind": "function",
+          "line": 149,
+          "exported": false,
+          "endLine": 149,
+          "signature": "(edge: Readonly<Record<string, unknown>>)"
+        },
+        {
+          "name": "commonEdge",
+          "kind": "function",
+          "line": 156,
+          "exported": false,
+          "endLine": 156,
+          "signature": "(report: Report, claim: Claim)"
+        },
+        {
+          "name": "evidenceEdge",
+          "kind": "function",
+          "line": 167,
+          "exported": false,
+          "endLine": 167
+        },
+        {
+          "name": "buildProvenanceEdges",
+          "kind": "function",
+          "line": 233,
+          "exported": true,
+          "endLine": 233,
+          "signature": "(report: Report)"
+        },
+        {
+          "name": "failed",
+          "kind": "function",
+          "line": 273,
+          "exported": false,
+          "endLine": 273
+        },
+        {
+          "name": "mismatchReason",
+          "kind": "function",
+          "line": 294,
+          "exported": false,
+          "endLine": 294
+        },
+        {
+          "name": "isOriginEdge",
+          "kind": "function",
+          "line": 378,
+          "exported": false,
+          "endLine": 378,
+          "signature": "(edge: ProvenanceEdge)"
+        },
+        {
+          "name": "isEvidenceEdge",
+          "kind": "function",
+          "line": 384,
+          "exported": false,
+          "endLine": 384,
+          "signature": "(edge: ProvenanceEdge)"
+        },
+        {
+          "name": "compareExistingEdge",
+          "kind": "function",
+          "line": 393,
+          "exported": false,
+          "endLine": 393
+        },
+        {
+          "name": "compareDocument",
+          "kind": "function",
+          "line": 435,
+          "exported": false,
+          "endLine": 435
+        },
+        {
+          "name": "compareDataset",
+          "kind": "function",
+          "line": 459,
+          "exported": false,
+          "endLine": 459
+        },
+        {
+          "name": "compareRecursive",
+          "kind": "function",
+          "line": 524,
+          "exported": false,
+          "endLine": 524
+        },
+        {
+          "name": "validateMode",
+          "kind": "function",
+          "line": 549,
+          "exported": false,
+          "endLine": 549,
+          "signature": "(claim: Claim)"
+        },
+        {
+          "name": "CitationValidation",
+          "kind": "class",
+          "line": 565,
+          "exported": true,
+          "endLine": 565
+        }
+      ],
+      "imports": [
+        {
+          "source": "canonicalJson",
+          "specifier": "@struct/retrieval",
+          "imported": [
+            "canonicalJson"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Context, Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Context",
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "computeCrossSourceEvidenceId",
+          "specifier": "./normalize-evidence.js",
+          "imported": [
+            "computeCrossSourceEvidenceId"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "417f8ba0021343e3ee53c8409baf9f81e6fee5d3b9865728a3e6325042bd3133",
+      "mtimeMs": 1784569593260.439,
+      "size": 28585,
       "generated": false,
       "vendor": false,
       "parser": "regex"

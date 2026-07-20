@@ -12,12 +12,14 @@ import { Router, Route } from '@solidjs/router'
 import App from './App'
 import { CitationPage } from './pages/CitationPage'
 import { ResearchPage } from './pages/ResearchPage'
+import { NotebookPage } from './pages/NotebookPage'
 
 render(
   () => (
     <Router root={App}>
       <Route path="/projects/:projectId/research/:threadId/runs/:runId" component={ResearchPage} />
       <Route path="/projects/:projectId/research/:threadId/citation/:citationId" component={CitationPage} />
+      <Route path="/projects/:projectId/notebook" component={NotebookPage} />
     </Router>
   ),
   document.getElementById('app')!,

@@ -69,6 +69,12 @@ export {
   ProvenanceGraphConflictError,
   ProvenanceGraphDecodeError,
   ProvenanceDocumentScopeError,
+  DurableArtifactsRepo,
+  DurableArtifactPersistenceError,
+  DurableArtifactScopeError,
+  DurableArtifactConflictError,
+  DurableArtifactStaleWriteError,
+  DurableArtifactDecodeError,
   // Persistence errors
   QueryError,
   EntityNotFoundError,

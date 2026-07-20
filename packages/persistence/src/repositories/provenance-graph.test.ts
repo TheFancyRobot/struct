@@ -123,7 +123,7 @@ function client(memory: Memory): SqlClientShape {
     query: string,
     params: readonly unknown[] = [],
   ): Promise<readonly Record<string, unknown>[]> => {
-    if (query.includes('FROM reports')) {
+    if (query.includes('FROM report_revision_snapshots')) {
       return memory.authorize ? [{ id: reportId }] : []
     }
     if (query.includes('INSERT INTO provenance_graphs')) {
