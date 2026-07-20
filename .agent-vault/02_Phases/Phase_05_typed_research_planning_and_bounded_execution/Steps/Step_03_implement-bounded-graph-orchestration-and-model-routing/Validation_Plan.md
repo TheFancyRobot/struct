@@ -2,17 +2,17 @@
 
 ## Acceptance Checks
 
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: The research-run graph that enforces max steps, model/tool budgets, duplicate-action detection, and no-progress termination.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Explicit model-routing policy so classification, planning, and synthesis can choose different providers/models without changing business logic.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Orchestration state typed and serializable so later checkpoint/replay work does not depend on hidden in-memory closures.
-- The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
+- A validated plan compiles to a Fred graph that resolves only declared tool/capability IDs and focused agent nodes.
+- Step/tool/model/cost/time/concurrency, duplicate-action, and no-progress limits stop deterministically with typed reasons before the next action.
+- Classification, planning, critique, and synthesis model routing changes through policy/configuration without changing graph business contracts.
+- Graph state is schema-serializable; tests use typed fake resolvers and this step adds no persistence or production worker dispatch.
 
 ## Planned Verification
 
-- Plan orchestration tests that show a run stops at budget limits, rejects duplicate actions, and records the stop reason.
-- Plan a routing test that proves planner/synthesizer/model selection is configurable without changing workflow contracts.
-- Planned command once these packages exist: `bun test packages/domain packages/workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
-- Planned app/integration coverage once the app surfaces exist: `bun test apps/worker` for the API/worker/web path touched here.
+- Run focused graph tests for each independent limit, duplicate/no-progress termination, undeclared capability/tool resolution, interruption, and provider failure.
+- Run routing tests proving role-specific model/provider selection without graph-contract changes.
+- Run `bun test packages/domain packages/workflows packages/research-engine`.
+- Run `bun run typecheck`, `bun run lint`, and `bun run lint:imports`.
 
 ## Edge Cases
 

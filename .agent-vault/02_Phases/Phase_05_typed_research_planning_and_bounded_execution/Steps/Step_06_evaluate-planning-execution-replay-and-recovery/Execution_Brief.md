@@ -2,19 +2,19 @@
 
 ## Exact Outcome
 
-- Produce the concrete contracts, artifacts, and bounded implementation/design surfaces for Planning Execution Replay and Recovery that this step is responsible for before any broader follow-on work begins.
+- Produce reproducible release-gate evidence that the integrated Phase 05 planner, graph, registry, journal/checkpoints, cancellation, retries, and recovery satisfy every phase acceptance criterion without duplicate side effects or unbounded execution.
 
 ## Prerequisites
 
 - Re-read [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|Phase 05 typed research planning and bounded execution]] and confirm the step still matches the current roadmap sequence.
 - Confirm the handoff from [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_05_implement-tool-registry-typed-failures-retries-and-recovery|STEP-05-05 Implement Tool Registry Typed Failures Retries and Recovery]] before widening scope.
 - Keep deterministic work in typed Effect services, repositories, and tools; reserve Fred for agentic orchestration only.
-- Treat the listed files as planned starting points; create only the smallest set needed to land the slice.
+- Treat this as an evaluation/remediation step, not a new feature slice.
 
 ## Planned Starting Files
 
-- These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `packages/evaluation/src/research-planner.ts`
+- `packages/evaluation/src/phase-05-evaluation.ts`
+- `packages/evaluation/test/phase-05-evaluation.test.ts`
 - `apps/worker/test/research-replay.integration.test.ts`
 - `docs/operations/research-recovery.md`
 - `docs/benchmarks/research-planning.md`
@@ -30,21 +30,23 @@
 
 ## Concrete Deliverables
 
-- Run replay/recovery evaluations that prove planning and execution can resume from persisted checkpoints without duplicating side effects.
-- Document the exact restart, replan, and failure classes the system can recover from versus the ones that still require operator action.
-- Tie benchmark/report artifacts back to the planner, graph, and tool-registry contracts created earlier in Phase 05.
+- Add a deterministic Phase 05 fixture/report that covers plan validation, routing, every execution limit, registered tool contracts, typed failures, cancellation, retries, replay, and restart recovery.
+- Prove restart after planning, between tool attempt/commit, after checkpoint/event commit, and during cancellation preserves one terminal state and zero duplicate side effects.
+- Document measured checkpoint size/replay latency plus exact automated/operator recovery classes, and tie the report to each phase acceptance criterion.
 
 ## Smallest Bounded Checklist
 
-- First, run replay/recovery evaluations that prove planning and execution can resume from persisted checkpoints without duplicating side effects.
-- Then, document the exact restart, replan, and failure classes the system can recover from versus the ones that still require operator action.
-- Next, tie benchmark/report artifacts back to the planner, graph, and tool-registry contracts created earlier in Phase 05.
-- Finish by capturing the deterministic fixture, benchmark, or gate evidence that will let the validation plan judge the slice without guesswork.
+- Implement the deterministic fixture and machine-readable report with explicit pass/fail gates.
+- Run it twice and require byte-identical deterministic portions plus zero duplicate side effects.
+- Exercise live PostgreSQL and the existing Compose data-engine boundary for mixed document/dataset recovery; verify the Bun host remains healthy through sidecar failure/restart.
+- Remediate confirmed defects only, then run the full repository, security, Compose, and vault gates and document operator recovery.
 
 ## Constraints and Non-Goals
 
 - Research plans, tools, and workflow state must all use typed schemas and typed failures.
-- Budgets, cancellation, duplicate-action detection, and no-progress detection are product requirements, not optional polish.
+- Add no new planner, graph, persistence, tool, worker, API, or UI capability unless a failing gate proves a Phase 05 defect.
+- Do not weaken thresholds, convert failures into skips, or substitute mocks for the required live PostgreSQL/sidecar recovery evidence.
+- Maintained evaluation code runs with Bun; the isolated sidecar retains its pinned Node 24 LTS runtime.
 - Keep deterministic inspection, retrieval, and SQL execution in Effect services/tools; Fred should orchestrate judgment, not replace core services.
 
 ## Related Notes

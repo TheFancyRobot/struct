@@ -2,21 +2,21 @@
 
 ## Acceptance Checks
 
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: An evidence-backed validation pass for Fred Planner with Validated Deterministic Plans, with explicit pass/fail criteria and durable output artifacts.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: The orchestration or synthesis rules in `packages/research-engine/src/validate-plan.ts`, `packages/research-engine/src/plan-revision.ts` without moving deterministic work out of services/tools.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Fred-specific graph/agent wiring isolated to `packages/workflows/src/agents/research-planner.ts` and typed at every boundary.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Worker-side execution in `apps/worker/src/jobs/plan-research.ts` follows one resumable, observable path for this slice.
-- The output includes a clear pass/fail signal, recorded defects or blockers, and the next action for anything intentionally left unresolved.
+- Focused Fred classifier/planner agents use STEP-05-01 schemas, one model step, no tools, and preserve immutable workspace/project/source-version scope.
+- Deterministic `@struct/research-engine` validation accepts and normalizes valid document, dataset, and mixed plans before execution.
+- Unknown tools, cycles, missing dependencies, fan-out, unsupported capabilities, and budget overflow return their specific typed planning failures; none are silently repaired or executed.
+- No worker, persistence, checkpoint, event, registry, or graph-execution surface is added in this step.
 
 ## Planned Verification
 
-- Planned command once these packages exist: `bun test packages/workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
-- Planned app/integration coverage once the app surfaces exist: `bun test apps/worker` for the API/worker/web path touched here.
+- Run `bun test packages/workflows packages/research-engine`.
+- Run `bun run typecheck`, `bun run lint`, and `bun run lint:imports`.
 
 ## Edge Cases
 
-- Partial progress, retries, or restarts should leave this step in a typed, inspectable state rather than a silent half-success.
-- Cancellation, duplicate actions, replay after restart, and stale source-version assumptions should produce deterministic terminal states.
+- Malformed model envelopes and schema-invalid output fail before policy validation.
+- A replan may narrow a plan but must not expand source scope, capabilities, or budgets.
+- Model/provider failure remains typed and does not fall through to tool execution.
 
 ## Regression Expectations
 

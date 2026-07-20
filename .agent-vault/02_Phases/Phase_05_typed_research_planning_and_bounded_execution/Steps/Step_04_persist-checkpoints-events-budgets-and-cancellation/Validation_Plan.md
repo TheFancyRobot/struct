@@ -2,17 +2,17 @@
 
 ## Acceptance Checks
 
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Persist `ResearchRun` state, checkpoint references, and consumed budgets in repository modules that can survive process restart.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: The append-only `ResearchEvent` stream and cancel endpoint semantics needed for replayable progress and user-driven cancellation.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Checkpoint writes, event writes, and cancellation signals have a documented ordering rule that future recovery logic can trust.
-- The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
+- Each run durably records either its accepted normalized plan or typed planning failure before executable state.
+- Checkpoint references, monotonic consumed budgets, cancellation intent, and ordered product events survive process restart without embedding large outputs.
+- Cursor replay reconstructs committed progress; duplicate or late cancellation is idempotent, authorization-scoped, and cannot create a second terminal outcome.
+- The transaction/ordering rule for checkpoint, event, cancellation, and terminal commits is executable in repository/API tests and ready for STEP-05-05 recovery dispatch.
 
 ## Planned Verification
 
-- Plan repository tests for checkpoint creation, update, and resume lookup plus event append/readback ordering.
-- Plan an API/worker scenario where cancellation races with in-flight work and still produces one durable terminal state.
-- Planned command once these packages exist: `bun test packages/domain packages/persistence` plus the nearest package-level `bun run typecheck`.
-- Planned app/integration coverage once the app surfaces exist: `bun test apps/api` for the API/worker/web path touched here.
+- Run focused PostgreSQL repository tests for plan/failure persistence, checkpoint create/resume, monotonic budgets, event ordering, and terminal fencing.
+- Run API tests for authenticated cursor replay plus duplicate, racing, and late cancellation.
+- Run `bun test packages/domain packages/persistence apps/api`.
+- Run `bun run typecheck`, `bun run lint`, `bun run lint:imports`, and migration validation.
 
 ## Edge Cases
 

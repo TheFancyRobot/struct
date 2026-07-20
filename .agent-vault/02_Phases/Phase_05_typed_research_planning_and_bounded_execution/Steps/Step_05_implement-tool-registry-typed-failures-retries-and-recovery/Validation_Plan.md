@@ -2,17 +2,17 @@
 
 ## Acceptance Checks
 
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: A typed tool registry that binds tool IDs to Effect Schema inputs/outputs, authorization checks, timeouts, and structured tracing.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Typed failure families plus retry and recovery policies that distinguish permanent validation errors from transient infrastructure faults.
-- Confirm this deliverable is present, testable where applicable, and bounded to the step: Worker dispatch logic explicit about which tools are deterministic services versus Fred-mediated agent steps.
-- The step leaves the next dependent step with a stable typed boundary, not a placeholder or undocumented assumption.
+- The registry binds existing document, directory, and dataset capabilities to schemas, authorization, timeout/idempotency policy, and tracing; unknown/unauthorized tools fail before dispatch.
+- Specific tagged failures determine finite retry eligibility, attempt history, backoff, and terminal/recovery action without retrying validation, authorization, or cancellation failures.
+- The existing research worker path alone integrates planning, graph execution, durable checkpoints/events/budgets, cancellation, lease ownership, and restart resume.
+- Exact-query tools use `@struct/data-engine`; no host Node/DuckDB dependency or duplicate Phase 02-04 implementation is introduced.
 
 ## Planned Verification
 
-- Plan unit tests for tool registration, schema validation failure, retry eligibility, and bounded recovery escalation.
-- Plan worker dispatch tests that prove one transient failure retries and one permanent failure stops immediately with the correct typed error.
-- Planned command once these packages exist: `bun test packages/domain packages/workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
-- Planned app/integration coverage once the app surfaces exist: `bun test apps/worker` for the API/worker/web path touched here.
+- Run registry/policy tests for successful dispatch, schema/auth rejection, transient retry, permanent stop, cancellation, exhausted attempts, and secret-safe tracing.
+- Run worker tests for successful mixed-source execution, provider/tool failure, lease loss, cancellation, checkpoint resume, worker replacement, and zero duplicate side effects.
+- Run `bun test packages/domain packages/workflows packages/research-engine apps/worker`.
+- Run live PostgreSQL and data-engine sidecar integration coverage, then `bun run typecheck`, `bun run lint`, and `bun run lint:imports`.
 
 ## Edge Cases
 
