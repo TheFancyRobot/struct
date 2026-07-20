@@ -28,6 +28,7 @@
     "corpus:eval": "bun run --filter @struct/evaluation corpus:eval",
     "corpus:recovery": "bun run --filter @struct/evaluation corpus:recovery",
     "directory:eval": "bun run --filter @struct/evaluation directory:eval",
+    "recursive:eval": "bun run --filter @struct/evaluation phase-06:eval",
     "bench": "bun run --filter @struct/evaluation bench",
     "secrets:scan": "bun run scripts/secrets-scan.ts",
     "docs:lint": "bun run scripts/docs-lint.ts"
