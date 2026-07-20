@@ -88,6 +88,9 @@ describe('NotebookView', () => {
         ]}
         loadFindings={() => Promise.resolve([])}
         composeReport={() => Promise.reject(new Error('not used'))}
+        mutateReport={() => Promise.reject(new Error('not used'))}
+        loadReportRevision={() => Promise.reject(new Error('not used'))}
+        exportReport={() => Promise.reject(new Error('not used'))}
       />
     ))
     expect(html).toContain('aria-label="Select Finding 1"')
@@ -104,6 +107,9 @@ describe('NotebookView', () => {
         initialFindings={[]}
         loadFindings={() => Promise.resolve([])}
         composeReport={() => Promise.reject(new Error('not used'))}
+        mutateReport={() => Promise.reject(new Error('not used'))}
+        loadReportRevision={() => Promise.reject(new Error('not used'))}
+        exportReport={() => Promise.reject(new Error('not used'))}
       />
     ))
     expect(html).toContain('No saved findings yet')

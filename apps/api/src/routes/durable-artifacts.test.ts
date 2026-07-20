@@ -1,6 +1,7 @@
 import { DatasetQueryAuthorizationError } from '@struct/data-engine'
 import {
   CitationId,
+  Claim,
   ClaimId,
   ContentRevisionId,
   Finding,
@@ -93,6 +94,56 @@ function finding(suffix: string): Finding {
   })
 }
 
+function publishableClaim(suffix: string): Claim {
+  const base = finding(suffix).claims[0]!
+  return Schema.decodeUnknownSync(Schema.typeSchema(Claim))({
+    ...base,
+    citation: {
+      ...base.citation,
+      state: 'publishable',
+    },
+    support: {
+      kind: 'supported',
+      mode: 'document',
+      evidence: [{
+        id: `sha256:${suffix.repeat(64)}`,
+        claimSignature: base.claimSignature,
+        stance: 'supports',
+        semantics: {
+          unit: null,
+          timeWindow: null,
+          version: 'v1',
+          filters: [],
+          cohort: null,
+          denominator: null,
+          joinKeys: [],
+        },
+        payload: {
+          kind: 'document',
+          chunkId: uuid(`${suffix}06`),
+          documentId: uuid(`${suffix}07`),
+          sourceVersionId,
+          chunkingVersion: 'v1',
+          ordinal: 0,
+          locator: {
+            page: 1,
+            section: 'Evidence',
+            paragraph: 1,
+            charStart: 0,
+            charEnd: 8,
+            byteStart: 0,
+            byteEnd: 8,
+          },
+          citationLocator: 'document:chars:0-8,bytes:0-8',
+          excerpt: `Evidence ${suffix}`,
+          trust: 'untrusted-evidence',
+        },
+        limitations: [],
+      }],
+    },
+  })
+}
+
 async function composedReport(
   findings: ReadonlyArray<Finding>,
   key = 'report:create',
@@ -147,6 +198,7 @@ function deps(
     findFinding: () => Effect.die('not used'),
     saveReport: () => Effect.die('not used'),
     findReport: () => Effect.die('not used'),
+    findReportRevision: () => Effect.die('not used'),
     findReportRevisionByKey: () => Effect.succeed(Option.none()),
     ...overrides,
   }
@@ -523,5 +575,187 @@ describe('durable artifact API routes', () => {
       }),
     ))
     expect(unavailable?.status).toBe(503)
+  })
+
+  it('loads an exact historical revision and executes auditable repair gates', async () => {
+    const first = finding('1')
+    const secondClaim = finding('2').claims[0]!
+    const replacement = publishableClaim('3')
+    const combined = Finding.make({
+      ...first,
+      claims: [...first.claims, secondClaim, replacement],
+    })
+    const composed = await composedReport([combined])
+    const initial = Report.make({
+      ...composed,
+      claims: composed.claims.filter((claim) => claim.id !== replacement.id),
+      sections: composed.sections.map((section) => ({
+        ...section,
+        claimIds: section.claimIds.filter((claimId) =>
+          claimId !== replacement.id),
+      })),
+    })
+    const historical = Report.make({
+      ...initial,
+      sections: initial.sections.map((section) => ({
+        ...section,
+        revisions: [{
+          ...section.revisions[0]!,
+          content: 'Historical exact text',
+        }],
+      })),
+    })
+    let requestedRevision = -1
+    const historyResponse = await Effect.runPromise(durableArtifactRoute(
+      new Request(
+        `http://localhost/api/projects/${projectId}/reports/${reportId}`
+        + `?workspaceId=${workspaceId}&revision=0`,
+        { headers: authorization },
+      ),
+      deps({
+        findReportRevision: (_workspace, _project, _report, revision) => {
+          requestedRevision = revision
+          return Effect.succeed(historical)
+        },
+      }),
+    ))
+    expect(historyResponse?.status).toBe(200)
+    expect(requestedRevision).toBe(0)
+    expect((await historyResponse?.json()).sections[0].revisions[0].content)
+      .toBe('Historical exact text')
+
+    const invalidHistory = await Effect.runPromise(durableArtifactRoute(
+      new Request(
+        `http://localhost/api/projects/${projectId}/reports/${reportId}`
+        + `?workspaceId=${workspaceId}&revision=01`,
+        { headers: authorization },
+      ),
+      deps(),
+    ))
+    expect(invalidHistory?.status).toBe(400)
+
+    let current = initial
+    const mutate = async (key: string, body: unknown) => {
+      const response = await Effect.runPromise(durableArtifactRoute(
+        artifactRequest(
+          `/api/projects/${projectId}/reports/${reportId}`,
+          'PATCH',
+          key,
+          body,
+        ),
+        deps({
+          findReport: () => Effect.succeed(current),
+          findFinding: () => Effect.succeed(combined),
+          saveReport: (next) => {
+            current = next
+            return Effect.succeed(next)
+          },
+        }),
+      ))
+      return response
+    }
+
+    const regenerated = await mutate('repair:regenerate', {
+      kind: 'regenerate',
+      workspaceId,
+      sectionId: current.sections[0]!.id,
+      revisionId: uuid('71'),
+      expectedReportRevision: 0,
+      occurredAt: 7,
+    })
+    expect(regenerated?.status).toBe(200)
+    expect(current.sections[0]!.revisions).toHaveLength(2)
+    expect(current.sections[0]!.revisions[1]!.authorship).toEqual({
+      kind: 'generated',
+      runId,
+      model: 'deterministic-report-repair',
+      promptVersion: 'immutable-claims-v1',
+    })
+
+    const staleRegeneration = await mutate('repair:stale-regenerate', {
+      kind: 'regenerate',
+      workspaceId,
+      sectionId: current.sections[0]!.id,
+      revisionId: uuid('72'),
+      expectedReportRevision: 0,
+      occurredAt: 8,
+    })
+    expect(staleRegeneration?.status).toBe(409)
+
+    const invalidReplacement = await mutate('repair:replace-invalid', {
+      kind: 'replace-claim',
+      workspaceId,
+      claimId: secondClaim.id,
+      replacementFindingId: combined.id,
+      replacementClaimId: first.claims[0]!.id,
+      revisionId: uuid('73'),
+      expectedReportRevision: 1,
+      occurredAt: 9,
+    })
+    expect(invalidReplacement?.status).toBe(409)
+
+    const replaced = await mutate('repair:replace-valid', {
+      kind: 'replace-claim',
+      workspaceId,
+      claimId: secondClaim.id,
+      replacementFindingId: combined.id,
+      replacementClaimId: replacement.id,
+      revisionId: uuid('74'),
+      expectedReportRevision: 1,
+      occurredAt: 10,
+    })
+    expect(replaced?.status).toBe(200)
+    expect(current.claims.some((claim) => claim.id === secondClaim.id)).toBe(false)
+    expect(current.claims.some((claim) =>
+      claim.citation.citationId === secondClaim.citation.citationId)).toBe(false)
+    expect(current.sections[0]!.revisions).toHaveLength(3)
+    expect(current.sections[0]!.revisions.at(-1)?.content)
+      .toContain(replacement.revisions[0]!.content)
+    expect(current.publicationState).toBe('draft')
+    expect(historical.claims.map((claim) => claim.id))
+      .toEqual([first.claims[0]!.id, secondClaim.id])
+
+    const removed = await mutate('repair:remove', {
+      kind: 'remove-claim',
+      workspaceId,
+      claimId: first.claims[0]!.id,
+      revisionId: uuid('75'),
+      expectedReportRevision: 2,
+      occurredAt: 11,
+    })
+    expect(removed?.status).toBe(200)
+    expect(current.claims.map((claim) => claim.id)).toEqual([replacement.id])
+    expect(current.sections[0]!.revisions.at(-1)?.content)
+      .toBe(replacement.revisions[0]!.content)
+    expect(historical.sections[0]!.revisions[0]!.content)
+      .toBe('Historical exact text')
+
+    const lastClaim = await mutate('repair:last-claim', {
+      kind: 'remove-claim',
+      workspaceId,
+      claimId: replacement.id,
+      revisionId: uuid('76'),
+      expectedReportRevision: 3,
+      occurredAt: 12,
+    })
+    expect(lastClaim?.status).toBe(409)
+
+    const publicationPrepared = await mutate('publish:prepare', {
+      kind: 'prepare-publication',
+      workspaceId,
+      expectedReportRevision: 3,
+      occurredAt: 13,
+    })
+    expect(publicationPrepared?.status).toBe(200)
+    expect(current.publicationState).toBe('publishable')
+
+    const published = await mutate('publish:direct', {
+      kind: 'publish',
+      workspaceId,
+      expectedReportRevision: 4,
+      occurredAt: 14,
+    })
+    expect(published?.status).toBe(200)
+    expect(current.publicationState).toBe('published')
   })
 })

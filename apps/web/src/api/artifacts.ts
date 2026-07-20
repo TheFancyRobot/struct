@@ -1,6 +1,7 @@
 import {
   ClaimId,
   ContentRevisionId,
+  ExportBundleStatus,
   Finding,
   FindingId,
   Report,
@@ -9,6 +10,8 @@ import {
 import type {
   CitationId,
   ProjectId,
+  ReportId,
+  ReportSectionId,
   ResearchRunId,
   SourceVersionId,
   WorkspaceId,
@@ -29,18 +32,36 @@ async function artifactRequest(
   } catch {
     throw new Error('The notebook could not connect to persistence.')
   }
-  if (!response.ok) {
-    throw new Error(
-      response.status === 409
-        ? 'The report changed. Reload before editing again.'
-        : 'The notebook could not be saved. Try again.',
-    )
-  }
+  let body: unknown
   try {
-    return await response.json()
+    body = await response.json()
   } catch {
     throw new Error('The notebook returned an invalid persistence response.')
   }
+  if (!response.ok) {
+    const tag = typeof body === 'object'
+      && body !== null
+      && 'error' in body
+      && typeof body.error === 'string'
+      ? body.error
+      : ''
+    const message = tag.includes('Stale')
+      ? 'The report changed. Reload before editing again.'
+      : tag === 'ReportNotPublishableError'
+        || tag === 'ReportExportBlockedError'
+        ? 'Publication is blocked by the claim states listed in the report.'
+        : tag === 'IllegalReportStateError'
+          ? 'This action is incompatible with the report’s current publication state.'
+          : tag === 'ReportRepairError'
+            ? 'That repair is no longer valid. Reload the report and choose again.'
+            : response.status === 401
+              ? 'Your workspace session is no longer authorized.'
+              : response.status === 404
+                ? 'The report or one of its sources is no longer available.'
+                : 'The notebook could not be saved. Try again.'
+    throw new Error(message)
+  }
+  return body
 }
 
 export async function fetchFindings(
@@ -219,5 +240,142 @@ export async function createReportFromFindings(
     return await Effect.runPromise(Schema.decodeUnknown(Report)(response))
   } catch {
     throw new Error('The notebook returned an invalid report response.')
+  }
+}
+
+async function decodeReport(body: unknown, message: string): Promise<Report> {
+  try {
+    return await Effect.runPromise(Schema.decodeUnknown(Report)(body))
+  } catch {
+    throw new Error(message)
+  }
+}
+
+export async function fetchReport(
+  workspaceId: typeof WorkspaceId.Type,
+  projectId: typeof ProjectId.Type,
+  reportId: typeof ReportId.Type,
+  revision?: number,
+): Promise<Report> {
+  const query = new URLSearchParams({ workspaceId })
+  if (revision !== undefined) query.set('revision', String(revision))
+  return decodeReport(
+    await artifactRequest(
+      `/api/projects/${projectId}/reports/${reportId}?${query}`,
+    ),
+    'The report returned an invalid revision.',
+  )
+}
+
+export type ReportMutation =
+  | {
+    readonly kind: 'edit'
+    readonly sectionId: typeof ReportSectionId.Type
+    readonly content: string
+    readonly actorId: string
+  }
+  | {
+    readonly kind: 'regenerate'
+    readonly sectionId: typeof ReportSectionId.Type
+  }
+  | {
+    readonly kind: 'reorder'
+    readonly orderedSectionIds: ReadonlyArray<typeof ReportSectionId.Type>
+  }
+  | {
+    readonly kind: 'remove'
+    readonly sectionId: typeof ReportSectionId.Type
+  }
+  | {
+    readonly kind: 'remove-claim'
+    readonly claimId: typeof ClaimId.Type
+  }
+  | {
+    readonly kind: 'replace-claim'
+    readonly claimId: typeof ClaimId.Type
+    readonly replacementFindingId: typeof FindingId.Type
+    readonly replacementClaimId: typeof ClaimId.Type
+  }
+  | { readonly kind: 'prepare-publication' | 'publish' }
+
+export async function mutateReport(
+  report: Report,
+  mutation: ReportMutation,
+): Promise<Report> {
+  const now = Date.now()
+  const key = `report-${mutation.kind}-${report.id}-${report.revision}-${crypto.randomUUID()}`
+  const body = mutation.kind === 'edit'
+    ? {
+      kind: mutation.kind,
+      workspaceId: report.workspaceId,
+      input: {
+        sectionId: mutation.sectionId,
+        revisionId: crypto.randomUUID(),
+        content: mutation.content,
+        actorId: mutation.actorId,
+        idempotencyKey: key,
+        expectedReportRevision: report.revision,
+        occurredAt: now,
+      },
+    }
+    : mutation.kind === 'regenerate'
+      ? {
+        kind: mutation.kind,
+        workspaceId: report.workspaceId,
+        sectionId: mutation.sectionId,
+        revisionId: crypto.randomUUID(),
+        expectedReportRevision: report.revision,
+        occurredAt: now,
+      }
+      : mutation.kind === 'remove-claim' || mutation.kind === 'replace-claim'
+        ? {
+          ...mutation,
+          workspaceId: report.workspaceId,
+          revisionId: crypto.randomUUID(),
+          expectedReportRevision: report.revision,
+          occurredAt: now,
+        }
+        : {
+        ...mutation,
+        workspaceId: report.workspaceId,
+        expectedReportRevision: report.revision,
+        occurredAt: now,
+        }
+  return decodeReport(
+    await artifactRequest(
+      `/api/projects/${report.projectId}/reports/${report.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': key,
+        },
+        body: JSON.stringify(body),
+      },
+    ),
+    'The report returned an invalid saved revision.',
+  )
+}
+
+export async function exportReport(report: Report): Promise<ExportBundleStatus> {
+  const key = `export:${report.id}:${report.revision}:0.0.1`
+  const body = await artifactRequest(
+    `/api/projects/${report.projectId}/reports/${report.id}/exports`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Idempotency-Key': key,
+      },
+      body: JSON.stringify({
+        workspaceId: report.workspaceId,
+        reportRevision: report.revision,
+      }),
+    },
+  )
+  try {
+    return await Effect.runPromise(Schema.decodeUnknown(ExportBundleStatus)(body))
+  } catch {
+    throw new Error('The report export returned an invalid result.')
   }
 }

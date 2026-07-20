@@ -5,17 +5,22 @@ contract_version: 1
 title: Add Report UX Citation Navigation and Repair
 step_id: STEP-08-05
 phase: '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]'
-status: planned
-owner: ''
+status: in-review
+owner: report-workspace-repair
 created: '2026-07-17'
 updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_04_build-export-and-share-bundles-with-source-snapshots|STEP-08-04 Build Export and Share Bundles with Source Snapshots]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-20-191411-add-report-ux-citation-navigation-and-repair-report-workspace-repair|SESSION-2026-07-20-191411 report-workspace-repair session for Add Report UX Citation Navigation and Repair]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-20-191411
+active_session_id: SESSION-2026-07-20-191411
+context_status: ready-for-review
+context_summary: Production report workspace, explicit citation repair, immutable history, secure source return, and responsive UI are implemented with all bounded gates green; ready for root review.
 ---
 
 # Step 05 - Add Report UX Citation Navigation and Repair
@@ -60,7 +65,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-20 - [[05_Sessions/2026-07-20-191411-add-report-ux-citation-navigation-and-repair-report-workspace-repair|SESSION-2026-07-20-191411 report-workspace-repair session for Add Report UX Citation Navigation and Repair]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes
