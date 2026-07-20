@@ -86,4 +86,9 @@ export const migrations: readonly Migration[] = [
     upPath: new URL('./0015_report_lifecycle.sql', import.meta.url).pathname,
     downPath: new URL('./0015_report_lifecycle.down.sql', import.meta.url).pathname,
   },
+  {
+    name: '0016_provenance_graph',
+    upPath: new URL('./0016_provenance_graph.sql', import.meta.url).pathname,
+    downPath: new URL('./0016_provenance_graph.down.sql', import.meta.url).pathname,
+  },
 ] as const

@@ -63,6 +63,12 @@ export {
   DatasetQueryEvidenceScopeError,
   DatasetQueryEvidenceConflictError,
   DatasetCitationValidationError,
+  ProvenanceGraphRepo,
+  ProvenanceGraphPersistenceError,
+  ProvenanceGraphScopeError,
+  ProvenanceGraphConflictError,
+  ProvenanceGraphDecodeError,
+  ProvenanceDocumentScopeError,
   // Persistence errors
   QueryError,
   EntityNotFoundError,
@@ -166,3 +172,8 @@ export type {
 export type {
   DatasetQueryEvidenceError,
 } from './repositories/dataset-query-evidence.js'
+
+export type {
+  ProvenanceDocumentEvidenceProjection,
+  ProvenanceGraphRepositoryError,
+} from './repositories/provenance-graph.js'

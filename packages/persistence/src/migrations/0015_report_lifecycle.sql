@@ -85,7 +85,8 @@ CREATE TABLE claim_revisions (
   ),
   created_at TIMESTAMPTZ NOT NULL,
   PRIMARY KEY (claim_id, revision),
-  UNIQUE (claim_id, idempotency_key)
+  UNIQUE (claim_id, idempotency_key),
+  UNIQUE (claim_id, id, revision)
 );
 
 CREATE TABLE claim_evidence (
@@ -188,7 +189,8 @@ CREATE TABLE reports (
     (publication_state = 'superseded') = (superseded_by IS NOT NULL)
   ),
   CHECK (superseded_by IS NULL OR superseded_by <> id),
-  UNIQUE (id, workspace_id, project_id, run_id)
+  UNIQUE (id, workspace_id, project_id, run_id),
+  UNIQUE (id, workspace_id, project_id, revision)
 );
 CREATE INDEX idx_reports_scope ON reports(workspace_id, project_id, run_id);
 
@@ -263,6 +265,7 @@ CREATE TABLE report_claims (
   ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
   PRIMARY KEY (report_id, section_id, ordinal),
   UNIQUE (report_id, claim_id),
+  UNIQUE (report_id, claim_id, section_id),
   FOREIGN KEY (report_id, section_id)
     REFERENCES report_sections(report_id, id) ON DELETE CASCADE
 );

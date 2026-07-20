@@ -5,17 +5,22 @@ contract_version: 1
 title: Implement Citation Validation and Provenance Graph
 step_id: STEP-08-02
 phase: '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]'
-status: planned
-owner: ''
+status: in_review
+owner: root-orchestrator
 created: '2026-07-17'
 updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_01_define-findings-reports-citation-states-and-lifecycle|STEP-08-01 Define Findings Reports Citation States and Lifecycle]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-20-170450-implement-citation-validation-and-provenance-graph-citation-provenance-validation|SESSION-2026-07-20-170450 citation-provenance-validation session for Implement Citation Validation and Provenance Graph]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-20-170450
+active_session_id: 05_Sessions/2026-07-20-170450-implement-citation-validation-and-provenance-graph-citation-provenance-validation
+context_status: ready
+context_summary: Advance [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_02_implement-citation-validation-and-provenance-graph|STEP-08-02 Implement Citation Validation and Provenance Graph]].
 ---
 
 # Step 02 - Implement Citation Validation and Provenance Graph
@@ -60,7 +65,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-20 - [[05_Sessions/2026-07-20-170450-implement-citation-validation-and-provenance-graph-citation-provenance-validation|SESSION-2026-07-20-170450 citation-provenance-validation session for Implement Citation Validation and Provenance Graph]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes
