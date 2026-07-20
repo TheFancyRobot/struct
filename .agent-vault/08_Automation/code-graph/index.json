@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T01:41:15.736Z",
+  "generatedAt": "2026-07-20T02:23:38.572Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -4359,7 +4359,7 @@
       ],
       "exports": [],
       "hash": "2ae6bde93e2dbeac0c6905586fa133269d3d2b8ec497b7d363ec57507f3a4518",
-      "mtimeMs": 1784507915875.7642,
+      "mtimeMs": 1784512211335.4404,
       "size": 5744,
       "generated": false,
       "vendor": false,
@@ -5524,7 +5524,7 @@
       ],
       "exports": [],
       "hash": "33773fd222a9be022e3bee2422ed24205e076acbce6d8ebaf7e22fb5abab17e8",
-      "mtimeMs": 1784508285726.6033,
+      "mtimeMs": 1784512211335.868,
       "size": 4649,
       "generated": false,
       "vendor": false,
@@ -5754,7 +5754,7 @@
       ],
       "exports": [],
       "hash": "0015ce3f9b4bc7bb37e8946256438661704b407c1f27788ef9277872c8acb39d",
-      "mtimeMs": 1784511643565.8462,
+      "mtimeMs": 1784512211336.3452,
       "size": 10515,
       "generated": false,
       "vendor": false,
@@ -6242,7 +6242,7 @@
       ],
       "exports": [],
       "hash": "ba1c333c2d49a255dc1fd4a784a44d3d595075e9210146d9281ab0e990d5bb43",
-      "mtimeMs": 1784508285725.956,
+      "mtimeMs": 1784512211336.516,
       "size": 4084,
       "generated": false,
       "vendor": false,
@@ -12119,6 +12119,59 @@
       "parser": "regex"
     },
     {
+      "path": "packages/research-engine/src/normalize-plan.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "compareString",
+          "kind": "function",
+          "line": 5,
+          "exported": false,
+          "endLine": 5,
+          "signature": "(left: string, right: string)"
+        },
+        {
+          "name": "scopeKey",
+          "kind": "function",
+          "line": 9,
+          "exported": false,
+          "endLine": 9,
+          "signature": "(scope: Domain.ResearchPlan['sourceScopes'][number])"
+        },
+        {
+          "name": "inputRefKey",
+          "kind": "function",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "normalizeResearchPlan",
+          "kind": "const",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "9ec61c19d756e5395c25da2c108c4a8f3660fcc6dc40c98c67aa587d7fd323a5",
+      "mtimeMs": 1784512857384.5176,
+      "size": 2662,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/research-engine/src/run-walking-skeleton.ts",
       "language": "TypeScript",
       "symbols": [
@@ -12201,6 +12254,136 @@
       "hash": "b4dcfafc215ebdaeea203d4231c29dc2086b53f8adb48e26d3f3376e80c2b974",
       "mtimeMs": 1784433778781.93,
       "size": 3055,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/research-engine/src/validate-plan.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ResearchQuestion",
+          "kind": "const",
+          "line": 18,
+          "exported": true,
+          "endLine": 18
+        },
+        {
+          "name": "ResearchPlanningInput",
+          "kind": "const",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "ResearchPlanningInput",
+          "kind": "type",
+          "line": 38,
+          "exported": true,
+          "endLine": 38
+        },
+        {
+          "name": "PlanFailureReason",
+          "kind": "type",
+          "line": 41,
+          "exported": false,
+          "endLine": 41
+        },
+        {
+          "name": "failure",
+          "kind": "function",
+          "line": 44,
+          "exported": false,
+          "endLine": 44
+        },
+        {
+          "name": "datasetScopeKey",
+          "kind": "function",
+          "line": 57,
+          "exported": false,
+          "endLine": 57
+        },
+        {
+          "name": "allowedSourceReferences",
+          "kind": "function",
+          "line": 66,
+          "exported": false,
+          "endLine": 66
+        },
+        {
+          "name": "validateIdentity",
+          "kind": "function",
+          "line": 106,
+          "exported": false,
+          "endLine": 106
+        },
+        {
+          "name": "validateScope",
+          "kind": "function",
+          "line": 132,
+          "exported": false,
+          "endLine": 132
+        },
+        {
+          "name": "validateClassification",
+          "kind": "function",
+          "line": 242,
+          "exported": false,
+          "endLine": 242
+        },
+        {
+          "name": "validatePolicy",
+          "kind": "function",
+          "line": 289,
+          "exported": false,
+          "endLine": 289
+        },
+        {
+          "name": "budgetKeys",
+          "kind": "const",
+          "line": 364,
+          "exported": false,
+          "endLine": 364
+        },
+        {
+          "name": "validateBudget",
+          "kind": "function",
+          "line": 375,
+          "exported": false,
+          "endLine": 375
+        },
+        {
+          "name": "validateResearchPlan",
+          "kind": "const",
+          "line": 420,
+          "exported": true,
+          "endLine": 420
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "normalizeResearchPlan",
+          "specifier": "./normalize-plan.js",
+          "imported": [
+            "normalizeResearchPlan"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "3279086a518229dbb947e10dd2f61127a7567d317ffbd6c52598ba6b1952ecad",
+      "mtimeMs": 1784514040726.0771,
+      "size": 13268,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -13489,6 +13672,132 @@
       "hash": "de82e372cde7e3dee142cfd0ed5f0e85ccf89aa1ba985af2516966e9ccaf556e",
       "mtimeMs": 1784506183890.0776,
       "size": 15044,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/workflows/src/agents/question-classifier.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "QUESTION_CLASSIFIER_AGENT_ID",
+          "kind": "const",
+          "line": 12,
+          "exported": true,
+          "endLine": 12
+        },
+        {
+          "name": "QuestionClassifierInput",
+          "kind": "const",
+          "line": 14,
+          "exported": true,
+          "endLine": 14
+        },
+        {
+          "name": "QuestionClassifierInput",
+          "kind": "type",
+          "line": 23,
+          "exported": true,
+          "endLine": 23
+        },
+        {
+          "name": "questionClassifierAgent",
+          "kind": "const",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        }
+      ],
+      "imports": [
+        {
+          "source": "ResearchQuestion",
+          "specifier": "@struct/research-engine",
+          "imported": [
+            "ResearchQuestion"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "c93bbac0f28c8d84bdaf36a5001ed0d9967f4a0f82e1292af63f4b0a86f18bcd",
+      "mtimeMs": 1784512961847.787,
+      "size": 1321,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/workflows/src/agents/research-planner.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "RESEARCH_PLANNER_AGENT_ID",
+          "kind": "const",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        },
+        {
+          "name": "ResearchPlannerInput",
+          "kind": "const",
+          "line": 12,
+          "exported": true,
+          "endLine": 12
+        },
+        {
+          "name": "ResearchPlannerInput",
+          "kind": "type",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "researchPlannerAgent",
+          "kind": "const",
+          "line": 16,
+          "exported": true,
+          "endLine": 16
+        },
+        {
+          "name": "researchPlannerProviderFailure",
+          "kind": "function",
+          "line": 35,
+          "exported": true,
+          "endLine": 35,
+          "doc": "Keeps provider failures typed at the planner boundary without retaining\nprovider payloads, credentials, or unbounded diagnostic data."
+        }
+      ],
+      "imports": [
+        {
+          "source": "ResearchPlanningInput",
+          "specifier": "@struct/research-engine",
+          "imported": [
+            "ResearchPlanningInput"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "086803cb7c7290fa8b96dfcc48be37a1d2aeda949655a3b5762315daec91b071",
+      "mtimeMs": 1784514186939.2615,
+      "size": 1562,
       "generated": false,
       "vendor": false,
       "parser": "regex"
