@@ -128,6 +128,43 @@ describe('recursive synthesis deterministic boundaries', () => {
     expect(result).toMatchObject({ _tag: 'Left' })
   })
 
+  it('merges duplicate contradiction limitations deterministically', async () => {
+    const supporting = evidence('1')
+    const conflicting = evidence('2')
+    const signature = Sha256Digest.make(sha('a'))
+    const findings = [finding(
+      'Claim',
+      signature,
+      [supporting, conflicting],
+    )]
+    const first = {
+      claimSignature: signature,
+      supportingEvidence: [supporting.id],
+      conflictingEvidence: [conflicting.id],
+      status: 'unresolved' as const,
+      limitations: ['éclair-limit', 'alpha-limit'],
+    }
+    const second = {
+      ...first,
+      limitations: ['alpha-limit', 'zeta-limit'],
+    }
+
+    const forward = await Effect.runPromise(
+      materializeContradictions(findings, [first, second]),
+    )
+    const reverse = await Effect.runPromise(
+      materializeContradictions(findings, [second, first]),
+    )
+
+    expect(reverse).toEqual(forward)
+    expect(forward).toHaveLength(1)
+    expect(forward[0]?.limitations).toEqual([
+      'alpha-limit',
+      'zeta-limit',
+      'éclair-limit',
+    ])
+  })
+
   it('is stable across reordered equivalent findings', async () => {
     const itemA = evidence('1')
     const itemB = evidence('2')

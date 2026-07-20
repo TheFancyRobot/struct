@@ -109,8 +109,21 @@ export const materializeContradictions = Effect.fn(
     })
   }
 
-  const byId = new Map(
-    contradictions.map((contradiction) => [contradiction.id, contradiction]),
-  )
+  const byId = new Map<
+    typeRecursiveContradiction['id'],
+    typeRecursiveContradiction
+  >()
+  for (const contradiction of contradictions) {
+    const existing = byId.get(contradiction.id)
+    byId.set(contradiction.id, existing === undefined
+      ? contradiction
+      : {
+          ...existing,
+          limitations: Array.from(new Set([
+            ...existing.limitations,
+            ...contradiction.limitations,
+          ])).sort(compareUtf8),
+        })
+  }
   return orderCanonicalIdentities([...byId.keys()]).map((id) => byId.get(id)!)
 })
