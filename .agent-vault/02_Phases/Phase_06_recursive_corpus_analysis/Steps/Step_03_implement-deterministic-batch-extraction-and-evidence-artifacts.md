@@ -5,7 +5,7 @@ contract_version: 1
 title: Implement Deterministic Batch Extraction and Evidence Artifacts
 step_id: STEP-06-03
 phase: '[[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]'
-status: active
+status: completed
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-20'
@@ -19,8 +19,8 @@ tags:
   - step
 context_id: SESSION-2026-07-20-084208
 active_session_id: 05_Sessions/2026-07-20-084208-implement-deterministic-batch-extraction-and-evidence-artifacts-step-06-03-worker
-context_status: active
-context_summary: STEP-06-03 deterministic selection, bounded exact evidence artifacts, content-addressed publication, atomic metadata commit, and restart-safe reuse are implemented and validated; root review and PR gate remain.
+context_status: completed
+context_summary: STEP-06-03 deterministic selection, exact numeric evidence, RFC 6901 provenance, bounded content-addressed artifacts, atomic publication, and restart-safe reuse are implemented, validated, reviewed, and merged in PR #36; STEP-06-04 may proceed.
 ---
 
 # Step 03 - Implement Deterministic Batch Extraction and Evidence Artifacts
@@ -51,10 +51,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: active
+- Status: completed
 - Current owner: Codex
 - Last touched: 2026-07-20
-- Next action: Complete PR #36 automated review and merge, then close the step/context mirrors before activating STEP-06-04.
+- Next action: STEP-06-04 may proceed from the reviewed and merged evidence-artifact boundary.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

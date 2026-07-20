@@ -5,16 +5,16 @@ contract_version: 1
 title: step-06-03-worker session for Implement Deterministic Batch Extraction and Evidence Artifacts
 session_id: SESSION-2026-07-20-084208
 date: '2026-07-20'
-status: in-progress
+status: completed
 owner: step-06-03-worker
 branch: agent/step-06-03
 phase: '[[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]'
 context:
   context_id: SESSION-2026-07-20-084208
-  status: active
-  updated_at: '2026-07-20T09:12:00.000Z'
+  status: completed
+  updated_at: '2026-07-20T09:28:00.000Z'
   current_focus:
-    summary: STEP-06-03 is implemented and root-validated; PR #36 review and merge remain.
+    summary: STEP-06-03 is implemented, reviewed, and merged in PR #36.
     target: '[[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_03_implement-deterministic-batch-extraction-and-evidence-artifacts|STEP-06-03 Implement Deterministic Batch Extraction and Evidence Artifacts]]'
   resume_target:
     type: step
@@ -133,8 +133,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - [x] Implement and validate [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_03_implement-deterministic-batch-extraction-and-evidence-artifacts|STEP-06-03 Implement Deterministic Batch Extraction and Evidence Artifacts]].
 <!-- AGENT-END:session-follow-up-work -->
 - [x] Root independently reviews the affected callers and invariants.
-- [ ] Root publishes STEP-06-03 PR, validates automated review comments, remediates confirmed issues, and merges before STEP-06-04.
+- [x] Root publishes STEP-06-03 PR, validates automated review comments, remediates confirmed issues, and merges before STEP-06-04.
 
 ## Completion Summary
 
-- STEP-06-03 implementation and local validation are complete, but the session remains open through PR #36 review and merge. STEP-06-04 stays gated.
+- STEP-06-03 is implemented, validated, reviewed, and merged in PR #36 with no known confirmed defect. STEP-06-04 is unblocked.
