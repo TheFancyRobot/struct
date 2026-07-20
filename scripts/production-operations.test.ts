@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   OperationsError,
+  assertSafeBackupPath,
   parseLocalDatabaseTarget,
   requireDestructiveApproval,
   resolveArtifactBackupPath,
@@ -69,6 +70,19 @@ describe('production operation safety boundaries', () => {
     expect(() => resolveArtifactBackupPath('.local/backups/recovery.tar')).toThrow(
       'must end in .artifacts',
     )
+  })
+
+  it('rejects symlinked backup path components', async () => {
+    const link = join(import.meta.dir, '..', '.local', 'backups', `unsafe-${randomUUID()}`)
+    try {
+      await mkdir(join(import.meta.dir, '..', '.local', 'backups'), { recursive: true })
+      await symlink('/tmp', link)
+      await expect(assertSafeBackupPath(join(link, 'recovery.dump'))).rejects.toThrow(
+        'must not contain symlinks',
+      )
+    } finally {
+      await rm(link, { force: true })
+    }
   })
 
   it('verifies content-addressed artifact bytes and rejects unsafe entries', async () => {

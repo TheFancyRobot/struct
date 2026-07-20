@@ -56,6 +56,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Completed all focused, repository-wide, live Compose, real-service, and vault validation gates.
 - Root pre-publication review corrected stale generated step/session mirrors and stale Active Context prose before the change could reach review.
 - Validated four CodeRabbit documentation findings. All were actionable; the artifact-store comment revealed a recovery-proof gap. Root added paired artifact backup/restore/verification, isolated byte-level recovery coverage, aligned the operator commands, and checked downstream recovery behavior in one remediation round.
+- Validated two later Codex review findings as actionable across all callers: PostgreSQL restore is now single-transaction, and every database/artifact backup path rejects symlinked components through one shared guard.
 
 ## Findings
 
@@ -94,6 +95,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Static: typecheck, ESLint, import boundaries, builds, docs lint, secret scan all passed.
 - Root independently repeated focused operations/migration tests, typecheck, lint, docs lint, Compose configuration validation, database verification, and a wrong-credential destructive-command proof; all passed or failed closed as designed. Application verification was not repeated because the worker had intentionally stopped the Bun processes after its successful live proof.
 - Review remediation: 13 focused tests passed with 57 assertions; typecheck, ESLint, and docs lint passed. A live isolated proof destroyed and restored both PostgreSQL state and real content-addressed artifact bytes, verified their SHA-256 integrity, enforced append-only state, and survived PostgreSQL/data-engine restart.
+- Final remediation: 14 focused tests passed with 58 assertions; typecheck, ESLint, docs lint, and the live paired database/artifact recovery proof passed. The isolated recovery database was dropped afterward.
 
 ## Bugs Encountered
 

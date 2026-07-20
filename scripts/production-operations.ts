@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { cp, lstat, mkdir, open, readdir, readFile, rename, rm } from 'node:fs/promises'
-import { basename, dirname, isAbsolute, relative, resolve } from 'node:path'
+import { basename, dirname, isAbsolute, relative, resolve, sep } from 'node:path'
 import postgres from 'postgres'
 
 const repositoryRoot = resolve(import.meta.dir, '..')
@@ -85,6 +85,22 @@ export function resolveArtifactBackupPath(input: string): string {
   return candidate
 }
 
+export async function assertSafeBackupPath(candidate: string): Promise<void> {
+  const pathFromRepository = relative(repositoryRoot, candidate)
+  let current = repositoryRoot
+  for (const part of pathFromRepository.split(sep)) {
+    current = resolve(current, part)
+    const metadata = await lstat(current).catch((cause: unknown) => {
+      if ((cause as NodeJS.ErrnoException).code === 'ENOENT') return undefined
+      throw cause
+    })
+    if (!metadata) break
+    if (metadata.isSymbolicLink()) {
+      throw new OperationsError('Backup path must not contain symlinks')
+    }
+  }
+}
+
 function artifactRoot(): string {
   return resolve(repositoryRoot, process.env.ARTIFACT_STORAGE_ROOT ?? '.local/artifacts')
 }
@@ -140,7 +156,9 @@ async function backupArtifacts(outputPath: string): Promise<void> {
     throw new OperationsError('Artifact backup and artifact store must not overlap')
   }
   await verifyArtifactStore(source)
+  await assertSafeBackupPath(outputPath)
   await mkdir(dirname(outputPath), { recursive: true })
+  await assertSafeBackupPath(outputPath)
   const temporaryPath = `${outputPath}.partial-${process.pid}`
   await rm(temporaryPath, { recursive: true, force: true })
   try {
@@ -156,6 +174,7 @@ async function backupArtifacts(outputPath: string): Promise<void> {
 
 async function restoreArtifacts(target: LocalDatabaseTarget, inputPath: string): Promise<void> {
   requireDestructiveApproval(target)
+  await assertSafeBackupPath(inputPath)
   await verifyArtifactStore(inputPath)
   const destination = artifactRoot()
   if (isNestedWithin(destination, inputPath) || isNestedWithin(inputPath, destination)) {
@@ -260,7 +279,9 @@ async function migrate(databaseUrl: string): Promise<void> {
 
 async function backup(databaseUrl: string, target: LocalDatabaseTarget, outputPath: string): Promise<void> {
   await verifyDatabaseCredentials(databaseUrl, target)
+  await assertSafeBackupPath(outputPath)
   await mkdir(dirname(outputPath), { recursive: true })
+  await assertSafeBackupPath(outputPath)
   const temporaryPath = `${outputPath}.partial-${process.pid}`
   const output = await open(temporaryPath, 'wx', 0o600)
   try {
@@ -283,6 +304,7 @@ async function backup(databaseUrl: string, target: LocalDatabaseTarget, outputPa
 }
 
 async function validateArchive(target: LocalDatabaseTarget, archivePath: string): Promise<void> {
+  await assertSafeBackupPath(archivePath)
   await run([
     ...composeExec(target, 'pg_restore'),
     '--list',
@@ -296,6 +318,7 @@ async function restore(databaseUrl: string, target: LocalDatabaseTarget, archive
   await run([
     ...composeExec(target, 'pg_restore'),
     '--exit-on-error',
+    '--single-transaction',
     '--no-owner',
     '--no-acl',
     '--dbname',
