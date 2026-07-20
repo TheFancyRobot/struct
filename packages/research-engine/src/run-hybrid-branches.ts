@@ -5,7 +5,7 @@ import type {
   ResearchPlanNodeId,
 } from '@struct/domain'
 /* eslint-enable no-unused-vars */
-import { Effect, Schema } from 'effect'
+import { Effect, Exit, Fiber, Queue, Schema } from 'effect'
 
 export class HybridBranchSchedulingFailure extends Schema.TaggedError<HybridBranchSchedulingFailure>()(
   'HybridBranchSchedulingFailure',
@@ -46,32 +46,48 @@ export const runHybridBranches = Effect.fn('HybridResearch.runBranches')(
         .filter((node) => !completed.has(node.id))
         .map((node) => [node.id, node] as const),
     )
+    const running = new Map<
+      ResearchPlanNodeId,
+      Fiber.RuntimeFiber<void, E>
+    >()
+    const completions = yield* Queue.unbounded<{
+      readonly exit: Exit.Exit<void, E>
+      readonly nodeId: ResearchPlanNodeId
+    }>()
 
-    while (pending.size > 0) {
-      const ready = [...pending.values()]
-        .filter((node) =>
-          node.dependencies.every((dependency) => completed.has(dependency))
+    while (pending.size > 0 || running.size > 0) {
+      while (running.size < plan.budget.maximumFanOut) {
+        const next = [...pending.values()]
+          .filter((node) =>
+            node.dependencies.every((dependency) => completed.has(dependency))
+          )
+          .sort((left, right) => left.id.localeCompare(right.id))[0]
+        if (next === undefined) break
+
+        pending.delete(next.id)
+        const fiber = yield* execute(next).pipe(
+          Effect.interruptible,
+          Effect.onExit((exit) =>
+            Queue.offer(completions, { exit, nodeId: next.id })
+          ),
+          Effect.fork,
         )
-        .sort((left, right) => left.id.localeCompare(right.id))
-      if (ready.length === 0) {
+        running.set(next.id, fiber)
+      }
+
+      if (running.size === 0) {
         return yield* new HybridBranchSchedulingFailure({
           message: 'Research plan has no dependency-ready node',
         })
       }
 
-      const completedWave = yield* Effect.forEach(
-        ready,
-        (node) => execute(node).pipe(
-          Effect.interruptible,
-          Effect.disconnect,
-          Effect.as(node.id),
-        ),
-        { concurrency: plan.budget.maximumFanOut },
-      )
-      for (const nodeId of completedWave) {
-        completed.add(nodeId)
-        pending.delete(nodeId)
+      const settled = yield* Queue.take(completions)
+      running.delete(settled.nodeId)
+      if (Exit.isFailure(settled.exit)) {
+        yield* Fiber.interruptAll([...running.values()])
+        return yield* Effect.failCause(settled.exit.cause)
       }
+      completed.add(settled.nodeId)
     }
 
     return [...completed].sort()

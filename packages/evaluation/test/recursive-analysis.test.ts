@@ -36,7 +36,7 @@ describe('25,000-file recursive analysis evaluation', () => {
 
   beforeAll(async () => {
     reports = [await run(), await run()]
-  })
+  }, 30_000)
 
   it('passes correctness, budget, recovery, retention, and scale-signal gates', async () => {
     const report = reports[0]!

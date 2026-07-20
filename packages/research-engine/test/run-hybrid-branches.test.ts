@@ -161,7 +161,11 @@ describe('hybrid branch scheduler', () => {
           yield* Deferred.await(bothStarted)
           if (node.id === first) return yield* Effect.fail(failure)
           return yield* Effect.never.pipe(
-            Effect.onInterrupt(() => Ref.set(interrupted, true)),
+            Effect.onInterrupt(() =>
+              Effect.sleep('10 millis').pipe(
+                Effect.andThen(Ref.set(interrupted, true)),
+              )
+            ),
           )
         }),
       ).pipe(Effect.either)
@@ -171,6 +175,61 @@ describe('hybrid branch scheduler', () => {
         expect((outcome.left as Error).message).toBe(failure.message)
       }
       expect(yield* Ref.get(interrupted)).toBe(true)
+    }))
+  })
+
+  it('starts newly ready work as soon as a concurrency slot is free', async () => {
+    await Effect.runPromise(Effect.gen(function* () {
+      const releaseSlow = yield* Deferred.make<void>()
+      const dependentStarted = yield* Deferred.make<void>()
+      const fast = nodeId('0011')
+      const slow = nodeId('0012')
+      const dependent = nodeId('0013')
+      const streamingPlan: ResearchPlan = {
+        ...plan,
+        nodes: [
+          {
+            id: fast,
+            kind: 'document-retrieval',
+            goal: 'Fast.',
+            dependencies: [],
+            inputRefs: [],
+            evidenceRefs: [],
+          },
+          {
+            id: slow,
+            kind: 'dataset-query',
+            goal: 'Slow.',
+            dependencies: [],
+            inputRefs: [],
+            evidenceRefs: [],
+          },
+          {
+            id: dependent,
+            kind: 'evidence-evaluation',
+            goal: 'Depends only on fast.',
+            dependencies: [fast],
+            inputRefs: [{ kind: 'node-output', nodeId: fast }],
+            evidenceRefs: [],
+          },
+        ],
+      }
+
+      const fiber = yield* runHybridBranches(
+        streamingPlan,
+        { completedNodeIds: [] },
+        (node) => {
+          if (node.id === slow) return Deferred.await(releaseSlow)
+          if (node.id === dependent) {
+            return Deferred.succeed(dependentStarted, undefined)
+          }
+          return Effect.void
+        },
+      ).pipe(Effect.fork)
+
+      yield* Deferred.await(dependentStarted)
+      yield* Deferred.succeed(releaseSlow, undefined)
+      expect(yield* Fiber.join(fiber)).toEqual([dependent, fast, slow].sort())
     }))
   })
 })

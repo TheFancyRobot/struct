@@ -348,7 +348,7 @@ describe('hybrid research graph', () => {
         new AbortController().signal,
       ).pipe(Effect.either)
       expect(outcome._tag).toBe('Left')
-      if (outcome._tag === 'Left' && '_tag' in outcome.left) {
+      if (outcome._tag === 'Left') {
         expect(outcome.left._tag).toBe('ResearchExecutionStopped')
         if (outcome.left._tag === 'ResearchExecutionStopped') {
           expect(outcome.left.reason.kind).toBe('tool-budget')
