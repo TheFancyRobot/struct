@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-20._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_01_define-findings-reports-citation-states-and-lifecycle|STEP-08-01 Define Findings Reports Citation States and Lifecycle]] - status: planned - phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]
-- Active phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|PHASE-08 Citation-Backed Reports and Durable Findings]] - status: planned - owner: Codex - updated: 2026-07-20
-- Also active: 29 more additional steps.
+- Current step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_02_implement-citation-validation-and-provenance-graph|STEP-08-02 Implement Citation Validation and Provenance Graph]] - status: planned - phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]
+- Active phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|PHASE-08 Citation-Backed Reports and Durable Findings]] - status: in_progress - owner: Codex - updated: 2026-07-20
+- Also active: 28 more additional steps.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -40,7 +40,7 @@ _Last refreshed: 2026-07-20._
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
 - Phase 06 is completed, reviewed, and merged through STEP-06-06.
-- Phase 07 is refined and all six implementation steps are complete. STEP-07-06 now awaits root review, publication, and merge before the next phase is refined.
+- Phase 07 is complete and merged. Phase 08 is refined and its first lifecycle-contract step is complete, independently validated, and ready for publication.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 
 ## Out Of Scope Right Now
@@ -72,5 +72,5 @@ _Last refreshed: 2026-07-20._
 
 ## Next Actions
 
-- Root-review, publish, and merge STEP-07-06, then refine the next planned phase before its first implementation branch.
+- Publish and merge the completed report-lifecycle contract, then execute the citation-validation and provenance-graph step on its own branch.
 - Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.

@@ -110,6 +110,12 @@ describe('Migration Runner', () => {
       expect(fakeSql.queries.join('\n')).toMatch(
         /CREATE TABLE dataset_assets[\s\S]*CREATE TABLE dataset_snapshot_sources/i,
       )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /CREATE TABLE durable_claims[\s\S]*CREATE TABLE reports[\s\S]*CREATE TABLE report_claims/i,
+      )
+      expect(fakeSql.queries.join('\n')).toMatch(
+        /CREATE TRIGGER claim_evidence_append_only/i,
+      )
     })
 
     it('skips already-applied migrations', async () => {
@@ -151,7 +157,7 @@ describe('Migration Runner', () => {
       )
       expect(deleteQuery).toBeDefined()
       expect(fakeSql.queries.join('\n')).toMatch(
-        /DROP TABLE IF EXISTS research_run_dataset_citations/i,
+        /DROP TABLE IF EXISTS report_claims[\s\S]*DROP TABLE IF EXISTS durable_claims/i,
       )
     })
 

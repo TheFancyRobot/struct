@@ -9,8 +9,6 @@ import {
   ResearchThread,
   ResearchRun,
   Citation,
-  Finding,
-  Report,
 } from './schemas'
 
 describe('Domain Schemas', () => {
@@ -168,33 +166,4 @@ describe('Domain Schemas', () => {
     })
   })
 
-  describe('Finding', () => {
-    it('decodes a valid Finding', () => {
-      const input = {
-        id: '550e8400-e29b-41d4-a716-446655440007',
-        projectId: '550e8400-e29b-41d4-a716-446655440001',
-        title: 'Key Finding',
-        content: 'Finding content here.',
-        createdAt: 1700000000000,
-        updatedAt: 1700000000000,
-      }
-      const result = Schema.decodeUnknownSync(Finding)(input)
-      expect(result.title).toBe('Key Finding')
-    })
-  })
-
-  describe('Report', () => {
-    it('decodes a valid Report', () => {
-      const input = {
-        id: '550e8400-e29b-41d4-a716-446655440008',
-        projectId: '550e8400-e29b-41d4-a716-446655440001',
-        title: 'Research Report',
-        content: 'Report body.',
-        createdAt: 1700000000000,
-        updatedAt: 1700000000000,
-      }
-      const result = Schema.decodeUnknownSync(Report)(input)
-      expect(result.title).toBe('Research Report')
-    })
-  })
 })

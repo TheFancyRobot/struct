@@ -2,6 +2,8 @@ import { Schema } from 'effect'
 import * as Ids from './branded-ids.js'
 import { DatasetCitation } from './dataset-query-evidence.js'
 export { SourceVersion } from './source-version.js'
+export { Finding } from './finding.js'
+export { Report } from './report.js'
 
 // --- Enums / Literals ---
 
@@ -119,24 +121,6 @@ export const ResearchAnswer = Schema.Struct({
   ),
 })
 export type ResearchAnswer = Schema.Schema.Type<typeof ResearchAnswer>
-
-export const Finding = Schema.Struct({
-  id: Ids.FindingId,
-  projectId: Ids.ProjectId,
-  title: Schema.String,
-  content: Schema.String,
-  createdAt: Schema.BigIntFromNumber,
-  updatedAt: Schema.BigIntFromNumber,
-})
-
-export const Report = Schema.Struct({
-  id: Ids.ReportId,
-  projectId: Ids.ProjectId,
-  title: Schema.String,
-  content: Schema.String,
-  createdAt: Schema.BigIntFromNumber,
-  updatedAt: Schema.BigIntFromNumber,
-})
 
 export const JobQueue = Schema.Struct({
   id: Ids.JobQueueId,

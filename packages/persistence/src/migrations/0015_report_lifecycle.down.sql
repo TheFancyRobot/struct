@@ -1,0 +1,16 @@
+DROP TABLE IF EXISTS report_claims;
+DROP TABLE IF EXISTS report_section_revisions;
+DROP TABLE IF EXISTS report_sections;
+DROP TABLE IF EXISTS report_title_revisions;
+DROP TABLE IF EXISTS report_findings;
+DROP TABLE IF EXISTS report_source_versions;
+DROP TABLE IF EXISTS reports;
+DROP TABLE IF EXISTS finding_title_revisions;
+DROP TABLE IF EXISTS finding_claims;
+DROP TABLE IF EXISTS finding_source_versions;
+DROP TABLE IF EXISTS findings;
+DROP TRIGGER IF EXISTS claim_evidence_append_only ON claim_evidence;
+DROP FUNCTION IF EXISTS reject_claim_evidence_mutation();
+DROP TABLE IF EXISTS claim_evidence;
+DROP TABLE IF EXISTS claim_revisions;
+DROP TABLE IF EXISTS durable_claims;

@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T11:54:47.013Z",
+  "generatedAt": "2026-07-20T16:53:16.194Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -1529,6 +1529,90 @@
       "parser": "regex"
     },
     {
+      "path": "apps/web/src/components/MixedSourceReport.tsx",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "MixedSourceReportStatus",
+          "kind": "type",
+          "line": 12,
+          "exported": true,
+          "endLine": 12
+        },
+        {
+          "name": "MixedSourceDocumentEvidence",
+          "kind": "interface",
+          "line": 21,
+          "exported": true,
+          "endLine": 21
+        },
+        {
+          "name": "MixedSourceDatasetEvidence",
+          "kind": "interface",
+          "line": 30,
+          "exported": true,
+          "endLine": 30
+        },
+        {
+          "name": "MixedSourceReportModel",
+          "kind": "interface",
+          "line": 47,
+          "exported": true,
+          "endLine": 47
+        },
+        {
+          "name": "MixedSourceReportProps",
+          "kind": "interface",
+          "line": 64,
+          "exported": false,
+          "endLine": 64
+        },
+        {
+          "name": "MobilePane",
+          "kind": "type",
+          "line": 68,
+          "exported": false,
+          "endLine": 68
+        },
+        {
+          "name": "statusLabel",
+          "kind": "const",
+          "line": 70,
+          "exported": false,
+          "endLine": 70
+        },
+        {
+          "name": "statusClass",
+          "kind": "const",
+          "line": 84,
+          "exported": false,
+          "endLine": 84
+        },
+        {
+          "name": "mixedSourceDemoFixture",
+          "kind": "const",
+          "line": 96,
+          "exported": true,
+          "endLine": 96
+        },
+        {
+          "name": "MixedSourceReport",
+          "kind": "const",
+          "line": 170,
+          "exported": true,
+          "endLine": 170
+        }
+      ],
+      "imports": [],
+      "exports": [],
+      "hash": "c1a8762a7577273070df1ada799ecb8144e0ee22ac97690663a26c837d8681b3",
+      "mtimeMs": 1784562443580.2837,
+      "size": 16021,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "apps/web/src/components/PartialFindingsPanel.tsx",
       "language": "TypeScript",
       "symbols": [
@@ -1663,30 +1747,30 @@
         {
           "name": "ResearchStreamProps",
           "kind": "interface",
-          "line": 31,
+          "line": 35,
           "exported": false,
-          "endLine": 31
+          "endLine": 35
         },
         {
           "name": "eventLabel",
           "kind": "const",
-          "line": 37,
+          "line": 42,
           "exported": false,
-          "endLine": 37
+          "endLine": 42
         },
         {
           "name": "failureGuidance",
           "kind": "const",
-          "line": 60,
+          "line": 65,
           "exported": false,
-          "endLine": 60
+          "endLine": 65
         },
         {
           "name": "ResearchStream",
           "kind": "const",
-          "line": 77,
+          "line": 82,
           "exported": true,
-          "endLine": 77
+          "endLine": 82
         }
       ],
       "imports": [
@@ -1756,9 +1840,9 @@
         }
       ],
       "exports": [],
-      "hash": "9ba03a164fdf91f84dbc619f70169ff6dad92d946edbda47ba4b3becc6b1c38c",
-      "mtimeMs": 1784547495280.8945,
-      "size": 12439,
+      "hash": "c8e7c4fe9a5e5708c85c06f76d9be0eff17212b887161d7cdd3dd0ac05fcb2b5",
+      "mtimeMs": 1784562443580.4749,
+      "size": 12680,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1940,26 +2024,35 @@
       "language": "TypeScript",
       "symbols": [
         {
+          "name": "demoStates",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
           "name": "ResearchPage",
           "kind": "const",
-          "line": 11,
+          "line": 25,
           "exported": true,
-          "endLine": 11
+          "endLine": 25
         }
       ],
       "imports": [
         {
-          "source": "useParams",
+          "source": "useParams, useSearchParams",
           "specifier": "@solidjs/router",
           "imported": [
-            "useParams"
+            "useParams",
+            "useSearchParams"
           ],
           "kind": "static"
         },
         {
-          "source": "type Component",
+          "source": "createMemo, type Component",
           "specifier": "solid-js",
           "imported": [
+            "createMemo",
             "typeComponent"
           ],
           "kind": "static"
@@ -1974,9 +2067,9 @@
         }
       ],
       "exports": [],
-      "hash": "7e7fbfd037d8e1b90dfa242738b3664e559fdfffe7149a5a35efdea69a5f80b8",
-      "mtimeMs": 1784547495281.702,
-      "size": 1023,
+      "hash": "ad07ef897d759fb4626dbe065cc26328bd796537aae0bae0fcf3428c213e78df",
+      "mtimeMs": 1784562443580.9478,
+      "size": 1772,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3290,9 +3383,9 @@
       ],
       "imports": [],
       "exports": [],
-      "hash": "4ff11cacd9872e0ceca972c594eb4a132ec5450928f7b36addf4dc86019e2f57",
-      "mtimeMs": 1784525583166.332,
-      "size": 1465,
+      "hash": "47b67197fd7126c836273044b2f65f74d6531152fe088da0b40e7bf09d59da20",
+      "mtimeMs": 1784556815052.4573,
+      "size": 1808,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -3384,9 +3477,9 @@
         }
       ],
       "exports": [],
-      "hash": "15174d7fc321abec4d379c634a4a725dd7acc77e7a37ad6d6e64e9b716fed498",
-      "mtimeMs": 1784525583166.5781,
-      "size": 29310,
+      "hash": "b0e223899e8b76317affc9e5ea9eded5ee1c9b7f89fc7d2d22759a72f8d95a6b",
+      "mtimeMs": 1784564785490.1133,
+      "size": 29378,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -4628,6 +4721,131 @@
       "parser": "regex"
     },
     {
+      "path": "packages/data-engine/src/result-summary.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "PositiveInteger",
+          "kind": "const",
+          "line": 17,
+          "exported": false,
+          "endLine": 17
+        },
+        {
+          "name": "NonNegativeInteger",
+          "kind": "const",
+          "line": 18,
+          "exported": false,
+          "endLine": 18
+        },
+        {
+          "name": "QueryValue",
+          "kind": "const",
+          "line": 22,
+          "exported": false,
+          "endLine": 22
+        },
+        {
+          "name": "ResultSummaryLimits",
+          "kind": "const",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        },
+        {
+          "name": "ResultSummaryLimits",
+          "kind": "type",
+          "line": 29,
+          "exported": true,
+          "endLine": 29
+        },
+        {
+          "name": "BoundedQueryResultSummary",
+          "kind": "const",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
+          "name": "BoundedQueryResultSummary",
+          "kind": "type",
+          "line": 50,
+          "exported": true,
+          "endLine": 50
+        },
+        {
+          "name": "ResultSummaryValidationError",
+          "kind": "class",
+          "line": 53,
+          "exported": true,
+          "endLine": 53
+        },
+        {
+          "name": "failure",
+          "kind": "function",
+          "line": 68,
+          "exported": false,
+          "endLine": 68
+        },
+        {
+          "name": "compareUtf8",
+          "kind": "function",
+          "line": 76,
+          "exported": false,
+          "endLine": 76,
+          "signature": "(left: string, right: string)"
+        },
+        {
+          "name": "canonicalJson",
+          "kind": "function",
+          "line": 88,
+          "exported": false,
+          "endLine": 88,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "hashSummary",
+          "kind": "function",
+          "line": 108,
+          "exported": false,
+          "endLine": 108,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "sameRows",
+          "kind": "function",
+          "line": 118,
+          "exported": false,
+          "endLine": 118
+        },
+        {
+          "name": "summarizeQueryResult",
+          "kind": "const",
+          "line": 134,
+          "exported": true,
+          "endLine": 134
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "6f8d1bad4b53706d9445a1d4e5f911ba002c784bba4fc4fa38ab9e395efba6c8",
+      "mtimeMs": 1784561162077.756,
+      "size": 8242,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/document-processing/src/chunk-document.ts",
       "language": "TypeScript",
       "symbols": [
@@ -5497,116 +5715,172 @@
           "endLine": 77
         },
         {
-          "name": "ReportId",
+          "name": "ClaimId",
           "kind": "const",
           "line": 80,
           "exported": true,
           "endLine": 80
         },
         {
-          "name": "ReportId",
+          "name": "ClaimId",
           "kind": "type",
           "line": 81,
           "exported": true,
           "endLine": 81
         },
         {
-          "name": "DatasetId",
+          "name": "ContentRevisionId",
           "kind": "const",
           "line": 84,
           "exported": true,
           "endLine": 84
         },
         {
-          "name": "DatasetId",
+          "name": "ContentRevisionId",
           "kind": "type",
           "line": 85,
           "exported": true,
           "endLine": 85
         },
         {
-          "name": "DatasetSnapshotId",
+          "name": "ReportId",
           "kind": "const",
           "line": 88,
           "exported": true,
           "endLine": 88
         },
         {
-          "name": "DatasetSnapshotId",
+          "name": "ReportId",
           "kind": "type",
           "line": 89,
           "exported": true,
           "endLine": 89
         },
         {
-          "name": "DatasetSchemaFamilyId",
+          "name": "ReportSectionId",
           "kind": "const",
           "line": 92,
           "exported": true,
           "endLine": 92
         },
         {
-          "name": "DatasetSchemaFamilyId",
+          "name": "ReportSectionId",
           "kind": "type",
-          "line": 95,
+          "line": 93,
           "exported": true,
-          "endLine": 95
+          "endLine": 93
         },
         {
-          "name": "QueryResultSnapshotId",
+          "name": "ActorId",
           "kind": "const",
-          "line": 99,
+          "line": 96,
           "exported": true,
-          "endLine": 99
+          "endLine": 96
         },
         {
-          "name": "QueryResultSnapshotId",
+          "name": "ActorId",
           "kind": "type",
+          "line": 97,
+          "exported": true,
+          "endLine": 97
+        },
+        {
+          "name": "DatasetId",
+          "kind": "const",
           "line": 100,
           "exported": true,
           "endLine": 100
         },
         {
-          "name": "DatasetCitationId",
-          "kind": "const",
-          "line": 103,
+          "name": "DatasetId",
+          "kind": "type",
+          "line": 101,
           "exported": true,
-          "endLine": 103
+          "endLine": 101
         },
         {
-          "name": "DatasetCitationId",
-          "kind": "type",
+          "name": "DatasetSnapshotId",
+          "kind": "const",
           "line": 104,
           "exported": true,
           "endLine": 104
         },
         {
-          "name": "EventJournalId",
-          "kind": "const",
-          "line": 107,
+          "name": "DatasetSnapshotId",
+          "kind": "type",
+          "line": 105,
           "exported": true,
-          "endLine": 107
+          "endLine": 105
         },
         {
-          "name": "EventJournalId",
-          "kind": "type",
+          "name": "DatasetSchemaFamilyId",
+          "kind": "const",
           "line": 108,
           "exported": true,
           "endLine": 108
         },
         {
-          "name": "JobQueueId",
-          "kind": "const",
+          "name": "DatasetSchemaFamilyId",
+          "kind": "type",
           "line": 111,
           "exported": true,
           "endLine": 111
         },
         {
+          "name": "QueryResultSnapshotId",
+          "kind": "const",
+          "line": 115,
+          "exported": true,
+          "endLine": 115
+        },
+        {
+          "name": "QueryResultSnapshotId",
+          "kind": "type",
+          "line": 116,
+          "exported": true,
+          "endLine": 116
+        },
+        {
+          "name": "DatasetCitationId",
+          "kind": "const",
+          "line": 119,
+          "exported": true,
+          "endLine": 119
+        },
+        {
+          "name": "DatasetCitationId",
+          "kind": "type",
+          "line": 120,
+          "exported": true,
+          "endLine": 120
+        },
+        {
+          "name": "EventJournalId",
+          "kind": "const",
+          "line": 123,
+          "exported": true,
+          "endLine": 123
+        },
+        {
+          "name": "EventJournalId",
+          "kind": "type",
+          "line": 124,
+          "exported": true,
+          "endLine": 124
+        },
+        {
+          "name": "JobQueueId",
+          "kind": "const",
+          "line": 127,
+          "exported": true,
+          "endLine": 127
+        },
+        {
           "name": "JobQueueId",
           "kind": "type",
-          "line": 112,
+          "line": 128,
           "exported": true,
-          "endLine": 112
+          "endLine": 128
         }
       ],
       "imports": [
@@ -5620,9 +5894,467 @@
         }
       ],
       "exports": [],
-      "hash": "2ae6bde93e2dbeac0c6905586fa133269d3d2b8ec497b7d363ec57507f3a4518",
-      "mtimeMs": 1784512211335.4404,
-      "size": 5744,
+      "hash": "a17b268ea589ccbcbcf3ab89304fabc7ab80df7ca44b0418861c2fe7c072b609",
+      "mtimeMs": 1784565758955.3855,
+      "size": 6624,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/citation-state.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonBlank",
+          "kind": "const",
+          "line": 4,
+          "exported": false,
+          "endLine": 4
+        },
+        {
+          "name": "Revision",
+          "kind": "const",
+          "line": 9,
+          "exported": false,
+          "endLine": 9
+        },
+        {
+          "name": "CitationState",
+          "kind": "const",
+          "line": 16,
+          "exported": true,
+          "endLine": 16
+        },
+        {
+          "name": "CitationState",
+          "kind": "type",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
+          "name": "CitationLifecycle",
+          "kind": "const",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "CitationLifecycle",
+          "kind": "type",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "CitationTransition",
+          "kind": "const",
+          "line": 50,
+          "exported": true,
+          "endLine": 50
+        },
+        {
+          "name": "CitationTransition",
+          "kind": "type",
+          "line": 57,
+          "exported": true,
+          "endLine": 57
+        },
+        {
+          "name": "StaleCitationRevisionError",
+          "kind": "class",
+          "line": 59,
+          "exported": true,
+          "endLine": 59
+        },
+        {
+          "name": "IllegalCitationTransitionError",
+          "kind": "class",
+          "line": 70,
+          "exported": true,
+          "endLine": 70
+        },
+        {
+          "name": "CitationSupersessionCycleError",
+          "kind": "class",
+          "line": 81,
+          "exported": true,
+          "endLine": 81
+        },
+        {
+          "name": "CitationSupersessionTargetError",
+          "kind": "class",
+          "line": 90,
+          "exported": true,
+          "endLine": 90
+        },
+        {
+          "name": "CitationIdempotencyConflictError",
+          "kind": "class",
+          "line": 100,
+          "exported": true,
+          "endLine": 100
+        },
+        {
+          "name": "transitionCitationState",
+          "kind": "const",
+          "line": 121,
+          "exported": true,
+          "endLine": 121
+        },
+        {
+          "name": "validateCitationSupersession",
+          "kind": "const",
+          "line": 184,
+          "exported": true,
+          "endLine": 184
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "CitationId",
+          "specifier": "./branded-ids.js",
+          "imported": [
+            "CitationId"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "6d726bf44ce75eb10f82338aa46f740b79743df57af0d3ea2c41c0f64f5cab82",
+      "mtimeMs": 1784565905781.1067,
+      "size": 7111,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/cross-source-evidence.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "StableIdentity",
+          "kind": "const",
+          "line": 16,
+          "exported": false,
+          "endLine": 16
+        },
+        {
+          "name": "CanonicalString",
+          "kind": "const",
+          "line": 19,
+          "exported": false,
+          "endLine": 19
+        },
+        {
+          "name": "NonBlank",
+          "kind": "const",
+          "line": 23,
+          "exported": false,
+          "endLine": 23
+        },
+        {
+          "name": "CanonicalValue",
+          "kind": "const",
+          "line": 27,
+          "exported": false,
+          "endLine": 27
+        },
+        {
+          "name": "CrossSourceEvidenceId",
+          "kind": "const",
+          "line": 33,
+          "exported": true,
+          "endLine": 33
+        },
+        {
+          "name": "CrossSourceEvidenceId",
+          "kind": "type",
+          "line": 36,
+          "exported": true,
+          "endLine": 36
+        },
+        {
+          "name": "CrossSourceReconciliationId",
+          "kind": "const",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "CrossSourceReconciliationId",
+          "kind": "type",
+          "line": 42,
+          "exported": true,
+          "endLine": 42
+        },
+        {
+          "name": "EvidenceFilter",
+          "kind": "const",
+          "line": 45,
+          "exported": true,
+          "endLine": 45
+        },
+        {
+          "name": "EvidenceFilter",
+          "kind": "type",
+          "line": 50,
+          "exported": true,
+          "endLine": 50
+        },
+        {
+          "name": "EvidenceTimeWindow",
+          "kind": "const",
+          "line": 52,
+          "exported": true,
+          "endLine": 52
+        },
+        {
+          "name": "EvidenceTimeWindow",
+          "kind": "type",
+          "line": 57,
+          "exported": true,
+          "endLine": 57
+        },
+        {
+          "name": "CrossSourceSemantics",
+          "kind": "const",
+          "line": 63,
+          "exported": true,
+          "endLine": 63
+        },
+        {
+          "name": "CrossSourceSemantics",
+          "kind": "type",
+          "line": 83,
+          "exported": true,
+          "endLine": 83
+        },
+        {
+          "name": "CrossSourceDocumentEvidence",
+          "kind": "const",
+          "line": 86,
+          "exported": true,
+          "endLine": 86
+        },
+        {
+          "name": "CrossSourceDocumentEvidence",
+          "kind": "type",
+          "line": 98,
+          "exported": true,
+          "endLine": 98
+        },
+        {
+          "name": "CrossSourceDatasetEvidence",
+          "kind": "const",
+          "line": 101,
+          "exported": true,
+          "endLine": 101
+        },
+        {
+          "name": "CrossSourceDatasetEvidence",
+          "kind": "type",
+          "line": 106,
+          "exported": true,
+          "endLine": 106
+        },
+        {
+          "name": "CrossSourceRecursiveEvidence",
+          "kind": "const",
+          "line": 109,
+          "exported": true,
+          "endLine": 109
+        },
+        {
+          "name": "CrossSourceRecursiveEvidence",
+          "kind": "type",
+          "line": 115,
+          "exported": true,
+          "endLine": 115
+        },
+        {
+          "name": "CrossSourceEvidencePayload",
+          "kind": "const",
+          "line": 118,
+          "exported": true,
+          "endLine": 118
+        },
+        {
+          "name": "CrossSourceEvidencePayload",
+          "kind": "type",
+          "line": 123,
+          "exported": true,
+          "endLine": 123
+        },
+        {
+          "name": "CrossSourceEvidenceFields",
+          "kind": "const",
+          "line": 126,
+          "exported": false,
+          "endLine": 126
+        },
+        {
+          "name": "CrossSourceEvidenceInput",
+          "kind": "const",
+          "line": 134,
+          "exported": true,
+          "endLine": 134
+        },
+        {
+          "name": "CrossSourceEvidenceInput",
+          "kind": "type",
+          "line": 137,
+          "exported": true,
+          "endLine": 137
+        },
+        {
+          "name": "CrossSourceEvidence",
+          "kind": "const",
+          "line": 140,
+          "exported": true,
+          "endLine": 140
+        },
+        {
+          "name": "CrossSourceEvidence",
+          "kind": "type",
+          "line": 144,
+          "exported": true,
+          "endLine": 144
+        },
+        {
+          "name": "CrossSourceEvidenceScope",
+          "kind": "const",
+          "line": 146,
+          "exported": true,
+          "endLine": 146
+        },
+        {
+          "name": "CrossSourceEvidenceScope",
+          "kind": "type",
+          "line": 162,
+          "exported": true,
+          "endLine": 162
+        },
+        {
+          "name": "CrossSourceReconciliationPolicy",
+          "kind": "const",
+          "line": 165,
+          "exported": true,
+          "endLine": 165
+        },
+        {
+          "name": "CrossSourceReconciliationPolicy",
+          "kind": "type",
+          "line": 181,
+          "exported": true,
+          "endLine": 181
+        },
+        {
+          "name": "CrossSourceMismatch",
+          "kind": "const",
+          "line": 184,
+          "exported": true,
+          "endLine": 184
+        },
+        {
+          "name": "CrossSourceMismatch",
+          "kind": "type",
+          "line": 196,
+          "exported": true,
+          "endLine": 196
+        },
+        {
+          "name": "CrossSourceConflict",
+          "kind": "const",
+          "line": 199,
+          "exported": true,
+          "endLine": 199
+        },
+        {
+          "name": "CrossSourceConflict",
+          "kind": "type",
+          "line": 224,
+          "exported": true,
+          "endLine": 224
+        },
+        {
+          "name": "CrossSourceReconciliationResult",
+          "kind": "const",
+          "line": 226,
+          "exported": true,
+          "endLine": 226
+        },
+        {
+          "name": "CrossSourceReconciliationResult",
+          "kind": "type",
+          "line": 263,
+          "exported": true,
+          "endLine": 263
+        },
+        {
+          "name": "CrossSourceEvidenceValidationError",
+          "kind": "class",
+          "line": 266,
+          "exported": true,
+          "endLine": 266
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DatasetCitationEvidence",
+          "specifier": "./dataset-query-evidence.js",
+          "imported": [
+            "DatasetCitationEvidence"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "DocumentLocator",
+          "specifier": "./document.js",
+          "imported": [
+            "DocumentLocator"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Sha256Digest",
+          "specifier": "./directory-manifest.js",
+          "imported": [
+            "Sha256Digest"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "RecursiveEvidenceReference",
+          "specifier": "./research-finding.js",
+          "imported": [
+            "RecursiveEvidenceReference"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "64bd60bafde1c70f027c1c870218cfd97ccbbcb3e6f284601e546808f443f2dd",
+      "mtimeMs": 1784560044059.873,
+      "size": 9521,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -6363,6 +7095,209 @@
       "hash": "a8f4e1344cc2548707ebc16371605a243acfaf5321d521e97a7164783a8cc059",
       "mtimeMs": 1784452368236.5793,
       "size": 2574,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/finding.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonBlank",
+          "kind": "const",
+          "line": 19,
+          "exported": false,
+          "endLine": 19
+        },
+        {
+          "name": "Revision",
+          "kind": "const",
+          "line": 24,
+          "exported": false,
+          "endLine": 24
+        },
+        {
+          "name": "RevisionAuthorship",
+          "kind": "const",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
+          "name": "RevisionAuthorship",
+          "kind": "type",
+          "line": 38,
+          "exported": true,
+          "endLine": 38
+        },
+        {
+          "name": "ContentRevision",
+          "kind": "const",
+          "line": 40,
+          "exported": true,
+          "endLine": 40
+        },
+        {
+          "name": "ContentRevision",
+          "kind": "type",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "ClaimEvidenceMode",
+          "kind": "const",
+          "line": 50,
+          "exported": true,
+          "endLine": 50
+        },
+        {
+          "name": "ClaimEvidenceMode",
+          "kind": "type",
+          "line": 56,
+          "exported": true,
+          "endLine": 56
+        },
+        {
+          "name": "evidenceKinds",
+          "kind": "function",
+          "line": 58,
+          "exported": false,
+          "endLine": 58
+        },
+        {
+          "name": "SupportedClaim",
+          "kind": "const",
+          "line": 64,
+          "exported": true,
+          "endLine": 64
+        },
+        {
+          "name": "SupportedClaim",
+          "kind": "type",
+          "line": 89,
+          "exported": true,
+          "endLine": 89
+        },
+        {
+          "name": "ClaimSupport",
+          "kind": "const",
+          "line": 91,
+          "exported": true,
+          "endLine": 91
+        },
+        {
+          "name": "ClaimSupport",
+          "kind": "type",
+          "line": 98,
+          "exported": true,
+          "endLine": 98
+        },
+        {
+          "name": "ClaimOrigin",
+          "kind": "const",
+          "line": 100,
+          "exported": true,
+          "endLine": 100
+        },
+        {
+          "name": "ClaimOrigin",
+          "kind": "type",
+          "line": 114,
+          "exported": true,
+          "endLine": 114
+        },
+        {
+          "name": "Claim",
+          "kind": "const",
+          "line": 120,
+          "exported": true,
+          "endLine": 120
+        },
+        {
+          "name": "Claim",
+          "kind": "type",
+          "line": 160,
+          "exported": true,
+          "endLine": 160
+        },
+        {
+          "name": "claimSourceVersionIds",
+          "kind": "function",
+          "line": 162,
+          "exported": true,
+          "endLine": 162,
+          "signature": "(claim: Claim)"
+        },
+        {
+          "name": "Finding",
+          "kind": "const",
+          "line": 172,
+          "exported": true,
+          "endLine": 172
+        },
+        {
+          "name": "Finding",
+          "kind": "type",
+          "line": 209,
+          "exported": true,
+          "endLine": 209
+        },
+        {
+          "name": "FindingSupersessionError",
+          "kind": "class",
+          "line": 211,
+          "exported": true,
+          "endLine": 211
+        },
+        {
+          "name": "validateFindingSupersession",
+          "kind": "const",
+          "line": 221,
+          "exported": true,
+          "endLine": 221
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "CitationLifecycle",
+          "specifier": "./citation-state.js",
+          "imported": [
+            "CitationLifecycle"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Sha256Digest",
+          "specifier": "./directory-manifest.js",
+          "imported": [
+            "Sha256Digest"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ResearchFinding",
+          "specifier": "./research-finding.js",
+          "imported": [
+            "ResearchFinding"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "618aedae73ba651aaa2dc2f874d449b836a450a7ae10cca0bfdee3c10e81ce2e",
+      "mtimeMs": 1784566189900.114,
+      "size": 8254,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -7280,6 +8215,185 @@
       "parser": "regex"
     },
     {
+      "path": "packages/domain/src/report.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonBlank",
+          "kind": "const",
+          "line": 20,
+          "exported": false,
+          "endLine": 20
+        },
+        {
+          "name": "Revision",
+          "kind": "const",
+          "line": 25,
+          "exported": false,
+          "endLine": 25
+        },
+        {
+          "name": "ReportPublicationState",
+          "kind": "const",
+          "line": 27,
+          "exported": true,
+          "endLine": 27
+        },
+        {
+          "name": "ReportPublicationState",
+          "kind": "type",
+          "line": 33,
+          "exported": true,
+          "endLine": 33
+        },
+        {
+          "name": "ReportSection",
+          "kind": "const",
+          "line": 36,
+          "exported": true,
+          "endLine": 36
+        },
+        {
+          "name": "ReportSection",
+          "kind": "type",
+          "line": 57,
+          "exported": true,
+          "endLine": 57
+        },
+        {
+          "name": "Report",
+          "kind": "const",
+          "line": 59,
+          "exported": true,
+          "endLine": 59
+        },
+        {
+          "name": "Report",
+          "kind": "type",
+          "line": 137,
+          "exported": true,
+          "endLine": 137
+        },
+        {
+          "name": "ReportSupersessionError",
+          "kind": "class",
+          "line": 139,
+          "exported": true,
+          "endLine": 139
+        },
+        {
+          "name": "validateReportSupersession",
+          "kind": "const",
+          "line": 149,
+          "exported": true,
+          "endLine": 149
+        },
+        {
+          "name": "SectionRegeneration",
+          "kind": "const",
+          "line": 179,
+          "exported": true,
+          "endLine": 179
+        },
+        {
+          "name": "SectionRegeneration",
+          "kind": "type",
+          "line": 188,
+          "exported": true,
+          "endLine": 188
+        },
+        {
+          "name": "StaleReportRevisionError",
+          "kind": "class",
+          "line": 191,
+          "exported": true,
+          "endLine": 191
+        },
+        {
+          "name": "ReportSectionNotFoundError",
+          "kind": "class",
+          "line": 202,
+          "exported": true,
+          "endLine": 202
+        },
+        {
+          "name": "ReportNotPublishableError",
+          "kind": "class",
+          "line": 212,
+          "exported": true,
+          "endLine": 212
+        },
+        {
+          "name": "IllegalReportStateError",
+          "kind": "class",
+          "line": 222,
+          "exported": true,
+          "endLine": 222
+        },
+        {
+          "name": "ReportIdempotencyConflictError",
+          "kind": "class",
+          "line": 233,
+          "exported": true,
+          "endLine": 233
+        },
+        {
+          "name": "blockingClaimIds",
+          "kind": "function",
+          "line": 243,
+          "exported": true,
+          "endLine": 243,
+          "signature": "(report: Report)"
+        },
+        {
+          "name": "sameAuthorship",
+          "kind": "function",
+          "line": 251,
+          "exported": false,
+          "endLine": 251
+        },
+        {
+          "name": "regenerateReportSection",
+          "kind": "const",
+          "line": 267,
+          "exported": true,
+          "endLine": 267
+        },
+        {
+          "name": "publishReport",
+          "kind": "const",
+          "line": 339,
+          "exported": true,
+          "endLine": 339
+        },
+        {
+          "name": "prepareReportPublication",
+          "kind": "const",
+          "line": 398,
+          "exported": true,
+          "endLine": 398
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "2dffec11d99c32a484a123b60fa5681aec28b9c5482a675dc1809d40facb4654",
+      "mtimeMs": 1784566189900.4646,
+      "size": 15209,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/domain/src/research-events.ts",
       "language": "TypeScript",
       "symbols": [
@@ -7767,236 +8881,257 @@
           "endLine": 26
         },
         {
-          "name": "QuestionClassification",
+          "name": "ResearchRouteKind",
           "kind": "const",
           "line": 28,
-          "exported": true,
+          "exported": false,
           "endLine": 28
         },
         {
           "name": "QuestionClassification",
-          "kind": "type",
-          "line": 35,
+          "kind": "const",
+          "line": 30,
           "exported": true,
-          "endLine": 35
+          "endLine": 30
+        },
+        {
+          "name": "QuestionClassification",
+          "kind": "type",
+          "line": 57,
+          "exported": true,
+          "endLine": 57
         },
         {
           "name": "ResearchSourceScope",
           "kind": "const",
-          "line": 38,
+          "line": 60,
           "exported": true,
-          "endLine": 38
+          "endLine": 60
         },
         {
           "name": "ResearchSourceScope",
           "kind": "type",
-          "line": 50,
-          "exported": true,
-          "endLine": 50
-        },
-        {
-          "name": "ResearchEvidenceRequirement",
-          "kind": "const",
-          "line": 53,
-          "exported": true,
-          "endLine": 53
-        },
-        {
-          "name": "ResearchEvidenceRequirement",
-          "kind": "type",
-          "line": 68,
-          "exported": true,
-          "endLine": 68
-        },
-        {
-          "name": "ResearchToolId",
-          "kind": "const",
-          "line": 71,
-          "exported": true,
-          "endLine": 71
-        },
-        {
-          "name": "ResearchToolId",
-          "kind": "type",
-          "line": 77,
-          "exported": true,
-          "endLine": 77
-        },
-        {
-          "name": "ResearchToolCapability",
-          "kind": "const",
           "line": 79,
           "exported": true,
           "endLine": 79
         },
         {
+          "name": "ResearchEvidenceRequirement",
+          "kind": "const",
+          "line": 82,
+          "exported": true,
+          "endLine": 82
+        },
+        {
+          "name": "ResearchEvidenceRequirement",
+          "kind": "type",
+          "line": 106,
+          "exported": true,
+          "endLine": 106
+        },
+        {
+          "name": "ResearchToolId",
+          "kind": "const",
+          "line": 109,
+          "exported": true,
+          "endLine": 109
+        },
+        {
+          "name": "ResearchToolId",
+          "kind": "type",
+          "line": 116,
+          "exported": true,
+          "endLine": 116
+        },
+        {
+          "name": "ResearchToolCapability",
+          "kind": "const",
+          "line": 118,
+          "exported": true,
+          "endLine": 118
+        },
+        {
           "name": "ResearchToolCapability",
           "kind": "type",
-          "line": 85,
+          "line": 125,
           "exported": true,
-          "endLine": 85
+          "endLine": 125
         },
         {
           "name": "ResearchToolPolicy",
           "kind": "const",
-          "line": 88,
+          "line": 128,
           "exported": true,
-          "endLine": 88
+          "endLine": 128
         },
         {
           "name": "ResearchToolPolicy",
           "kind": "type",
-          "line": 98,
+          "line": 138,
           "exported": true,
-          "endLine": 98
+          "endLine": 138
         },
         {
           "name": "ResearchPlanInputRef",
           "kind": "const",
-          "line": 100,
+          "line": 140,
           "exported": true,
-          "endLine": 100
+          "endLine": 140
         },
         {
           "name": "ResearchPlanInputRef",
           "kind": "type",
-          "line": 115,
+          "line": 162,
           "exported": true,
-          "endLine": 115
+          "endLine": 162
         },
         {
           "name": "QueryAlias",
           "kind": "const",
-          "line": 118,
+          "line": 165,
           "exported": false,
-          "endLine": 118
+          "endLine": 165
         },
         {
           "name": "PositiveInteger",
           "kind": "const",
-          "line": 121,
+          "line": 168,
           "exported": false,
-          "endLine": 121
+          "endLine": 168
         },
         {
           "name": "ResearchDatasetQuerySpec",
           "kind": "const",
-          "line": 123,
+          "line": 170,
           "exported": true,
-          "endLine": 123
+          "endLine": 170
         },
         {
           "name": "ResearchDatasetQuerySpec",
           "kind": "type",
-          "line": 142,
+          "line": 189,
           "exported": true,
-          "endLine": 142
+          "endLine": 189
         },
         {
           "name": "ResearchDirectoryNavigationSpec",
           "kind": "const",
-          "line": 145,
-          "exported": true,
-          "endLine": 145
-        },
-        {
-          "name": "ResearchDirectoryNavigationSpec",
-          "kind": "type",
-          "line": 150,
-          "exported": true,
-          "endLine": 150
-        },
-        {
-          "name": "ResearchPlanToolInput",
-          "kind": "const",
-          "line": 153,
-          "exported": true,
-          "endLine": 153
-        },
-        {
-          "name": "ResearchPlanToolInput",
-          "kind": "type",
-          "line": 157,
-          "exported": true,
-          "endLine": 157
-        },
-        {
-          "name": "ResearchPlanNode",
-          "kind": "const",
-          "line": 160,
-          "exported": true,
-          "endLine": 160
-        },
-        {
-          "name": "ResearchPlanNode",
-          "kind": "type",
-          "line": 176,
-          "exported": true,
-          "endLine": 176
-        },
-        {
-          "name": "ResearchBudget",
-          "kind": "const",
-          "line": 178,
-          "exported": true,
-          "endLine": 178
-        },
-        {
-          "name": "ResearchBudget",
-          "kind": "type",
           "line": 192,
           "exported": true,
           "endLine": 192
         },
         {
+          "name": "ResearchDirectoryNavigationSpec",
+          "kind": "type",
+          "line": 197,
+          "exported": true,
+          "endLine": 197
+        },
+        {
+          "name": "ResearchRecursiveAnalysisSpec",
+          "kind": "const",
+          "line": 200,
+          "exported": true,
+          "endLine": 200
+        },
+        {
+          "name": "ResearchRecursiveAnalysisSpec",
+          "kind": "type",
+          "line": 203,
+          "exported": true,
+          "endLine": 203
+        },
+        {
+          "name": "ResearchPlanToolInput",
+          "kind": "const",
+          "line": 206,
+          "exported": true,
+          "endLine": 206
+        },
+        {
+          "name": "ResearchPlanToolInput",
+          "kind": "type",
+          "line": 211,
+          "exported": true,
+          "endLine": 211
+        },
+        {
+          "name": "ResearchPlanNode",
+          "kind": "const",
+          "line": 214,
+          "exported": true,
+          "endLine": 214
+        },
+        {
+          "name": "ResearchPlanNode",
+          "kind": "type",
+          "line": 231,
+          "exported": true,
+          "endLine": 231
+        },
+        {
+          "name": "ResearchBudget",
+          "kind": "const",
+          "line": 233,
+          "exported": true,
+          "endLine": 233
+        },
+        {
+          "name": "ResearchBudget",
+          "kind": "type",
+          "line": 247,
+          "exported": true,
+          "endLine": 247
+        },
+        {
           "name": "ResearchPlan",
           "kind": "const",
-          "line": 194,
+          "line": 249,
           "exported": true,
-          "endLine": 194
+          "endLine": 249
         },
         {
           "name": "ResearchPlan",
           "kind": "type",
-          "line": 215,
+          "line": 270,
           "exported": true,
-          "endLine": 215
+          "endLine": 270
         },
         {
           "name": "ValidationReason",
           "kind": "type",
-          "line": 217,
+          "line": 272,
           "exported": false,
-          "endLine": 217
+          "endLine": 272
         },
         {
           "name": "parseFailure",
           "kind": "function",
-          "line": 220,
+          "line": 275,
           "exported": false,
-          "endLine": 220
+          "endLine": 275
         },
         {
           "name": "graphFailure",
           "kind": "function",
-          "line": 244,
+          "line": 299,
           "exported": false,
-          "endLine": 244,
+          "endLine": 299,
           "signature": "(plan: ResearchPlan)"
         },
         {
           "name": "decodeQuestionClassification",
           "kind": "const",
-          "line": 351,
+          "line": 464,
           "exported": true,
-          "endLine": 351
+          "endLine": 464
         },
         {
           "name": "decodeResearchPlan",
           "kind": "const",
-          "line": 359,
+          "line": 472,
           "exported": true,
-          "endLine": 359
+          "endLine": 472
         }
       ],
       "imports": [
@@ -8020,9 +9155,9 @@
         }
       ],
       "exports": [],
-      "hash": "ecdc8f61bf963e16ac10658371a1e91693ff34d7b25595359c8a63f5e1825a97",
-      "mtimeMs": 1784525583167.7476,
-      "size": 12059,
+      "hash": "df1408b03d7df15075328459d1812ce7c56d34d8d294acdcf6f42108ffd16aa9",
+      "mtimeMs": 1784556815052.8599,
+      "size": 15963,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -8039,186 +9174,186 @@
           "endLine": 4
         },
         {
+          "name": "Finding",
+          "kind": "const",
+          "line": 5,
+          "exported": true,
+          "endLine": 5
+        },
+        {
+          "name": "Report",
+          "kind": "const",
+          "line": 6,
+          "exported": true,
+          "endLine": 6
+        },
+        {
           "name": "SourceKind",
           "kind": "const",
-          "line": 8,
+          "line": 10,
           "exported": true,
-          "endLine": 8
+          "endLine": 10
         },
         {
           "name": "SourceKind",
           "kind": "type",
-          "line": 14,
-          "exported": true,
-          "endLine": 14
-        },
-        {
-          "name": "IngestionStatus",
-          "kind": "const",
           "line": 16,
           "exported": true,
           "endLine": 16
         },
         {
           "name": "IngestionStatus",
-          "kind": "type",
-          "line": 23,
+          "kind": "const",
+          "line": 18,
           "exported": true,
-          "endLine": 23
+          "endLine": 18
         },
         {
-          "name": "JobStatus",
-          "kind": "const",
+          "name": "IngestionStatus",
+          "kind": "type",
           "line": 25,
           "exported": true,
           "endLine": 25
         },
         {
           "name": "JobStatus",
-          "kind": "type",
-          "line": 26,
+          "kind": "const",
+          "line": 27,
           "exported": true,
-          "endLine": 26
+          "endLine": 27
         },
         {
-          "name": "ResearchStatus",
-          "kind": "const",
+          "name": "JobStatus",
+          "kind": "type",
           "line": 28,
           "exported": true,
           "endLine": 28
         },
         {
           "name": "ResearchStatus",
-          "kind": "type",
-          "line": 36,
+          "kind": "const",
+          "line": 30,
           "exported": true,
-          "endLine": 36
+          "endLine": 30
         },
         {
-          "name": "CitationStatus",
-          "kind": "const",
+          "name": "ResearchStatus",
+          "kind": "type",
           "line": 38,
           "exported": true,
           "endLine": 38
         },
         {
           "name": "CitationStatus",
-          "kind": "type",
-          "line": 43,
+          "kind": "const",
+          "line": 40,
           "exported": true,
-          "endLine": 43
+          "endLine": 40
+        },
+        {
+          "name": "CitationStatus",
+          "kind": "type",
+          "line": 45,
+          "exported": true,
+          "endLine": 45
         },
         {
           "name": "Workspace",
           "kind": "const",
-          "line": 47,
+          "line": 49,
           "exported": true,
-          "endLine": 47
+          "endLine": 49
         },
         {
           "name": "Project",
           "kind": "const",
-          "line": 54,
+          "line": 56,
           "exported": true,
-          "endLine": 54
+          "endLine": 56
         },
         {
           "name": "Source",
           "kind": "const",
-          "line": 62,
+          "line": 64,
           "exported": true,
-          "endLine": 62
+          "endLine": 64
         },
         {
           "name": "ResearchThread",
           "kind": "const",
-          "line": 71,
+          "line": 73,
           "exported": true,
-          "endLine": 71
+          "endLine": 73
         },
         {
           "name": "ResearchRun",
           "kind": "const",
-          "line": 79,
+          "line": 81,
           "exported": true,
-          "endLine": 79
+          "endLine": 81
         },
         {
           "name": "Citation",
           "kind": "const",
-          "line": 88,
+          "line": 90,
           "exported": true,
-          "endLine": 88
+          "endLine": 90
         },
         {
           "name": "TextEvidence",
           "kind": "const",
-          "line": 97,
+          "line": 99,
           "exported": true,
-          "endLine": 97
+          "endLine": 99
         },
         {
           "name": "TextEvidence",
           "kind": "type",
-          "line": 103,
-          "exported": true,
-          "endLine": 103
-        },
-        {
-          "name": "ResearchCitation",
-          "kind": "const",
           "line": 105,
           "exported": true,
           "endLine": 105
         },
         {
           "name": "ResearchCitation",
-          "kind": "type",
-          "line": 109,
+          "kind": "const",
+          "line": 107,
           "exported": true,
-          "endLine": 109
+          "endLine": 107
         },
         {
-          "name": "ResearchAnswer",
-          "kind": "const",
+          "name": "ResearchCitation",
+          "kind": "type",
           "line": 111,
           "exported": true,
           "endLine": 111
         },
         {
           "name": "ResearchAnswer",
-          "kind": "type",
-          "line": 121,
+          "kind": "const",
+          "line": 113,
           "exported": true,
-          "endLine": 121
+          "endLine": 113
         },
         {
-          "name": "Finding",
-          "kind": "const",
+          "name": "ResearchAnswer",
+          "kind": "type",
           "line": 123,
           "exported": true,
           "endLine": 123
         },
         {
-          "name": "Report",
-          "kind": "const",
-          "line": 132,
-          "exported": true,
-          "endLine": 132
-        },
-        {
           "name": "JobQueue",
           "kind": "const",
-          "line": 141,
+          "line": 125,
           "exported": true,
-          "endLine": 141
+          "endLine": 125
         },
         {
           "name": "EventJournal",
           "kind": "const",
-          "line": 154,
+          "line": 138,
           "exported": true,
-          "endLine": 154
+          "endLine": 138
         }
       ],
       "imports": [
@@ -8249,11 +9384,21 @@
           "name": "SourceVersion",
           "source": "./source-version.js",
           "kind": "reexport"
+        },
+        {
+          "name": "Finding",
+          "source": "./finding.js",
+          "kind": "reexport"
+        },
+        {
+          "name": "Report",
+          "source": "./report.js",
+          "kind": "reexport"
         }
       ],
-      "hash": "32fe0994e79d8ff6fe32dbd10bf651ce354005dcac6224fd4ab3b8f83b64abdc",
-      "mtimeMs": 1784525583168.0405,
-      "size": 4513,
+      "hash": "15a0e22cff619a14764cdaa634a01cc0f080e43d1dcc99ce5c4d77301eab6580",
+      "mtimeMs": 1784565758956.412,
+      "size": 4155,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -9769,6 +10914,351 @@
       "parser": "regex"
     },
     {
+      "path": "packages/evaluation/src/hybrid-research.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "PHASE_07_HYBRID_EVALUATION_ID",
+          "kind": "const",
+          "line": 52,
+          "exported": true,
+          "endLine": 52
+        },
+        {
+          "name": "CRITERION_IDS",
+          "kind": "const",
+          "line": 55,
+          "exported": false,
+          "endLine": 55
+        },
+        {
+          "name": "FAILURE_TAXONOMY",
+          "kind": "const",
+          "line": 69,
+          "exported": false,
+          "endLine": 69
+        },
+        {
+          "name": "workspaceId",
+          "kind": "const",
+          "line": 76,
+          "exported": false,
+          "endLine": 76
+        },
+        {
+          "name": "projectId",
+          "kind": "const",
+          "line": 77,
+          "exported": false,
+          "endLine": 77
+        },
+        {
+          "name": "sourceVersionId",
+          "kind": "const",
+          "line": 78,
+          "exported": false,
+          "endLine": 78
+        },
+        {
+          "name": "datasetId",
+          "kind": "const",
+          "line": 81,
+          "exported": false,
+          "endLine": 81
+        },
+        {
+          "name": "datasetSnapshotId",
+          "kind": "const",
+          "line": 82,
+          "exported": false,
+          "endLine": 82
+        },
+        {
+          "name": "resultId",
+          "kind": "const",
+          "line": 85,
+          "exported": false,
+          "endLine": 85
+        },
+        {
+          "name": "citationId",
+          "kind": "const",
+          "line": 88,
+          "exported": false,
+          "endLine": 88
+        },
+        {
+          "name": "claimSignature",
+          "kind": "const",
+          "line": 91,
+          "exported": false,
+          "endLine": 91
+        },
+        {
+          "name": "schemaHash",
+          "kind": "const",
+          "line": 92,
+          "exported": false,
+          "endLine": 92
+        },
+        {
+          "name": "resultHash",
+          "kind": "const",
+          "line": 93,
+          "exported": false,
+          "endLine": 93
+        },
+        {
+          "name": "artifactHash",
+          "kind": "const",
+          "line": 94,
+          "exported": false,
+          "endLine": 94
+        },
+        {
+          "name": "canonicalSql",
+          "kind": "const",
+          "line": 95,
+          "exported": false,
+          "endLine": 95
+        },
+        {
+          "name": "injection",
+          "kind": "const",
+          "line": 97,
+          "exported": false,
+          "endLine": 97
+        },
+        {
+          "name": "rows",
+          "kind": "const",
+          "line": 99,
+          "exported": false,
+          "endLine": 99
+        },
+        {
+          "name": "columns",
+          "kind": "const",
+          "line": 100,
+          "exported": false,
+          "endLine": 100
+        },
+        {
+          "name": "semantics",
+          "kind": "const",
+          "line": 105,
+          "exported": false,
+          "endLine": 105
+        },
+        {
+          "name": "planIds",
+          "kind": "const",
+          "line": 119,
+          "exported": false,
+          "endLine": 119
+        },
+        {
+          "name": "researchPlan",
+          "kind": "const",
+          "line": 139,
+          "exported": false,
+          "endLine": 139
+        },
+        {
+          "name": "scope",
+          "kind": "const",
+          "line": 247,
+          "exported": false,
+          "endLine": 247
+        },
+        {
+          "name": "policy",
+          "kind": "const",
+          "line": 254,
+          "exported": false,
+          "endLine": 254
+        },
+        {
+          "name": "PHASE_07_RESOURCE_LIMITS",
+          "kind": "const",
+          "line": 259,
+          "exported": true,
+          "endLine": 259
+        },
+        {
+          "name": "routing",
+          "kind": "const",
+          "line": 282,
+          "exported": false,
+          "endLine": 282
+        },
+        {
+          "name": "executionPolicy",
+          "kind": "const",
+          "line": 321,
+          "exported": false,
+          "endLine": 321
+        },
+        {
+          "name": "sha256",
+          "kind": "function",
+          "line": 326,
+          "exported": false,
+          "endLine": 326,
+          "signature": "(value: string)"
+        },
+        {
+          "name": "datasetEvidence",
+          "kind": "function",
+          "line": 330,
+          "exported": false,
+          "endLine": 330,
+          "signature": "()"
+        },
+        {
+          "name": "documentInput",
+          "kind": "function",
+          "line": 380,
+          "exported": false,
+          "endLine": 380
+        },
+        {
+          "name": "datasetInput",
+          "kind": "function",
+          "line": 418,
+          "exported": false,
+          "endLine": 418
+        },
+        {
+          "name": "recursiveInput",
+          "kind": "function",
+          "line": 435,
+          "exported": false,
+          "endLine": 435,
+          "signature": "()"
+        },
+        {
+          "name": "ProductionExecution",
+          "kind": "interface",
+          "line": 462,
+          "exported": false,
+          "endLine": 462
+        },
+        {
+          "name": "productionExecution",
+          "kind": "function",
+          "line": 470,
+          "exported": false,
+          "endLine": 470
+        },
+        {
+          "name": "EvaluationCriterion",
+          "kind": "const",
+          "line": 671,
+          "exported": false,
+          "endLine": 671
+        },
+        {
+          "name": "EvaluationCriterion",
+          "kind": "type",
+          "line": 679,
+          "exported": true,
+          "endLine": 679
+        },
+        {
+          "name": "EvaluationBody",
+          "kind": "const",
+          "line": 683,
+          "exported": false,
+          "endLine": 683
+        },
+        {
+          "name": "EvaluationBody",
+          "kind": "type",
+          "line": 743,
+          "exported": false,
+          "endLine": 743
+        },
+        {
+          "name": "HybridResearchEvaluationReport",
+          "kind": "const",
+          "line": 745,
+          "exported": true,
+          "endLine": 745
+        },
+        {
+          "name": "HybridResearchEvaluationReport",
+          "kind": "type",
+          "line": 751,
+          "exported": true,
+          "endLine": 751
+        },
+        {
+          "name": "criterion",
+          "kind": "function",
+          "line": 755,
+          "exported": false,
+          "endLine": 755
+        },
+        {
+          "name": "evaluate",
+          "kind": "const",
+          "line": 763,
+          "exported": false,
+          "endLine": 763
+        },
+        {
+          "name": "runHybridResearchEvaluation",
+          "kind": "function",
+          "line": 1281,
+          "exported": true,
+          "endLine": 1281,
+          "signature": "()"
+        },
+        {
+          "name": "serializeHybridResearchEvaluationReport",
+          "kind": "function",
+          "line": 1285,
+          "exported": true,
+          "endLine": 1285
+        },
+        {
+          "name": "verifyHybridResearchEvaluationReport",
+          "kind": "const",
+          "line": 1291,
+          "exported": true,
+          "endLine": 1291
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Ref, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Ref",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "canonicalJson",
+          "specifier": "./corpus.js",
+          "imported": [
+            "canonicalJson"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "5e58c7902b1d8845c8159f8994a55fc01c00c22c068fc7b19afca57fd98688ed",
+      "mtimeMs": 1784564785491.335,
+      "size": 42860,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/evaluation/src/index.ts",
       "language": "TypeScript",
       "symbols": [
@@ -9821,6 +11311,11 @@
         },
         {
           "name": "*",
+          "source": "./hybrid-research.js",
+          "kind": "namespace"
+        },
+        {
+          "name": "*",
           "source": "./prompt-injection.js",
           "kind": "namespace"
         },
@@ -9835,9 +11330,9 @@
           "kind": "namespace"
         }
       ],
-      "hash": "1ebe4c3421811d3fc9d6b6108ec0d1d06f5a99b07ad1f4b26ee3ebcbb7f860fa",
-      "mtimeMs": 1784547856771.8828,
-      "size": 803,
+      "hash": "514fbb224af362aa63208690fdd07f66c6fd866a109879611cad181843291df7",
+      "mtimeMs": 1784564785491.5024,
+      "size": 840,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -10674,53 +12169,53 @@
         {
           "name": "validPlanProposal",
           "kind": "function",
-          "line": 259,
+          "line": 260,
           "exported": false,
-          "endLine": 259,
+          "endLine": 260,
           "signature": "()"
         },
         {
           "name": "criterion",
           "kind": "function",
-          "line": 360,
+          "line": 361,
           "exported": false,
-          "endLine": 360
+          "endLine": 361
         },
         {
           "name": "toolDefinition",
           "kind": "function",
-          "line": 376,
+          "line": 377,
           "exported": false,
-          "endLine": 376
+          "endLine": 377
         },
         {
           "name": "checkpoint",
           "kind": "function",
-          "line": 392,
+          "line": 393,
           "exported": false,
-          "endLine": 392,
+          "endLine": 393,
           "signature": "(plan: typeof ResearchPlan.Type)"
         },
         {
           "name": "runPhase05Evaluation",
           "kind": "const",
-          "line": 431,
+          "line": 432,
           "exported": true,
-          "endLine": 431
+          "endLine": 432
         },
         {
           "name": "serializePhase05EvaluationReport",
           "kind": "function",
-          "line": 1076,
+          "line": 1077,
           "exported": true,
-          "endLine": 1076
+          "endLine": 1077
         },
         {
           "name": "verifyPhase05TrackedReportIntegrity",
           "kind": "function",
-          "line": 1082,
+          "line": 1083,
           "exported": true,
-          "endLine": 1082
+          "endLine": 1083
         }
       ],
       "imports": [
@@ -10761,9 +12256,9 @@
         }
       ],
       "exports": [],
-      "hash": "8e1e09e301f1599b760033d9b03a01d04b06c9e933c70d833574e2cc0b514aaf",
-      "mtimeMs": 1784531240335.21,
-      "size": 35433,
+      "hash": "80b16265978a1391753dc420f64f11114b41f38130bca6fb31e2c884338eca09",
+      "mtimeMs": 1784556815053.0298,
+      "size": 35472,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -10883,193 +12378,200 @@
           "endLine": 34
         },
         {
+          "name": "PHASE_06_CRITERION_IDS",
+          "kind": "const",
+          "line": 35,
+          "exported": false,
+          "endLine": 35
+        },
+        {
           "name": "sha256",
           "kind": "function",
-          "line": 36,
+          "line": 47,
           "exported": false,
-          "endLine": 36,
+          "endLine": 47,
           "signature": "(value: string)"
         },
         {
           "name": "digest",
           "kind": "function",
-          "line": 40,
+          "line": 51,
           "exported": false,
-          "endLine": 40,
+          "endLine": 51,
           "signature": "(value: string)"
         },
         {
           "name": "stableSourceVersionId",
           "kind": "function",
-          "line": 44,
+          "line": 55,
           "exported": false,
-          "endLine": 44,
+          "endLine": 55,
           "signature": "(index: number)"
         },
         {
           "name": "entryIndex",
           "kind": "function",
-          "line": 49,
+          "line": 60,
           "exported": false,
-          "endLine": 49,
+          "endLine": 60,
           "signature": "(entryKey: string)"
         },
         {
           "name": "Phase06RecursiveFixture",
           "kind": "interface",
-          "line": 53,
+          "line": 64,
           "exported": true,
-          "endLine": 53
+          "endLine": 64
         },
         {
           "name": "makePhase06RecursiveFixture",
           "kind": "function",
-          "line": 63,
+          "line": 74,
           "exported": true,
-          "endLine": 63,
+          "endLine": 74,
           "signature": "()"
         },
         {
           "name": "Counter",
           "kind": "const",
-          "line": 134,
+          "line": 145,
           "exported": false,
-          "endLine": 134
+          "endLine": 145
         },
         {
           "name": "PartitionSummary",
           "kind": "const",
-          "line": 139,
+          "line": 150,
           "exported": false,
-          "endLine": 139
+          "endLine": 150
         },
         {
           "name": "PartitionSummary",
           "kind": "type",
-          "line": 147,
-          "exported": false,
-          "endLine": 147
-        },
-        {
-          "name": "MergeCheckpoint",
-          "kind": "const",
-          "line": 148,
-          "exported": false,
-          "endLine": 148
-        },
-        {
-          "name": "MergeCheckpoint",
-          "kind": "type",
-          "line": 156,
-          "exported": false,
-          "endLine": 156
-        },
-        {
-          "name": "Phase06EvaluationCriterion",
-          "kind": "const",
           "line": 158,
-          "exported": true,
+          "exported": false,
           "endLine": 158
         },
         {
+          "name": "MergeCheckpoint",
+          "kind": "const",
+          "line": 159,
+          "exported": false,
+          "endLine": 159
+        },
+        {
+          "name": "MergeCheckpoint",
+          "kind": "type",
+          "line": 167,
+          "exported": false,
+          "endLine": 167
+        },
+        {
+          "name": "Phase06EvaluationCriterion",
+          "kind": "const",
+          "line": 169,
+          "exported": true,
+          "endLine": 169
+        },
+        {
           "name": "Phase06EvaluationCriterion",
           "kind": "type",
-          "line": 176,
+          "line": 177,
           "exported": true,
-          "endLine": 176
+          "endLine": 177
         },
         {
           "name": "Phase06RecursiveEvaluationBody",
           "kind": "const",
-          "line": 179,
+          "line": 180,
           "exported": false,
-          "endLine": 179
+          "endLine": 180
         },
         {
           "name": "Phase06RecursiveEvaluationBody",
           "kind": "type",
-          "line": 233,
+          "line": 239,
           "exported": false,
-          "endLine": 233
+          "endLine": 239
         },
         {
           "name": "Phase06RecursiveEvaluationReport",
           "kind": "const",
-          "line": 236,
+          "line": 242,
           "exported": true,
-          "endLine": 236
+          "endLine": 242
         },
         {
           "name": "Phase06RecursiveEvaluationReport",
           "kind": "type",
-          "line": 241,
+          "line": 247,
           "exported": true,
-          "endLine": 241
+          "endLine": 247
         },
         {
           "name": "criterion",
           "kind": "function",
-          "line": 244,
+          "line": 250,
           "exported": false,
-          "endLine": 244
+          "endLine": 250
         },
         {
           "name": "artifactForClaim",
           "kind": "function",
-          "line": 252,
+          "line": 258,
           "exported": false,
-          "endLine": 252,
+          "endLine": 258,
           "signature": "(claim: RecursivePartitionClaim)"
         },
         {
           "name": "commitClaims",
           "kind": "function",
-          "line": 260,
+          "line": 266,
           "exported": false,
-          "endLine": 260
+          "endLine": 266
         },
         {
           "name": "finishPartitions",
           "kind": "function",
-          "line": 278,
+          "line": 284,
           "exported": false,
-          "endLine": 278
+          "endLine": 284
         },
         {
           "name": "partitionSummary",
           "kind": "function",
-          "line": 305,
+          "line": 311,
           "exported": false,
-          "endLine": 305
+          "endLine": 311
         },
         {
           "name": "checkpointBytes",
           "kind": "function",
-          "line": 321,
+          "line": 327,
           "exported": false,
-          "endLine": 321,
+          "endLine": 327,
           "signature": "(value: unknown)"
         },
         {
           "name": "runPhase06RecursiveEvaluation",
           "kind": "const",
-          "line": 325,
+          "line": 331,
           "exported": true,
-          "endLine": 325
+          "endLine": 331
         },
         {
           "name": "serializePhase06RecursiveEvaluationReport",
           "kind": "function",
-          "line": 587,
+          "line": 682,
           "exported": true,
-          "endLine": 587
+          "endLine": 682
         },
         {
           "name": "verifyPhase06RecursiveEvaluationReport",
           "kind": "function",
-          "line": 593,
+          "line": 688,
           "exported": true,
-          "endLine": 593
+          "endLine": 688
         }
       ],
       "imports": [
@@ -11092,9 +12594,9 @@
         }
       ],
       "exports": [],
-      "hash": "558690a18f494bed23921defcb64deea3b2e38d56e6f4c342e81c05897e19e73",
-      "mtimeMs": 1784548213532.0947,
-      "size": 20655,
+      "hash": "d4cb6987bf2228e6f109633eeb57217e354804c257fe511ad7b0505c37d95d8b",
+      "mtimeMs": 1784550337863.1316,
+      "size": 25349,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -11319,8 +12821,83 @@
       ],
       "exports": [],
       "hash": "cfba333f6f15e22060ed1cc2cfdd7048f84aac6b654ee02510c15efc28e909ca",
-      "mtimeMs": 1784547856771.3447,
+      "mtimeMs": 1784550337863.3784,
       "size": 1922,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/evaluation/src/run-phase-07-hybrid-evaluation.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "root",
+          "kind": "const",
+          "line": 10,
+          "exported": false,
+          "endLine": 10
+        },
+        {
+          "name": "reportPath",
+          "kind": "const",
+          "line": 11,
+          "exported": false,
+          "endLine": 11
+        },
+        {
+          "name": "mode",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
+          "name": "report",
+          "kind": "const",
+          "line": 16,
+          "exported": false,
+          "endLine": 16
+        },
+        {
+          "name": "serialized",
+          "kind": "const",
+          "line": 17,
+          "exported": false,
+          "endLine": 17
+        }
+      ],
+      "imports": [
+        {
+          "source": "mkdir",
+          "specifier": "node:fs/promises",
+          "imported": [
+            "mkdir"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "dirname, resolve",
+          "specifier": "node:path",
+          "imported": [
+            "dirname",
+            "resolve"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "34ad7cc2118323e195d478dd54bb731a22d58033f0693cdb31f27292be6c5b07",
+      "mtimeMs": 1784564785491.6155,
+      "size": 1084,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -12518,9 +14095,9 @@
       ],
       "imports": [],
       "exports": [],
-      "hash": "93b9467a2aeca4047a818f4398fdd9b408e7a03f36c5feba8a1f634abccfe2fb",
-      "mtimeMs": 1784525583168.857,
-      "size": 3465,
+      "hash": "5e4f1540304329e246c714bb1ecfd61ac68419bf89582537bb9a742f6a9cde56",
+      "mtimeMs": 1784565977284.1313,
+      "size": 3672,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -15485,9 +17062,9 @@
         }
       ],
       "exports": [],
-      "hash": "b9443b51bbf9a5cc90dad8c072681ebdf8eb72a5412f789ad777c112b678b84f",
-      "mtimeMs": 1784525583170.1907,
-      "size": 9400,
+      "hash": "1619e1a0f96c3f2fd8244b7f0750640bda6d9f74392a5a4e39223eedfcdf5136",
+      "mtimeMs": 1784564785491.9067,
+      "size": 9644,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -15931,86 +17508,86 @@
         {
           "name": "ResearchStopReason",
           "kind": "type",
-          "line": 126,
+          "line": 131,
           "exported": true,
-          "endLine": 126
+          "endLine": 131
         },
         {
           "name": "ResearchExecutionStopped",
           "kind": "class",
-          "line": 128,
+          "line": 133,
           "exported": true,
-          "endLine": 128
+          "endLine": 133
         },
         {
           "name": "ResearchProviderFailure",
           "kind": "class",
-          "line": 136,
+          "line": 141,
           "exported": true,
-          "endLine": 136
+          "endLine": 141
         },
         {
           "name": "ResearchAction",
           "kind": "const",
-          "line": 143,
+          "line": 148,
           "exported": true,
-          "endLine": 143
+          "endLine": 148
         },
         {
           "name": "ResearchAction",
           "kind": "type",
-          "line": 160,
+          "line": 165,
           "exported": true,
-          "endLine": 160
+          "endLine": 165
         },
         {
           "name": "ResearchActionResult",
           "kind": "const",
-          "line": 162,
+          "line": 167,
           "exported": true,
-          "endLine": 162
+          "endLine": 167
         },
         {
           "name": "ResearchActionResult",
           "kind": "type",
-          "line": 166,
+          "line": 172,
           "exported": true,
-          "endLine": 166
+          "endLine": 172
         },
         {
           "name": "ResearchToolGrantUsage",
           "kind": "const",
-          "line": 169,
+          "line": 175,
           "exported": true,
-          "endLine": 169
+          "endLine": 175
         },
         {
           "name": "ResearchToolGrantUsage",
           "kind": "type",
-          "line": 174,
+          "line": 180,
           "exported": true,
-          "endLine": 174
+          "endLine": 180
         },
         {
           "name": "ResearchGraphState",
           "kind": "const",
-          "line": 177,
+          "line": 183,
           "exported": true,
-          "endLine": 177
+          "endLine": 183
         },
         {
           "name": "ResearchGraphState",
           "kind": "type",
-          "line": 200,
+          "line": 207,
           "exported": true,
-          "endLine": 200
+          "endLine": 207
         },
         {
           "name": "initialResearchGraphState",
           "kind": "function",
-          "line": 203,
+          "line": 210,
           "exported": true,
-          "endLine": 203
+          "endLine": 210
         }
       ],
       "imports": [
@@ -16024,9 +17601,156 @@
         }
       ],
       "exports": [],
-      "hash": "770e1bf271bc8eb715da18e1868a25bccc9c91273edb82880e6c0928ae79ad04",
-      "mtimeMs": 1784525583170.3396,
-      "size": 6199,
+      "hash": "c4dcfc0552ecd5577f2ad83023a2e1254a38927949f2ce0558785dbb6a752616",
+      "mtimeMs": 1784564785492.0535,
+      "size": 6379,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/research-engine/src/hybrid-synthesis.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonBlank",
+          "kind": "const",
+          "line": 25,
+          "exported": false,
+          "endLine": 25
+        },
+        {
+          "name": "HybridSynthesisLimits",
+          "kind": "const",
+          "line": 30,
+          "exported": true,
+          "endLine": 30
+        },
+        {
+          "name": "HybridSynthesisLimits",
+          "kind": "type",
+          "line": 38,
+          "exported": true,
+          "endLine": 38
+        },
+        {
+          "name": "HybridSynthesisPrompt",
+          "kind": "const",
+          "line": 41,
+          "exported": true,
+          "endLine": 41
+        },
+        {
+          "name": "HybridSynthesisPrompt",
+          "kind": "type",
+          "line": 55,
+          "exported": true,
+          "endLine": 55
+        },
+        {
+          "name": "HybridSynthesisDraft",
+          "kind": "const",
+          "line": 58,
+          "exported": true,
+          "endLine": 58
+        },
+        {
+          "name": "HybridSynthesisDraft",
+          "kind": "type",
+          "line": 66,
+          "exported": true,
+          "endLine": 66
+        },
+        {
+          "name": "ValidatedHybridSynthesis",
+          "kind": "const",
+          "line": 69,
+          "exported": true,
+          "endLine": 69
+        },
+        {
+          "name": "ValidatedHybridSynthesis",
+          "kind": "type",
+          "line": 88,
+          "exported": true,
+          "endLine": 88
+        },
+        {
+          "name": "compareUtf8",
+          "kind": "function",
+          "line": 91,
+          "exported": false,
+          "endLine": 91,
+          "signature": "(left: string, right: string)"
+        },
+        {
+          "name": "canonicalJson",
+          "kind": "function",
+          "line": 103,
+          "exported": false,
+          "endLine": 103,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "validateReconciliationIdentity",
+          "kind": "function",
+          "line": 124,
+          "exported": false,
+          "endLine": 124
+        },
+        {
+          "name": "prepareHybridSynthesis",
+          "kind": "const",
+          "line": 139,
+          "exported": true,
+          "endLine": 139
+        },
+        {
+          "name": "renderedAnswer",
+          "kind": "function",
+          "line": 225,
+          "exported": false,
+          "endLine": 225
+        },
+        {
+          "name": "validateHybridSynthesis",
+          "kind": "const",
+          "line": 237,
+          "exported": true,
+          "endLine": 237
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "computeCrossSourceEvidenceId",
+          "specifier": "./normalize-evidence.js",
+          "imported": [
+            "computeCrossSourceEvidenceId"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "computeCrossSourceReconciliationId",
+          "specifier": "./reconcile-findings.js",
+          "imported": [
+            "computeCrossSourceReconciliationId"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "b75a33836391483c5c4a362ac5391522b5b7d2d28b2c6d89d21f3333b831c554",
+      "mtimeMs": 1784561162077.9973,
+      "size": 11095,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -16159,6 +17883,142 @@
       "parser": "regex"
     },
     {
+      "path": "packages/research-engine/src/normalize-evidence.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "invalid",
+          "kind": "function",
+          "line": 22,
+          "exported": false,
+          "endLine": 22
+        },
+        {
+          "name": "compareUtf8",
+          "kind": "function",
+          "line": 30,
+          "exported": false,
+          "endLine": 30,
+          "signature": "(left: string, right: string)"
+        },
+        {
+          "name": "canonicalValue",
+          "kind": "function",
+          "line": 42,
+          "exported": false,
+          "endLine": 42,
+          "signature": "(value: EvidenceFilter['value'])"
+        },
+        {
+          "name": "canonicalFilter",
+          "kind": "function",
+          "line": 48,
+          "exported": false,
+          "endLine": 48,
+          "signature": "(filter: EvidenceFilter)"
+        },
+        {
+          "name": "canonicalSemantics",
+          "kind": "function",
+          "line": 54,
+          "exported": false,
+          "endLine": 54
+        },
+        {
+          "name": "encodeDocumentLocator",
+          "kind": "function",
+          "line": 66,
+          "exported": false,
+          "endLine": 66
+        },
+        {
+          "name": "digestFields",
+          "kind": "function",
+          "line": 81,
+          "exported": false,
+          "endLine": 81,
+          "signature": "(fields: ReadonlyArray<string>)"
+        },
+        {
+          "name": "canonicalJson",
+          "kind": "function",
+          "line": 86,
+          "exported": false,
+          "endLine": 86,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "computeCrossSourceEvidenceId",
+          "kind": "function",
+          "line": 107,
+          "exported": true,
+          "endLine": 107
+        },
+        {
+          "name": "sameRows",
+          "kind": "function",
+          "line": 118,
+          "exported": false,
+          "endLine": 118
+        },
+        {
+          "name": "validateDatasetLineage",
+          "kind": "const",
+          "line": 129,
+          "exported": false,
+          "endLine": 129
+        },
+        {
+          "name": "validatePayloadLineage",
+          "kind": "const",
+          "line": 201,
+          "exported": false,
+          "endLine": 201
+        },
+        {
+          "name": "normalizeCrossSourceEvidence",
+          "kind": "const",
+          "line": 249,
+          "exported": true,
+          "endLine": 249
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "computeRecursiveEvidenceId",
+          "specifier": "./aggregation-schema.js",
+          "imported": [
+            "computeRecursiveEvidenceId"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "orderCanonicalIdentities",
+          "specifier": "./aggregation-schema.js",
+          "imported": [
+            "orderCanonicalIdentities"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "793736ba79f996610d0d5d328eb27cc859cb2f7b233504a008d2d1bafdb64da5",
+      "mtimeMs": 1784560044060.301,
+      "size": 10357,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/research-engine/src/normalize-plan.ts",
       "language": "TypeScript",
       "symbols": [
@@ -16181,16 +18041,16 @@
         {
           "name": "inputRefKey",
           "kind": "function",
-          "line": 15,
+          "line": 20,
           "exported": false,
-          "endLine": 15
+          "endLine": 20
         },
         {
           "name": "normalizeResearchPlan",
           "kind": "const",
-          "line": 32,
+          "line": 39,
           "exported": true,
-          "endLine": 32
+          "endLine": 39
         }
       ],
       "imports": [
@@ -16204,9 +18064,9 @@
         }
       ],
       "exports": [],
-      "hash": "9ec61c19d756e5395c25da2c108c4a8f3660fcc6dc40c98c67aa587d7fd323a5",
-      "mtimeMs": 1784514897939.9656,
-      "size": 2662,
+      "hash": "52a4e8b7773db9c0bc84274bcbb063430f24c4da75382f120d2807e463987133",
+      "mtimeMs": 1784556815053.601,
+      "size": 3174,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -16418,6 +18278,304 @@
       "parser": "regex"
     },
     {
+      "path": "packages/research-engine/src/quantitative-guardrails.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "NonBlank",
+          "kind": "const",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        },
+        {
+          "name": "HybridSynthesisClaimDraft",
+          "kind": "const",
+          "line": 19,
+          "exported": true,
+          "endLine": 19
+        },
+        {
+          "name": "HybridSynthesisClaimDraft",
+          "kind": "type",
+          "line": 30,
+          "exported": true,
+          "endLine": 30
+        },
+        {
+          "name": "HybridSynthesisValidationError",
+          "kind": "class",
+          "line": 33,
+          "exported": true,
+          "endLine": 33
+        },
+        {
+          "name": "hybridSynthesisFailure",
+          "kind": "function",
+          "line": 52,
+          "exported": true,
+          "endLine": 52
+        },
+        {
+          "name": "compareUtf8",
+          "kind": "function",
+          "line": 60,
+          "exported": false,
+          "endLine": 60,
+          "signature": "(left: string, right: string)"
+        },
+        {
+          "name": "canonicalJson",
+          "kind": "function",
+          "line": 72,
+          "exported": false,
+          "endLine": 72,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "exactNumericStrings",
+          "kind": "function",
+          "line": 96,
+          "exported": true,
+          "endLine": 96,
+          "signature": "(value: string)",
+          "doc": "Matches numeric spellings rather than coercing to Number. This is\nintentional: `42`, `42.0`, and a 30-digit integer are different facts."
+        },
+        {
+          "name": "evidenceText",
+          "kind": "function",
+          "line": 102,
+          "exported": false,
+          "endLine": 102,
+          "signature": "(evidence: typeCrossSourceEvidence)"
+        },
+        {
+          "name": "UNTRUSTED_IMPERATIVE",
+          "kind": "const",
+          "line": 112,
+          "exported": false,
+          "endLine": 112
+        },
+        {
+          "name": "containsCopiedUntrustedInstruction",
+          "kind": "function",
+          "line": 115,
+          "exported": false,
+          "endLine": 115
+        },
+        {
+          "name": "canonicalIds",
+          "kind": "function",
+          "line": 130,
+          "exported": false,
+          "endLine": 130
+        },
+        {
+          "name": "validateHybridSynthesisClaim",
+          "kind": "const",
+          "line": 136,
+          "exported": true,
+          "endLine": 136
+        },
+        {
+          "name": "semanticsEqual",
+          "kind": "function",
+          "line": 233,
+          "exported": true,
+          "endLine": 233
+        },
+        {
+          "name": "decodeCrossSourceEvidence",
+          "kind": "function",
+          "line": 240,
+          "exported": true,
+          "endLine": 240
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "52c5de2a163cfa1ad5b97750c11eb64c762f0c4e3c39b490dac24bf91f54eb18",
+      "mtimeMs": 1784564785492.2085,
+      "size": 8022,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/research-engine/src/question-decomposition.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ResearchBranchKind",
+          "kind": "type",
+          "line": 7,
+          "exported": true,
+          "endLine": 7
+        },
+        {
+          "name": "incompatibleClassification",
+          "kind": "function",
+          "line": 9,
+          "exported": false,
+          "endLine": 9
+        },
+        {
+          "name": "decomposeQuestionRoutes",
+          "kind": "const",
+          "line": 24,
+          "exported": true,
+          "endLine": 24
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "a31cf8eefb38dd8cb01d0c5989c512593af720d83a19671383535c9e4a54e3c2",
+      "mtimeMs": 1784556815053.6755,
+      "size": 1181,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/research-engine/src/reconcile-findings.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "MismatchDimension",
+          "kind": "type",
+          "line": 21,
+          "exported": false,
+          "endLine": 21
+        },
+        {
+          "name": "invalid",
+          "kind": "function",
+          "line": 23,
+          "exported": false,
+          "endLine": 23
+        },
+        {
+          "name": "compareUtf8",
+          "kind": "function",
+          "line": 31,
+          "exported": false,
+          "endLine": 31,
+          "signature": "(left: string, right: string)"
+        },
+        {
+          "name": "digestFields",
+          "kind": "function",
+          "line": 43,
+          "exported": false,
+          "endLine": 43,
+          "signature": "(fields: ReadonlyArray<string>)"
+        },
+        {
+          "name": "filterValue",
+          "kind": "function",
+          "line": 48,
+          "exported": false,
+          "endLine": 48,
+          "signature": "(value: null | boolean | string)"
+        },
+        {
+          "name": "dimensionValue",
+          "kind": "function",
+          "line": 54,
+          "exported": false,
+          "endLine": 54
+        },
+        {
+          "name": "dimensions",
+          "kind": "const",
+          "line": 100,
+          "exported": false,
+          "endLine": 100
+        },
+        {
+          "name": "findMismatches",
+          "kind": "function",
+          "line": 110,
+          "exported": false,
+          "endLine": 110
+        },
+        {
+          "name": "findConflict",
+          "kind": "function",
+          "line": 121,
+          "exported": false,
+          "endLine": 121
+        },
+        {
+          "name": "computeCrossSourceReconciliationId",
+          "kind": "function",
+          "line": 138,
+          "exported": true,
+          "endLine": 138
+        },
+        {
+          "name": "reconcileCrossSourceEvidence",
+          "kind": "const",
+          "line": 157,
+          "exported": true,
+          "endLine": 157
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "orderCanonicalIdentities",
+          "specifier": "./aggregation-schema.js",
+          "imported": [
+            "orderCanonicalIdentities"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "computeCrossSourceEvidenceId",
+          "specifier": "./normalize-evidence.js",
+          "imported": [
+            "computeCrossSourceEvidenceId"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "07dc524a6ff71f837e196e2758639e3c695e3486855bc36c749dc9c2aeb5efa6",
+      "mtimeMs": 1784561162078.606,
+      "size": 8645,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/research-engine/src/recovery-policy.ts",
       "language": "TypeScript",
       "symbols": [
@@ -16573,6 +18731,120 @@
       "parser": "regex"
     },
     {
+      "path": "packages/research-engine/src/route-sources.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ResearchNodeRoute",
+          "kind": "interface",
+          "line": 8,
+          "exported": true,
+          "endLine": 8
+        },
+        {
+          "name": "researchBranchKinds",
+          "kind": "const",
+          "line": 21,
+          "exported": false,
+          "endLine": 21
+        },
+        {
+          "name": "routeFailure",
+          "kind": "function",
+          "line": 23,
+          "exported": false,
+          "endLine": 23
+        },
+        {
+          "name": "reachesNodeKind",
+          "kind": "function",
+          "line": 36,
+          "exported": false,
+          "endLine": 36
+        },
+        {
+          "name": "routeResearchPlan",
+          "kind": "const",
+          "line": 60,
+          "exported": true,
+          "endLine": 60
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ResearchBranchKind",
+          "specifier": "./question-decomposition.js",
+          "imported": [
+            "ResearchBranchKind"
+          ],
+          "kind": "type"
+        }
+      ],
+      "exports": [],
+      "hash": "9ac849e842826a7c0af8accb1dede5e118be2ab1b68c91ecdc3beb66a06d686f",
+      "mtimeMs": 1784556815053.7844,
+      "size": 5461,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/research-engine/src/run-hybrid-branches.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "HybridBranchSchedulingFailure",
+          "kind": "class",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        },
+        {
+          "name": "HybridBranchExecution",
+          "kind": "interface",
+          "line": 17,
+          "exported": true,
+          "endLine": 17
+        },
+        {
+          "name": "runHybridBranches",
+          "kind": "const",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Exit, Fiber, Queue, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Exit",
+            "Fiber",
+            "Queue",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "becaca03cd23feb2719e4729d72feccd62750d7286f50a3b330d74add7af2588",
+      "mtimeMs": 1784558921697.358,
+      "size": 3032,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/research-engine/src/run-walking-skeleton.ts",
       "language": "TypeScript",
       "symbols": [
@@ -16666,100 +18938,100 @@
         {
           "name": "ResearchQuestion",
           "kind": "const",
-          "line": 18,
+          "line": 20,
           "exported": true,
-          "endLine": 18
+          "endLine": 20
         },
         {
           "name": "ResearchPlanningInput",
           "kind": "const",
-          "line": 24,
+          "line": 26,
           "exported": true,
-          "endLine": 24
+          "endLine": 26
         },
         {
           "name": "ResearchPlanningInput",
           "kind": "type",
-          "line": 38,
+          "line": 40,
           "exported": true,
-          "endLine": 38
+          "endLine": 40
         },
         {
           "name": "PlanFailureReason",
           "kind": "type",
-          "line": 41,
+          "line": 43,
           "exported": false,
-          "endLine": 41
+          "endLine": 43
         },
         {
           "name": "failure",
           "kind": "function",
-          "line": 44,
+          "line": 46,
           "exported": false,
-          "endLine": 44
+          "endLine": 46
         },
         {
           "name": "datasetScopeKey",
           "kind": "function",
-          "line": 57,
+          "line": 59,
           "exported": false,
-          "endLine": 57
+          "endLine": 59
         },
         {
           "name": "allowedSourceReferences",
           "kind": "function",
-          "line": 66,
+          "line": 68,
           "exported": false,
-          "endLine": 66
+          "endLine": 68
         },
         {
           "name": "validateIdentity",
           "kind": "function",
-          "line": 108,
+          "line": 125,
           "exported": false,
-          "endLine": 108
+          "endLine": 125
         },
         {
           "name": "validateScope",
           "kind": "function",
-          "line": 134,
+          "line": 151,
           "exported": false,
-          "endLine": 134
+          "endLine": 151
         },
         {
           "name": "validateClassification",
           "kind": "function",
-          "line": 274,
+          "line": 329,
           "exported": false,
-          "endLine": 274
+          "endLine": 329
         },
         {
           "name": "validatePolicy",
           "kind": "function",
-          "line": 321,
+          "line": 376,
           "exported": false,
-          "endLine": 321
+          "endLine": 376
         },
         {
           "name": "budgetKeys",
           "kind": "const",
-          "line": 396,
+          "line": 451,
           "exported": false,
-          "endLine": 396
+          "endLine": 451
         },
         {
           "name": "validateBudget",
           "kind": "function",
-          "line": 407,
+          "line": 462,
           "exported": false,
-          "endLine": 407
+          "endLine": 462
         },
         {
           "name": "validateResearchPlan",
           "kind": "const",
-          "line": 452,
+          "line": 507,
           "exported": true,
-          "endLine": 452
+          "endLine": 507
         }
       ],
       "imports": [
@@ -16779,12 +19051,28 @@
             "normalizeResearchPlan"
           ],
           "kind": "static"
+        },
+        {
+          "source": "decomposeQuestionRoutes",
+          "specifier": "./question-decomposition.js",
+          "imported": [
+            "decomposeQuestionRoutes"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "routeResearchPlan",
+          "specifier": "./route-sources.js",
+          "imported": [
+            "routeResearchPlan"
+          ],
+          "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "12496c6550903222bc556cca1d67acca12d41f9ccd915e06c73bbc1f027e86d1",
-      "mtimeMs": 1784525583170.8738,
-      "size": 14342,
+      "hash": "8556f250277875a86fdf9b26ff4c9f73439edc64f075ee15680f14f1b16d9fd7",
+      "mtimeMs": 1784556815053.9053,
+      "size": 16835,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -18371,164 +20659,171 @@
         {
           "name": "FredRuntimeConfig",
           "kind": "interface",
-          "line": 79,
-          "exported": true,
-          "endLine": 79
-        },
-        {
-          "name": "fredRuntimeConfig",
-          "kind": "const",
           "line": 86,
           "exported": true,
           "endLine": 86
         },
         {
+          "name": "fredRuntimeConfig",
+          "kind": "const",
+          "line": 93,
+          "exported": true,
+          "endLine": 93
+        },
+        {
           "name": "FredClientFactory",
           "kind": "interface",
-          "line": 99,
+          "line": 106,
           "exported": true,
-          "endLine": 99
+          "endLine": 106
         },
         {
           "name": "DocumentResearchFailure",
           "kind": "type",
-          "line": 116,
+          "line": 123,
           "exported": true,
-          "endLine": 116
+          "endLine": 123
         },
         {
           "name": "documentResearchFailure",
           "kind": "function",
-          "line": 123,
+          "line": 130,
           "exported": false,
-          "endLine": 123
+          "endLine": 130
         },
         {
           "name": "assertActive",
           "kind": "function",
-          "line": 152,
+          "line": 159,
           "exported": false,
-          "endLine": 152,
+          "endLine": 159,
           "signature": "(signal: AbortSignal)"
         },
         {
           "name": "EMERGENCY_SHUTDOWN_MS",
           "kind": "const",
-          "line": 163,
+          "line": 170,
           "exported": false,
-          "endLine": 163
+          "endLine": 170
         },
         {
           "name": "boundedShutdown",
           "kind": "function",
-          "line": 165,
+          "line": 172,
           "exported": false,
-          "endLine": 165
+          "endLine": 172
         },
         {
           "name": "createFredBeforeDeadline",
           "kind": "function",
-          "line": 184,
+          "line": 191,
           "exported": false,
-          "endLine": 184
+          "endLine": 191
         },
         {
           "name": "shutdownWithinDeadline",
           "kind": "function",
-          "line": 236,
+          "line": 243,
           "exported": false,
-          "endLine": 236
+          "endLine": 243
         },
         {
           "name": "makeDefaultFactory",
           "kind": "const",
-          "line": 252,
+          "line": 259,
           "exported": false,
-          "endLine": 252
+          "endLine": 259
         },
         {
           "name": "preflightFredRuntime",
           "kind": "const",
-          "line": 298,
+          "line": 305,
           "exported": true,
-          "endLine": 298
+          "endLine": 305
         },
         {
           "name": "runFredResearchPlanning",
           "kind": "const",
-          "line": 350,
+          "line": 357,
           "exported": true,
-          "endLine": 350
+          "endLine": 357
         },
         {
           "name": "runFredBoundedResearchGraph",
           "kind": "const",
-          "line": 434,
+          "line": 441,
           "exported": true,
-          "endLine": 434
+          "endLine": 441
         },
         {
           "name": "RecursiveFocusedInput",
           "kind": "type",
-          "line": 520,
+          "line": 537,
           "exported": false,
-          "endLine": 520
+          "endLine": 537
         },
         {
           "name": "runFredRecursiveFocusedWorkflow",
           "kind": "const",
-          "line": 525,
+          "line": 542,
           "exported": false,
-          "endLine": 525
+          "endLine": 542
         },
         {
           "name": "runFredCorpusAnalysis",
           "kind": "const",
-          "line": 591,
+          "line": 608,
           "exported": true,
-          "endLine": 591
+          "endLine": 608
         },
         {
           "name": "runFredRecursiveCritique",
           "kind": "const",
-          "line": 621,
+          "line": 638,
           "exported": true,
-          "endLine": 621
+          "endLine": 638
         },
         {
           "name": "runFredHierarchicalSynthesis",
           "kind": "const",
-          "line": 653,
+          "line": 670,
           "exported": true,
-          "endLine": 653
+          "endLine": 670
         },
         {
           "name": "runFredResearchCritique",
           "kind": "const",
-          "line": 685,
+          "line": 702,
           "exported": true,
-          "endLine": 685
+          "endLine": 702
         },
         {
           "name": "runFredResearchSynthesis",
           "kind": "const",
-          "line": 741,
+          "line": 758,
           "exported": true,
-          "endLine": 741
+          "endLine": 758
+        },
+        {
+          "name": "runFredHybridResearchSynthesis",
+          "kind": "const",
+          "line": 810,
+          "exported": true,
+          "endLine": 810
         },
         {
           "name": "runFredWalkingSkeleton",
           "kind": "const",
-          "line": 793,
+          "line": 866,
           "exported": true,
-          "endLine": 793
+          "endLine": 866
         },
         {
           "name": "runFredDocumentResearch",
           "kind": "const",
-          "line": 866,
+          "line": 939,
           "exported": true,
-          "endLine": 866
+          "endLine": 939
         }
       ],
       "imports": [
@@ -18564,9 +20859,9 @@
         }
       ],
       "exports": [],
-      "hash": "e852be0b153d1eb7e60990986f660a904b27e12ecc90c4947b427b10bad95c95",
-      "mtimeMs": 1784543663816.5498,
-      "size": 30024,
+      "hash": "e709a4d054e04cb70e9c74844af8cace2cc7c639c976e033d8d5f21a60b40acd",
+      "mtimeMs": 1784561162079.0732,
+      "size": 32218,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -18893,9 +21188,9 @@
         }
       ],
       "exports": [],
-      "hash": "c93bbac0f28c8d84bdaf36a5001ed0d9967f4a0f82e1292af63f4b0a86f18bcd",
-      "mtimeMs": 1784514897940.6223,
-      "size": 1321,
+      "hash": "1e6e72e472df79ab84576dd94947b51dd98ee83c963893220bd16b1b41acd2f3",
+      "mtimeMs": 1784556815054.5706,
+      "size": 1739,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -18907,44 +21202,51 @@
         {
           "name": "ResearchEvidenceAgentInput",
           "kind": "const",
-          "line": 11,
+          "line": 15,
           "exported": true,
-          "endLine": 11
+          "endLine": 15
         },
         {
           "name": "ResearchEvidenceAgentInput",
           "kind": "type",
-          "line": 19,
+          "line": 23,
           "exported": true,
-          "endLine": 19
+          "endLine": 23
         },
         {
           "name": "ResearchEvidenceAssessment",
           "kind": "const",
-          "line": 22,
+          "line": 26,
           "exported": true,
-          "endLine": 22
+          "endLine": 26
         },
         {
           "name": "ResearchEvidenceAssessment",
           "kind": "type",
-          "line": 29,
+          "line": 33,
           "exported": true,
-          "endLine": 29
+          "endLine": 33
         },
         {
           "name": "researchEvidenceCriticAgent",
           "kind": "function",
-          "line": 32,
+          "line": 36,
           "exported": true,
-          "endLine": 32
+          "endLine": 36
         },
         {
           "name": "researchAnswerAgent",
           "kind": "function",
-          "line": 52,
+          "line": 56,
           "exported": true,
-          "endLine": 52
+          "endLine": 56
+        },
+        {
+          "name": "hybridResearchAnswerAgent",
+          "kind": "function",
+          "line": 76,
+          "exported": true,
+          "endLine": 76
         }
       ],
       "imports": [
@@ -18966,9 +21268,9 @@
         }
       ],
       "exports": [],
-      "hash": "e99bd86f6eb3b83341f630f56270a8586e3eecdbda353563dfe82f581dd2808a",
-      "mtimeMs": 1784525583171.8062,
-      "size": 2359,
+      "hash": "7b36357915c45518062a04f131f9db03e2a5a80e1a24b589042ba0a83b3ffa6b",
+      "mtimeMs": 1784561162079.397,
+      "size": 3589,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -19033,9 +21335,9 @@
         }
       ],
       "exports": [],
-      "hash": "33d523939933df2ab50382e56920caaac02e5b11367273c4fd619f17bd45ccef",
-      "mtimeMs": 1784525583171.9573,
-      "size": 1867,
+      "hash": "fd69d0b2191ba84de81da76bad6d791755ff393309b542ea7ee79bd14780c245",
+      "mtimeMs": 1784556815054.7004,
+      "size": 1988,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -19202,6 +21504,107 @@
       "hash": "83e2a3744c09c1b92e8f0fa200bd517c778d28eef5fcc40bc0cad4394f26e90d",
       "mtimeMs": 1784506183890.2825,
       "size": 11770,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/workflows/src/graphs/hybrid-research.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "HYBRID_RESEARCH_WORKFLOW_ID",
+          "kind": "const",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "HYBRID_RESEARCH_NODE_ID",
+          "kind": "const",
+          "line": 26,
+          "exported": false,
+          "endLine": 26
+        },
+        {
+          "name": "branchKinds",
+          "kind": "const",
+          "line": 28,
+          "exported": false,
+          "endLine": 28
+        },
+        {
+          "name": "requiresHybridBranchExecution",
+          "kind": "function",
+          "line": 34,
+          "exported": true,
+          "endLine": 34,
+          "signature": "(plan: ResearchPlan)"
+        },
+        {
+          "name": "stopped",
+          "kind": "function",
+          "line": 42,
+          "exported": false,
+          "endLine": 42
+        },
+        {
+          "name": "canonicalState",
+          "kind": "function",
+          "line": 49,
+          "exported": false,
+          "endLine": 49
+        },
+        {
+          "name": "stateWithReservations",
+          "kind": "function",
+          "line": 93,
+          "exported": false,
+          "endLine": 93
+        },
+        {
+          "name": "runHybridResearchGraph",
+          "kind": "const",
+          "line": 136,
+          "exported": true,
+          "endLine": 136
+        },
+        {
+          "name": "compileHybridResearchWorkflow",
+          "kind": "const",
+          "line": 280,
+          "exported": true,
+          "endLine": 280
+        }
+      ],
+      "imports": [
+        {
+          "source": "ResearchPlan, ResearchPlanNode",
+          "specifier": "@struct/domain",
+          "imported": [
+            "ResearchPlan",
+            "ResearchPlanNode"
+          ],
+          "kind": "type"
+        },
+        {
+          "source": "Cause, Effect, Exit, Option, Ref, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Cause",
+            "Effect",
+            "Exit",
+            "Option",
+            "Ref",
+            "Schema"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "8f99e32cdc5af558162355d8cc88e82fd9ffe3f999f24cca09182042136679ca",
+      "mtimeMs": 1784564785492.733,
+      "size": 10623,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -19389,102 +21792,109 @@
         {
           "name": "RESEARCH_RUN_WORKFLOW_ID",
           "kind": "const",
-          "line": 35,
-          "exported": true,
-          "endLine": 35
-        },
-        {
-          "name": "ResearchToolExecutor",
-          "kind": "interface",
           "line": 37,
           "exported": true,
           "endLine": 37
         },
         {
+          "name": "ResearchToolExecutor",
+          "kind": "interface",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
           "name": "ResearchToolResolver",
           "kind": "interface",
-          "line": 48,
+          "line": 50,
           "exported": true,
-          "endLine": 48
+          "endLine": 50
         },
         {
           "name": "ResearchModelExecutor",
           "kind": "interface",
-          "line": 59,
+          "line": 61,
           "exported": true,
-          "endLine": 59
+          "endLine": 61
         },
         {
           "name": "ResearchModelResolver",
           "kind": "interface",
-          "line": 70,
+          "line": 72,
           "exported": true,
-          "endLine": 70
+          "endLine": 72
         },
         {
           "name": "ResearchRunGraphDependencies",
           "kind": "interface",
-          "line": 80,
+          "line": 82,
           "exported": true,
-          "endLine": 80
+          "endLine": 82
         },
         {
           "name": "interrupted",
           "kind": "function",
-          "line": 129,
+          "line": 135,
           "exported": false,
-          "endLine": 129,
+          "endLine": 135,
           "signature": "()"
         },
         {
           "name": "providerStopped",
           "kind": "function",
-          "line": 139,
+          "line": 145,
           "exported": false,
-          "endLine": 139
+          "endLine": 145
         },
         {
           "name": "timeBudgetStopped",
           "kind": "function",
-          "line": 153,
+          "line": 159,
           "exported": false,
-          "endLine": 153
+          "endLine": 159
         },
         {
-          "name": "actionForNode",
+          "name": "researchActionForNode",
           "kind": "function",
-          "line": 167,
-          "exported": false,
-          "endLine": 167
+          "line": 173,
+          "exported": true,
+          "endLine": 173
+        },
+        {
+          "name": "executeResearchNodeProvider",
+          "kind": "const",
+          "line": 200,
+          "exported": true,
+          "endLine": 200
         },
         {
           "name": "topologicalNodes",
           "kind": "function",
-          "line": 194,
+          "line": 235,
           "exported": false,
-          "endLine": 194,
+          "endLine": 235,
           "signature": "(plan: ResearchPlan)"
         },
         {
           "name": "executionEffect",
           "kind": "function",
-          "line": 216,
+          "line": 257,
           "exported": false,
-          "endLine": 216
+          "endLine": 257
         },
         {
           "name": "compileResearchRunWorkflow",
           "kind": "const",
-          "line": 304,
+          "line": 328,
           "exported": true,
-          "endLine": 304
+          "endLine": 328
         },
         {
           "name": "ResearchRunCompilationFailure",
           "kind": "type",
-          "line": 356,
+          "line": 381,
           "exported": true,
-          "endLine": 356
+          "endLine": 381
         }
       ],
       "imports": [
@@ -19502,9 +21912,9 @@
         }
       ],
       "exports": [],
-      "hash": "57a79c8b2ebeceb588b7352db95eaea1cd9133340eacd0261d1a9e22e6033ae5",
-      "mtimeMs": 1784525583172.1423,
-      "size": 10128,
+      "hash": "10d28d524cb727389a2255cefdd6fcb309b366ba5df0e709eebf7fba6e427d44",
+      "mtimeMs": 1784558921698.295,
+      "size": 10788,
       "generated": false,
       "vendor": false,
       "parser": "regex"
