@@ -1,7 +1,7 @@
 import {
   EVIDENCE_CRITIC_SYSTEM_MESSAGE,
   DOCUMENT_SYNTHESIZER_SYSTEM_MESSAGE,
-} from '@struct/fred-workflows'
+} from '@struct/workflows'
 import {
   buildDocumentContext,
 } from '@struct/retrieval'

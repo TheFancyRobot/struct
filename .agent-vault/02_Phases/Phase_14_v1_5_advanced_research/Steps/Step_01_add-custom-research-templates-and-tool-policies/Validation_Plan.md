@@ -2,7 +2,7 @@
 
 ## Acceptance Checks
 
-- The slice for Custom Research Templates and Tool Policies is implemented through typed module boundaries in the planned files (`packages/domain/src/custom-research-template.ts`, `packages/fred-workflows/src/tool-policies.ts`, `apps/web/src/components/CustomTemplateEditor.tsx`...).
+- The slice for Custom Research Templates and Tool Policies is implemented through typed module boundaries in the planned files (`packages/domain/src/custom-research-template.ts`, `packages/workflows/src/tool-policies.ts`, `apps/web/src/components/CustomTemplateEditor.tsx`...).
 - An observable path exists from the new code to the adjacent API, worker, persistence, or UI surface it must support.
 - The result advances advanced research depth under explicit tool and policy control without bypassing provenance, bounded execution, or validation expectations.
 

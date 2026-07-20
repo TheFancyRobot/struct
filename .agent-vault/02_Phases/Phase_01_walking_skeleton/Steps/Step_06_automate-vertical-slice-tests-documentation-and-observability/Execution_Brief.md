@@ -114,7 +114,7 @@ walking slice without duplicating later authoring UI.
 - `src/benchmarks/run.ts` — placeholder for performance benchmarks
 - `test/` directory for unit tests
 
-**Note**: The evaluation package is layer 3 (orchestration & eval). It may import `domain`, layers 1–2, but not apps or `fred-workflows`.
+**Note**: The evaluation package is layer 3 (orchestration & eval). It may import `domain`, layers 1–2, but not apps or `workflows`.
 
 ### Setup documentation (docs/setup.md)
 

@@ -14,8 +14,8 @@
 ## Planned Starting Files
 
 - These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `packages/fred-workflows/src/graphs/research-run.ts`
-- `packages/fred-workflows/src/model-routing.ts`
+- `packages/workflows/src/graphs/research-run.ts`
+- `packages/workflows/src/model-routing.ts`
 - `packages/research-engine/src/budget-enforcer.ts`
 - `apps/worker/src/jobs/execute-plan.ts`
 - `packages/domain/src/research-budget.ts`

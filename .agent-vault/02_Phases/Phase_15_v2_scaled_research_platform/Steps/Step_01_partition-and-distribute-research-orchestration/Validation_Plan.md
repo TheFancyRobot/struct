@@ -2,7 +2,7 @@
 
 ## Acceptance Checks
 
-- The slice for and Distribute Research Orchestration is implemented through typed module boundaries in the planned files (`apps/worker/src/orchestration/distributed-dispatch.ts`, `packages/fred-workflows/src/graphs/distributed-research.ts`, `docs/architecture/v2-distribution.md`...).
+- The slice for and Distribute Research Orchestration is implemented through typed module boundaries in the planned files (`apps/worker/src/orchestration/distributed-dispatch.ts`, `packages/workflows/src/graphs/distributed-research.ts`, `docs/architecture/v2-distribution.md`...).
 - An observable path exists from the new code to the adjacent API, worker, persistence, or UI surface it must support.
 - The result advances distributed scale with quotas, reproducibility, and upstream clarity without bypassing provenance, bounded execution, or validation expectations.
 

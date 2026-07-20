@@ -14,6 +14,7 @@ import {
   DocumentResearchPlan,
   DocumentResearchWorkflowResult,
   EvidenceAssessment,
+  GroundedDocumentAnswer,
   requireSufficientEvidence,
 } from '@struct/research-engine'
 import { Effect, Schema } from 'effect'
@@ -46,7 +47,7 @@ export interface DocumentResearchGraphDependencies {
     context: typeof DocumentResearchContext.Type,
     assessment: typeof EvidenceAssessment.Type,
   ) => Effect.Effect<
-    typeof ResearchAnswer.Type,
+    typeof GroundedDocumentAnswer.Type,
     EvidenceInsufficientError | ResearchCitationValidationError,
     never
   >

@@ -47,7 +47,7 @@ tags:
 
 <!-- AGENT-START:architecture-important-paths -->
 - `docs/product-brief.md` sections 13–15 — research execution, recursive decomposition, agents, and tools.
-- `packages/fred-workflows` — planned agent, tool, graph, prompt, and workflow composition layer.
+- `packages/workflows` — planned agent, tool, graph, prompt, and workflow composition layer.
 - `packages/research-engine` — planned plans, evidence sufficiency, decomposition, merging, and synthesis logic.
 - `packages/data-engine` — planned deterministic SQL inspection, validation, and execution.
 - `apps/worker` — scaffolded durable workflow execution boundary (Effect Config skeleton); full execution in later steps.

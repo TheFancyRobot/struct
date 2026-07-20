@@ -11,7 +11,7 @@
 
 - Plan orchestration tests that show a run stops at budget limits, rejects duplicate actions, and records the stop reason.
 - Plan a routing test that proves planner/synthesizer/model selection is configurable without changing workflow contracts.
-- Planned command once these packages exist: `bun test packages/domain packages/fred-workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
+- Planned command once these packages exist: `bun test packages/domain packages/workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
 - Planned app/integration coverage once the app surfaces exist: `bun test apps/worker` for the API/worker/web path touched here.
 
 ## Edge Cases

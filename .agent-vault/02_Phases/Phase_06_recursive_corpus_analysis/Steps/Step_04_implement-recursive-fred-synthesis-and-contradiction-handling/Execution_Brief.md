@@ -14,8 +14,8 @@
 ## Planned Starting Files
 
 - These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `packages/fred-workflows/src/agents/corpus-analyst.ts`
-- `packages/fred-workflows/src/agents/evidence-critic.ts`
+- `packages/workflows/src/agents/corpus-analyst.ts`
+- `packages/workflows/src/agents/evidence-critic.ts`
 - `packages/research-engine/src/merge-findings.ts`
 - `packages/research-engine/src/contradiction-detection.ts`
 
@@ -31,13 +31,13 @@
 
 - Implement the narrowest typed slice for Recursive Fred Synthesis and Contradiction Handling that is callable by the next step without broadening scope.
 - Capture the orchestration or synthesis rules in `packages/research-engine/src/merge-findings.ts`, `packages/research-engine/src/contradiction-detection.ts` without moving deterministic work out of services/tools.
-- Keep Fred-specific graph/agent wiring isolated to `packages/fred-workflows/src/agents/corpus-analyst.ts`, `packages/fred-workflows/src/agents/evidence-critic.ts` and typed at every boundary.
+- Keep Fred-specific graph/agent wiring isolated to `packages/workflows/src/agents/corpus-analyst.ts`, `packages/workflows/src/agents/evidence-critic.ts` and typed at every boundary.
 
 ## Smallest Bounded Checklist
 
 - First, implement the narrowest typed slice for Recursive Fred Synthesis and Contradiction Handling that is callable by the next step without broadening scope.
 - Then, capture the orchestration or synthesis rules in `packages/research-engine/src/merge-findings.ts`, `packages/research-engine/src/contradiction-detection.ts` without moving deterministic work out of services/tools.
-- Next, keep Fred-specific graph/agent wiring isolated to `packages/fred-workflows/src/agents/corpus-analyst.ts`, `packages/fred-workflows/src/agents/evidence-critic.ts` and typed at every boundary.
+- Next, keep Fred-specific graph/agent wiring isolated to `packages/workflows/src/agents/corpus-analyst.ts`, `packages/workflows/src/agents/evidence-critic.ts` and typed at every boundary.
 - Finish by leaving one observable typed path—test, route, worker flow, or UI state—that proves the slice is ready for the next dependent step.
 
 ## Constraints and Non-Goals

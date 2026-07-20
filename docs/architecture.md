@@ -88,7 +88,7 @@ packages/
 ├── retrieval
 ├── data-engine
 ├── research-engine
-├── fred-workflows
+├── workflows
 ├── evaluation
 ├── observability
 └── shared-ui
@@ -109,7 +109,7 @@ packages/
 | `packages/retrieval` | FTS, vector search, reranking, filters, dedupe, context assembly | SQL execution |
 | `packages/data-engine` | Dataset catalog, schema profiling, SQL validation/execution, result snapshots | Unrestricted code execution or mutable queries |
 | `packages/research-engine` | Intent classification, plan composition, evidence sufficiency, contradiction handling, synthesis contracts | Low-level storage access without repositories |
-| `packages/fred-workflows` | Fred agents, tools, prompts, graphs, workflow adapters | Product persistence internals |
+| `packages/workflows` | Fred agents, tools, prompts, graphs, workflow adapters | Product persistence internals |
 | `packages/evaluation` | Corpus generation, benchmark harnesses, deterministic assertions, regression reporting | Production request handling |
 | `packages/observability` | Trace/log/metric wiring and correlation | Product logic |
 
@@ -122,16 +122,16 @@ Package dependency flows downward only. No package may depend on an app, and no 
 | 0 — leaf | `domain` | nothing internal; Effect/Schema only |
 | 1 — storage & wiring | `persistence`, `source-storage`, `observability`, `shared-ui` | `domain` |
 | 2 — processing | `ingestion`, `document-processing`, `retrieval`, `data-engine` | `domain`, layer 1 |
-| 3 — orchestration & eval | `research-engine`, `fred-workflows`, `evaluation` | `domain`, layers 1–2 |
+| 3 — orchestration & eval | `research-engine`, `workflows`, `evaluation` | `domain`, layers 1–2 |
 | 4 — applications | `apps/web`, `apps/api`, `apps/worker` | any package; never another app |
 
 Allowed directions (downward only, acyclic):
 
-- `apps/worker` is the only app that imports `fred-workflows`, `research-engine`, `ingestion`, and `data-engine` execution paths; it also imports `source-storage` for finalized artifact writes.
-- `apps/api` imports `domain`, `persistence`, `retrieval` (query side only), `source-storage` staging helpers for upload handoff, and `observability`; it must not import `fred-workflows`, `research-engine`, `ingestion`, `data-engine`, or `apps/worker`.
-- `apps/web` imports `domain`, `shared-ui`, and `observability` only; it must not import `persistence`, `retrieval`, `data-engine`, `research-engine`, `fred-workflows`, or any other app.
-- `fred-workflows` imports `research-engine`, `domain`, and `observability`; it must not import `persistence` internals (DEC-0012).
-- `research-engine` imports `retrieval`, `data-engine`, `persistence`, `domain`, and `observability`; it must not import `fred-workflows` (one-directional: `fred-workflows → research-engine`).
+- `apps/worker` is the only app that imports `workflows`, `research-engine`, `ingestion`, and `data-engine` execution paths; it also imports `source-storage` for finalized artifact writes.
+- `apps/api` imports `domain`, `persistence`, `retrieval` (query side only), `source-storage` staging helpers for upload handoff, and `observability`; it must not import `workflows`, `research-engine`, `ingestion`, `data-engine`, or `apps/worker`.
+- `apps/web` imports `domain`, `shared-ui`, and `observability` only; it must not import `persistence`, `retrieval`, `data-engine`, `research-engine`, `workflows`, or any other app.
+- `workflows` imports `research-engine`, `domain`, and `observability`; it must not import `persistence` internals (DEC-0012).
+- `research-engine` imports `retrieval`, `data-engine`, `persistence`, `domain`, and `observability`; it must not import `workflows` (one-directional: `workflows → research-engine`).
 - `data-engine` and `retrieval` are separate planes: `retrieval` must not import `data-engine` and `data-engine` must not import `retrieval`.
 
 Forbidden cycles and imports:
@@ -156,7 +156,7 @@ Each package owns one public surface and keeps the rest internal.
 | `retrieval` | search request/result types, context-assembly contract | index tuning, reranker adapter internals |
 | `data-engine` | dataset catalog, SQL validation contract, typed sidecar client, query result snapshot types | DuckDB sidecar adapter/runtime and hardening internals |
 | `research-engine` | research plan, evidence-sufficiency, synthesis contract types | plan revision internals |
-| `fred-workflows` | agent/tool/graph/workflow definitions and run boundary | Fred runtime wiring, hook capture internals |
+| `workflows` | agent/tool/graph/workflow definitions and run boundary | Fred runtime wiring, hook capture internals |
 | `evaluation` | corpus spec, benchmark harness, gate assertion contract | generator internals |
 | `observability` | trace/log/metric wiring interfaces | exporter/sink internals |
 | `shared-ui` | UI component contracts, design tokens | component internals |
@@ -554,7 +554,7 @@ STEP-01-04 implements the research execution half of this slice with:
 - `source_text_index`, a PostgreSQL generated-`tsvector` index keyed by immutable `SourceVersion`;
 - `packages/retrieval`, which enforces workspace/project/source-version scope and bounded lexical results; phrase/proximity candidates are revalidated only as byte-for-byte contiguous source windows, preserving original coordinates, distance, order, and repeated-lexeme multiplicity, while non-positional distributed terms may use exact multi-range locators; all selected evidence is at most 1200 characters;
 - `packages/research-engine`, which owns the fixed one-tool/one-model plan and citation sufficiency gates;
-- `packages/fred-workflows`, pinned to `@fancyrobot/fred@2.0.0`, with one search function node, one answer-synthesizer agent, and one citation-validation node;
+- `packages/workflows`, pinned to `@fancyrobot/fred@2.0.0`, with one search function node, one answer-synthesizer agent, and one citation-validation node;
 - `POST /api/projects/:projectId/research` plus a durable worker job that
   persists answers, citations, run state, and replayable research events.
 

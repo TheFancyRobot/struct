@@ -11,7 +11,7 @@
 
 - Plan partitioning tests that prove the same corpus/question signature yields the same partition plan and IDs across runs.
 - Plan scheduling tests for bounded concurrency, retry of one failed partition, and cancellation of an in-flight batch.
-- Planned command once these packages exist: `bun test packages/domain packages/fred-workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
+- Planned command once these packages exist: `bun test packages/domain packages/workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
 - Planned app/integration coverage once the app surfaces exist: `bun test apps/worker` for the API/worker/web path touched here.
 
 ## Edge Cases

@@ -115,7 +115,7 @@ Packages (only the minimal set the walking skeleton needs):
 
 ### 3.2 Implemented STEP-01-04 boundaries and intentional deferrals
 
-- `packages/retrieval`, `research-engine`, and `fred-workflows` were scaffolded by STEP-01-04 and now own the deterministic text-search, walking-slice research, and Fred orchestration boundaries.
+- `packages/retrieval`, `research-engine`, and `workflows` were scaffolded by STEP-01-04 and now own the deterministic text-search, walking-slice research, and Fred orchestration boundaries.
 - `packages/document-processing`, `data-engine`, `evaluation`, and `shared-ui` — scaffolded when their owning phase needs them; not empty stubs.
 - `packages/data-engine` typed DuckDB sidecar client/policy plus the isolated
   sidecar service — Phase 04 owns production data-plane code and the Compose

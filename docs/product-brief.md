@@ -195,7 +195,7 @@ packages/
 ├── retrieval
 ├── data-engine
 ├── research-engine
-├── fred-workflows
+├── workflows
 ├── evaluation
 ├── observability
 └── shared-ui
@@ -274,7 +274,7 @@ DuckDB, Parquet, schema profiling, read-only SQL, query validation, query execut
 
 Research plans, evidence sufficiency, recursive decomposition, finding aggregation, contradiction handling, citation verification, and answer synthesis.
 
-### `packages/fred-workflows`
+### `packages/workflows`
 
 Fred agents, tools, graph definitions, prompts, typed workflow inputs and outputs, and application-specific workflow composition.
 

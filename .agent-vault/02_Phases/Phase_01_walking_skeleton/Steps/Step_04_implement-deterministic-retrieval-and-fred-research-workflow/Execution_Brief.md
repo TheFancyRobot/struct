@@ -16,7 +16,7 @@
 - These paths may not exist yet; use them as the first bounded implementation or design surface.
 - `packages/retrieval/src/search-text.ts`
 - `packages/research-engine/src/run-walking-skeleton.ts`
-- `packages/fred-workflows/src/graphs/walking-skeleton.ts`
+- `packages/workflows/src/graphs/walking-skeleton.ts`
 - `apps/api/src/routes/research.ts`
 - `apps/worker/src/jobs/run-research.ts`
 
@@ -49,7 +49,7 @@
 
 1. `packages/retrieval/` — full-text search, vector search, reranking, context assembly (layer 2)
 2. `packages/research-engine/` — research plans, evidence sufficiency, synthesis contracts (layer 3)
-3. `packages/fred-workflows/` — Fred agents, tools, graphs, prompts, workflow adapters (layer 3)
+3. `packages/workflows/` — Fred agents, tools, graphs, prompts, workflow adapters (layer 3)
 
 **Package creation checklist for each**:
 - `package.json` with correct name, version, dependencies (must respect layer rules from architecture.md §4.2)
@@ -57,10 +57,10 @@
 - `src/index.ts` as public surface
 - `test/` directory for unit tests
 
-**fred-workflows package.json must include**:
+**workflows package.json must include**:
 ```json
 {
-  "name": "@struct/fred-workflows",
+  "name": "@struct/workflows",
   "version": "0.0.1",
   "private": true,
   "dependencies": {
@@ -99,8 +99,8 @@ agent execution; do not add a second test runner or runner-specific config.
 
 - **Test mock:** Create a `MockModelProvider` that implements Fred's provider interface and returns a fixed, deterministic response for a given question + evidence input. Register it via Fred's provider registry in test setup.
 - **No real provider keys required** for unit/integration tests. The mock returns a pre-canned answer with a citation locator that points to a known passage in the fixture text.
-- **CI gate:** All tests in `packages/fred-workflows` and `packages/research-engine` must pass without `FRED_*` provider keys. Only manual smoke tests require real keys.
-- **Implementation:** The mock provider is a test fixture in `packages/fred-workflows/test/fixtures/mock-provider.ts`, not production code.
+- **CI gate:** All tests in `packages/workflows` and `packages/research-engine` must pass without `FRED_*` provider keys. Only manual smoke tests require real keys.
+- **Implementation:** The mock provider is a test fixture in `packages/workflows/test/fixtures/mock-provider.ts`, not production code.
 
 ### Research run flow (architecture.md §12, narrowed)
 
@@ -129,10 +129,10 @@ agent execution; do not add a second test runner or runner-specific config.
 
 ### Fred package integration
 
-- `@fancyrobot/fred@2.0.0` is added as a dependency in `packages/fred-workflows/package.json` during package scaffolding (see above).
+- `@fancyrobot/fred@2.0.0` is added as a dependency in `packages/workflows/package.json` during package scaffolding (see above).
 - Do NOT add `@fancyrobot/fred-http` — it is optional and not needed for the walking slice (DEC-0008).
 - Fred's `createFred`, `defineWorkflow`, and typed tool registration are the integration surface.
-- The Fred workflow adapter in `packages/fred-workflows/src/adapters/` bridges Fred's workflow execution to the product's job queue and event journal.
+- The Fred workflow adapter in `packages/workflows/src/adapters/` bridges Fred's workflow execution to the product's job queue and event journal.
 
 ## Constraints and Non-Goals
 

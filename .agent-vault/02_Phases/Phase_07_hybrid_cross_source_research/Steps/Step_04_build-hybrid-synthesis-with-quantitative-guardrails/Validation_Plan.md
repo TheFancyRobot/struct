@@ -9,7 +9,7 @@
 
 ## Planned Verification
 
-- Planned command once these packages exist: `bun test packages/data-engine packages/fred-workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
+- Planned command once these packages exist: `bun test packages/data-engine packages/workflows packages/research-engine` plus the nearest package-level `bun run typecheck`.
 
 ## Edge Cases
 

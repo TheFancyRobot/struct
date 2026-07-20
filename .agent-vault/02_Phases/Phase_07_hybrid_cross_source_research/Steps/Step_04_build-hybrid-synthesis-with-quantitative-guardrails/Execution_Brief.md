@@ -14,7 +14,7 @@
 ## Planned Starting Files
 
 - These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `packages/fred-workflows/src/agents/answer-synthesizer.ts`
+- `packages/workflows/src/agents/answer-synthesizer.ts`
 - `packages/research-engine/src/quantitative-guardrails.ts`
 - `packages/data-engine/src/result-summary.ts`
 - `packages/research-engine/src/hybrid-synthesis.ts`
@@ -33,7 +33,7 @@
 - Implement the narrowest typed slice for Hybrid Synthesis with Quantitative Guardrails that is callable by the next step without broadening scope.
 - Land the data-engine boundary in `packages/data-engine/src/result-summary.ts` with deterministic execution, explicit limits, and source-linked outputs.
 - Capture the orchestration or synthesis rules in `packages/research-engine/src/quantitative-guardrails.ts`, `packages/research-engine/src/hybrid-synthesis.ts` without moving deterministic work out of services/tools.
-- Keep Fred-specific graph/agent wiring isolated to `packages/fred-workflows/src/agents/answer-synthesizer.ts` and typed at every boundary.
+- Keep Fred-specific graph/agent wiring isolated to `packages/workflows/src/agents/answer-synthesizer.ts` and typed at every boundary.
 
 ## Smallest Bounded Checklist
 

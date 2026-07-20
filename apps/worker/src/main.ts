@@ -28,7 +28,7 @@ import {
   fredRuntimeConfig,
   preflightFredRuntime,
   runFredWalkingSkeleton,
-} from '@struct/fred-workflows'
+} from '@struct/workflows'
 import {
   makeTracingLayer,
   renderWalkingSliceMetrics,

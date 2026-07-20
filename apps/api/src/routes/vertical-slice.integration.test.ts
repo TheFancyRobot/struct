@@ -25,7 +25,7 @@ import { ingestTextSource } from '@struct/ingestion'
 import {
   AnswerSynthesizerInput,
   runFredWalkingSkeleton,
-} from '@struct/fred-workflows'
+} from '@struct/workflows'
 import {
   JobQueueRepo,
   ProjectRepo,

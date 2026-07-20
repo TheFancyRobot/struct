@@ -36,8 +36,8 @@
       "devDependencies": {
         "@fancyrobot/fred": "2.0.0",
         "@struct/evaluation": "workspace:*",
-        "@struct/fred-workflows": "workspace:*",
         "@struct/ingestion": "workspace:*",
+        "@struct/workflows": "workspace:*",
         "typescript": "7.0.2",
       },
     },
@@ -68,13 +68,13 @@
       "dependencies": {
         "@struct/data-engine": "workspace:*",
         "@struct/domain": "workspace:*",
-        "@struct/fred-workflows": "workspace:*",
         "@struct/ingestion": "workspace:*",
         "@struct/observability": "workspace:*",
         "@struct/persistence": "workspace:*",
         "@struct/research-engine": "workspace:*",
         "@struct/retrieval": "workspace:*",
         "@struct/source-storage": "workspace:*",
+        "@struct/workflows": "workspace:*",
         "effect": "3.22.0",
         "postgres": "^3.4.9",
       },
@@ -123,40 +123,15 @@
       "dependencies": {
         "@struct/data-engine": "workspace:*",
         "@struct/domain": "workspace:*",
-        "@struct/fred-workflows": "workspace:*",
         "@struct/ingestion": "workspace:*",
         "@struct/persistence": "workspace:*",
         "@struct/research-engine": "workspace:*",
         "@struct/retrieval": "workspace:*",
+        "@struct/workflows": "workspace:*",
         "effect": "3.22.0",
       },
       "devDependencies": {
         "postgres": "^3.4.9",
-        "typescript": "7.0.2",
-      },
-    },
-    "packages/fred-workflows": {
-      "name": "@struct/fred-workflows",
-      "version": "0.0.1",
-      "dependencies": {
-        "@effect/ai": "0.35.0",
-        "@effect/ai-openai": "0.39.0",
-        "@effect/cluster": "0.58.0",
-        "@effect/experimental": "0.60.0",
-        "@effect/platform": "0.96.0",
-        "@effect/rpc": "0.75.0",
-        "@effect/sql": "0.51.0",
-        "@fancyrobot/fred": "2.0.0",
-        "@fancyrobot/fred-openai": "4.0.0",
-        "@opentelemetry/sdk-trace-node": "2.9.0",
-        "@struct/data-engine": "workspace:*",
-        "@struct/domain": "workspace:*",
-        "@struct/observability": "workspace:*",
-        "@struct/research-engine": "workspace:*",
-        "@struct/retrieval": "workspace:*",
-        "effect": "3.22.0",
-      },
-      "devDependencies": {
         "typescript": "7.0.2",
       },
     },
@@ -233,6 +208,31 @@
       "version": "0.0.1",
       "dependencies": {
         "@struct/domain": "workspace:*",
+        "effect": "3.22.0",
+      },
+      "devDependencies": {
+        "typescript": "7.0.2",
+      },
+    },
+    "packages/workflows": {
+      "name": "@struct/workflows",
+      "version": "0.0.1",
+      "dependencies": {
+        "@effect/ai": "0.35.0",
+        "@effect/ai-openai": "0.39.0",
+        "@effect/cluster": "0.58.0",
+        "@effect/experimental": "0.60.0",
+        "@effect/platform": "0.96.0",
+        "@effect/rpc": "0.75.0",
+        "@effect/sql": "0.51.0",
+        "@fancyrobot/fred": "2.0.0",
+        "@fancyrobot/fred-openai": "4.0.0",
+        "@opentelemetry/sdk-trace-node": "2.9.0",
+        "@struct/data-engine": "workspace:*",
+        "@struct/domain": "workspace:*",
+        "@struct/observability": "workspace:*",
+        "@struct/research-engine": "workspace:*",
+        "@struct/retrieval": "workspace:*",
         "effect": "3.22.0",
       },
       "devDependencies": {
@@ -625,8 +625,6 @@
 
     "@struct/evaluation": ["@struct/evaluation@workspace:packages/evaluation"],
 
-    "@struct/fred-workflows": ["@struct/fred-workflows@workspace:packages/fred-workflows"],
-
     "@struct/ingestion": ["@struct/ingestion@workspace:packages/ingestion"],
 
     "@struct/observability": ["@struct/observability@workspace:packages/observability"],
@@ -642,6 +640,8 @@
     "@struct/web": ["@struct/web@workspace:apps/web"],
 
     "@struct/worker": ["@struct/worker@workspace:apps/worker"],
+
+    "@struct/workflows": ["@struct/workflows@workspace:packages/workflows"],
 
     "@swc/core": ["@swc/core@1.15.43", "", { "dependencies": { "@swc/counter": "^0.1.3", "@swc/types": "^0.1.27" }, "optionalDependencies": { "@swc/core-darwin-arm64": "1.15.43", "@swc/core-darwin-x64": "1.15.43", "@swc/core-linux-arm-gnueabihf": "1.15.43", "@swc/core-linux-arm64-gnu": "1.15.43", "@swc/core-linux-arm64-musl": "1.15.43", "@swc/core-linux-ppc64-gnu": "1.15.43", "@swc/core-linux-s390x-gnu": "1.15.43", "@swc/core-linux-x64-gnu": "1.15.43", "@swc/core-linux-x64-musl": "1.15.43", "@swc/core-win32-arm64-msvc": "1.15.43", "@swc/core-win32-ia32-msvc": "1.15.43", "@swc/core-win32-x64-msvc": "1.15.43" }, "peerDependencies": { "@swc/helpers": ">=0.5.17" }, "optionalPeers": ["@swc/helpers"] }, "sha512-1CuKjFkPxIgGdeHVuNbkxmBxkcbdc08u0aiI43pFq6yY1tTVKmXT9hFEooyyKs/sJ3xf1GPHyEwTtk9Xl8dvQw=="],
 

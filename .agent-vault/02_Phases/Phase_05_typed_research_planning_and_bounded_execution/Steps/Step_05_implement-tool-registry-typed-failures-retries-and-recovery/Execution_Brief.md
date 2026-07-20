@@ -14,7 +14,7 @@
 ## Planned Starting Files
 
 - These paths may not exist yet; use them as the first bounded implementation or design surface.
-- `packages/fred-workflows/src/tools/index.ts`
+- `packages/workflows/src/tools/index.ts`
 - `packages/domain/src/tool-failures.ts`
 - `packages/research-engine/src/retry-policy.ts`
 - `apps/worker/src/jobs/tool-dispatch.ts`

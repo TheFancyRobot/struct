@@ -15,7 +15,7 @@
 
 - These paths may not exist yet; use them as the first bounded implementation or design surface.
 - `apps/worker/src/orchestration/distributed-dispatch.ts`
-- `packages/fred-workflows/src/graphs/distributed-research.ts`
+- `packages/workflows/src/graphs/distributed-research.ts`
 - `docs/architecture/v2-distribution.md`
 - `packages/domain/src/distributed-run.ts`
 

@@ -15,7 +15,7 @@
 ## Deterministic Evidence
 
 - Golden fixtures assert exact serialized result snapshots/citations and round-trip reopen behavior.
-- Run: `bun test packages/domain packages/data-engine packages/fred-workflows packages/research-engine apps/api`
+- Run: `bun test packages/domain packages/data-engine packages/workflows packages/research-engine apps/api`
 - Run: `bun run test:integration`
 - Run: `bun run typecheck && bun run lint && bun run lint:imports && bun run build`
 - Run: `bun run docs:lint && bun run secrets:scan`

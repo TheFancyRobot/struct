@@ -16,7 +16,7 @@
     "@struct/domain": "workspace:*",
     "@struct/data-engine": "workspace:*",
     "@struct/ingestion": "workspace:*",
-    "@struct/fred-workflows": "workspace:*",
+    "@struct/workflows": "workspace:*",
     "@struct/observability": "workspace:*",
     "@struct/persistence": "workspace:*",
     "@struct/research-engine": "workspace:*",

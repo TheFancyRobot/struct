@@ -17,7 +17,7 @@ This document defines the frontend contract for `apps/web` within the Fred-nativ
 
 - connect directly to PostgreSQL or DuckDB.
 - execute Fred workflows or ingest data.
-- import from `packages/fred-workflows`, `packages/research-engine`, `packages/ingestion`, `packages/data-engine`, or `packages/persistence`.
+- import from `packages/workflows`, `packages/research-engine`, `packages/ingestion`, `packages/data-engine`, or `packages/persistence`.
 - contain server-side rendering logic, file-based routing, or static generation.
 
 `apps/web` must:
