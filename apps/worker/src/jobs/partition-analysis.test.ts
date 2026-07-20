@@ -123,13 +123,17 @@ describe('partition analysis worker journal surface', () => {
     expect(monitored.scheduler).toEqual(claimed.scheduler)
 
     const resumed = await run(job.resume(enqueued.plan.id))
+    expect(resumed.recoveryCount).toBe(1)
     expect(resumed.scheduler.progress.filter((item) =>
       item.status === 'retryable')).toHaveLength(2)
     expect(resumed.scheduler.progress.every((item) => item.lease === null)).toBe(true)
+    const reclaimed = await run(job.claim(enqueued.plan.id, 20))
+    expect(reclaimed.recoveryCount).toBe(1)
     expect(events.map((event) => event.type)).toEqual([
       'partition-analysis-enqueued',
       'partition-analysis-claimed',
       'partition-analysis-resumed',
+      'partition-analysis-claimed',
     ])
   })
 
@@ -138,7 +142,10 @@ describe('partition analysis worker journal surface', () => {
     const prepared = await Effect.runPromise(
       prepareForTest(input.manifest, input.request),
     )
-    let current: DurablePartitionAnalysis = prepared
+    let current: DurablePartitionAnalysis = {
+      ...prepared,
+      recoveryCount: 0,
+    }
     let loadCount = 0
     let releaseLoads!: () => void
     const bothLoaded = new Promise<void>((resolve) => {
@@ -192,6 +199,7 @@ describe('partition analysis worker journal surface', () => {
     )
     const corrupted: DurablePartitionAnalysis = {
       ...prepared,
+      recoveryCount: 0,
       scheduler: {
         ...prepared.scheduler,
         committedArtifactBytes: 1,

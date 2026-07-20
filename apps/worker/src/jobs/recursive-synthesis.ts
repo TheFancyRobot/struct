@@ -28,6 +28,7 @@ import {
   type FredRuntimeConfig as typeFredRuntimeConfig,
 } from '@struct/workflows'
 import { Effect, Option, Schema } from 'effect'
+import type { RecursiveProgressPublisher } from './recursive-progress.js'
 /* eslint-enable no-unused-vars */
 
 export interface CommittedRecursiveSynthesisNode {
@@ -1494,4 +1495,46 @@ export function makeFredRecursiveSynthesisJob(
         : runFredHierarchicalSynthesis(input, config, signal, factory),
   }
   return makeRecursiveSynthesisJob(journal, agents)
+}
+
+export function makeObservableRecursiveSynthesisJob(
+  job: ReturnType<typeof makeRecursiveSynthesisJob>,
+  publisher: RecursiveProgressPublisher,
+  planId: string,
+  now: () => number,
+  validatedCitations: (
+    result: typeof RecursiveNodeSynthesisOutput.Type,
+  ) => import('@struct/domain').RecursiveResultProgress['citations'],
+) {
+  return {
+    execute: Effect.fn('ObservableRecursiveSynthesisJob.execute')(
+      function* (
+        input: typeof RecursiveNodeSynthesisInput.Type,
+        signal: AbortSignal,
+      ) {
+        const outcome = yield* job.execute(input, signal)
+        if (outcome.result !== null) {
+          yield* publisher.resultCommitted({
+            requestId: input.requestId,
+            planId,
+            result: {
+              status: outcome.status === 'complete' ? 'complete' : 'partial',
+              coverage: outcome.result.coverage,
+              findings: outcome.result.findings,
+              contradictions: outcome.result.contradictions,
+              missingEvidence: outcome.result.missingEvidence,
+              excludedEvidence: outcome.result.excludedEvidence,
+              limitations: uniqueSorted([
+                ...outcome.result.limitations,
+                ...outcome.result.synthesisLimitations,
+              ]),
+              citations: validatedCitations(outcome.result),
+              updatedAt: now(),
+            },
+          })
+        }
+        return outcome
+      },
+    ),
+  } as const
 }

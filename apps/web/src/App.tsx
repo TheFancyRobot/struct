@@ -6,38 +6,68 @@
  * evidence, and synthesis work.
  */
 
-import { type ParentComponent, createSignal } from 'solid-js'
+import {
+  type ParentComponent,
+  createEffect,
+  createSignal,
+  onMount,
+} from 'solid-js'
 
 type Theme = 'struct-light' | 'struct-dark'
 
 const App: ParentComponent = (props) => {
   const [theme, setTheme] = createSignal<Theme>('struct-light')
+  onMount(() => {
+    const saved = window.localStorage.getItem('struct-theme')
+    if (saved === 'struct-light' || saved === 'struct-dark') {
+      setTheme(saved)
+      return
+    }
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setTheme('struct-dark')
+    }
+  })
+  createEffect(() => {
+    if (typeof window !== 'undefined') {
+      document.documentElement.dataset.theme = theme()
+    }
+  })
+
+  const toggleTheme = () => {
+    const nextTheme = theme() === 'struct-light' ? 'struct-dark' : 'struct-light'
+    window.localStorage.setItem('struct-theme', nextTheme)
+    setTheme(nextTheme)
+  }
 
   return (
     <div
-      class="min-h-screen bg-base-100 text-base-content"
+      class="app-shell min-h-screen bg-base-100 text-base-content"
       data-theme={theme()}
     >
-      <header class="border-b border-base-300 bg-base-200/50">
-        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 class="text-xl font-bold tracking-tight">
-            <span class="text-primary">struct</span>
-            <span class="text-base-content/60 ml-1 font-normal text-sm">research workspace</span>
-          </h1>
+      <header class="site-header">
+        <div class="site-header-inner">
+          <a href="/" class="brand" aria-label="Struct research workspace home">
+            <span class="brand-mark" aria-hidden="true">S</span>
+            <span>
+              <strong>Struct</strong>
+              <small>research workspace</small>
+            </span>
+          </a>
           <div class="flex items-center gap-3">
             <button
               type="button"
-              class="btn btn-ghost btn-sm"
+              class="theme-toggle"
               aria-label={`Switch to ${theme() === 'struct-light' ? 'dark' : 'light'} theme`}
-              onClick={() => setTheme(theme() === 'struct-light' ? 'struct-dark' : 'struct-light')}
+              onClick={toggleTheme}
             >
-              {theme() === 'struct-light' ? '🌙' : '☀️'} Theme
+              <span aria-hidden="true">{theme() === 'struct-light' ? '◐' : '◑'}</span>
+              <span>{theme() === 'struct-light' ? 'Dark' : 'Light'}</span>
             </button>
           </div>
         </div>
       </header>
 
-      <main class="container mx-auto px-4 py-8">
+      <main class="site-main">
         {props.children ?? (
           <div class="max-w-3xl mx-auto">
           <div class="hero min-h-[40vh] bg-base-200/30 rounded-2xl border border-base-300">
@@ -90,9 +120,9 @@ const App: ParentComponent = (props) => {
         )}
       </main>
 
-      <footer class="border-t border-base-300 bg-base-200/30 mt-auto">
-        <div class="container mx-auto px-4 py-3 text-center text-base-content/40 text-xs">
-          Struct v1 — Walking Skeleton
+      <footer class="site-footer">
+        <div>
+          Struct · Source-grounded research
         </div>
       </footer>
     </div>

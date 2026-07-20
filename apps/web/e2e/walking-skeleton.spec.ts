@@ -46,26 +46,37 @@ afterAll(async () => {
 })
 
 describe('walking-skeleton browser path', () => {
-  it('applies the selected Struct theme to the application root', async () => {
-    const page = await browser.newPage()
+  it('detects the OS theme without persisting it and saves only an explicit selection', async () => {
+    const context = await browser.newContext({ colorScheme: 'dark' })
+    const page = await context.newPage()
     await page.goto(origin)
 
-    const appRoot = page.locator('[data-theme]')
-    expect(await appRoot.getAttribute('data-theme')).toBe('struct-light')
-    const lightBackground = await appRoot.evaluate(
+    const appRoot = page.locator('.app-shell[data-theme]')
+    const htmlRoot = page.locator('html')
+    expect(await appRoot.getAttribute('data-theme')).toBe('struct-dark')
+    expect(await htmlRoot.getAttribute('data-theme')).toBe('struct-dark')
+    expect(await page.evaluate(() => window.localStorage.getItem('struct-theme')))
+      .toBeNull()
+    const darkBackground = await htmlRoot.evaluate(
       (element) => getComputedStyle(element).backgroundColor,
     )
 
-    await page.getByRole('button', { name: 'Switch to dark theme' }).click()
+    await page.getByRole('button', { name: 'Switch to light theme' }).click()
 
-    expect(await appRoot.getAttribute('data-theme')).toBe('struct-dark')
-    expect(await appRoot.evaluate(
+    expect(await appRoot.getAttribute('data-theme')).toBe('struct-light')
+    expect(await htmlRoot.getAttribute('data-theme')).toBe('struct-light')
+    expect(await htmlRoot.evaluate(
       (element) => getComputedStyle(element).backgroundColor,
-    )).not.toBe(lightBackground)
-    expect(await page.getByRole('button', { name: 'Switch to light theme' }).count())
+    )).not.toBe(darkBackground)
+    expect(await page.evaluate(() => window.localStorage.getItem('struct-theme')))
+      .toBe('struct-light')
+    expect(await page.getByRole('button', { name: 'Switch to dark theme' }).count())
       .toBe(1)
 
-    await page.close()
+    await page.reload()
+    expect(await appRoot.getAttribute('data-theme')).toBe('struct-light')
+    expect(await htmlRoot.getAttribute('data-theme')).toBe('struct-light')
+    await context.close()
   })
 
   it('opens a completed answer citation with the keyboard', async () => {

@@ -18,6 +18,9 @@ import {
   ResearchContractValidationError,
   ResearchExecutionCheckpoint,
   ResearchPlan,
+  RecursivePartitionProgressCommittedData,
+  RecursiveResultProgressCommittedData,
+  RecursiveRunProgressCommittedData,
   ValidationError,
 } from '@struct/domain'
 import {
@@ -156,6 +159,30 @@ function boundedInteger(value: unknown, maximum: number): value is number {
     && value <= maximum
 }
 
+function canonicalRecursiveEventPayload(
+  schema: Schema.Schema.AnyNoContext,
+  payload: unknown,
+  job: typeof JobQueue.Type,
+): ResearchEventPayload {
+  let encoded: unknown
+  try {
+    const decoded = Schema.decodeUnknownSync(schema)(payload)
+    encoded = Schema.encodeSync(schema)(decoded)
+  } catch {
+    throw new ResearchAggregateMismatchError('event.payload')
+  }
+  const normalized = normalizePersistedPayload(encoded)
+  if (
+    normalized === undefined
+    || normalized['workspaceId'] !== job.workspaceId
+    || normalized['jobId'] !== job.id
+    || normalized['attempt'] !== job.attempts
+  ) {
+    throw new ResearchAggregateMismatchError('event.payload')
+  }
+  return normalized
+}
+
 function persistedResearchScope(payload: unknown): {
   readonly projectId: typeof ProjectId.Type
   readonly sourceVersionIds: ReadonlyArray<typeof SourceVersionId.Type>
@@ -231,6 +258,16 @@ function validateAppendEventPayload(
       attempt: job.attempts,
       citationCount: event.payload['citationCount'],
     }
+  }
+  const recursiveSchema = event.eventType === 'recursive-run-progress-committed'
+    ? RecursiveRunProgressCommittedData
+    : event.eventType === 'recursive-partition-progress-committed'
+      ? RecursivePartitionProgressCommittedData
+      : event.eventType === 'recursive-result-progress-committed'
+        ? RecursiveResultProgressCommittedData
+        : undefined
+  if (recursiveSchema !== undefined) {
+    return canonicalRecursiveEventPayload(recursiveSchema, event.payload, job)
   }
   throw new ResearchAggregateMismatchError('event.eventType')
 }
@@ -860,9 +897,30 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
               job,
             )
             await transaction.unsafe(
-              `INSERT INTO event_journal
-                 (id, workspace_id, entity_type, entity_id, event_type, payload, created_at)
-               VALUES ($1, $2, 'research', $3, $4, $5::jsonb, to_timestamp($6 / 1000.0))`,
+              `WITH inserted AS (
+                 INSERT INTO event_journal
+                   (id, workspace_id, entity_type, entity_id, event_type, payload, created_at)
+                 VALUES ($1, $2, 'research', $3, $4, $5::jsonb, to_timestamp($6 / 1000.0))
+                 ON CONFLICT (id) DO NOTHING
+                 RETURNING id
+               ),
+               verified AS (
+                 SELECT id FROM inserted
+                 UNION ALL
+                 SELECT existing.id
+                 FROM event_journal existing
+                 WHERE existing.id = $1
+                   AND existing.workspace_id = $2
+                   AND existing.entity_type = 'research'
+                   AND existing.entity_id = $3
+                   AND existing.event_type = $4
+                   AND existing.payload = $5::jsonb
+                   AND NOT EXISTS (SELECT 1 FROM inserted)
+               )
+               SELECT 1 / CASE
+                 WHEN EXISTS (SELECT 1 FROM verified) THEN 1
+                 ELSE 0
+               END AS replay_verified`,
               [
                 event.id,
                 job.workspaceId,

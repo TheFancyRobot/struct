@@ -10,6 +10,11 @@ import {
   SourceVersionId,
 } from './branded-ids.js'
 import { DatasetCitation } from './dataset-query-evidence.js'
+import {
+  RecursivePartitionProgressCommittedData,
+  RecursiveResultProgressCommittedData,
+  RecursiveRunProgressCommittedData,
+} from './recursive-progress.js'
 
 const Cursor = Schema.String.pipe(Schema.pattern(/^(0|[1-9]\d*)$/))
 
@@ -118,6 +123,24 @@ export const ResearchFailedEvent = Schema.Struct({
   }),
 })
 
+export const RecursiveRunProgressCommittedEvent = Schema.Struct({
+  ...EventBase,
+  type: Schema.Literal('recursive-run-progress-committed'),
+  data: RecursiveRunProgressCommittedData,
+})
+
+export const RecursivePartitionProgressCommittedEvent = Schema.Struct({
+  ...EventBase,
+  type: Schema.Literal('recursive-partition-progress-committed'),
+  data: RecursivePartitionProgressCommittedData,
+})
+
+export const RecursiveResultProgressCommittedEvent = Schema.Struct({
+  ...EventBase,
+  type: Schema.Literal('recursive-result-progress-committed'),
+  data: RecursiveResultProgressCommittedData,
+})
+
 export const ResearchEvent = Schema.Union(
   ResearchStartedEvent,
   ResearchPlanAcceptedEvent,
@@ -128,6 +151,9 @@ export const ResearchEvent = Schema.Union(
   ResearchCancelledEvent,
   ResearchCompletedEvent,
   ResearchFailedEvent,
+  RecursiveRunProgressCommittedEvent,
+  RecursivePartitionProgressCommittedEvent,
+  RecursiveResultProgressCommittedEvent,
 )
 export type ResearchEvent = Schema.Schema.Type<typeof ResearchEvent>
 

@@ -1,15 +1,32 @@
 /* eslint-disable no-unused-vars -- Babel's parser does not mark Solid JSX component imports as used. */
 import { A } from '@solidjs/router'
-import { ErrorBoundary, For, Show, type Component } from 'solid-js'
+import {
+  ErrorBoundary,
+  For,
+  Show,
+  createEffect,
+  createMemo,
+  createResource,
+  createSignal,
+  type Component,
+} from 'solid-js'
 import { createStore } from 'solid-js/store'
 import { Schema } from 'effect'
 import type {
   ProjectId,
   ResearchRunId,
   ResearchThreadId,
+  RecursiveRunProgress,
 } from '@struct/domain'
 import { ResearchEvent } from '@struct/domain'
 import { useSSE } from '../hooks/useSSE'
+import {
+  cancelResearchRun,
+  fetchRecursiveAnalysis,
+} from '../api/research'
+import { RecursiveRunTimeline } from './RecursiveRunTimeline'
+import { PartialFindingsPanel } from './PartialFindingsPanel'
+import { mergeRecursiveRead } from './recursive-progress-state'
 
 interface ResearchStreamProps {
   readonly projectId: ProjectId
@@ -31,6 +48,12 @@ const eventLabel = (event: ResearchEvent): string => {
     case 'research-cancelled': return 'Research cancelled'
     case 'research-completed': return 'Research completed'
     case 'research-failed': return event.data.message
+    case 'recursive-run-progress-committed':
+      return `Recursive analysis ${event.data.status}`
+    case 'recursive-partition-progress-committed':
+      return `Partition ${event.data.partition.ordinal + 1} ${event.data.partition.status}`
+    case 'recursive-result-progress-committed':
+      return `${event.data.result.status === 'partial' ? 'Partial' : 'Complete'} findings committed`
   }
 }
 
@@ -53,12 +76,103 @@ const failureGuidance = (errorTag: string): string => {
 
 export const ResearchStream: Component<ResearchStreamProps> = (props) => {
   const [state, setState] = createStore<{ events: ResearchEvent[] }>({ events: [] })
+  const [recursiveRead, { refetch: refetchRecursive }] = createResource(
+    () => [props.projectId, props.runId] as const,
+    ([projectId, runId]) => fetchRecursiveAnalysis(projectId, runId),
+  )
+  const [recursive, setRecursive] = createSignal<RecursiveRunProgress | null>(null)
+  const [cancelling, setCancelling] = createSignal(false)
+  const [cancelError, setCancelError] = createSignal<string>()
+  const legacyEvents = createMemo(() => state.events.filter(
+    (event) => !event.type.startsWith('recursive-'),
+  ))
+
+  createEffect(() => {
+    const loaded = recursiveRead()
+    if (loaded !== undefined) {
+      setRecursive((current) => mergeRecursiveRead(current, loaded))
+    }
+  })
+
+  const applyRecursiveEvent = (event: ResearchEvent) => {
+    if (event.type === 'recursive-run-progress-committed') {
+      setRecursive((current) => {
+        if (
+          current !== null
+          && (
+            current.workspaceId !== event.data.workspaceId
+            || current.requestId !== event.data.requestId
+            || current.planId !== event.data.planId
+          )
+        ) return current
+        return {
+          runId: event.runId,
+          ...event.data,
+          partitions: current?.partitions ?? [],
+          result: current?.result ?? null,
+          updatedAt: event.createdAt,
+        }
+      })
+      return
+    }
+    if (event.type === 'recursive-partition-progress-committed') {
+      setRecursive((current) => {
+        if (
+          current === null
+          || current.workspaceId !== event.data.workspaceId
+          || current.requestId !== event.data.requestId
+          || current.planId !== event.data.planId
+        ) {
+          return current
+        }
+        const previous = current.partitions.find(
+          (partition) => partition.id === event.data.partition.id,
+        )
+        const batches = previous === undefined
+          ? event.data.partition.batches
+          : previous.batches
+              .filter((batch) =>
+                !event.data.partition.batches.some(
+                  (next) => next.id === batch.id,
+                ))
+              .concat(event.data.partition.batches)
+              .sort((left, right) => left.id.localeCompare(right.id))
+        const mergedPartition = {
+          ...event.data.partition,
+          batches,
+          startedAt: previous?.startedAt ?? event.data.partition.startedAt,
+        }
+        const partitions = current.partitions
+          .filter((partition) => partition.id !== event.data.partition.id)
+          .concat(mergedPartition)
+          .sort((left, right) =>
+            left.ordinal - right.ordinal || left.id.localeCompare(right.id))
+        return { ...current, partitions, updatedAt: event.createdAt }
+      })
+      return
+    }
+    if (event.type === 'recursive-result-progress-committed') {
+      setRecursive((current) =>
+        current === null
+          || current.workspaceId !== event.data.workspaceId
+          || current.requestId !== event.data.requestId
+          || current.planId !== event.data.planId
+          ? current
+          : {
+              ...current,
+              result: event.data.result,
+              updatedAt: event.createdAt,
+            })
+    }
+  }
+
   const connection = useSSE<ResearchEvent>(
     () => `/api/projects/${props.projectId}/runs/${props.runId}/events`,
     Schema.decodeUnknownSync(ResearchEvent),
     (event) => {
       if (state.events.some((existing) => existing.cursor === event.cursor)) return
       setState('events', (events) => [...events, event])
+      applyRecursiveEvent(event)
     },
     [
       'research-started',
@@ -70,12 +184,83 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
       'research-cancelled',
       'research-completed',
       'research-failed',
+      'recursive-run-progress-committed',
+      'recursive-partition-progress-committed',
+      'recursive-result-progress-committed',
     ],
   )
 
+  const requestCancellation = async () => {
+    const progress = recursive()
+    if (progress === null) return
+    setCancelling(true)
+    setCancelError(undefined)
+    try {
+      await cancelResearchRun(
+        props.projectId,
+        props.runId,
+        progress.workspaceId,
+      )
+      setRecursive((current) => current === null
+        ? current
+        : { ...current, cancellation: 'requested' })
+    } catch (error) {
+      setCancelError(error instanceof Error
+        ? error.message
+        : 'Cancellation could not be requested. Try again.')
+    } finally {
+      setCancelling(false)
+    }
+  }
+
   return (
     <ErrorBoundary fallback={<div role="alert" class="alert alert-error">Progress could not be rendered.</div>}>
-      <section aria-labelledby="research-progress-title" class="space-y-4">
+      <section aria-label="Research progress" class="space-y-5">
+        <Show when={recursiveRead.error && legacyEvents().length === 0}>
+          <div role="alert" class="inline-notice danger">
+            <span>
+              {recursiveRead.error instanceof Error
+                ? recursiveRead.error.message
+                : 'Recursive analysis could not be loaded.'}
+            </span>
+            <button type="button" class="btn btn-sm" onClick={() => void refetchRecursive()}>
+              Try again
+            </button>
+          </div>
+        </Show>
+        <Show when={recursiveRead.loading && recursive() === null}>
+          <div class="research-panel loading-panel" role="status" aria-label="Loading recursive analysis">
+            <span class="skeleton h-4 w-32" />
+            <span class="skeleton h-10 w-2/3" />
+            <span class="skeleton h-24 w-full" />
+          </div>
+        </Show>
+        <Show when={recursive()}>
+          {(progress) => (
+            <div class="research-workbench">
+              <RecursiveRunTimeline
+                progress={progress()}
+                connected={connection.connected()}
+                reconnecting={connection.reconnecting()}
+                cancelling={cancelling()}
+                cancelError={cancelError()}
+                onCancel={() => void requestCancellation()}
+              />
+              <Show when={progress().result}>
+                {(result) => (
+                  <PartialFindingsPanel
+                    projectId={props.projectId}
+                    threadId={props.threadId}
+                    result={result()}
+                  />
+                )}
+              </Show>
+            </div>
+          )}
+        </Show>
+
+        <Show when={recursive() === null || legacyEvents().length > 0}>
+        <div class="legacy-progress">
         <div class="flex items-center justify-between">
           <h2 id="research-progress-title" class="text-xl font-semibold">Research progress</h2>
           <span class="badge badge-outline">
@@ -86,11 +271,11 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
           {(message) => <div role="alert" class="alert alert-error">{message()}</div>}
         </Show>
         <Show
-          when={state.events.length > 0}
+          when={legacyEvents().length > 0}
           fallback={<p role="status" class="text-base-content/60">Waiting for persisted progress…</p>}
         >
           <ol aria-live="polite" class="timeline timeline-vertical">
-            <For each={state.events}>
+            <For each={legacyEvents()}>
               {(event) => (
                 <li class="timeline-box">
                   <p class="font-medium">{eventLabel(event)}</p>
@@ -128,6 +313,8 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
               )}
             </For>
           </ol>
+        </Show>
+        </div>
         </Show>
       </section>
     </ErrorBoundary>

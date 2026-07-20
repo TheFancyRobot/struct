@@ -20,8 +20,8 @@ Keep this note short and current.
 
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-20._
-- Session in progress: none.
-- Current step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_05_add-progress-drilldown-and-partial-result-ux|STEP-06-05 Add Progress Drilldown and Partial Result UX]] - status: planned - phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+- Session in progress: [[05_Sessions/2026-07-20-103632-add-progress-drilldown-and-partial-result-ux-step-06-05-worker|SESSION-2026-07-20-103632 step-06-05-worker session for Add Progress Drilldown and Partial Result UX]] - owner: step-06-05-worker - phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]] - updated: 2026-07-20
+- Current step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_05_add-progress-drilldown-and-partial-result-ux|STEP-06-05 Add Progress Drilldown and Partial Result UX]] - status: active - phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]] - owner: Codex
 - Active phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|PHASE-06 Recursive Corpus Analysis]] - status: active - owner: Codex - updated: 2026-07-20
 - Also active: 37 more additional steps.
 <!-- AGENT-END:current-focus -->

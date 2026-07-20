@@ -16,6 +16,7 @@ import {
 import {
   IngestionJobOwnershipLostError,
   JobQueueRepo,
+  QueryError,
   ResearchExecutionRepo,
   ResearchJobOwnershipLostError,
   SourceVersionRepo,
@@ -724,6 +725,160 @@ describe('research event workspace ownership', () => {
       researchJob.attempts,
     ])
     expect(calls.some((call) => call.query.includes('INSERT INTO event_journal'))).toBe(true)
+  })
+
+  it('canonicalizes recursive progress and rejects tampered owned identities', async () => {
+    const inserts: Array<readonly unknown[]> = []
+    const sqlLayer = SqlClientTest(async (query, params) => {
+      if (query.includes('FROM job_queue')) {
+        return [{ id: researchJobId, payload: researchJob.payload }]
+      }
+      if (query.includes('INSERT INTO event_journal') && params !== undefined) {
+        inserts.push(params)
+      }
+      return []
+    })
+    const layer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
+    const recursiveEvent = (
+      id: string,
+      eventWorkspaceId: typeof WorkspaceId.Type,
+      attempt: number,
+    ) => ({
+      id: EventJournalId.make(id),
+      workspaceId,
+      entityType: 'research',
+      entityId: runId,
+      eventType: 'recursive-run-progress-committed',
+      payload: {
+        jobId: researchJobId,
+        attempt,
+        workspaceId: eventWorkspaceId,
+        requestId: `sha256:${'1'.repeat(64)}`,
+        planId: `sha256:${'2'.repeat(64)}`,
+        status: 'running',
+        cancellation: 'none',
+        recoveryCount: 0,
+        expectedPartitions: 2,
+        committedPartitions: 0,
+        failedPartitions: 0,
+        untrustedExtra: 'must-not-persist',
+      },
+      cursor: 0n,
+      createdAt: 0n,
+    } as const)
+
+    await Effect.runPromise(
+      ResearchExecutionRepo.appendInProgressEvent(
+        researchJob,
+        recursiveEvent(
+          '660e8400-e29b-41d4-a716-44665544002a',
+          workspaceId,
+          researchJob.attempts,
+        ),
+      ).pipe(Effect.provide(layer)),
+    )
+    const persisted = JSON.parse(String(inserts[0]?.[4])) as Record<string, unknown>
+    expect(persisted['jobId']).toBe(researchJobId)
+    expect(persisted['attempt']).toBe(researchJob.attempts)
+    expect(persisted['untrustedExtra']).toBeUndefined()
+
+    for (const tampered of [
+      recursiveEvent(
+        '660e8400-e29b-41d4-a716-44665544002b',
+        foreignWorkspaceId,
+        researchJob.attempts,
+      ),
+      recursiveEvent(
+        '660e8400-e29b-41d4-a716-44665544002c',
+        workspaceId,
+        researchJob.attempts + 1,
+      ),
+    ]) {
+      const exit = await Effect.runPromiseExit(
+        ResearchExecutionRepo.appendInProgressEvent(
+          researchJob,
+          tampered,
+        ).pipe(Effect.provide(layer)),
+      )
+      expect(Exit.isFailure(exit)).toBe(true)
+      if (Exit.isFailure(exit)) {
+        expect(String(exit.cause)).toContain(ValidationError.name)
+      }
+    }
+    expect(inserts).toHaveLength(1)
+  })
+
+  it('accepts exact recursive event replay and rejects an ID collision', async () => {
+    const persisted = new Map<string, string>()
+    const sqlLayer = SqlClientTest(async (query, params) => {
+      if (query.includes('FROM job_queue')) {
+        return [{ id: researchJobId, payload: researchJob.payload }]
+      }
+      if (query.includes('WITH inserted AS')) {
+        const id = String(params?.[0])
+        const canonical = JSON.stringify({
+          workspaceId: params?.[1],
+          entityId: params?.[2],
+          eventType: params?.[3],
+          payload: params?.[4],
+        })
+        const previous = persisted.get(id)
+        if (previous !== undefined && previous !== canonical) {
+          throw new Error('event-id-collision')
+        }
+        persisted.set(id, canonical)
+        return [{ replay_verified: 1 }]
+      }
+      return []
+    })
+    const layer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
+    const event = (status: 'running' | 'partial') => ({
+      id: EventJournalId.make('660e8400-e29b-41d4-a716-44665544002d'),
+      workspaceId,
+      entityType: 'research',
+      entityId: runId,
+      eventType: 'recursive-run-progress-committed',
+      payload: {
+        jobId: researchJobId,
+        attempt: researchJob.attempts,
+        workspaceId,
+        requestId: `sha256:${'1'.repeat(64)}`,
+        planId: `sha256:${'2'.repeat(64)}`,
+        status,
+        cancellation: 'none',
+        recoveryCount: 0,
+        expectedPartitions: 2,
+        committedPartitions: 0,
+        failedPartitions: 0,
+      },
+      cursor: 0n,
+      createdAt: 0n,
+    } as const)
+
+    await Effect.runPromise(
+      ResearchExecutionRepo.appendInProgressEvent(
+        researchJob,
+        event('running'),
+      ).pipe(Effect.provide(layer)),
+    )
+    await Effect.runPromise(
+      ResearchExecutionRepo.appendInProgressEvent(
+        researchJob,
+        event('running'),
+      ).pipe(Effect.provide(layer)),
+    )
+    expect(persisted).toHaveLength(1)
+
+    const collision = await Effect.runPromiseExit(
+      ResearchExecutionRepo.appendInProgressEvent(
+        researchJob,
+        event('partial'),
+      ).pipe(Effect.provide(layer)),
+    )
+    expect(Exit.isFailure(collision)).toBe(true)
+    if (Exit.isFailure(collision)) {
+      expect(String(collision.cause)).toContain(QueryError.name)
+    }
   })
 
   it('rejects a stale attempt for append, completion, and failure without side effects', async () => {
