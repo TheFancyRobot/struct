@@ -20,4 +20,15 @@ describe('v1 live performance gate inventory', () => {
     expect(liveGates.find(({ id }) => id === 'real-interruption-restart-replacement')?.environment)
       .toMatchObject({ DATA_ENGINE_INTEGRATION: '1' })
   })
+
+  it('lets the real script process exit promptly after clearing a long deadline', () => {
+    const started = performance.now()
+    const child = Bun.spawnSync({
+      cmd: ['bun', 'scripts/v1-performance-gate.ts', '--deadline-cleanup-probe'],
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    expect(child.exitCode).toBe(0)
+    expect(performance.now() - started).toBeLessThan(1_000)
+  })
 })

@@ -51,9 +51,15 @@ import {
   runFredResearchPlanning,
 } from '@struct/workflows'
 import {
+  DependencyReadinessError,
+  healthResponse,
   makeTracingLayer,
+  observeBoundary,
+  readinessResponse,
   renderWalkingSliceMetrics,
   tracingOtlpEndpointConfig,
+  withReadinessDeadline,
+  withWalkingSliceSpan,
 } from '@struct/observability'
 import {
   artifactStorageRootConfig,
@@ -72,6 +78,24 @@ import { makeProductionResearchPlanningPolicy } from './jobs/research-planning'
 import { processOneSourceTextReindex } from './jobs/reindex-source-text'
 import { processOneDatasetMaterialization } from './jobs/materialize-dataset'
 import { runWorkerPollLoops } from './polling'
+
+const databaseReadinessCheck = (
+  sql: import('postgres').Sql,
+): Effect.Effect<void, unknown> => withReadinessDeadline(
+  'database',
+  Effect.async<void, DependencyReadinessError>((resume) => {
+    const query = sql.unsafe('SELECT 1')
+    void query.then(
+      () => resume(Effect.void),
+      () => resume(Effect.fail(new DependencyReadinessError({
+        dependency: 'database',
+        classification: 'dependency-unavailable',
+        message: 'Worker database readiness failed',
+      }))),
+    )
+    return Effect.sync(() => query.cancel())
+  }),
+)
 
 const program = Effect.gen(function* () {
   const metricsPort = yield* workerMetricsPortConfig
@@ -151,7 +175,16 @@ const program = Effect.gen(function* () {
             })),
         ),
     },
-    client: dataEngineClient,
+    client: {
+      query: (request) => withWalkingSliceSpan(
+        'data-engine',
+        {
+          workspaceId: request.workspaceId,
+          projectId: request.projectId,
+        },
+        dataEngineClient.query(request),
+      ),
+    },
   })
   const deterministicDatasetQueryFor = (
     preview: Effect.Effect.Success<ReturnType<typeof readOnlySql.execute>>,
@@ -187,10 +220,29 @@ const program = Effect.gen(function* () {
           if (request.method !== 'GET') {
             return new Response('Method Not Allowed', { status: 405 })
           }
-          if (pathname === '/healthz') {
-            return new Response(ready ? 'ok' : 'starting', {
-              status: ready ? 200 : 503,
-            })
+          if (pathname === '/healthz') return healthResponse()
+          if (pathname === '/readyz') {
+            return Runtime.runPromise(effectRuntime)(readinessResponse([
+              {
+                dependency: 'worker',
+                check: ready
+                  ? Effect.void
+                  : Effect.fail(new DependencyReadinessError({
+                      dependency: 'worker',
+                      classification: 'stalled',
+                      message: 'Worker startup is incomplete',
+                    })),
+              },
+              {
+                dependency: 'database',
+                check: observeBoundary({
+                  boundary: 'readiness',
+                  event: 'worker.database.readiness',
+                  identity: {},
+                  effect: databaseReadinessCheck(sql),
+                }),
+              },
+            ]))
           }
           if (pathname === '/metrics') {
             return new Response(
