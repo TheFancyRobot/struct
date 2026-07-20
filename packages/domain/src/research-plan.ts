@@ -178,7 +178,7 @@ function parseFailure(
   const issue = ParseResult.ArrayFormatter.formatErrorSync(error)[0]
   const path = issue?.path.map(String).join('.') ?? ''
   const reason: ValidationReason =
-    /(^|\.)(id|runId|workspaceId|projectId|sourceVersionId|datasetId|datasetSnapshotId|nodeId)(\.|$)/.test(path)
+    /(^|\.)(id|runId|workspaceId|projectId|sourceVersionIds?|datasetId|datasetSnapshotId|nodeId|dependencies|evidenceRefs)(\.|$)/.test(path)
       ? 'invalid-identity'
       : path.includes('toolId')
         ? 'unsupported-tool'

@@ -215,6 +215,27 @@ describe('research plan contracts', () => {
     }))).toBe('invalid-identity')
     expect(await failureReason(decodeResearchPlan({
       ...plan,
+      sourceScopes: [{
+        ...plan.sourceScopes[1],
+        sourceVersionIds: ['not-a-uuid'],
+      }],
+    }))).toBe('invalid-identity')
+    expect(await failureReason(decodeResearchPlan({
+      ...plan,
+      nodes: [{
+        ...plan.nodes[0],
+        dependencies: ['not-a-uuid'],
+      }],
+    }))).toBe('invalid-identity')
+    expect(await failureReason(decodeResearchPlan({
+      ...plan,
+      nodes: [{
+        ...plan.nodes[0],
+        evidenceRefs: ['not-a-uuid'],
+      }],
+    }))).toBe('invalid-identity')
+    expect(await failureReason(decodeResearchPlan({
+      ...plan,
       toolPolicy: {
         grants: [{ ...plan.toolPolicy.grants[0], toolId: 'shell' }],
       },
