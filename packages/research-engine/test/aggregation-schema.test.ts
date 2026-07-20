@@ -6,6 +6,7 @@ import {
   RecursiveBatchId,
   RecursiveContradictionId,
   RecursiveDecompositionNodeId,
+  RecursiveEvidenceId,
   RecursiveFindingId,
   RecursivePartitionId,
   RecursiveSufficiencyId,
@@ -20,8 +21,10 @@ import {
   computeRecursiveAnalysisRequestId,
   computeRecursiveAggregationId,
   computeRecursiveBatchId,
+  computeRecursiveContradictionId,
   computeRecursiveDecompositionNodeId,
   computeRecursiveEvidenceId,
+  computeRecursiveFindingId,
   computeRecursivePartitionId,
   computeRecursiveSufficiencyId,
   computeRecursiveTerminalStateId,
@@ -67,6 +70,55 @@ function requestWithoutId() {
   })
   const { id: _id, ...withoutId } = request
   return withoutId
+}
+
+function completeCoverage(expectedItems: number, expectedPartitions: number) {
+  const withoutId = {
+    expectedItems,
+    examinedItems: expectedItems,
+    missingItems: 0,
+    excludedItems: 0,
+    expectedPartitions,
+    examinedPartitions: expectedPartitions,
+    status: 'complete' as const,
+  }
+  return { ...withoutId, id: computeCoverageSnapshotId(withoutId) }
+}
+
+function evidenceFor(sourceVersionId: typeof sourceA, character: string) {
+  const withoutId = {
+    sourceVersionId,
+    artifact: {
+      digest: Sha256Digest.make(sha(character)),
+      byteLength: 128,
+      mediaType: 'application/json',
+    },
+    locator: `/items/${character}`,
+  }
+  return { ...withoutId, id: computeRecursiveEvidenceId(withoutId) }
+}
+
+function findingFor(
+  evidence: ReadonlyArray<ReturnType<typeof evidenceFor>>,
+  coverage: ReturnType<typeof completeCoverage>,
+) {
+  const identityInput = {
+    claimSignature: Sha256Digest.make(sha('c')),
+    evidence,
+    confidence: 0.9,
+    importance: 0.8,
+    coverage,
+    supportingExamples: [evidence[0]!.id],
+    counterEvidence: [],
+    contradictions: [],
+  }
+  return {
+    ...identityInput,
+    id: computeRecursiveFindingId(identityInput),
+    claim: 'A source-grounded claim',
+    limitations: [],
+    tags: ['verified'],
+  }
 }
 
 describe('recursive canonical identities', () => {
@@ -286,6 +338,128 @@ describe('recursive canonical identities', () => {
     expect(Schema.is(RecursiveTerminalStateId)(terminal.id)).toBe(true)
   })
 
+  it('retains resolved contradictions without blocking sufficient completion', async () => {
+    const coverage = completeCoverage(2, 1)
+    const evidence = [evidenceFor(sourceA, '1'), evidenceFor(sourceB, '2')]
+    const finding = findingFor(evidence, coverage)
+    const contradictionWithoutId = {
+      claimSignature: Sha256Digest.make(sha('d')),
+      supportingEvidence: [evidence[0]!.id],
+      conflictingEvidence: [evidence[1]!.id],
+    }
+    const contradiction = {
+      ...contradictionWithoutId,
+      id: computeRecursiveContradictionId(contradictionWithoutId),
+      status: 'resolved' as const,
+      limitations: ['Resolved by newer immutable evidence'],
+    }
+    const sufficiencyWithoutId = {
+      status: 'sufficient' as const,
+      evidenceIds: evidence.map((item) => item.id),
+      contradictionIds: [],
+      limitations: [],
+    }
+    const sufficiency = {
+      ...sufficiencyWithoutId,
+      id: computeRecursiveSufficiencyId(sufficiencyWithoutId),
+    }
+    const terminalReason = { kind: 'completed' as const }
+    const terminal = {
+      reason: terminalReason,
+      id: computeRecursiveTerminalStateId(terminalReason),
+    }
+    const aggregationWithoutId = {
+      version: '1' as const,
+      requestId: RecursiveAnalysisRequestId.make(sha('3')),
+      nodeId: RecursiveDecompositionNodeId.make(sha('4')),
+      inputBatchIds: [RecursiveBatchId.make(sha('5'))],
+      findings: [finding],
+      coverage,
+      contradictions: [contradiction],
+      sufficiency,
+      terminal,
+    }
+    const aggregation = {
+      ...aggregationWithoutId,
+      id: computeRecursiveAggregationId({
+        ...aggregationWithoutId,
+        findingIds: [finding.id],
+        contradictionIds: [contradiction.id],
+        sufficiencyId: sufficiency.id,
+        terminalId: terminal.id,
+      }),
+    }
+
+    await expect(
+      Effect.runPromise(validateRecursiveAggregationContract(aggregation)),
+    ).resolves.toMatchObject({
+      sufficiency: { status: 'sufficient', contradictionIds: [] },
+      contradictions: [{ status: 'resolved' }],
+      terminal: { reason: { kind: 'completed' } },
+    })
+
+    await expect(Effect.runPromise(Effect.either(
+      validateRecursiveAggregationContract({
+        ...aggregation,
+        contradictions: [{ ...contradiction, status: 'unresolved' }],
+      }),
+    ))).resolves.toMatchObject({ _tag: 'Left' })
+  })
+
+  it('rejects top-level contradiction evidence not carried by findings', async () => {
+    const coverage = completeCoverage(1, 1)
+    const evidence = evidenceFor(sourceA, '1')
+    const finding = findingFor([evidence], coverage)
+    const contradictionWithoutId = {
+      claimSignature: Sha256Digest.make(sha('d')),
+      supportingEvidence: [evidence.id],
+      conflictingEvidence: [RecursiveEvidenceId.make(sha('e'))],
+    }
+    const contradiction = {
+      ...contradictionWithoutId,
+      id: computeRecursiveContradictionId(contradictionWithoutId),
+      status: 'resolved' as const,
+      limitations: [],
+    }
+    const sufficiencyWithoutId = {
+      status: 'sufficient' as const,
+      evidenceIds: [evidence.id],
+      contradictionIds: [],
+      limitations: [],
+    }
+    const sufficiency = {
+      ...sufficiencyWithoutId,
+      id: computeRecursiveSufficiencyId(sufficiencyWithoutId),
+    }
+    const terminalReason = { kind: 'completed' as const }
+    const terminal = {
+      reason: terminalReason,
+      id: computeRecursiveTerminalStateId(terminalReason),
+    }
+    const values = {
+      version: '1' as const,
+      requestId: RecursiveAnalysisRequestId.make(sha('3')),
+      nodeId: RecursiveDecompositionNodeId.make(sha('4')),
+      inputBatchIds: [RecursiveBatchId.make(sha('5'))],
+      findings: [finding],
+      coverage,
+      contradictions: [contradiction],
+      sufficiency,
+      terminal,
+    }
+    const id = computeRecursiveAggregationId({
+      ...values,
+      findingIds: [finding.id],
+      contradictionIds: [contradiction.id],
+      sufficiencyId: sufficiency.id,
+      terminalId: terminal.id,
+    })
+
+    await expect(Effect.runPromise(Effect.either(
+      validateRecursiveAggregationContract({ ...values, id }),
+    ))).resolves.toMatchObject({ _tag: 'Left' })
+  })
+
   it('validates batch input and result identities together', async () => {
     const request = requestWithoutId()
     const requestId = computeRecursiveAnalysisRequestId(request)
@@ -320,12 +494,12 @@ describe('recursive canonical identities', () => {
     await Effect.runPromise(validateRecursiveBatchInputContract(batch))
 
     const coverageWithoutId = {
-      expectedItems: 0,
-      examinedItems: 0,
+      expectedItems: 1,
+      examinedItems: 1,
       missingItems: 0,
       excludedItems: 0,
-      expectedPartitions: 0,
-      examinedPartitions: 0,
+      expectedPartitions: 1,
+      examinedPartitions: 1,
       status: 'complete' as const,
     }
     const coverage = {
@@ -355,5 +529,166 @@ describe('recursive canonical identities', () => {
       },
     }, batch))
     expect(result.batchId).toBe(batch.id)
+  })
+
+  it('binds batch evidence lineage and coverage to the expected partition', async () => {
+    const requestId = computeRecursiveAnalysisRequestId(requestWithoutId())
+    const nodeId = RecursiveDecompositionNodeId.make(sha('1'))
+    const partitionWithoutIdentity = {
+      nodeId,
+      schemaFamily: 'incident-v1',
+      sourceVersionIds: [sourceA],
+      entryKeys: ['incidents/1.json'],
+      byteLength: 512,
+    }
+    const partition = {
+      ...partitionWithoutIdentity,
+      id: computeRecursivePartitionId(partitionWithoutIdentity),
+      ordinal: 0,
+    }
+    const batchIdentityInput = {
+      version: '1' as const,
+      requestId,
+      nodeId,
+      partitionId: partition.id,
+      evidenceSchemaVersion: '1',
+    }
+    const batch = {
+      version: '1' as const,
+      id: computeRecursiveBatchId(batchIdentityInput),
+      requestId,
+      nodeId,
+      partition,
+      evidenceSchemaVersion: '1',
+    }
+    const coverage = completeCoverage(1, 1)
+    const evidence = evidenceFor(sourceB, '2')
+    const finding = findingFor([evidence], coverage)
+    const sufficiencyWithoutId = {
+      status: 'sufficient' as const,
+      evidenceIds: [evidence.id],
+      contradictionIds: [],
+      limitations: [],
+    }
+    const terminalReason = { kind: 'completed' as const }
+    const result = {
+      version: '1' as const,
+      batchId: batch.id,
+      findings: [finding],
+      coverage,
+      contradictions: [],
+      sufficiency: {
+        ...sufficiencyWithoutId,
+        id: computeRecursiveSufficiencyId(sufficiencyWithoutId),
+      },
+      terminal: {
+        reason: terminalReason,
+        id: computeRecursiveTerminalStateId(terminalReason),
+      },
+    }
+
+    const wrongSource = await Effect.runPromise(Effect.either(
+      validateRecursiveBatchResultContract(result, batch),
+    ))
+    expect(wrongSource).toMatchObject({
+      _tag: 'Left',
+      left: {
+        reason: 'invalid-lineage',
+      },
+    })
+
+    const emptyCoverage = completeCoverage(0, 1)
+    const wrongCoverage = await Effect.runPromise(Effect.either(
+      validateRecursiveBatchResultContract({
+        ...result,
+        findings: [],
+        coverage: emptyCoverage,
+        sufficiency: {
+          id: computeRecursiveSufficiencyId({
+            status: 'insufficient',
+            evidenceIds: [],
+            contradictionIds: [],
+          }),
+          status: 'insufficient',
+          evidenceIds: [],
+          contradictionIds: [],
+          limitations: [],
+        },
+        terminal: {
+          reason: { kind: 'insufficient-evidence' },
+          id: computeRecursiveTerminalStateId({ kind: 'insufficient-evidence' }),
+        },
+      }, batch),
+    ))
+    expect(wrongCoverage).toMatchObject({
+      _tag: 'Left',
+      left: {
+        reason: 'malformed',
+        path: 'coverage.expectedItems',
+      },
+    })
+
+    const twoPartitionCoverage = completeCoverage(1, 2)
+    const wrongPartitionAccounting = await Effect.runPromise(Effect.either(
+      validateRecursiveBatchResultContract({
+        ...result,
+        findings: [],
+        coverage: twoPartitionCoverage,
+        sufficiency: {
+          id: computeRecursiveSufficiencyId({
+            status: 'insufficient',
+            evidenceIds: [],
+            contradictionIds: [],
+          }),
+          status: 'insufficient',
+          evidenceIds: [],
+          contradictionIds: [],
+          limitations: [],
+        },
+        terminal: {
+          reason: { kind: 'insufficient-evidence' },
+          id: computeRecursiveTerminalStateId({ kind: 'insufficient-evidence' }),
+        },
+      }, batch),
+    ))
+    expect(wrongPartitionAccounting).toMatchObject({
+      _tag: 'Left',
+      left: {
+        reason: 'malformed',
+        path: 'coverage.expectedPartitions',
+      },
+    })
+
+    const carriedEvidence = evidenceFor(sourceA, '3')
+    const carriedFinding = findingFor([carriedEvidence], coverage)
+    const danglingContradictionInput = {
+      claimSignature: Sha256Digest.make(sha('d')),
+      supportingEvidence: [carriedEvidence.id],
+      conflictingEvidence: [RecursiveEvidenceId.make(sha('e'))],
+    }
+    const danglingContradiction = {
+      ...danglingContradictionInput,
+      id: computeRecursiveContradictionId(danglingContradictionInput),
+      status: 'resolved' as const,
+      limitations: [],
+    }
+    const carriedSufficiencyInput = {
+      status: 'sufficient' as const,
+      evidenceIds: [carriedEvidence.id],
+      contradictionIds: [],
+      limitations: [],
+    }
+    const danglingEvidence = await Effect.runPromise(Effect.either(
+      validateRecursiveBatchResultContract({
+        ...result,
+        findings: [carriedFinding],
+        contradictions: [danglingContradiction],
+        sufficiency: {
+          ...carriedSufficiencyInput,
+          id: computeRecursiveSufficiencyId(carriedSufficiencyInput),
+        },
+      }, batch),
+    ))
+    expect(danglingEvidence).toMatchObject({ _tag: 'Left' })
   })
 })

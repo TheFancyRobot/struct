@@ -14,7 +14,7 @@ context:
   status: completed
   updated_at: '2026-07-20T07:32:00.000Z'
   current_focus:
-    summary: STEP-06-01 implementation and validation are complete; root-owned review, PR, and merge remain.
+    summary: STEP-06-01 is completed, reviewed, and merged; BUG-0011 remediation now gates STEP-06-02.
     target: '[[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_01_define-recursive-decomposition-and-aggregation-contracts|STEP-06-01 Define Recursive Decomposition and Aggregation Contracts]]'
   resume_target:
     type: step
@@ -22,7 +22,8 @@ context:
     section: Context Handoff
   last_action:
     type: completed
-related_bugs: []
+related_bugs:
+  - '[[03_Bugs/BUG-0011_step-06-01-post-merge-contract-review-findings|BUG-0011 STEP-06-01 post-merge contract review findings]]'
 related_decisions: []
 created: '2026-07-20'
 updated: '2026-07-20'
@@ -66,7 +67,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 
 - Use this as the single canonical prose section for prepared context, resume notes, and handoff summaries tied to the current effective context.
 - Keep durable conclusions promoted into phase, bug, decision, or architecture notes when they outlive the session.
-- STEP-06-01 implementation and validation are complete. Root must review, publish, and merge this step before STEP-06-02 begins.
+- STEP-06-01 is completed, reviewed, and merged. Post-merge review produced [[03_Bugs/BUG-0011_step-06-01-post-merge-contract-review-findings|BUG-0011]], whose validated remediation must merge before STEP-06-02 begins.
 
 ## Changed Paths
 
@@ -100,7 +101,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Bugs Encountered
 
 <!-- AGENT-START:session-bugs-encountered -->
-- None.
+- [[03_Bugs/BUG-0011_step-06-01-post-merge-contract-review-findings|BUG-0011 STEP-06-01 post-merge contract review findings]] - Linked from bug generator.
 <!-- AGENT-END:session-bugs-encountered -->
 
 ## Decisions Made or Updated
@@ -112,10 +113,11 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Follow-Up Work
 
 <!-- AGENT-START:session-follow-up-work -->
-- [ ] Root orchestrator independently reviews, publishes, and merges STEP-06-01 before STEP-06-02.
+- [x] Root orchestrator independently reviewed, published, and merged STEP-06-01.
+- [ ] Merge the validated BUG-0011 remediation before STEP-06-02.
 <!-- AGENT-END:session-follow-up-work -->
 
 ## Completion Summary
 
 - State what finished, what remains, and whether handoff is clean.
-- STEP-06-01 is implemented and fully validated with no confirmed defects. The handoff is clean; only root-owned git/PR/review/merge work remains before STEP-06-02 may begin.
+- STEP-06-01 was implemented, validated, reviewed, and merged. Five later review findings are tracked in BUG-0011; their validated remediation is the sole gate before STEP-06-02.

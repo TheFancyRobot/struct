@@ -264,6 +264,11 @@ export const RecursiveBatchResult = Schema.Struct({
     const contradictionIds = new Set(
       result.contradictions.map((contradiction) => contradiction.id),
     )
+    const unresolvedContradictionIds = new Set(
+      result.contradictions
+        .filter((contradiction) => contradiction.status === 'unresolved')
+        .map((contradiction) => contradiction.id),
+    )
     const retainedFindingContradictions = result.findings.flatMap(
       (finding) => finding.contradictions.map((contradiction) => contradiction.id),
     )
@@ -271,6 +276,12 @@ export const RecursiveBatchResult = Schema.Struct({
       (finding) => finding.evidence.map((evidence) => evidence.id),
     )
     const knownEvidenceIds = new Set(findingEvidenceIds)
+    const contradictionEvidenceIds = result.contradictions.flatMap(
+      (contradiction) => [
+        ...contradiction.supportingEvidence,
+        ...contradiction.conflictingEvidence,
+      ],
+    )
     return [
       new Set(result.findings.map((finding) => finding.id)).size
         === result.findings.length
@@ -282,14 +293,16 @@ export const RecursiveBatchResult = Schema.Struct({
       retainedFindingContradictions.every((id) => contradictionIds.has(id))
         ? undefined
         : 'batch result must retain every finding contradiction',
-      result.sufficiency.contradictionIds.every((id) => contradictionIds.has(id))
+      result.sufficiency.contradictionIds.every(
+        (id) => unresolvedContradictionIds.has(id),
+      )
         ? undefined
-        : 'batch sufficiency cannot reference unknown contradictions',
-      [...contradictionIds].every(
+        : 'batch sufficiency can reference only unresolved contradictions',
+      [...unresolvedContradictionIds].every(
         (id) => result.sufficiency.contradictionIds.includes(id),
       )
         ? undefined
-        : 'batch sufficiency must retain every contradiction',
+        : 'batch sufficiency must retain every unresolved contradiction',
       result.sufficiency.evidenceIds.every((id) => knownEvidenceIds.has(id))
         ? undefined
         : 'batch sufficiency cannot reference unknown evidence',
@@ -298,6 +311,9 @@ export const RecursiveBatchResult = Schema.Struct({
       )
         ? undefined
         : 'batch sufficiency must retain every finding evidence reference',
+      contradictionEvidenceIds.every((id) => knownEvidenceIds.has(id))
+        ? undefined
+        : 'batch contradictions must reference carried finding evidence',
       result.coverage.status === 'partial'
         && result.sufficiency.status === 'sufficient'
         ? 'partial batch result cannot claim sufficient evidence'
@@ -335,6 +351,11 @@ export const RecursiveAggregationResult = Schema.Struct({
     const contradictionIds = new Set(
       aggregation.contradictions.map((contradiction) => contradiction.id),
     )
+    const unresolvedContradictionIds = new Set(
+      aggregation.contradictions
+        .filter((contradiction) => contradiction.status === 'unresolved')
+        .map((contradiction) => contradiction.id),
+    )
     const retainedFindingContradictions = aggregation.findings.flatMap(
       (finding) => finding.contradictions.map((contradiction) => contradiction.id),
     )
@@ -342,6 +363,12 @@ export const RecursiveAggregationResult = Schema.Struct({
       (finding) => finding.evidence.map((evidence) => evidence.id),
     )
     const knownEvidenceIds = new Set(findingEvidenceIds)
+    const contradictionEvidenceIds = aggregation.contradictions.flatMap(
+      (contradiction) => [
+        ...contradiction.supportingEvidence,
+        ...contradiction.conflictingEvidence,
+      ],
+    )
     return [
       new Set(aggregation.inputBatchIds).size === aggregation.inputBatchIds.length
         ? undefined
@@ -357,15 +384,15 @@ export const RecursiveAggregationResult = Schema.Struct({
         ? undefined
         : 'aggregation must retain every finding contradiction',
       aggregation.sufficiency.contradictionIds.every(
-        (id) => contradictionIds.has(id),
+        (id) => unresolvedContradictionIds.has(id),
       )
         ? undefined
-        : 'aggregation sufficiency cannot reference unknown contradictions',
-      [...contradictionIds].every(
+        : 'aggregation sufficiency can reference only unresolved contradictions',
+      [...unresolvedContradictionIds].every(
         (id) => aggregation.sufficiency.contradictionIds.includes(id),
       )
         ? undefined
-        : 'aggregation sufficiency must retain every contradiction',
+        : 'aggregation sufficiency must retain every unresolved contradiction',
       aggregation.sufficiency.evidenceIds.every(
         (id) => knownEvidenceIds.has(id),
       )
@@ -376,6 +403,9 @@ export const RecursiveAggregationResult = Schema.Struct({
       )
         ? undefined
         : 'aggregation sufficiency must retain every finding evidence reference',
+      contradictionEvidenceIds.every((id) => knownEvidenceIds.has(id))
+        ? undefined
+        : 'aggregation contradictions must reference carried finding evidence',
       aggregation.coverage.status === 'partial'
         && aggregation.sufficiency.status === 'sufficient'
         ? 'partial aggregation cannot claim sufficient evidence'

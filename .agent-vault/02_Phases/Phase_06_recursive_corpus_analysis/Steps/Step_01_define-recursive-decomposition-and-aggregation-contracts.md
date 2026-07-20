@@ -14,14 +14,16 @@ depends_on:
 related_sessions:
   - '[[05_Sessions/2026-07-20-070758-define-recursive-decomposition-and-aggregation-contracts-phase-06-refinement-worker|SESSION-2026-07-20-070758 phase-06-refinement-worker session for Define Recursive Decomposition and Aggregation Contracts]]'
   - '[[05_Sessions/2026-07-20-071742-define-recursive-decomposition-and-aggregation-contracts-step-06-01-worker|SESSION-2026-07-20-071742 step-06-01-worker session for Define Recursive Decomposition and Aggregation Contracts]]'
-related_bugs: []
+  - '[[05_Sessions/2026-07-20-074814-define-recursive-decomposition-and-aggregation-contracts-step-06-01-postmerge-fix|SESSION-2026-07-20-074814 step-06-01-postmerge-fix session for Define Recursive Decomposition and Aggregation Contracts]]'
+related_bugs:
+  - '[[03_Bugs/BUG-0011_step-06-01-post-merge-contract-review-findings|BUG-0011 STEP-06-01 post-merge contract review findings]]'
 tags:
   - agent-vault
   - step
-context_id: SESSION-2026-07-20-071742
-active_session_id: 05_Sessions/2026-07-20-071742-define-recursive-decomposition-and-aggregation-contracts-step-06-01-worker
-context_status: completed
-context_summary: 'STEP-06-01 completed: exported recursive analysis schemas, canonical identities, typed invariants, and focused validation.'
+context_id: SESSION-2026-07-20-074814
+active_session_id: 05_Sessions/2026-07-20-074814-define-recursive-decomposition-and-aggregation-contracts-step-06-01-postmerge-fix
+context_status: active
+context_summary: STEP-06-01 is completed, reviewed, and merged; all five BUG-0011 remediations are implemented and validated on the follow-up branch, which gates STEP-06-02 until root review and merge.
 ---
 
 # Step 01 - Define Recursive Decomposition and Aggregation Contracts
@@ -55,7 +57,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - Status: completed
 - Current owner: Codex
 - Last touched: 2026-07-20
-- Next action: Root orchestrator independently reviews, publishes, and merges the dedicated STEP-06-01 pull request before STEP-06-02 begins.
+- Next action: Root orchestrator independently reviews, publishes, and merges the BUG-0011 follow-up before STEP-06-02 begins.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -67,6 +69,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 <!-- AGENT-START:step-session-history -->
 - 2026-07-20 - [[05_Sessions/2026-07-20-070758-define-recursive-decomposition-and-aggregation-contracts-phase-06-refinement-worker|SESSION-2026-07-20-070758 phase-06-refinement-worker session for Define Recursive Decomposition and Aggregation Contracts]] - Session created.
 - 2026-07-20 - [[05_Sessions/2026-07-20-071742-define-recursive-decomposition-and-aggregation-contracts-step-06-01-worker|SESSION-2026-07-20-071742 step-06-01-worker session for Define Recursive Decomposition and Aggregation Contracts]] - Session created.
+- 2026-07-20 - [[05_Sessions/2026-07-20-074814-define-recursive-decomposition-and-aggregation-contracts-step-06-01-postmerge-fix|SESSION-2026-07-20-074814 step-06-01-postmerge-fix session for Define Recursive Decomposition and Aggregation Contracts]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

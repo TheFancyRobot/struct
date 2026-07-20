@@ -20,10 +20,10 @@ Keep this note short and current.
 
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-20._
-- Session in progress: none.
-- Current step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_01_define-recursive-decomposition-and-aggregation-contracts|STEP-06-01 Define Recursive Decomposition and Aggregation Contracts]] - status: planned - phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+- Session in progress: [[05_Sessions/2026-07-20-074814-define-recursive-decomposition-and-aggregation-contracts-step-06-01-postmerge-fix|SESSION-2026-07-20-074814 step-06-01-postmerge-fix session for Define Recursive Decomposition and Aggregation Contracts]] - owner: step-06-01-postmerge-fix - phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]] - updated: 2026-07-20
+- Current step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_02_implement-bounded-corpus-partitioning-and-scheduling|STEP-06-02 Implement Bounded Corpus Partitioning and Scheduling]] - status: planned - phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
 - Active phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|PHASE-06 Recursive Corpus Analysis]] - status: active - owner: Codex - updated: 2026-07-20
-- Also active: 41 more additional steps.
+- Also active: 40 more additional steps.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -38,13 +38,14 @@ _Last refreshed: 2026-07-20._
 - Phase 02 is completed and merged through STEP-02-06 with deterministic retrieval, exact provenance, bounded core-Fred document research, SolidJS citation navigation, and injection-resistance evaluation.
 - Phase 03 and STEP-03-01 through STEP-03-06 are completed and merged.
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
-- Phase 05 refinement and STEP-05-01 through STEP-05-05 are merged. STEP-05-06 implementation, review remediation, and zero-defect validation are complete on its dedicated branch; PR review and merge remain.
+- Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
+- Phase 06 is refined and active. STEP-06-01 is completed, reviewed, and merged; BUG-0011 follow-up remediation is the current gate.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 
 ## Out Of Scope Right Now
 
 - A second runtime, queue, database, filesystem service, client state framework, or Fred executor.
-- STEP-06-01 and later work until STEP-05-06 is merged and Phase 06 refinement passes.
+- STEP-06-02 and later work until BUG-0011 remediation is reviewed and merged.
 - Later-phase release work.
 
 ## Working Assumptions
@@ -61,7 +62,7 @@ _Last refreshed: 2026-07-20._
 
 ## Open Questions
 
-- No unresolved design question blocks STEP-05-06 review and merge.
+- No unresolved design question remains; BUG-0011 merge is the only advancement gate.
 
 ## Critical Bugs
 
@@ -71,6 +72,6 @@ _Last refreshed: 2026-07-20._
 
 ## Next Actions
 
-- Review, publish, and merge [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_06_evaluate-planning-execution-replay-and-recovery|STEP-05-06 Evaluate Planning Execution Replay and Recovery]].
-- After merge, run the mandatory Phase 06 refinement gate before activating STEP-06-01.
+- Independently review, publish, and merge [[03_Bugs/BUG-0011_step-06-01-post-merge-contract-review-findings|BUG-0011 STEP-06-01 post-merge contract review findings]] remediation.
+- After merge, mark BUG-0011 fixed, close its follow-up session, refresh and validate the vault, then activate STEP-06-02.
 - Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.

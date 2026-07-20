@@ -217,6 +217,19 @@ function identityFailure(
   })
 }
 
+function batchContractFailure(
+  reason: 'invalid-lineage' | 'malformed',
+  path: string,
+  message: string,
+) {
+  return new ResearchContractValidationError({
+    contract: 'recursive-batch',
+    reason,
+    path,
+    message,
+  })
+}
+
 export const validateRecursiveRequestContract = Effect.fn(
   'RecursiveAnalysisRequest.validate',
 )(function* (input: unknown) {
@@ -332,6 +345,34 @@ export const validateRecursiveBatchResultContract = Effect.fn(
       'recursive-batch',
       'batchId',
       'Batch result identity does not match its canonical input',
+    )
+  }
+  const expectedSourceVersionIds = new Set(
+    expectedBatch.partition.sourceVersionIds,
+  )
+  for (const finding of result.findings) {
+    for (const evidence of finding.evidence) {
+      if (!expectedSourceVersionIds.has(evidence.sourceVersionId)) {
+        return yield* batchContractFailure(
+          'invalid-lineage',
+          `findings.${finding.id}.evidence.${evidence.id}.sourceVersionId`,
+          'Batch evidence source version must belong to the expected partition',
+        )
+      }
+    }
+  }
+  if (result.coverage.expectedItems !== expectedBatch.partition.entryKeys.length) {
+    return yield* batchContractFailure(
+      'malformed',
+      'coverage.expectedItems',
+      'Batch coverage expectedItems must match the expected partition entry count',
+    )
+  }
+  if (result.coverage.expectedPartitions !== 1) {
+    return yield* batchContractFailure(
+      'malformed',
+      'coverage.expectedPartitions',
+      'Batch coverage must account for exactly one expected partition',
     )
   }
   yield* validateCoverageIdentity(result.coverage, 'recursive-batch')
