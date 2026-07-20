@@ -4,10 +4,10 @@ template_version: 2
 contract_version: 1
 title: Typed Research Planning and Bounded Execution
 phase_id: PHASE-05
-status: planned
+status: active
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-19'
+updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]]'
   - '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]]'

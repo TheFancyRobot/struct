@@ -6,13 +6,14 @@ import {
   ProjectId,
   ResearchRunId,
   ResearchThreadId,
+  WorkspaceId,
 } from '@struct/domain'
 import { SqlClientLive } from '../sql-client'
 import { ResearchProjectionRepo } from './research-projections'
 
 const DATABASE_URL = process.env['DATABASE_URL']
 const describeIf = DATABASE_URL ? describe : describe.skip
-const workspaceId = 'e70e8400-e29b-41d4-a716-446655440001'
+const workspaceId = WorkspaceId.make('e70e8400-e29b-41d4-a716-446655440001')
 const projectId = ProjectId.make('e70e8400-e29b-41d4-a716-446655440002')
 const sourceId = 'e70e8400-e29b-41d4-a716-446655440003'
 const sourceVersionId = 'e70e8400-e29b-41d4-a716-446655440004'
@@ -125,15 +126,22 @@ describeIf('ResearchProjectionRepo integration', () => {
 
   it('replays scoped events and resolves final answer plus stored citation context', async () => {
     const events = await Effect.runPromise(
-      ResearchProjectionRepo.listEventsAfter(projectId, runId, 0n, 10)
+      ResearchProjectionRepo.listEventsAfter(
+        workspaceId,
+        projectId,
+        runId,
+        0n,
+        10,
+      )
         .pipe(Effect.provide(layer)),
     )
     const exists = await Effect.runPromise(
-      ResearchProjectionRepo.runExists(projectId, runId)
+      ResearchProjectionRepo.runExists(workspaceId, projectId, runId)
         .pipe(Effect.provide(layer)),
     )
     const completed = await Effect.runPromise(
-      ResearchProjectionRepo.findCompleted(runId).pipe(Effect.provide(layer)),
+      ResearchProjectionRepo.findCompleted(workspaceId, projectId, runId)
+        .pipe(Effect.provide(layer)),
     )
     const citation = await Effect.runPromise(
       ResearchProjectionRepo.findCitation(projectId, threadId, citationId)
@@ -170,11 +178,12 @@ describeIf('ResearchProjectionRepo integration', () => {
     const otherProjectId =
       ProjectId.make('e70e8400-e29b-41d4-a716-446655440010')
     const exists = await Effect.runPromise(
-      ResearchProjectionRepo.runExists(otherProjectId, runId)
+      ResearchProjectionRepo.runExists(workspaceId, otherProjectId, runId)
         .pipe(Effect.provide(layer)),
     )
     const events = await Effect.runPromise(
       ResearchProjectionRepo.listEventsAfter(
+        workspaceId,
         otherProjectId,
         runId,
         0n,

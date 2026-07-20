@@ -20,10 +20,15 @@ interface ResearchStreamProps {
 const eventLabel = (event: ResearchEvent): string => {
   switch (event.type) {
     case 'research-started': return 'Research started'
+    case 'research-plan-accepted': return 'Research plan accepted'
+    case 'research-planning-failed':
+      return `Research planning failed (${event.data.reason})`
+    case 'research-checkpointed': return 'Progress checkpoint saved'
     case 'retrieval-completed': return event.data.evidenceCount === 0
       ? 'No evidence matched the selected documents'
       : `Retrieved ${event.data.evidenceCount} evidence items`
     case 'citations-validated': return `Validated ${event.data.citationCount} citations`
+    case 'research-cancelled': return 'Research cancelled'
     case 'research-completed': return 'Research completed'
     case 'research-failed': return event.data.message
   }
@@ -57,8 +62,12 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
     },
     [
       'research-started',
+      'research-plan-accepted',
+      'research-planning-failed',
+      'research-checkpointed',
       'retrieval-completed',
       'citations-validated',
+      'research-cancelled',
       'research-completed',
       'research-failed',
     ],

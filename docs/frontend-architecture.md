@@ -72,6 +72,13 @@ last received monotonic cursor, deduplicates replayed events, closes the
 `EventSource` on cleanup, and validates every event against the shared Effect
 Schema before updating the Solid store.
 
+Both development and built deployments keep `/api` same-origin. Vite injects
+the server-only API credential in development; `bun run --filter @struct/web
+start` serves `dist/` and streams `/api` through the same server-side credential
+bridge in production. `API_AUTH_TOKEN` is never compiled into or exposed to
+browser code, so native `EventSource` authentication and cursor reconnects work
+without query-string credentials.
+
 Events are not persisted on the client beyond the current session. The canonical record of progress lives in PostgreSQL and is replayed on reconnect.
 
 ### 4.3 API client state

@@ -9,31 +9,94 @@ import {
   WorkspaceId,
 } from '@struct/domain'
 import {
+  EntityNotFoundError,
+  QueryError,
+} from '@struct/persistence'
+import {
   encodeSseEvent,
   loadResearchEvents,
   parseEventCursor,
+  researchEventScopeFailureResponse,
   researchEventsResponse,
+  resolveResearchEventScope,
 } from './research-events'
 
 const projectId = ProjectId.make('b50e8400-e29b-41d4-a716-446655440001')
 const runId = ResearchRunId.make('b50e8400-e29b-41d4-a716-446655440002')
+const workspaceId = WorkspaceId.make('b50e8400-e29b-41d4-a716-446655440004')
 
 describe('research event projection', () => {
+  it('maps a missing syntactically valid project to ResearchRunNotFound', async () => {
+    const exit = await Effect.runPromiseExit(resolveResearchEventScope(
+      projectId,
+      runId,
+      {
+        findProject: () => Effect.fail(new EntityNotFoundError({
+          entity: 'Project',
+          id: projectId,
+          message: 'Project not found',
+        })),
+        runExists: () => Effect.die('not called'),
+      },
+    ))
+    expect(exit._tag).toBe('Failure')
+    if (exit._tag === 'Success') throw new Error('Expected missing project')
+    const failure = exit.cause._tag === 'Fail'
+      ? exit.cause.error
+      : undefined
+    if (failure === undefined) throw new Error('Expected typed failure')
+    const response = researchEventScopeFailureResponse(failure)
+    expect(response.status).toBe(404)
+    expect(await response.json()).toEqual({ error: 'ResearchRunNotFound' })
+  })
+
+  it('keeps infrastructure failures unavailable and absent runs not found', async () => {
+    const unavailable = researchEventScopeFailureResponse(new QueryError({
+      operation: 'findById',
+      entity: 'Project',
+      message: 'database unavailable',
+    }))
+    expect(unavailable.status).toBe(503)
+
+    const exit = await Effect.runPromiseExit(resolveResearchEventScope(
+      projectId,
+      runId,
+      {
+        findProject: () => Effect.succeed({
+          id: projectId,
+          workspaceId,
+          name: 'Project',
+          createdAt: 0n,
+          updatedAt: 0n,
+        }),
+        runExists: () => Effect.succeed(false),
+      },
+    ))
+    expect(exit._tag).toBe('Failure')
+    if (exit._tag === 'Success') throw new Error('Expected missing run')
+    const failure = exit.cause._tag === 'Fail'
+      ? exit.cause.error
+      : undefined
+    if (failure === undefined) throw new Error('Expected typed failure')
+    expect(researchEventScopeFailureResponse(failure).status).toBe(404)
+  })
+
   it('validates cursors and emits replayable SSE frames', async () => {
     expect(parseEventCursor(null)).toBe(0n)
     expect(parseEventCursor('42')).toBe(42n)
     expect(parseEventCursor('-1')).toBeUndefined()
 
     const [event] = await Effect.runPromise(loadResearchEvents(
+      workspaceId,
       projectId,
       runId,
       4n,
       {
-        listEventsAfter: (_projectId, _runId, cursor) => {
+        listEventsAfter: (_workspaceId, _projectId, _runId, cursor) => {
           expect(cursor).toBe(4n)
           return Effect.succeed([{
             id: EventJournalId.make('b50e8400-e29b-41d4-a716-446655440003'),
-            workspaceId: WorkspaceId.make('b50e8400-e29b-41d4-a716-446655440004'),
+            workspaceId,
             entityType: 'research',
             entityId: runId,
             eventType: 'research-started',
@@ -57,6 +120,7 @@ describe('research event projection', () => {
     const abort = new AbortController()
     let clockReads = 0
     const response = researchEventsResponse(
+      workspaceId,
       projectId,
       runId,
       0n,
@@ -86,6 +150,7 @@ describe('research event projection', () => {
     let polls = 0
     let sleeps = 0
     const response = researchEventsResponse(
+      workspaceId,
       projectId,
       runId,
       0n,
@@ -128,6 +193,7 @@ describe('research event projection', () => {
     const request = new AbortController()
     let interrupted = false
     const response = researchEventsResponse(
+      workspaceId,
       projectId,
       runId,
       0n,

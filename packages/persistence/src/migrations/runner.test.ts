@@ -151,7 +151,7 @@ describe('Migration Runner', () => {
       )
       expect(deleteQuery).toBeDefined()
       expect(fakeSql.queries.join('\n')).toMatch(
-        /DROP TABLE IF EXISTS dataset_citations[\s\S]*DROP TABLE IF EXISTS query_result_snapshots/i,
+        /DROP TABLE IF EXISTS research_cancellation_requests[\s\S]*DROP TABLE IF EXISTS research_run_control/i,
       )
     })
 

@@ -1,4 +1,4 @@
-import { Effect, Option } from 'effect'
+import { Effect, Option, Schema } from 'effect'
 import type {
   Citation,
   EventJournal,
@@ -10,7 +10,16 @@ import type {
   SourceVersionId,
   WorkspaceId,
 } from '@struct/domain'
-import { AuthorizationError, ValidationError } from '@struct/domain'
+import {
+  AuthorizationError,
+  decodeResearchExecutionCheckpoint,
+  decodeResearchPlan,
+  ResearchBudgetUsage,
+  ResearchContractValidationError,
+  ResearchExecutionCheckpoint,
+  ResearchPlan,
+  ValidationError,
+} from '@struct/domain'
 import {
   QueryError,
   ResearchJobOwnershipLostError,
@@ -59,6 +68,62 @@ export interface FailResearchInput {
   readonly event: typeof EventJournal.Type
 }
 
+export interface PersistResearchPlanInput {
+  readonly workspaceId: typeof WorkspaceId.Type
+  readonly projectId: typeof ProjectId.Type
+  readonly job: typeof JobQueue.Type
+  readonly plan: typeof ResearchPlan.Type
+  readonly eventId: typeof EventJournal.Type['id']
+  readonly createdAt: bigint
+}
+
+export interface PersistResearchPlanningFailureInput {
+  readonly workspaceId: typeof WorkspaceId.Type
+  readonly projectId: typeof ProjectId.Type
+  readonly job: typeof JobQueue.Type
+  readonly failure: typeof ResearchContractValidationError.Type
+  readonly eventId: typeof EventJournal.Type['id']
+  readonly createdAt: bigint
+}
+
+export interface PersistResearchCheckpointInput {
+  readonly workspaceId: typeof WorkspaceId.Type
+  readonly projectId: typeof ProjectId.Type
+  readonly job: typeof JobQueue.Type
+  readonly checkpoint: typeof ResearchExecutionCheckpoint.Type
+  readonly eventId: typeof EventJournal.Type['id']
+  readonly createdAt: bigint
+}
+
+export interface CancelResearchInput {
+  readonly workspaceId: typeof WorkspaceId.Type
+  readonly projectId: typeof ProjectId.Type
+  readonly runId: typeof ResearchRun.Type['id']
+  readonly idempotencyKey: string
+  readonly eventId: typeof EventJournal.Type['id']
+  readonly createdAt: bigint
+}
+
+export interface CancelResearchResult {
+  readonly result: 'cancelled' | 'already-cancelled' | 'terminal-no-op'
+  readonly replayed: boolean
+}
+
+export interface DurableResearchState {
+  readonly workspaceId: typeof WorkspaceId.Type
+  readonly projectId: typeof ProjectId.Type
+  readonly runId: typeof ResearchRun.Type['id']
+  readonly plan: Option.Option<typeof ResearchPlan.Type>
+  readonly planningFailure: Option.Option<
+    typeof ResearchContractValidationError.Type
+  >
+  readonly checkpoint: Option.Option<typeof ResearchExecutionCheckpoint.Type>
+  readonly budgetUsage: Option.Option<typeof ResearchBudgetUsage.Type>
+  readonly cancellationStatus: 'none' | 'requested' | 'acknowledged'
+  readonly terminalStatus: Option.Option<'completed' | 'failed' | 'cancelled'>
+  readonly lastEventCursor: bigint
+}
+
 class ResearchScopeMismatchError extends Error {}
 class ResearchAggregateMismatchError extends Error {
   constructor(readonly field: string) {
@@ -70,6 +135,7 @@ const MAX_RESEARCH_EVIDENCE_COUNT = 80
 const MAX_RESEARCH_CITATION_COUNT = 80
 const MAX_RESEARCH_FAILURE_TAG_LENGTH = 64
 const RESEARCH_FAILURE_MESSAGE = 'Research failed'
+const MAX_IDEMPOTENCY_KEY_LENGTH = 512
 
 type ResearchEventPayload = Readonly<Record<string, unknown>>
 
@@ -245,6 +311,93 @@ function normalizePersistedPayload(payload: unknown): Record<string, unknown> | 
       && !Array.isArray(decoded)
     ? decoded as Record<string, unknown>
     : undefined
+}
+
+function parsePersistedJson(payload: unknown): unknown {
+  if (typeof payload !== 'string') return payload
+  return JSON.parse(payload) as unknown
+}
+
+function assertResearchScopeRow(
+  rows: readonly Record<string, unknown>[],
+): Record<string, unknown> {
+  const row = rows[0]
+  if (row === undefined) {
+    throw new ResearchScopeMismatchError('research-run-scope-mismatch')
+  }
+  return row
+}
+
+function assertOwnedDurableJob(
+  row: Record<string, unknown>,
+  job: typeof JobQueue.Type,
+): void {
+  if (
+    row['job_id'] !== job.id
+    || row['job_status'] !== 'in-progress'
+    || Number(row['attempts']) !== job.attempts
+    || row['run_status'] !== 'in-progress'
+  ) {
+    throw ownershipLost('append-event')
+  }
+}
+
+const consumedBudgetFields = [
+  'steps',
+  'modelCalls',
+  'toolCalls',
+  'tokens',
+  'elapsedMilliseconds',
+  'estimatedCostMicros',
+  'revisions',
+] as const
+
+const budgetLimitFields = [
+  'maximumSteps',
+  'maximumModelCalls',
+  'maximumToolCalls',
+  'maximumTokens',
+  'maximumElapsedMilliseconds',
+  'maximumEstimatedCostMicros',
+  'maximumFanOut',
+  'maximumRevisions',
+] as const
+
+function budgetIsMonotonic(
+  previous: typeof ResearchBudgetUsage.Type,
+  next: typeof ResearchBudgetUsage.Type,
+): boolean {
+  return consumedBudgetFields.every((field) => next[field] >= previous[field])
+}
+
+function budgetLimitsMatch(
+  plan: typeof ResearchPlan.Type,
+  checkpoint: typeof ResearchExecutionCheckpoint.Type,
+): boolean {
+  return budgetLimitFields.every(
+    (field) => plan.budget[field] === checkpoint.state.budget.limits[field],
+  )
+}
+
+function queryFailure(operation: string): QueryError {
+  return new QueryError({
+    operation,
+    entity: 'ResearchExecution',
+    message: `Durable research ${operation} failed`,
+  })
+}
+
+function decodeCancellationResult(
+  value: unknown,
+): CancelResearchResult['result'] {
+  if (
+    value === 'cancelled'
+    || value === 'already-cancelled'
+    || value === 'terminal-no-op'
+  ) {
+    return value
+  }
+  throw new ResearchAggregateMismatchError('cancellation.result')
 }
 
 function completionSourceScope(input: CompleteResearchInput): {
@@ -541,6 +694,49 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
             if (runRows.length !== staleRows.length) {
               throw new Error('stale-research-run-transition-conflict')
             }
+            const controlRows = await transaction.unsafe(
+              `INSERT INTO research_run_control (
+                 run_id, workspace_id, project_id, planning_failure,
+                 terminal_status
+               )
+               SELECT
+                 j.entity_id,
+                 j.workspace_id,
+                 rt.project_id,
+                 CASE
+                   WHEN control.plan IS NULL
+                     AND control.planning_failure IS NULL
+                   THEN jsonb_build_object(
+                     '_tag', 'ResearchContractValidationError',
+                     'contract', 'plan',
+                     'reason', 'malformed',
+                     'path', '',
+                     'message', 'Research planning did not complete before the worker became stale'
+                   )
+                   ELSE control.planning_failure
+                 END,
+                 'failed'
+               FROM job_queue j
+               JOIN research_runs rr ON rr.id = j.entity_id
+               JOIN research_threads rt ON rt.id = rr.thread_id
+               LEFT JOIN research_run_control control
+                 ON control.run_id = j.entity_id
+               WHERE j.id = ANY($1::uuid[])
+               ON CONFLICT (run_id) DO UPDATE
+               SET planning_failure = COALESCE(
+                     research_run_control.planning_failure,
+                     EXCLUDED.planning_failure
+                   ),
+                   terminal_status = 'failed',
+                   updated_at = NOW()
+               WHERE research_run_control.terminal_status IS NULL
+                 AND research_run_control.cancellation_status = 'none'
+               RETURNING run_id`,
+              [jobIds],
+            )
+            if (controlRows.length !== staleRows.length) {
+              throw new Error('stale-research-control-transition-conflict')
+            }
             const eventRows = await transaction.unsafe(
               `INSERT INTO event_journal
                  (id, workspace_id, entity_type, entity_id, event_type, payload, created_at)
@@ -558,6 +754,7 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
                  ),
                  NOW()
                FROM job_queue j
+               JOIN research_run_control control ON control.run_id = j.entity_id
                WHERE j.id = ANY($1::uuid[])
                ON CONFLICT (id) DO NOTHING
                RETURNING id`,
@@ -811,6 +1008,20 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
             if (jobRows.length !== 1) {
               throw ownershipLost('complete')
             }
+            const controlRows = await transaction.unsafe(
+              `INSERT INTO research_run_control (
+                 run_id, workspace_id, project_id, terminal_status
+               ) VALUES ($1, $2, $3, 'completed')
+               ON CONFLICT (run_id) DO UPDATE
+               SET terminal_status = 'completed', updated_at = NOW()
+               WHERE research_run_control.terminal_status IS NULL
+                 AND research_run_control.cancellation_status = 'none'
+               RETURNING run_id`,
+              [input.runId, input.job.workspaceId, sourceScope.projectId],
+            )
+            if (controlRows.length !== 1) {
+              throw ownershipLost('complete')
+            }
             const runRows = await transaction.unsafe(
               `UPDATE research_runs
                SET status = 'completed', updated_at = NOW()
@@ -888,15 +1099,19 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
           sql.transaction(async (transaction) => {
             validateOwnedEvent(input.job, input.runId, input.event, 'fail')
             const ownershipRows = await transaction.unsafe(
-              `SELECT id
-               FROM job_queue
-               WHERE id = $1
-                 AND entity_type = 'research'
-                 AND entity_id = $2
-                 AND workspace_id = $3
-                 AND status = 'in-progress'
-                 AND attempts = $4
-               FOR UPDATE`,
+              `SELECT jq.id, rt.project_id
+               FROM job_queue jq
+               JOIN research_runs rr ON rr.id = jq.entity_id
+               JOIN research_threads rt ON rt.id = rr.thread_id
+               JOIN projects p ON p.id = rt.project_id
+               WHERE jq.id = $1
+                 AND jq.entity_type = 'research'
+                 AND jq.entity_id = $2
+                 AND jq.workspace_id = $3
+                 AND p.workspace_id = $3
+                 AND jq.status = 'in-progress'
+                 AND jq.attempts = $4
+               FOR UPDATE OF jq, rr`,
               [
                 input.job.id,
                 input.runId,
@@ -929,6 +1144,24 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
               ],
             )
             if (jobRows.length !== 1) {
+              throw ownershipLost('fail')
+            }
+            const controlRows = await transaction.unsafe(
+              `INSERT INTO research_run_control (
+                 run_id, workspace_id, project_id, terminal_status
+               ) VALUES ($1, $2, $3, 'failed')
+               ON CONFLICT (run_id) DO UPDATE
+               SET terminal_status = 'failed', updated_at = NOW()
+               WHERE research_run_control.terminal_status IS NULL
+                 AND research_run_control.cancellation_status = 'none'
+               RETURNING run_id`,
+              [
+                input.runId,
+                input.job.workspaceId,
+                ownershipRows[0]?.['project_id'],
+              ],
+            )
+            if (controlRows.length !== 1) {
               throw ownershipLost('fail')
             }
             const runRows = await transaction.unsafe(
@@ -971,6 +1204,637 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
       })
     })
 
+    const persistPlan = Effect.fn('ResearchExecutionRepo.persistPlan')(
+      function* (input: PersistResearchPlanInput) {
+        const plan = yield* decodeResearchPlan(input.plan)
+        if (
+          plan.runId !== input.job.entityId
+          || plan.workspaceId !== input.workspaceId
+          || plan.projectId !== input.projectId
+        ) {
+          return yield* new ValidationError({
+            field: 'plan.identity',
+            reason: 'research-plan-scope-mismatch',
+            message: 'Research plan identity does not match the durable run scope',
+          })
+        }
+        const encodedPlan = Schema.encodeSync(ResearchPlan)(plan)
+        yield* Effect.tryPromise({
+          try: () => sql.transaction(async (transaction) => {
+            const scope = assertResearchScopeRow(await transaction.unsafe(
+              `SELECT
+                 jq.id AS job_id, jq.status AS job_status, jq.attempts,
+                 rr.status AS run_status
+               FROM research_runs rr
+               JOIN research_threads rt ON rt.id = rr.thread_id
+               JOIN projects p ON p.id = rt.project_id
+               JOIN job_queue jq
+                 ON jq.entity_type = 'research' AND jq.entity_id = rr.id
+               WHERE rr.id = $1
+                 AND rt.project_id = $2
+                 AND p.workspace_id = $3
+                 AND jq.workspace_id = $3
+               FOR UPDATE OF rr, jq`,
+              [plan.runId, input.projectId, input.workspaceId],
+            ))
+            assertOwnedDurableJob(scope, input.job)
+            const controls = await transaction.unsafe(
+              `INSERT INTO research_run_control (
+                 run_id, workspace_id, project_id, plan
+               ) VALUES ($1, $2, $3, $4::jsonb)
+               ON CONFLICT (run_id) DO UPDATE
+               SET plan = EXCLUDED.plan, updated_at = NOW()
+               WHERE research_run_control.plan IS NULL
+                 AND research_run_control.planning_failure IS NULL
+                 AND research_run_control.terminal_status IS NULL
+               RETURNING run_id`,
+              [
+                plan.runId,
+                input.workspaceId,
+                input.projectId,
+                JSON.stringify(encodedPlan),
+              ],
+            )
+            if (controls.length !== 1) {
+              throw new ResearchAggregateMismatchError('plan.disposition')
+            }
+            await transaction.unsafe(
+              `INSERT INTO event_journal (
+                 id, workspace_id, entity_type, entity_id, event_type, payload,
+                 created_at
+               ) VALUES (
+                 $1, $2, 'research', $3, 'research-plan-accepted',
+                 jsonb_build_object(
+                   'jobId', $4::uuid::text,
+                   'attempt', $5::int,
+                   'planId', $6::uuid::text
+                 ),
+                 to_timestamp($7 / 1000.0)
+               )`,
+              [
+                input.eventId,
+                input.workspaceId,
+                plan.runId,
+                input.job.id,
+                input.job.attempts,
+                plan.id,
+                Number(input.createdAt),
+              ],
+            )
+          }),
+          catch: (cause) =>
+            cause instanceof ResearchScopeMismatchError
+              ? new AuthorizationError({
+                  detail: 'research-run-scope-mismatch',
+                  message: 'Research run is outside the requested scope',
+                })
+              : cause instanceof ResearchJobOwnershipLostError
+                ? cause
+                : cause instanceof ResearchAggregateMismatchError
+                  ? new ValidationError({
+                      field: cause.field,
+                      reason: 'research-plan-disposition-conflict',
+                      message: 'Research run already has a planning disposition',
+                    })
+                  : queryFailure('plan persistence'),
+        })
+      },
+    )
+
+    const persistPlanningFailure = Effect.fn(
+      'ResearchExecutionRepo.persistPlanningFailure',
+    )(function* (input: PersistResearchPlanningFailureInput) {
+      if (input.failure.contract !== 'plan') {
+        return yield* new ValidationError({
+          field: 'failure.contract',
+          reason: 'invalid-planning-failure',
+          message: 'Only a typed plan failure can terminate planning',
+        })
+      }
+      const encodedFailure = {
+        _tag: input.failure._tag,
+        contract: input.failure.contract,
+        reason: input.failure.reason,
+        path: input.failure.path,
+        message: input.failure.message,
+      }
+      yield* Effect.tryPromise({
+        try: () => sql.transaction(async (transaction) => {
+          const scope = assertResearchScopeRow(await transaction.unsafe(
+            `SELECT
+               jq.id AS job_id, jq.status AS job_status, jq.attempts,
+               rr.status AS run_status
+             FROM research_runs rr
+             JOIN research_threads rt ON rt.id = rr.thread_id
+             JOIN projects p ON p.id = rt.project_id
+             JOIN job_queue jq
+               ON jq.entity_type = 'research' AND jq.entity_id = rr.id
+             WHERE rr.id = $1
+               AND rt.project_id = $2
+               AND p.workspace_id = $3
+               AND jq.workspace_id = $3
+             FOR UPDATE OF rr, jq`,
+            [input.job.entityId, input.projectId, input.workspaceId],
+          ))
+          assertOwnedDurableJob(scope, input.job)
+          const controls = await transaction.unsafe(
+            `INSERT INTO research_run_control (
+               run_id, workspace_id, project_id, planning_failure,
+               terminal_status
+             ) VALUES ($1, $2, $3, $4::jsonb, 'failed')
+             ON CONFLICT (run_id) DO UPDATE
+             SET planning_failure = EXCLUDED.planning_failure,
+                 terminal_status = 'failed',
+                 updated_at = NOW()
+             WHERE research_run_control.plan IS NULL
+               AND research_run_control.planning_failure IS NULL
+               AND research_run_control.terminal_status IS NULL
+             RETURNING run_id`,
+            [
+              input.job.entityId,
+              input.workspaceId,
+              input.projectId,
+              JSON.stringify(encodedFailure),
+            ],
+          )
+          if (controls.length !== 1) {
+            throw new ResearchAggregateMismatchError('planningFailure.disposition')
+          }
+          const jobRows = await transaction.unsafe(
+            `UPDATE job_queue
+             SET status = 'failed', updated_at = NOW()
+             WHERE id = $1 AND status = 'in-progress'
+             RETURNING id`,
+            [input.job.id],
+          )
+          if (jobRows.length !== 1) throw ownershipLost('fail')
+          const runRows = await transaction.unsafe(
+            `UPDATE research_runs
+             SET status = 'failed', updated_at = NOW()
+             WHERE id = $1 AND status = 'in-progress'
+             RETURNING id`,
+            [input.job.entityId],
+          )
+          if (runRows.length !== 1) {
+            throw new ResearchAggregateMismatchError(
+              'planningFailure.runTransition',
+            )
+          }
+          await transaction.unsafe(
+            `INSERT INTO event_journal (
+               id, workspace_id, entity_type, entity_id, event_type, payload,
+               created_at
+             ) VALUES (
+               $1, $2, 'research', $3, 'research-planning-failed',
+               jsonb_build_object(
+                 'jobId', $4::uuid::text,
+                 'attempt', $5::int,
+                 'errorTag', 'ResearchContractValidationError',
+                 'reason', $6::text
+               ),
+               to_timestamp($7 / 1000.0)
+             )`,
+            [
+              input.eventId,
+              input.workspaceId,
+              input.job.entityId,
+              input.job.id,
+              input.job.attempts,
+              input.failure.reason,
+              Number(input.createdAt),
+            ],
+          )
+        }),
+        catch: (cause) =>
+          cause instanceof ResearchScopeMismatchError
+            ? new AuthorizationError({
+                detail: 'research-run-scope-mismatch',
+                message: 'Research run is outside the requested scope',
+              })
+            : cause instanceof ResearchJobOwnershipLostError
+              ? cause
+              : cause instanceof ResearchAggregateMismatchError
+                ? new ValidationError({
+                    field: cause.field,
+                    reason: 'research-plan-disposition-conflict',
+                    message: 'Research run already has a planning disposition',
+                  })
+                : queryFailure('planning failure persistence'),
+      })
+    })
+
+    const persistCheckpoint = Effect.fn(
+      'ResearchExecutionRepo.persistCheckpoint',
+    )(function* (input: PersistResearchCheckpointInput) {
+      const checkpoint = yield* decodeResearchExecutionCheckpoint(
+        input.checkpoint,
+      )
+      yield* Effect.annotateCurrentSpan({
+        'struct.run.id': checkpoint.state.runId,
+        'struct.plan.id': checkpoint.state.planId,
+        'struct.checkpoint.id': checkpoint.id,
+      })
+      if (checkpoint.state.runId !== input.job.entityId) {
+        return yield* new ValidationError({
+          field: 'checkpoint.state.runId',
+          reason: 'research-checkpoint-scope-mismatch',
+          message: 'Research checkpoint identity does not match the durable run',
+        })
+      }
+      if (
+        !['running', 'paused'].includes(checkpoint.state.status)
+        || checkpoint.state.cancellation !== 'none'
+      ) {
+        return yield* new ValidationError({
+          field: 'checkpoint.state.status',
+          reason: 'research-checkpoint-terminal-state',
+          message: 'Terminal and cancellation state must use the fenced terminal transition',
+        })
+      }
+      const encodedCheckpoint = Schema.encodeSync(
+        ResearchExecutionCheckpoint,
+      )(checkpoint)
+      const encodedBudget = Schema.encodeSync(ResearchBudgetUsage)(
+        checkpoint.state.budget.used,
+      )
+      yield* Effect.tryPromise({
+        try: () => sql.transaction(async (transaction) => {
+          const rows = await transaction.unsafe(
+            `SELECT
+               control.plan, control.checkpoint, control.budget_usage,
+               control.cancellation_status,
+               control.terminal_status,
+               jq.id AS job_id, jq.status AS job_status, jq.attempts,
+               rr.status AS run_status
+             FROM research_run_control control
+             JOIN research_runs rr ON rr.id = control.run_id
+             JOIN research_threads rt ON rt.id = rr.thread_id
+             JOIN projects p ON p.id = rt.project_id
+             JOIN job_queue jq
+               ON jq.entity_type = 'research' AND jq.entity_id = rr.id
+             WHERE control.run_id = $1
+               AND control.project_id = $2
+               AND control.workspace_id = $3
+               AND rt.project_id = $2
+               AND p.workspace_id = $3
+               AND jq.workspace_id = $3
+             FOR UPDATE OF control, rr, jq`,
+            [checkpoint.state.runId, input.projectId, input.workspaceId],
+          )
+          const row = assertResearchScopeRow(rows)
+          assertOwnedDurableJob(row, input.job)
+          if (
+            row['cancellation_status'] !== 'none'
+            || row['terminal_status'] !== null
+          ) {
+            throw ownershipLost('append-event')
+          }
+          const plan = Schema.decodeUnknownSync(ResearchPlan)(
+            parsePersistedJson(row['plan']),
+          )
+          if (plan.id !== checkpoint.state.planId) {
+            throw new ResearchAggregateMismatchError('checkpoint.state.planId')
+          }
+          if (!budgetLimitsMatch(plan, checkpoint)) {
+            throw new ResearchAggregateMismatchError(
+              'checkpoint.state.budget.limits',
+            )
+          }
+          if (row['checkpoint'] !== null) {
+            const previousCheckpoint = Schema.decodeUnknownSync(
+              ResearchExecutionCheckpoint,
+            )(parsePersistedJson(row['checkpoint']))
+            const previousSequence =
+              previousCheckpoint.state.lastEventSequence
+            const nextSequence = checkpoint.state.lastEventSequence
+            if (nextSequence === previousSequence) {
+              const encodedPrevious = Schema.encodeSync(
+                ResearchExecutionCheckpoint,
+              )(previousCheckpoint)
+              const isExactRetry =
+                previousCheckpoint.id === checkpoint.id
+                && JSON.stringify(encodedPrevious)
+                  === JSON.stringify(encodedCheckpoint)
+              if (isExactRetry) return
+              throw new ResearchAggregateMismatchError(
+                'checkpoint.state.lastEventSequence',
+              )
+            }
+            if (nextSequence < previousSequence) {
+              throw new ResearchAggregateMismatchError(
+                'checkpoint.state.lastEventSequence',
+              )
+            }
+          }
+          if (row['budget_usage'] !== null) {
+            const previous = Schema.decodeUnknownSync(ResearchBudgetUsage)(
+              parsePersistedJson(row['budget_usage']),
+            )
+            if (!budgetIsMonotonic(previous, checkpoint.state.budget.used)) {
+              throw new ResearchAggregateMismatchError('checkpoint.state.budget.used')
+            }
+          }
+          const updated = await transaction.unsafe(
+            `UPDATE research_run_control
+             SET checkpoint = $2::jsonb,
+                 budget_usage = $3::jsonb,
+                 updated_at = NOW()
+             WHERE run_id = $1
+               AND terminal_status IS NULL
+               AND cancellation_status = 'none'
+             RETURNING run_id`,
+            [
+              checkpoint.state.runId,
+              JSON.stringify(encodedCheckpoint),
+              JSON.stringify(encodedBudget),
+            ],
+          )
+          if (updated.length !== 1) throw ownershipLost('append-event')
+          await transaction.unsafe(
+            `INSERT INTO event_journal (
+               id, workspace_id, entity_type, entity_id, event_type, payload,
+               created_at
+             ) VALUES (
+               $1, $2, 'research', $3, 'research-checkpointed',
+               jsonb_build_object(
+                 'jobId', $4::uuid::text,
+                 'attempt', $5::int,
+                 'checkpointId', $6::uuid::text,
+                 'planId', $7::uuid::text
+               ),
+               to_timestamp($8 / 1000.0)
+             )`,
+            [
+              input.eventId,
+              input.workspaceId,
+              checkpoint.state.runId,
+              input.job.id,
+              input.job.attempts,
+              checkpoint.id,
+              checkpoint.state.planId,
+              Number(input.createdAt),
+            ],
+          )
+        }),
+        catch: (cause) =>
+          cause instanceof ResearchScopeMismatchError
+            ? new AuthorizationError({
+                detail: 'research-run-scope-mismatch',
+                message: 'Research run is outside the requested scope',
+              })
+            : cause instanceof ResearchJobOwnershipLostError
+              ? cause
+              : cause instanceof ResearchAggregateMismatchError
+                ? new ValidationError({
+                    field: cause.field,
+                    reason: 'research-checkpoint-conflict',
+                    message: 'Research checkpoint violates durable ordering',
+                  })
+                : queryFailure('checkpoint persistence'),
+      })
+    })
+
+    const requestCancellation = Effect.fn(
+      'ResearchExecutionRepo.requestCancellation',
+    )(function* (input: CancelResearchInput) {
+      if (
+        input.idempotencyKey.length === 0
+        || input.idempotencyKey.length > MAX_IDEMPOTENCY_KEY_LENGTH
+      ) {
+        return yield* new ValidationError({
+          field: 'Idempotency-Key',
+          reason: 'invalid-idempotency-key',
+          message: 'Idempotency key must contain between 1 and 512 characters',
+        })
+      }
+      const result = yield* Effect.tryPromise({
+        try: () => sql.transaction(async (transaction): Promise<CancelResearchResult> => {
+          const row = assertResearchScopeRow(await transaction.unsafe(
+            `SELECT
+               rr.status AS run_status, jq.id AS job_id,
+               jq.status AS job_status, jq.attempts,
+               control.cancellation_status, control.terminal_status
+             FROM research_runs rr
+             JOIN research_threads rt ON rt.id = rr.thread_id
+             JOIN projects p ON p.id = rt.project_id
+             JOIN job_queue jq
+               ON jq.entity_type = 'research' AND jq.entity_id = rr.id
+             LEFT JOIN research_run_control control ON control.run_id = rr.id
+             WHERE rr.id = $1
+               AND rt.project_id = $2
+               AND p.workspace_id = $3
+               AND jq.workspace_id = $3
+             FOR UPDATE OF rr, jq`,
+            [input.runId, input.projectId, input.workspaceId],
+          ))
+          const previous = await transaction.unsafe(
+            `SELECT result
+             FROM research_cancellation_requests
+             WHERE run_id = $1 AND idempotency_key = $2`,
+            [input.runId, input.idempotencyKey],
+          )
+          if (previous.length === 1) {
+            return {
+              result: decodeCancellationResult(previous[0]?.['result']),
+              replayed: true,
+            }
+          }
+          const terminal = row['run_status'] === 'completed'
+            || row['run_status'] === 'failed'
+            || row['run_status'] === 'cancelled'
+            || row['terminal_status'] !== null
+          const alreadyCancelled = row['run_status'] === 'cancelled'
+            || row['cancellation_status'] === 'acknowledged'
+          const result: CancelResearchResult['result'] = alreadyCancelled
+            ? 'already-cancelled'
+            : terminal
+              ? 'terminal-no-op'
+              : 'cancelled'
+          if (result === 'cancelled') {
+            const controlRows = await transaction.unsafe(
+              `INSERT INTO research_run_control (
+                 run_id, workspace_id, project_id, cancellation_status,
+                 terminal_status
+               ) VALUES ($1, $2, $3, 'acknowledged', 'cancelled')
+               ON CONFLICT (run_id) DO UPDATE
+               SET cancellation_status = 'acknowledged',
+                   terminal_status = 'cancelled',
+                   updated_at = NOW()
+               WHERE research_run_control.terminal_status IS NULL
+                 AND research_run_control.cancellation_status = 'none'
+               RETURNING run_id`,
+              [input.runId, input.workspaceId, input.projectId],
+            )
+            if (controlRows.length !== 1) {
+              throw new ResearchAggregateMismatchError(
+                'cancellation.controlTransition',
+              )
+            }
+            const runRows = await transaction.unsafe(
+              `UPDATE research_runs
+               SET status = 'cancelled', updated_at = NOW()
+               WHERE id = $1 AND status IN ('pending', 'in-progress')
+               RETURNING id`,
+              [input.runId],
+            )
+            if (runRows.length !== 1) {
+              throw new ResearchAggregateMismatchError(
+                'cancellation.runTransition',
+              )
+            }
+            const jobRows = await transaction.unsafe(
+              `UPDATE job_queue
+               SET status = 'cancelled', updated_at = NOW()
+               WHERE id = $1 AND status IN ('pending', 'in-progress')
+               RETURNING id`,
+              [row['job_id']],
+            )
+            if (jobRows.length !== 1) {
+              throw new ResearchAggregateMismatchError(
+                'cancellation.jobTransition',
+              )
+            }
+            await transaction.unsafe(
+              `INSERT INTO event_journal (
+                 id, workspace_id, entity_type, entity_id, event_type, payload,
+                 created_at
+               ) VALUES (
+                 $1, $2, 'research', $3, 'research-cancelled',
+                 jsonb_build_object(
+                   'jobId', $4::uuid::text,
+                   'attempt', $5::int
+                 ),
+                 to_timestamp($6 / 1000.0)
+               )`,
+              [
+                input.eventId,
+                input.workspaceId,
+                input.runId,
+                row['job_id'],
+                Number(row['attempts']),
+                Number(input.createdAt),
+              ],
+            )
+          }
+          await transaction.unsafe(
+            `INSERT INTO research_cancellation_requests (
+               run_id, idempotency_key, result, event_id
+             ) VALUES ($1, $2, $3, $4)`,
+            [
+              input.runId,
+              input.idempotencyKey,
+              result,
+              result === 'cancelled' ? input.eventId : null,
+            ],
+          )
+          return { result, replayed: false }
+        }),
+        catch: (cause) =>
+          cause instanceof ResearchScopeMismatchError
+            ? new AuthorizationError({
+                detail: 'research-run-scope-mismatch',
+                message: 'Research run is outside the requested scope',
+              })
+            : queryFailure('cancellation'),
+      })
+      yield* Effect.log('Research cancellation decision persisted', {
+        runId: input.runId,
+        projectId: input.projectId,
+        workspaceId: input.workspaceId,
+        result: result.result,
+        replayed: result.replayed,
+      })
+      return result
+    })
+
+    const loadDurableState = Effect.fn(
+      'ResearchExecutionRepo.loadDurableState',
+    )(function* (
+      workspaceId: typeof WorkspaceId.Type,
+      projectId: typeof ProjectId.Type,
+      runId: typeof ResearchRun.Type['id'],
+    ) {
+      const rows = yield* Effect.tryPromise({
+        try: () => sql.unsafe(
+          `SELECT
+             control.*,
+             COALESCE(MAX(event.cursor), 0) AS last_event_cursor
+           FROM research_run_control control
+           JOIN research_runs rr ON rr.id = control.run_id
+           JOIN research_threads rt ON rt.id = rr.thread_id
+           JOIN projects p ON p.id = rt.project_id
+           LEFT JOIN event_journal event
+             ON event.workspace_id = control.workspace_id
+            AND event.entity_type = 'research'
+            AND event.entity_id = control.run_id
+           WHERE control.run_id = $1
+             AND control.project_id = $2
+             AND control.workspace_id = $3
+             AND rt.project_id = $2
+             AND p.workspace_id = $3
+           GROUP BY control.run_id`,
+          [runId, projectId, workspaceId],
+        ),
+        catch: () => queryFailure('restart reconstruction'),
+      })
+      const row = rows[0]
+      if (row === undefined) {
+        yield* Effect.log('Research restart found no durable control state', {
+          runId,
+          projectId,
+          workspaceId,
+        })
+        return Option.none<DurableResearchState>()
+      }
+      const plan = row['plan'] === null
+        ? Option.none<typeof ResearchPlan.Type>()
+        : Option.some(yield* decodeResearchPlan(parsePersistedJson(row['plan'])))
+      const planningFailure = row['planning_failure'] === null
+        ? Option.none<typeof ResearchContractValidationError.Type>()
+        : Option.some(yield* Schema.decodeUnknown(
+            ResearchContractValidationError,
+          )(parsePersistedJson(row['planning_failure'])).pipe(
+            Effect.mapError(() => queryFailure('planning failure decode')),
+          ))
+      const checkpoint = row['checkpoint'] === null
+        ? Option.none<typeof ResearchExecutionCheckpoint.Type>()
+        : Option.some(yield* decodeResearchExecutionCheckpoint(
+            parsePersistedJson(row['checkpoint']),
+          ))
+      const budgetUsage = row['budget_usage'] === null
+        ? Option.none<typeof ResearchBudgetUsage.Type>()
+        : Option.some(yield* Schema.decodeUnknown(ResearchBudgetUsage)(
+            parsePersistedJson(row['budget_usage']),
+          ).pipe(Effect.mapError(() => queryFailure('budget decode'))))
+      const reconstructed = {
+        workspaceId,
+        projectId,
+        runId,
+        plan,
+        planningFailure,
+        checkpoint,
+        budgetUsage,
+        cancellationStatus:
+          row['cancellation_status'] as DurableResearchState['cancellationStatus'],
+        terminalStatus: row['terminal_status'] === null
+          ? Option.none<'completed' | 'failed' | 'cancelled'>()
+          : Option.some(
+              row['terminal_status'] as 'completed' | 'failed' | 'cancelled',
+            ),
+        lastEventCursor: BigInt(String(row['last_event_cursor'])),
+      } satisfies DurableResearchState
+      yield* Effect.log('Research restart reconstructed durable state', {
+        runId,
+        projectId,
+        workspaceId,
+        checkpointPresent: Option.isSome(checkpoint),
+        cancellationStatus: reconstructed.cancellationStatus,
+        terminalStatus: Option.getOrUndefined(reconstructed.terminalStatus),
+        lastEventCursor: reconstructed.lastEventCursor.toString(),
+      })
+      return Option.some(reconstructed)
+    })
+
     return {
       register,
       recoverStale,
@@ -979,6 +1843,11 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
       appendInProgressEvent,
       complete,
       fail,
+      persistPlan,
+      persistPlanningFailure,
+      persistCheckpoint,
+      requestCancellation,
+      loadDurableState,
     }
   }),
 }) {}

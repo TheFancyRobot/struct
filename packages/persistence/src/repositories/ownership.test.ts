@@ -794,8 +794,14 @@ describe('research event workspace ownership', () => {
       if (query.includes('SELECT id') && query.includes('FROM job_queue')) {
         return [{ id: researchJobId }]
       }
+      if (query.includes('SELECT jq.id, rt.project_id')) {
+        return [{ id: researchJobId, project_id: projectId }]
+      }
       if (query.includes('UPDATE job_queue')) return [{ id: researchJobId }]
       if (query.includes('UPDATE research_runs')) return [{ id: runId }]
+      if (query.includes('INSERT INTO research_run_control')) {
+        return [{ run_id: runId }]
+      }
       if (query.includes('INSERT INTO research_run_results')) return [{ run_id: runId }]
       return []
     })
@@ -1192,6 +1198,9 @@ describe('research event workspace ownership', () => {
           if (query.includes('SELECT id') && query.includes('FROM job_queue')) {
             return [{ id: researchJobId }]
           }
+          if (query.includes('SELECT jq.id, rt.project_id')) {
+            return [{ id: researchJobId, project_id: projectId }]
+          }
           return []
         }),
       )
@@ -1245,6 +1254,9 @@ describe('research event workspace ownership', () => {
         }
         if (query.includes('UPDATE job_queue')) return [{ id: researchJobId }]
         if (query.includes('UPDATE research_runs')) return [{ id: runId }]
+        if (query.includes('INSERT INTO research_run_control')) {
+          return [{ run_id: runId }]
+        }
         if (query.includes('INSERT INTO research_run_results')) return [{ run_id: runId }]
         return []
       }),

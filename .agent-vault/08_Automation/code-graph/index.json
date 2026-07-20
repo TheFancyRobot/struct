@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T03:11:46.950Z",
+  "generatedAt": "2026-07-20T04:04:45.773Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -76,63 +76,71 @@
         {
           "name": "RegisterRequestBody",
           "kind": "interface",
-          "line": 81,
+          "line": 84,
           "exported": false,
-          "endLine": 81
+          "endLine": 84
         },
         {
           "name": "ResearchRequestBody",
           "kind": "interface",
-          "line": 89,
+          "line": 92,
           "exported": false,
-          "endLine": 89
+          "endLine": 92
         },
         {
           "name": "jsonResponse",
           "kind": "function",
-          "line": 96,
+          "line": 99,
           "exported": false,
-          "endLine": 96,
+          "endLine": 99,
           "signature": "(body: unknown, status = 200)"
         },
         {
           "name": "credentialMatches",
           "kind": "function",
-          "line": 103,
+          "line": 106,
           "exported": false,
-          "endLine": 103,
+          "endLine": 106,
           "signature": "(expected: string, actual: string)"
+        },
+        {
+          "name": "bearerCredential",
+          "kind": "function",
+          "line": 113,
+          "exported": false,
+          "endLine": 113,
+          "signature": "(request: Request)"
         },
         {
           "name": "parseBody",
           "kind": "function",
-          "line": 110,
+          "line": 120,
           "exported": false,
-          "endLine": 110,
+          "endLine": 120,
           "signature": "(body: RegisterRequestBody): Effect.Effect<{"
         },
         {
           "name": "parseResearchBody",
           "kind": "function",
-          "line": 134,
+          "line": 144,
           "exported": false,
-          "endLine": 134,
+          "endLine": 144,
           "signature": "(body: ResearchRequestBody): Effect.Effect<{"
         },
         {
           "name": "researchFailureResponse",
           "kind": "function",
-          "line": 169,
+          "line": 179,
           "exported": false,
-          "endLine": 169,
+          "endLine": 179,
           "signature": "(cause: Cause.Cause<unknown>)"
         },
         {
           "name": "server",
           "kind": "const",
-          "line": 180,
+          "line": 190,
           "exported": false,
-          "endLine": 180
+          "endLine": 190
         }
       ],
       "imports": [
@@ -197,12 +205,20 @@
             "getCitationDetail"
           ],
           "kind": "static"
+        },
+        {
+          "source": "cancelResearch",
+          "specifier": "./routes/research-cancel",
+          "imported": [
+            "cancelResearch"
+          ],
+          "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "ece559e5b2c1b7ee9b6b03e77bbf292fc9d293f97dafe5bb254e66904f392e73",
-      "mtimeMs": 1784499619862.4875,
-      "size": 29670,
+      "hash": "9f7d9140f8ac0e5563d0d0dff1acd45f212ae27b03ed48c4e8995d225d580fff",
+      "mtimeMs": 1784520119568.633,
+      "size": 33088,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -727,6 +743,50 @@
       "parser": "regex"
     },
     {
+      "path": "apps/api/src/routes/research-cancel.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "ResearchCancellationScope",
+          "kind": "interface",
+          "line": 10,
+          "exported": true,
+          "endLine": 10
+        },
+        {
+          "name": "ResearchCancelDeps",
+          "kind": "interface",
+          "line": 16,
+          "exported": true,
+          "endLine": 16
+        },
+        {
+          "name": "cancelResearch",
+          "kind": "const",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "64da6a833df81ec4a485af4fd9c6b9f783e2ec025a785577f6014f0f1868cfe0",
+      "mtimeMs": 1784518442843.8206,
+      "size": 983,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "apps/api/src/routes/research-events.ts",
       "language": "TypeScript",
       "symbols": [
@@ -759,48 +819,69 @@
           "endLine": 11
         },
         {
+          "name": "ResearchEventScopeDeps",
+          "kind": "interface",
+          "line": 34,
+          "exported": true,
+          "endLine": 34
+        },
+        {
+          "name": "resolveResearchEventScope",
+          "kind": "const",
+          "line": 49,
+          "exported": true,
+          "endLine": 49
+        },
+        {
+          "name": "researchEventScopeFailureResponse",
+          "kind": "function",
+          "line": 71,
+          "exported": true,
+          "endLine": 71
+        },
+        {
           "name": "ResearchEventStreamRuntime",
           "kind": "interface",
-          "line": 31,
+          "line": 85,
           "exported": true,
-          "endLine": 31
+          "endLine": 85
         },
         {
           "name": "liveStreamRuntime",
           "kind": "const",
-          "line": 36,
+          "line": 90,
           "exported": false,
-          "endLine": 36
+          "endLine": 90
         },
         {
           "name": "parseEventCursor",
           "kind": "function",
-          "line": 41,
+          "line": 95,
           "exported": true,
-          "endLine": 41,
+          "endLine": 95,
           "signature": "(value: string | null)"
         },
         {
           "name": "encodeSseEvent",
           "kind": "function",
-          "line": 47,
+          "line": 101,
           "exported": true,
-          "endLine": 47,
+          "endLine": 101,
           "signature": "(event: ResearchEvent)"
         },
         {
           "name": "loadResearchEvents",
           "kind": "const",
-          "line": 51,
+          "line": 105,
           "exported": true,
-          "endLine": 51
+          "endLine": 105
         },
         {
           "name": "researchEventsResponse",
           "kind": "function",
-          "line": 97,
+          "line": 153,
           "exported": true,
-          "endLine": 97
+          "endLine": 153
         }
       ],
       "imports": [
@@ -822,18 +903,19 @@
           "kind": "static"
         },
         {
-          "source": "QueryError",
+          "source": "EntityNotFoundError, QueryError",
           "specifier": "@struct/persistence",
           "imported": [
+            "EntityNotFoundError",
             "QueryError"
           ],
           "kind": "static"
         }
       ],
       "exports": [],
-      "hash": "148aff87ceec5b11769218471c83f3ac0b8096abe885cec8a60440e6549a2027",
-      "mtimeMs": 1784435777323.411,
-      "size": 5664,
+      "hash": "25905eace31d7a18359d3880d091049cac236fa5a349a81a7126f60d8d108440",
+      "mtimeMs": 1784520119567.4202,
+      "size": 7464,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1373,16 +1455,16 @@
         {
           "name": "failureGuidance",
           "kind": "const",
-          "line": 32,
+          "line": 37,
           "exported": false,
-          "endLine": 32
+          "endLine": 37
         },
         {
           "name": "ResearchStream",
           "kind": "const",
-          "line": 49,
+          "line": 54,
           "exported": true,
-          "endLine": 49
+          "endLine": 54
         }
       ],
       "imports": [
@@ -1439,9 +1521,9 @@
         }
       ],
       "exports": [],
-      "hash": "7ded5d18de54aeaec45af4b59ac5f56dee5bff7d6251a7021c1e773d2adc9e8a",
-      "mtimeMs": 1784459569498.836,
-      "size": 5461,
+      "hash": "4af8810e8b8e9da8b2e72947cb4c55a14c354880fe1109852287757b0b03a959",
+      "mtimeMs": 1784518394062.858,
+      "size": 5881,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -1660,6 +1742,138 @@
       "hash": "91b953cfdaf5842e3a937456ddfb3f39db5fe49743c9e06c749f1d3fd96213fb",
       "mtimeMs": 1784459569499.2031,
       "size": 1025,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/web/src/server.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "DEFAULT_API_ORIGIN",
+          "kind": "const",
+          "line": 3,
+          "exported": false,
+          "endLine": 3
+        },
+        {
+          "name": "DEFAULT_WEB_PORT",
+          "kind": "const",
+          "line": 4,
+          "exported": false,
+          "endLine": 4
+        },
+        {
+          "name": "WebServerConfig",
+          "kind": "interface",
+          "line": 6,
+          "exported": true,
+          "endLine": 6
+        },
+        {
+          "name": "loadWebServerConfig",
+          "kind": "function",
+          "line": 13,
+          "exported": true,
+          "endLine": 13
+        },
+        {
+          "name": "proxyApiRequest",
+          "kind": "function",
+          "line": 37,
+          "exported": true,
+          "endLine": 37
+        },
+        {
+          "name": "safeAssetPath",
+          "kind": "function",
+          "line": 54,
+          "exported": false,
+          "endLine": 54,
+          "signature": "(pathname: string)"
+        },
+        {
+          "name": "createWebRequestHandler",
+          "kind": "function",
+          "line": 68,
+          "exported": true,
+          "endLine": 68
+        }
+      ],
+      "imports": [
+        {
+          "source": "path",
+          "specifier": "node:path",
+          "imported": [
+            "path"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "99449ad02f6ba67effa6070d217bdee07bcc0ae55c75bb917583c0cccd96a3cb",
+      "mtimeMs": 1784520119569.043,
+      "size": 3267,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/web/vite.config.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "apiProxyHeaders",
+          "kind": "function",
+          "line": 6,
+          "exported": true,
+          "endLine": 6
+        }
+      ],
+      "imports": [
+        {
+          "source": "defineConfig, loadEnv",
+          "specifier": "vite",
+          "imported": [
+            "defineConfig",
+            "loadEnv"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "solid",
+          "specifier": "vite-plugin-solid",
+          "imported": [
+            "solid"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "tailwindcss",
+          "specifier": "@tailwindcss/vite",
+          "imported": [
+            "tailwindcss"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "path",
+          "specifier": "node:path",
+          "imported": [
+            "path"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "default"
+        }
+      ],
+      "hash": "7c155e0ea806edbd417ea7665e13a009fefdf8b2f47c9f933a2e18cfa321db80",
+      "mtimeMs": 1784520178281.7517,
+      "size": 958,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -5304,79 +5518,107 @@
         {
           "name": "Cursor",
           "kind": "const",
-          "line": 11,
-          "exported": false,
-          "endLine": 11
-        },
-        {
-          "name": "EventBase",
-          "kind": "const",
           "line": 13,
           "exported": false,
           "endLine": 13
         },
         {
+          "name": "EventBase",
+          "kind": "const",
+          "line": 15,
+          "exported": false,
+          "endLine": 15
+        },
+        {
           "name": "ResearchStartedEvent",
           "kind": "const",
-          "line": 20,
+          "line": 22,
           "exported": true,
-          "endLine": 20
+          "endLine": 22
         },
         {
           "name": "RetrievalCompletedEvent",
           "kind": "const",
-          "line": 29,
+          "line": 31,
           "exported": true,
-          "endLine": 29
+          "endLine": 31
         },
         {
           "name": "CitationsValidatedEvent",
           "kind": "const",
-          "line": 40,
+          "line": 42,
           "exported": true,
-          "endLine": 40
+          "endLine": 42
+        },
+        {
+          "name": "ResearchPlanAcceptedEvent",
+          "kind": "const",
+          "line": 52,
+          "exported": true,
+          "endLine": 52
+        },
+        {
+          "name": "ResearchPlanningFailedEvent",
+          "kind": "const",
+          "line": 62,
+          "exported": true,
+          "endLine": 62
+        },
+        {
+          "name": "ResearchCheckpointedEvent",
+          "kind": "const",
+          "line": 73,
+          "exported": true,
+          "endLine": 73
+        },
+        {
+          "name": "ResearchCancelledEvent",
+          "kind": "const",
+          "line": 84,
+          "exported": true,
+          "endLine": 84
         },
         {
           "name": "ResearchCompletedEvent",
           "kind": "const",
-          "line": 50,
+          "line": 93,
           "exported": true,
-          "endLine": 50
+          "endLine": 93
         },
         {
           "name": "ResearchFailedEvent",
           "kind": "const",
-          "line": 65,
+          "line": 108,
           "exported": true,
-          "endLine": 65
+          "endLine": 108
         },
         {
           "name": "ResearchEvent",
           "kind": "const",
-          "line": 76,
+          "line": 119,
           "exported": true,
-          "endLine": 76
+          "endLine": 119
         },
         {
           "name": "ResearchEvent",
           "kind": "type",
-          "line": 83,
+          "line": 130,
           "exported": true,
-          "endLine": 83
+          "endLine": 130
         },
         {
           "name": "CitationDetail",
           "kind": "const",
-          "line": 85,
+          "line": 132,
           "exported": true,
-          "endLine": 85
+          "endLine": 132
         },
         {
           "name": "CitationDetail",
           "kind": "type",
-          "line": 102,
+          "line": 149,
           "exported": true,
-          "endLine": 102
+          "endLine": 149
         }
       ],
       "imports": [
@@ -5390,9 +5632,9 @@
         }
       ],
       "exports": [],
-      "hash": "516515e75bd599d5af370c84ad6e26cbfe95e909fb1ad19f9ffa7b7e6ff4dd23",
-      "mtimeMs": 1784435777326.087,
-      "size": 2877,
+      "hash": "d1726496d392397d0de9214440bb654c241ea74fa8fbc8197b6c03035d9719d0",
+      "mtimeMs": 1784517819895.9841,
+      "size": 4178,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -9404,9 +9646,9 @@
           "kind": "reexport"
         }
       ],
-      "hash": "fdad25f8951afda843da4b1dbe745fc0e37185af59a0eb6e13964304668f9210",
-      "mtimeMs": 1784499619865.692,
-      "size": 4347,
+      "hash": "301f690329b4dbbdb664d80da6fbb3c210097656ffca00d653cb7ba53bfae603",
+      "mtimeMs": 1784517972327.7444,
+      "size": 4519,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -9432,9 +9674,9 @@
       ],
       "imports": [],
       "exports": [],
-      "hash": "00940def52fb8742e4c73b0752ff91147de1f2450dc98c193c0b1ed8153e4171",
-      "mtimeMs": 1784499619866.753,
-      "size": 3000,
+      "hash": "5a2ce1cb629188f1286255c66a98d800ca13a19f4835f87136a990e21553ac6f",
+      "mtimeMs": 1784517819896.99,
+      "size": 3228,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -11162,215 +11404,321 @@
         {
           "name": "ResearchRegistrationInput",
           "kind": "interface",
-          "line": 31,
+          "line": 40,
           "exported": true,
-          "endLine": 31
+          "endLine": 40
         },
         {
           "name": "ResearchRegistrationResult",
           "kind": "interface",
-          "line": 41,
+          "line": 50,
           "exported": true,
-          "endLine": 41
+          "endLine": 50
         },
         {
           "name": "CompleteResearchInput",
           "kind": "interface",
-          "line": 48,
+          "line": 57,
           "exported": true,
-          "endLine": 48
+          "endLine": 57
         },
         {
           "name": "FailResearchInput",
           "kind": "interface",
-          "line": 56,
+          "line": 65,
           "exported": true,
-          "endLine": 56
+          "endLine": 65
+        },
+        {
+          "name": "PersistResearchPlanInput",
+          "kind": "interface",
+          "line": 71,
+          "exported": true,
+          "endLine": 71
+        },
+        {
+          "name": "PersistResearchPlanningFailureInput",
+          "kind": "interface",
+          "line": 80,
+          "exported": true,
+          "endLine": 80
+        },
+        {
+          "name": "PersistResearchCheckpointInput",
+          "kind": "interface",
+          "line": 89,
+          "exported": true,
+          "endLine": 89
+        },
+        {
+          "name": "CancelResearchInput",
+          "kind": "interface",
+          "line": 98,
+          "exported": true,
+          "endLine": 98
+        },
+        {
+          "name": "CancelResearchResult",
+          "kind": "interface",
+          "line": 107,
+          "exported": true,
+          "endLine": 107
+        },
+        {
+          "name": "DurableResearchState",
+          "kind": "interface",
+          "line": 112,
+          "exported": true,
+          "endLine": 112
         },
         {
           "name": "ResearchScopeMismatchError",
           "kind": "class",
-          "line": 62,
+          "line": 127,
           "exported": false,
-          "endLine": 62
+          "endLine": 127
         },
         {
           "name": "ResearchAggregateMismatchError",
           "kind": "class",
-          "line": 63,
+          "line": 128,
           "exported": false,
-          "endLine": 63
+          "endLine": 128
         },
         {
           "name": "MAX_RESEARCH_EVIDENCE_COUNT",
           "kind": "const",
-          "line": 69,
+          "line": 134,
           "exported": false,
-          "endLine": 69
+          "endLine": 134
         },
         {
           "name": "MAX_RESEARCH_CITATION_COUNT",
           "kind": "const",
-          "line": 70,
+          "line": 135,
           "exported": false,
-          "endLine": 70
+          "endLine": 135
         },
         {
           "name": "MAX_RESEARCH_FAILURE_TAG_LENGTH",
           "kind": "const",
-          "line": 71,
+          "line": 136,
           "exported": false,
-          "endLine": 71
+          "endLine": 136
         },
         {
           "name": "RESEARCH_FAILURE_MESSAGE",
           "kind": "const",
-          "line": 72,
+          "line": 137,
           "exported": false,
-          "endLine": 72
+          "endLine": 137
+        },
+        {
+          "name": "MAX_IDEMPOTENCY_KEY_LENGTH",
+          "kind": "const",
+          "line": 138,
+          "exported": false,
+          "endLine": 138
         },
         {
           "name": "ResearchEventPayload",
           "kind": "type",
-          "line": 74,
+          "line": 140,
           "exported": false,
-          "endLine": 74
+          "endLine": 140
         },
         {
           "name": "hasExactKeys",
           "kind": "function",
-          "line": 76,
+          "line": 142,
           "exported": false,
-          "endLine": 76
+          "endLine": 142
         },
         {
           "name": "boundedInteger",
           "kind": "function",
-          "line": 86,
+          "line": 152,
           "exported": false,
-          "endLine": 86,
+          "endLine": 152,
           "signature": "(value: unknown, maximum: number)"
         },
         {
           "name": "persistedResearchScope",
           "kind": "function",
-          "line": 93,
+          "line": 159,
           "exported": false,
-          "endLine": 93,
+          "endLine": 159,
           "signature": "(payload: unknown): {"
         },
         {
           "name": "validateAppendEventPayload",
           "kind": "function",
-          "line": 120,
+          "line": 186,
           "exported": false,
-          "endLine": 120
+          "endLine": 186
         },
         {
           "name": "validateCompletedEventPayload",
           "kind": "function",
-          "line": 172,
+          "line": 238,
           "exported": false,
-          "endLine": 172
+          "endLine": 238
         },
         {
           "name": "validateFailedEventPayload",
           "kind": "function",
-          "line": 192,
+          "line": 258,
           "exported": false,
-          "endLine": 192
+          "endLine": 258
         },
         {
           "name": "ownershipLost",
           "kind": "function",
-          "line": 216,
+          "line": 282,
           "exported": false,
-          "endLine": 216
+          "endLine": 282
         },
         {
           "name": "sameIds",
           "kind": "function",
-          "line": 225,
+          "line": 291,
           "exported": false,
-          "endLine": 225
+          "endLine": 291
         },
         {
           "name": "normalizePersistedPayload",
           "kind": "function",
-          "line": 234,
+          "line": 300,
           "exported": false,
-          "endLine": 234,
+          "endLine": 300,
           "signature": "(payload: unknown)"
+        },
+        {
+          "name": "parsePersistedJson",
+          "kind": "function",
+          "line": 316,
+          "exported": false,
+          "endLine": 316,
+          "signature": "(payload: unknown)"
+        },
+        {
+          "name": "assertResearchScopeRow",
+          "kind": "function",
+          "line": 321,
+          "exported": false,
+          "endLine": 321
+        },
+        {
+          "name": "assertOwnedDurableJob",
+          "kind": "function",
+          "line": 331,
+          "exported": false,
+          "endLine": 331
+        },
+        {
+          "name": "consumedBudgetFields",
+          "kind": "const",
+          "line": 345,
+          "exported": false,
+          "endLine": 345
+        },
+        {
+          "name": "budgetLimitFields",
+          "kind": "const",
+          "line": 355,
+          "exported": false,
+          "endLine": 355
+        },
+        {
+          "name": "budgetIsMonotonic",
+          "kind": "function",
+          "line": 366,
+          "exported": false,
+          "endLine": 366
+        },
+        {
+          "name": "budgetLimitsMatch",
+          "kind": "function",
+          "line": 373,
+          "exported": false,
+          "endLine": 373
+        },
+        {
+          "name": "queryFailure",
+          "kind": "function",
+          "line": 382,
+          "exported": false,
+          "endLine": 382,
+          "signature": "(operation: string)"
+        },
+        {
+          "name": "decodeCancellationResult",
+          "kind": "function",
+          "line": 390,
+          "exported": false,
+          "endLine": 390
         },
         {
           "name": "completionSourceScope",
           "kind": "function",
-          "line": 250,
+          "line": 403,
           "exported": false,
-          "endLine": 250,
+          "endLine": 403,
           "signature": "(input: CompleteResearchInput): {"
         },
         {
           "name": "validateRegistrationAggregate",
           "kind": "function",
-          "line": 257,
+          "line": 410,
           "exported": false,
-          "endLine": 257,
+          "endLine": 410,
           "signature": "(input: ResearchRegistrationInput)"
         },
         {
           "name": "validateOwnedEvent",
           "kind": "function",
-          "line": 302,
+          "line": 455,
           "exported": false,
-          "endLine": 302
+          "endLine": 455
         },
         {
           "name": "validateCompletionAggregate",
           "kind": "function",
-          "line": 320,
+          "line": 473,
           "exported": false,
-          "endLine": 320,
+          "endLine": 473,
           "signature": "(input: CompleteResearchInput)"
         },
         {
           "name": "persistenceDecodeError",
           "kind": "function",
-          "line": 344,
+          "line": 497,
           "exported": false,
-          "endLine": 344
+          "endLine": 497
         },
         {
           "name": "ResearchExecutionRepo",
           "kind": "class",
-          "line": 355,
+          "line": 508,
           "exported": true,
-          "endLine": 355
+          "endLine": 508
         },
         {
           "name": "ResearchExecutionError",
           "kind": "type",
-          "line": 986,
+          "line": 1855,
           "exported": true,
-          "endLine": 986
+          "endLine": 1855
         }
       ],
       "imports": [
         {
-          "source": "Effect, Option",
+          "source": "Effect, Option, Schema",
           "specifier": "effect",
           "imported": [
             "Effect",
-            "Option"
-          ],
-          "kind": "static"
-        },
-        {
-          "source": "AuthorizationError, ValidationError",
-          "specifier": "@struct/domain",
-          "imported": [
-            "AuthorizationError",
-            "ValidationError"
+            "Option",
+            "Schema"
           ],
           "kind": "static"
         },
@@ -11389,9 +11737,9 @@
         }
       ],
       "exports": [],
-      "hash": "6baef6b2182297ecd89183868849c969e7be8015aabb41394f8137ebd8fee5fe",
-      "mtimeMs": 1784433778780.5222,
-      "size": 36381,
+      "hash": "5daa5d394e1bc6381d4958d3f21f779adffe1559283b68d64b8ba1279fbaee38",
+      "mtimeMs": 1784520119566.6245,
+      "size": 70045,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -11467,9 +11815,9 @@
         }
       ],
       "exports": [],
-      "hash": "a76afbea45ce275ccda23f80ebc424889ce485d81b4a667005656c1b4a5a95dc",
-      "mtimeMs": 1784459569499.7903,
-      "size": 9384,
+      "hash": "482dbbce65c672cb039fe41e5c0bbbfaf9407c2fcc0dda4a933d659073cd43f6",
+      "mtimeMs": 1784518011035.3633,
+      "size": 10267,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -12049,7 +12397,7 @@
       ],
       "exports": [],
       "hash": "de718c669cfd36a1cb03c1a33c7dfa7c0587212ff52432158718a2d50cd5e4a0",
-      "mtimeMs": 1784517090203.651,
+      "mtimeMs": 1784517664623.1409,
       "size": 9400,
       "generated": false,
       "vendor": false,
@@ -12371,7 +12719,7 @@
       ],
       "exports": [],
       "hash": "adebba1a49d6e42a9094116fbaba449e4c146c43ffcd2cceb51b41b678fdb9bc",
-      "mtimeMs": 1784517090203.2375,
+      "mtimeMs": 1784517664623.2703,
       "size": 6199,
       "generated": false,
       "vendor": false,
@@ -14348,7 +14696,7 @@
       ],
       "exports": [],
       "hash": "6b6b3b6392663501ecbe0b390b5e6e2ec9cbc2567f0a6305b3e397ddc03dc3b8",
-      "mtimeMs": 1784516749974.5422,
+      "mtimeMs": 1784517664623.8115,
       "size": 9424,
       "generated": false,
       "vendor": false,
@@ -14560,7 +14908,7 @@
       ],
       "exports": [],
       "hash": "e858e132f9e113a8cad1aa9177f8333fd7c3a2d72bb75c920804d1f4d25a9d7d",
-      "mtimeMs": 1784515280235.2397,
+      "mtimeMs": 1784517664624.1125,
       "size": 3266,
       "generated": false,
       "vendor": false,

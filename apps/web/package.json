@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "bun --bun vite",
     "build": "bun --bun vite build",
+    "start": "bun src/server.ts",
     "typecheck": "bun --bun tsc --noEmit --project tsconfig.json",
     "test": "bun test --preload ./test/solid-test-preload.ts --max-concurrency 1 --pass-with-no-tests ."
   },

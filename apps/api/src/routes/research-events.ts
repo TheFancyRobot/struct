@@ -2,7 +2,7 @@ import { Effect, Schema } from 'effect'
 import { ResearchEvent } from '@struct/domain'
 import type * as typeDomain from '@struct/domain'
 import type * as typePersistence from '@struct/persistence'
-import { QueryError } from '@struct/persistence'
+import { EntityNotFoundError, QueryError } from '@struct/persistence'
 
 const MAX_EVENT_BATCH = 100
 const POLL_INTERVAL_MS = 1_000
@@ -10,6 +10,7 @@ const HEARTBEAT_INTERVAL_MS = 30_000
 
 export interface ResearchEventDeps {
   readonly listEventsAfter: (
+    workspaceId: typeDomain.WorkspaceId,
     projectId: typeDomain.ProjectId,
     runId: typeDomain.ResearchRunId,
     cursor: bigint,
@@ -20,12 +21,65 @@ export interface ResearchEventDeps {
     never
   >
   readonly findCompleted: (
+    workspaceId: typeDomain.WorkspaceId,
+    projectId: typeDomain.ProjectId,
     runId: typeDomain.ResearchRunId,
   ) => Effect.Effect<
     typePersistence.CompletedResearchProjection,
     typePersistence.PersistenceError,
     never
   >
+}
+
+export interface ResearchEventScopeDeps {
+  readonly findProject: (
+    projectId: typeDomain.ProjectId,
+  ) => Effect.Effect<
+    typeof typeDomain.Project.Type,
+    typePersistence.PersistenceError,
+    never
+  >
+  readonly runExists: (
+    workspaceId: typeDomain.WorkspaceId,
+    projectId: typeDomain.ProjectId,
+    runId: typeDomain.ResearchRunId,
+  ) => Effect.Effect<boolean, typePersistence.PersistenceError, never>
+}
+
+export const resolveResearchEventScope = (
+  projectId: typeDomain.ProjectId,
+  runId: typeDomain.ResearchRunId,
+  deps: ResearchEventScopeDeps,
+): Effect.Effect<
+  typeDomain.WorkspaceId,
+  typePersistence.PersistenceError,
+  never
+> =>
+  Effect.gen(function* () {
+    const project = yield* deps.findProject(projectId)
+    const exists = yield* deps.runExists(project.workspaceId, projectId, runId)
+    if (!exists) {
+      return yield* new EntityNotFoundError({
+        entity: 'ResearchRun',
+        id: runId,
+        message: `ResearchRun ${runId} not found`,
+      })
+    }
+    return project.workspaceId
+  })
+
+export function researchEventScopeFailureResponse(
+  error: typePersistence.PersistenceError,
+): Response {
+  return error instanceof EntityNotFoundError
+    ? new Response(JSON.stringify({ error: 'ResearchRunNotFound' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    : new Response(JSON.stringify({ error: 'ResearchEventsUnavailable' }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      })
 }
 
 export interface ResearchEventStreamRuntime {
@@ -49,6 +103,7 @@ export function encodeSseEvent(event: ResearchEvent): string {
 }
 
 export const loadResearchEvents = (
+  workspaceId: typeDomain.WorkspaceId,
   projectId: typeDomain.ProjectId,
   runId: typeDomain.ResearchRunId,
   cursor: bigint,
@@ -60,6 +115,7 @@ export const loadResearchEvents = (
 > =>
   Effect.gen(function* () {
     const events = yield* deps.listEventsAfter(
+      workspaceId,
       projectId,
       runId,
       cursor,
@@ -79,7 +135,7 @@ export const loadResearchEvents = (
               ...base,
               data: {
                 ...event.payload,
-                ...(yield* deps.findCompleted(runId)),
+                ...(yield* deps.findCompleted(workspaceId, projectId, runId)),
               },
             }
           : { ...base, data: event.payload }
@@ -95,6 +151,7 @@ export const loadResearchEvents = (
   })
 
 export function researchEventsResponse(
+  workspaceId: typeDomain.WorkspaceId,
   projectId: typeDomain.ProjectId,
   runId: typeDomain.ResearchRunId,
   initialCursor: bigint,
@@ -140,7 +197,7 @@ export function researchEventsResponse(
       if (pending.length === 0) {
         const exit = await Promise.race([
           Effect.runPromiseExit(
-            loadResearchEvents(projectId, runId, cursor, deps),
+            loadResearchEvents(workspaceId, projectId, runId, cursor, deps),
             { signal: execution.signal },
           ),
           cancellation,
