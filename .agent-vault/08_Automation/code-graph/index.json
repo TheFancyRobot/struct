@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T06:56:52.833Z",
+  "generatedAt": "2026-07-20T07:32:32.300Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -2033,7 +2033,7 @@
       ],
       "exports": [],
       "hash": "f8b8d44627ec89b880ef8d7bedd63613bfd31c1a3343e58ecb9eb821db358855",
-      "mtimeMs": 1784530294088.0715,
+      "mtimeMs": 1784531240333.8596,
       "size": 4410,
       "generated": false,
       "vendor": false,
@@ -3034,7 +3034,7 @@
       ],
       "exports": [],
       "hash": "d5d96aa31a30376d1bafe4589faa1eca85572419e4eb036a2819a32f9fd1fb31",
-      "mtimeMs": 1784530574343.0298,
+      "mtimeMs": 1784531240334.1868,
       "size": 7773,
       "generated": false,
       "vendor": false,
@@ -5796,6 +5796,397 @@
       "parser": "regex"
     },
     {
+      "path": "packages/domain/src/recursive-analysis.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "StableIdentity",
+          "kind": "const",
+          "line": 20,
+          "exported": false,
+          "endLine": 20
+        },
+        {
+          "name": "PositiveInteger",
+          "kind": "const",
+          "line": 23,
+          "exported": false,
+          "endLine": 23
+        },
+        {
+          "name": "Counter",
+          "kind": "const",
+          "line": 24,
+          "exported": false,
+          "endLine": 24
+        },
+        {
+          "name": "NonBlankString",
+          "kind": "const",
+          "line": 25,
+          "exported": false,
+          "endLine": 25
+        },
+        {
+          "name": "RecursiveAnalysisContractVersion",
+          "kind": "const",
+          "line": 31,
+          "exported": true,
+          "endLine": 31
+        },
+        {
+          "name": "RecursiveAnalysisRequestId",
+          "kind": "const",
+          "line": 33,
+          "exported": true,
+          "endLine": 33
+        },
+        {
+          "name": "RecursiveAnalysisRequestId",
+          "kind": "type",
+          "line": 36,
+          "exported": true,
+          "endLine": 36
+        },
+        {
+          "name": "RecursiveDecompositionNodeId",
+          "kind": "const",
+          "line": 39,
+          "exported": true,
+          "endLine": 39
+        },
+        {
+          "name": "RecursiveDecompositionNodeId",
+          "kind": "type",
+          "line": 42,
+          "exported": true,
+          "endLine": 42
+        },
+        {
+          "name": "RecursivePartitionId",
+          "kind": "const",
+          "line": 45,
+          "exported": true,
+          "endLine": 45
+        },
+        {
+          "name": "RecursivePartitionId",
+          "kind": "type",
+          "line": 48,
+          "exported": true,
+          "endLine": 48
+        },
+        {
+          "name": "RecursiveBatchId",
+          "kind": "const",
+          "line": 51,
+          "exported": true,
+          "endLine": 51
+        },
+        {
+          "name": "RecursiveBatchId",
+          "kind": "type",
+          "line": 54,
+          "exported": true,
+          "endLine": 54
+        },
+        {
+          "name": "RecursiveAggregationId",
+          "kind": "const",
+          "line": 56,
+          "exported": true,
+          "endLine": 56
+        },
+        {
+          "name": "RecursiveAggregationId",
+          "kind": "type",
+          "line": 59,
+          "exported": true,
+          "endLine": 59
+        },
+        {
+          "name": "RecursiveSufficiencyId",
+          "kind": "const",
+          "line": 62,
+          "exported": true,
+          "endLine": 62
+        },
+        {
+          "name": "RecursiveSufficiencyId",
+          "kind": "type",
+          "line": 65,
+          "exported": true,
+          "endLine": 65
+        },
+        {
+          "name": "RecursiveTerminalStateId",
+          "kind": "const",
+          "line": 68,
+          "exported": true,
+          "endLine": 68
+        },
+        {
+          "name": "RecursiveTerminalStateId",
+          "kind": "type",
+          "line": 71,
+          "exported": true,
+          "endLine": 71
+        },
+        {
+          "name": "RecursiveAnalysisPolicy",
+          "kind": "const",
+          "line": 74,
+          "exported": true,
+          "endLine": 74
+        },
+        {
+          "name": "RecursiveAnalysisPolicy",
+          "kind": "type",
+          "line": 93,
+          "exported": true,
+          "endLine": 93
+        },
+        {
+          "name": "RecursiveCheckpointLink",
+          "kind": "const",
+          "line": 96,
+          "exported": true,
+          "endLine": 96
+        },
+        {
+          "name": "RecursiveCheckpointLink",
+          "kind": "type",
+          "line": 102,
+          "exported": true,
+          "endLine": 102
+        },
+        {
+          "name": "RecursiveAnalysisRequest",
+          "kind": "const",
+          "line": 105,
+          "exported": true,
+          "endLine": 105
+        },
+        {
+          "name": "RecursiveAnalysisRequest",
+          "kind": "type",
+          "line": 133,
+          "exported": true,
+          "endLine": 133
+        },
+        {
+          "name": "RecursiveDecompositionNode",
+          "kind": "const",
+          "line": 136,
+          "exported": true,
+          "endLine": 136
+        },
+        {
+          "name": "RecursiveDecompositionNode",
+          "kind": "type",
+          "line": 153,
+          "exported": true,
+          "endLine": 153
+        },
+        {
+          "name": "RecursiveDecomposition",
+          "kind": "const",
+          "line": 156,
+          "exported": true,
+          "endLine": 156
+        },
+        {
+          "name": "RecursiveDecomposition",
+          "kind": "type",
+          "line": 163,
+          "exported": true,
+          "endLine": 163
+        },
+        {
+          "name": "RecursivePartition",
+          "kind": "const",
+          "line": 166,
+          "exported": true,
+          "endLine": 166
+        },
+        {
+          "name": "RecursivePartition",
+          "kind": "type",
+          "line": 184,
+          "exported": true,
+          "endLine": 184
+        },
+        {
+          "name": "RecursiveBatchInput",
+          "kind": "const",
+          "line": 186,
+          "exported": true,
+          "endLine": 186
+        },
+        {
+          "name": "RecursiveBatchInput",
+          "kind": "type",
+          "line": 194,
+          "exported": true,
+          "endLine": 194
+        },
+        {
+          "name": "RecursiveSufficiency",
+          "kind": "const",
+          "line": 197,
+          "exported": true,
+          "endLine": 197
+        },
+        {
+          "name": "RecursiveSufficiency",
+          "kind": "type",
+          "line": 225,
+          "exported": true,
+          "endLine": 225
+        },
+        {
+          "name": "RecursiveTerminalReason",
+          "kind": "const",
+          "line": 228,
+          "exported": true,
+          "endLine": 228
+        },
+        {
+          "name": "RecursiveTerminalReason",
+          "kind": "type",
+          "line": 244,
+          "exported": true,
+          "endLine": 244
+        },
+        {
+          "name": "RecursiveTerminalState",
+          "kind": "const",
+          "line": 247,
+          "exported": true,
+          "endLine": 247
+        },
+        {
+          "name": "RecursiveTerminalState",
+          "kind": "type",
+          "line": 251,
+          "exported": true,
+          "endLine": 251
+        },
+        {
+          "name": "RecursiveBatchResult",
+          "kind": "const",
+          "line": 254,
+          "exported": true,
+          "endLine": 254
+        },
+        {
+          "name": "RecursiveBatchResult",
+          "kind": "type",
+          "line": 319,
+          "exported": true,
+          "endLine": 319
+        },
+        {
+          "name": "RecursiveAggregationResult",
+          "kind": "const",
+          "line": 322,
+          "exported": true,
+          "endLine": 322
+        },
+        {
+          "name": "RecursiveAggregationResult",
+          "kind": "type",
+          "line": 397,
+          "exported": true,
+          "endLine": 397
+        },
+        {
+          "name": "recursiveParseFailure",
+          "kind": "function",
+          "line": 400,
+          "exported": false,
+          "endLine": 400
+        },
+        {
+          "name": "decompositionFailure",
+          "kind": "function",
+          "line": 418,
+          "exported": false,
+          "endLine": 418
+        },
+        {
+          "name": "decodeRecursiveAnalysisRequest",
+          "kind": "const",
+          "line": 537,
+          "exported": true,
+          "endLine": 537
+        },
+        {
+          "name": "decodeRecursiveDecomposition",
+          "kind": "const",
+          "line": 545,
+          "exported": true,
+          "endLine": 545
+        },
+        {
+          "name": "decodeRecursiveBatchResult",
+          "kind": "const",
+          "line": 559,
+          "exported": true,
+          "endLine": 559
+        },
+        {
+          "name": "decodeRecursiveBatchInput",
+          "kind": "const",
+          "line": 567,
+          "exported": true,
+          "endLine": 567
+        },
+        {
+          "name": "decodeRecursiveAggregationResult",
+          "kind": "const",
+          "line": 575,
+          "exported": true,
+          "endLine": 575
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, ParseResult, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "ParseResult",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Sha256Digest",
+          "specifier": "./directory-manifest.js",
+          "imported": [
+            "Sha256Digest"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ResearchContractValidationError",
+          "specifier": "./typed-errors.js",
+          "imported": [
+            "ResearchContractValidationError"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "565bf59feb223991374b1697dd2b7b205f707acd12a18f3976ccc42435af22b9",
+      "mtimeMs": 1784532523107.6682,
+      "size": 22378,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/domain/src/research-events.ts",
       "language": "TypeScript",
       "symbols": [
@@ -6060,6 +6451,178 @@
       "hash": "33773fd222a9be022e3bee2422ed24205e076acbce6d8ebaf7e22fb5abab17e8",
       "mtimeMs": 1784512211335.868,
       "size": 4649,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/domain/src/research-finding.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "StableIdentity",
+          "kind": "const",
+          "line": 5,
+          "exported": false,
+          "endLine": 5
+        },
+        {
+          "name": "NonBlankString",
+          "kind": "const",
+          "line": 8,
+          "exported": false,
+          "endLine": 8
+        },
+        {
+          "name": "Counter",
+          "kind": "const",
+          "line": 13,
+          "exported": false,
+          "endLine": 13
+        },
+        {
+          "name": "RecursiveEvidenceId",
+          "kind": "const",
+          "line": 15,
+          "exported": true,
+          "endLine": 15
+        },
+        {
+          "name": "RecursiveEvidenceId",
+          "kind": "type",
+          "line": 18,
+          "exported": true,
+          "endLine": 18
+        },
+        {
+          "name": "RecursiveFindingId",
+          "kind": "const",
+          "line": 20,
+          "exported": true,
+          "endLine": 20
+        },
+        {
+          "name": "RecursiveFindingId",
+          "kind": "type",
+          "line": 23,
+          "exported": true,
+          "endLine": 23
+        },
+        {
+          "name": "CoverageSnapshotId",
+          "kind": "const",
+          "line": 25,
+          "exported": true,
+          "endLine": 25
+        },
+        {
+          "name": "CoverageSnapshotId",
+          "kind": "type",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        },
+        {
+          "name": "RecursiveContradictionId",
+          "kind": "const",
+          "line": 30,
+          "exported": true,
+          "endLine": 30
+        },
+        {
+          "name": "RecursiveContradictionId",
+          "kind": "type",
+          "line": 33,
+          "exported": true,
+          "endLine": 33
+        },
+        {
+          "name": "RecursiveEvidenceReference",
+          "kind": "const",
+          "line": 36,
+          "exported": true,
+          "endLine": 36
+        },
+        {
+          "name": "RecursiveEvidenceReference",
+          "kind": "type",
+          "line": 42,
+          "exported": true,
+          "endLine": 42
+        },
+        {
+          "name": "RecursiveCoverage",
+          "kind": "const",
+          "line": 45,
+          "exported": true,
+          "endLine": 45
+        },
+        {
+          "name": "RecursiveCoverage",
+          "kind": "type",
+          "line": 77,
+          "exported": true,
+          "endLine": 77
+        },
+        {
+          "name": "RecursiveContradiction",
+          "kind": "const",
+          "line": 79,
+          "exported": true,
+          "endLine": 79
+        },
+        {
+          "name": "RecursiveContradiction",
+          "kind": "type",
+          "line": 103,
+          "exported": true,
+          "endLine": 103
+        },
+        {
+          "name": "ResearchFinding",
+          "kind": "const",
+          "line": 106,
+          "exported": true,
+          "endLine": 106
+        },
+        {
+          "name": "ResearchFinding",
+          "kind": "type",
+          "line": 161,
+          "exported": true,
+          "endLine": 161
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SourceVersionId",
+          "specifier": "./branded-ids.js",
+          "imported": [
+            "SourceVersionId"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "ResearchArtifactRef",
+          "specifier": "./research-execution.js",
+          "imported": [
+            "ResearchArtifactRef"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "e3817e8b930b5aea08dcde880f19d76f0627ebbefc7befd8496008ef3bb506be",
+      "mtimeMs": 1784532490652.606,
+      "size": 6383,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -6974,9 +7537,9 @@
         }
       ],
       "exports": [],
-      "hash": "ba1c333c2d49a255dc1fd4a784a44d3d595075e9210146d9281ab0e990d5bb43",
-      "mtimeMs": 1784512211336.516,
-      "size": 4084,
+      "hash": "8c14cd186f39cbee160123258e73210c5c7cd403f769849984ceeb8fffe403f3",
+      "mtimeMs": 1784532056580.0798,
+      "size": 4250,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -8154,7 +8717,7 @@
         }
       ],
       "hash": "68d1c398b48c049fcdd6abb4f1cf49e4b4c464dc7fe81aae92aa8bf8ee72d93c",
-      "mtimeMs": 1784526355575.1287,
+      "mtimeMs": 1784531240335.07,
       "size": 763,
       "generated": false,
       "vendor": false,
@@ -9080,7 +9643,7 @@
       ],
       "exports": [],
       "hash": "8e1e09e301f1599b760033d9b03a01d04b06c9e933c70d833574e2cc0b514aaf",
-      "mtimeMs": 1784530337566.7847,
+      "mtimeMs": 1784531240335.21,
       "size": 35433,
       "generated": false,
       "vendor": false,
@@ -9284,7 +9847,7 @@
       ],
       "exports": [],
       "hash": "a5d3c98c55d2f96efc14719721d497553d4b443f2d85ef82011ca098b08feff5",
-      "mtimeMs": 1784530391659.2659,
+      "mtimeMs": 1784531240335.362,
       "size": 2474,
       "generated": false,
       "vendor": false,
@@ -13154,6 +13717,214 @@
       "parser": "regex"
     },
     {
+      "path": "packages/research-engine/src/aggregation-schema.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "compareBytes",
+          "kind": "function",
+          "line": 23,
+          "exported": false,
+          "endLine": 23,
+          "signature": "(leftBytes: Uint8Array, rightBytes: Uint8Array)"
+        },
+        {
+          "name": "orderCanonicalIdentities",
+          "kind": "function",
+          "line": 32,
+          "exported": true,
+          "endLine": 32
+        },
+        {
+          "name": "digestFields",
+          "kind": "function",
+          "line": 44,
+          "exported": false,
+          "endLine": 44,
+          "signature": "(fields: ReadonlyArray<string>)"
+        },
+        {
+          "name": "policyFields",
+          "kind": "function",
+          "line": 49,
+          "exported": false,
+          "endLine": 49
+        },
+        {
+          "name": "computeRecursiveAnalysisRequestId",
+          "kind": "function",
+          "line": 65,
+          "exported": true,
+          "endLine": 65
+        },
+        {
+          "name": "computeRecursiveDecompositionNodeId",
+          "kind": "function",
+          "line": 77,
+          "exported": true,
+          "endLine": 77
+        },
+        {
+          "name": "computeRecursivePartitionId",
+          "kind": "function",
+          "line": 88,
+          "exported": true,
+          "endLine": 88
+        },
+        {
+          "name": "computeRecursiveBatchId",
+          "kind": "function",
+          "line": 100,
+          "exported": true,
+          "endLine": 100
+        },
+        {
+          "name": "computeRecursiveEvidenceId",
+          "kind": "function",
+          "line": 114,
+          "exported": true,
+          "endLine": 114
+        },
+        {
+          "name": "computeRecursiveContradictionId",
+          "kind": "function",
+          "line": 126,
+          "exported": true,
+          "endLine": 126
+        },
+        {
+          "name": "computeRecursiveFindingId",
+          "kind": "function",
+          "line": 139,
+          "exported": true,
+          "endLine": 139
+        },
+        {
+          "name": "computeRecursiveSufficiencyId",
+          "kind": "function",
+          "line": 159,
+          "exported": true,
+          "endLine": 159
+        },
+        {
+          "name": "terminalReasonFields",
+          "kind": "function",
+          "line": 169,
+          "exported": false,
+          "endLine": 169
+        },
+        {
+          "name": "computeRecursiveTerminalStateId",
+          "kind": "function",
+          "line": 177,
+          "exported": true,
+          "endLine": 177
+        },
+        {
+          "name": "computeRecursiveAggregationId",
+          "kind": "function",
+          "line": 183,
+          "exported": true,
+          "endLine": 183
+        },
+        {
+          "name": "identityFailure",
+          "kind": "function",
+          "line": 207,
+          "exported": false,
+          "endLine": 207
+        },
+        {
+          "name": "validateRecursiveRequestContract",
+          "kind": "const",
+          "line": 220,
+          "exported": true,
+          "endLine": 220
+        },
+        {
+          "name": "validateRecursiveDecompositionContract",
+          "kind": "const",
+          "line": 234,
+          "exported": true,
+          "endLine": 234
+        },
+        {
+          "name": "validateContradictionIdentity",
+          "kind": "const",
+          "line": 251,
+          "exported": false,
+          "endLine": 251
+        },
+        {
+          "name": "validateFindingIdentity",
+          "kind": "const",
+          "line": 267,
+          "exported": false,
+          "endLine": 267
+        },
+        {
+          "name": "validateSufficiencyAndTerminal",
+          "kind": "function",
+          "line": 296,
+          "exported": false,
+          "endLine": 296
+        },
+        {
+          "name": "validateRecursiveBatchResultContract",
+          "kind": "const",
+          "line": 323,
+          "exported": true,
+          "endLine": 323
+        },
+        {
+          "name": "validateRecursiveBatchInputContract",
+          "kind": "const",
+          "line": 349,
+          "exported": true,
+          "endLine": 349
+        },
+        {
+          "name": "validateRecursiveAggregationContract",
+          "kind": "const",
+          "line": 386,
+          "exported": true,
+          "endLine": 386
+        },
+        {
+          "name": "ValidRecursiveDecomposition",
+          "kind": "type",
+          "line": 425,
+          "exported": true,
+          "endLine": 425
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "validateCoverageIdentity",
+          "specifier": "./coverage-metadata.js",
+          "imported": [
+            "validateCoverageIdentity"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "3efbe358b3bc5232469d7e8a52d19c656b14a770f7dfc612ad514410774fc4ec",
+      "mtimeMs": 1784532594062.1785,
+      "size": 13555,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/research-engine/src/budget-enforcer.ts",
       "language": "TypeScript",
       "symbols": [
@@ -13231,6 +14002,51 @@
       "hash": "b9443b51bbf9a5cc90dad8c072681ebdf8eb72a5412f789ad777c112b678b84f",
       "mtimeMs": 1784525583170.1907,
       "size": 9400,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/research-engine/src/coverage-metadata.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "digestFields",
+          "kind": "function",
+          "line": 9,
+          "exported": false,
+          "endLine": 9,
+          "signature": "(fields: ReadonlyArray<string>)"
+        },
+        {
+          "name": "computeCoverageSnapshotId",
+          "kind": "function",
+          "line": 14,
+          "exported": true,
+          "endLine": 14
+        },
+        {
+          "name": "validateCoverageIdentity",
+          "kind": "const",
+          "line": 28,
+          "exported": true,
+          "endLine": 28
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "76e64987ae437aadc4997beb250dd7e30cb2b2f4e4698908883c16fd7f5f1378",
+      "mtimeMs": 1784532429068.7703,
+      "size": 1439,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -16359,7 +17175,7 @@
       ],
       "exports": [],
       "hash": "323a57316dd4eebd72022d2c97b2cfef3c810c1605306c43705c6575b78b4be0",
-      "mtimeMs": 1784528808937.6948,
+      "mtimeMs": 1784531240335.6917,
       "size": 591,
       "generated": false,
       "vendor": false,
