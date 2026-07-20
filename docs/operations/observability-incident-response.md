@@ -8,12 +8,19 @@ are the evidence sources.
 
 ## Signal and privacy contract
 
-Every instrumented boundary uses the same `@struct/observability` path and the
-bounded dimensions `boundary`, `outcome`, `classification`, and `error.tag`.
-Correlation fields are request, workspace, project, run, job, source, and
-report IDs. IDs may appear in logs and spans but never metric labels. Metric
-names are fixed at build time, such as `struct_database_failure_total` and
-`struct_sse_success_total`, so user input cannot increase cardinality.
+Every instrumented boundary uses the same `@struct/observability` path. The
+finite `boundary` allowlist is request, workspace, run, job, tool, database,
+sidecar, SSE, and report; `outcome` is success or failure; and `classification`
+is completed, cancelled, invalid-request, not-found, unauthorized,
+dependency-unavailable, timeout, stalled, capacity-exceeded, or
+internal-failure. Unknown classifications normalize to internal-failure.
+`error.tag` is a bounded diagnostic field for logs and spans, never a metric
+label; invalid or untrusted tags normalize to `UnknownFailure`. Correlation
+fields are request, workspace, project, run, job, source, and report IDs. IDs
+may appear in logs and spans but never metric labels. Metric names are fixed at
+build time, such as `struct_database_failure_total` and
+`struct_sse_success_total`, and carry no input-derived labels, so user input
+cannot increase metric cardinality.
 
 Support diagnostics are JSON schema version `1`, at most 4,096 UTF-8 bytes,
 and contain only event, boundary, outcome, classification, correlation IDs,
@@ -22,7 +29,10 @@ content, source names or paths, prompts, SQL, authorization headers, cookies,
 credentials, provider requests/responses, or raw nested error causes. The
 redactor replaces sensitive keys and credential/email patterns, limits strings
 to 160 characters, arrays to 10 items, objects to 24 fields, and nesting to
-three levels.
+three levels. After UTF-8 JSON serialization, diagnostics over 4,096 bytes drop
+the optional details field to a `[TRUNCATED]` marker and are serialized again;
+the required schema, event, boundary, outcome, classification, and identity
+fields remain present and the final document remains valid JSON.
 
 Failed and interrupted operations retain their original Effect exit for the
 caller, but exporters receive only a successful telemetry envelope carrying
@@ -57,7 +67,7 @@ Alert only on actionable, bounded conditions:
 
 | Alert | Trigger | First action |
 | --- | --- | --- |
-| Dependency unavailable | readiness or Compose health fails for 60 s | identify DB or data-engine, then use its runbook |
+| Dependency unavailable | readiness, Compose health, or authenticated data-engine health fails for 60 s | identify the affected DB or data-engine, then use its runbook |
 | Worker stalled | running job heartbeat is older than configured stale limit for two polls | inspect durable job events, then restart one worker |
 | Research stuck | run exceeds its typed elapsed budget without a terminal event | request cancellation and verify one terminal disposition |
 | SSE reconnect storm | more than 10 reconnects for one run in 5 minutes or a 100-event poll exceeds 2 s | verify API readiness and cursor progress |
@@ -131,9 +141,12 @@ credential/provider payload in code, logs, traces, diagnostics, or artifacts.
 Contain by restricting access to the affected output and stopping further
 export. Identify the exact secret class without copying its value. Rotate and
 revoke the credential at its owner, remove the exposed output, and re-run
-`bun run secrets:scan`. Verify the old credential is rejected, the new one
-works through readiness, and an adversarial support diagnostic contains only
-`[REDACTED]`/`[TRUNCATED]` markers.
+`bun run secrets:scan`. Verify the old credential is rejected. Verify a rotated
+data-engine credential with `bun run ops database:verify`; verify a provider
+credential with its authenticated health check or a minimal non-persisting
+model smoke operation. Separately run `bun run ops application:verify` to
+confirm process and database readiness. An adversarial support diagnostic must
+contain only `[REDACTED]`/`[TRUNCATED]` markers.
 
 ## Game-day verification
 

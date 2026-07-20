@@ -117,6 +117,11 @@ describe('observability game day', () => {
       'bun run ops application:verify',
       'bun run secrets:scan',
     ]) expect(document).toContain(command)
+    const prose = document.replaceAll(/\s+/g, ' ')
+    expect(prose).toContain('authenticated data-engine health fails for 60 s')
+    expect(prose).toContain('minimal non-persisting model smoke operation')
+    expect(prose).toContain('drop the optional details field')
+    expect(prose).toContain('carry no input-derived labels')
     const scripts = JSON.parse(packageDocument).scripts as Record<string, string>
     expect(scripts['ops']).toBe('bun run scripts/production-operations.ts')
     expect(scripts['secrets:scan']).toBe('bun run scripts/secrets-scan.ts')
