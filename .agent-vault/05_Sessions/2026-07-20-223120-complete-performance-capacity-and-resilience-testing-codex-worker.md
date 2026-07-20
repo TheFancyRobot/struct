@@ -124,3 +124,4 @@ Use one note per meaningful work session. Record chronology, validation, and han
 
 - State what finished, what remains, and whether handoff is clean.
 - STEP-09-03 is implementation-complete with zero known confirmed defects. Publish through the root orchestrator’s review/merge gate, then continue STEP-09-04 in a fresh worker.
+- Published as PR #55 and merged to `main` at `97494c1` after the validated live-gate finding was fixed and all review threads were resolved.
