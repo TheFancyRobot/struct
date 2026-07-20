@@ -5,13 +5,13 @@ contract_version: 1
 title: step-06-05-worker session for Add Progress Drilldown and Partial Result UX
 session_id: SESSION-2026-07-20-103632
 date: '2026-07-20'
-status: in-progress
-owner: step-06-05-worker
+status: completed
+owner: Codex
 branch: agent/step-06-05
 phase: '[[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]'
 context:
   context_id: SESSION-2026-07-20-103632
-  status: active
+  status: completed
   updated_at: '2026-07-20T10:36:32.008Z'
   current_focus:
     summary: Advance [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_05_add-progress-drilldown-and-partial-result-ux|STEP-06-05 Add Progress Drilldown and Partial Result UX]].
@@ -21,7 +21,7 @@ context:
     target: '[[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_05_add-progress-drilldown-and-partial-result-ux|STEP-06-05 Add Progress Drilldown and Partial Result UX]]'
     section: Context Handoff
   last_action:
-    type: saved
+    type: completed
 related_bugs: []
 related_decisions: []
 created: '2026-07-20'
@@ -59,6 +59,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Root review found and fixed one bounded-reader defect: the recursive progress API rejected an event history exactly at the 65,536-event limit and could request beyond the declared cap. The reader now allows the exact boundary and uses a one-event overflow probe without fetching beyond the bound.
 - Added exact-limit and overflow regression tests. Final repository gate after review remediation: 624 passed, 164 skipped, 0 failed; Playwright: 11 passed, 0 failed; typecheck, build, lint, import boundaries, docs links, secrets scan, and diff check all passed.
 - 2026-07-20: Remediated verified PR review findings in one impact-checked pass: synchronized the step snapshot with active frontmatter, corrected final test counts, recorded the resolved bounded-reader boundary defect, separated OS theme detection from explicit preference persistence, propagated the active theme to the document root, and made the HTML background theme-aware. Added Playwright regression coverage for OS detection, explicit persistence, reload behavior, and light/dark document-root backgrounds.
+- 2026-07-20: PR #38 passed CodeRabbit's automatic follow-up review with all five inline threads resolved and the timeout-normalization nitpick covered, then merged into `main` as `68c770b`.
 
 ## Findings
 

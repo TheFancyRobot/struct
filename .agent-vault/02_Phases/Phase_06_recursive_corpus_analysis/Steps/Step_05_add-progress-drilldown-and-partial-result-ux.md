@@ -5,7 +5,7 @@ contract_version: 1
 title: Add Progress Drilldown and Partial Result UX
 step_id: STEP-06-05
 phase: '[[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]'
-status: active
+status: completed
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-20'
@@ -19,8 +19,8 @@ tags:
   - step
 context_id: SESSION-2026-07-20-103632
 active_session_id: 05_Sessions/2026-07-20-103632-add-progress-drilldown-and-partial-result-ux-step-06-05-worker
-context_status: active
-context_summary: Implemented and fully validated the production recursive progress/read/event/cancel surface and responsive SolidJS workbench; review remediation is in progress before merge.
+context_status: completed
+context_summary: 'STEP-06-05 production recursive progress, partial-result UX, responsive light/dark Playwright coverage, and all verified review remediations were validated and merged in PR #38.'
 ---
 
 # Step 05 - Add Progress Drilldown and Partial Result UX
@@ -51,10 +51,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: active
+- Status: completed
 - Current owner: Codex
 - Last touched: 2026-07-20
-- Next action: Complete review remediation and validation, then publish the reviewed STEP-06-05 branch for merge.
+- Next action: Continue to [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_06_evaluate-25000-file-recursive-analysis-and-recovery|STEP-06-06 Evaluate 25000-File Recursive Analysis and Recovery]].
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
