@@ -20,6 +20,8 @@
     "phase-07:eval": "bun src/run-phase-07-hybrid-evaluation.ts --check && bun test --max-concurrency 1 test/hybrid-research.test.ts",
     "phase-08:generate": "bun src/run-report-fidelity-evaluation.ts --generate",
     "phase-08:eval": "bun src/run-report-fidelity-evaluation.ts --check && bun test --max-concurrency 1 test/report-fidelity.test.ts",
+    "v1:performance:generate": "bun src/v1-performance-resilience.ts --generate",
+    "v1:performance:eval": "bun src/v1-performance-resilience.ts --check && bun test --max-concurrency 1 test/v1-performance-resilience.test.ts",
     "directory:eval": "bun src/directory-refresh-smoke.ts",
     "bench": "bun src/benchmarks/run.ts",
     "typecheck": "bun --bun tsc --noEmit --project tsconfig.json",

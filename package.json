@@ -20,7 +20,7 @@
     "lint:imports": "bun --bun dependency-cruiser --config dependency-cruiser.config.mjs apps packages && bun run scripts/boundary-check.ts apps packages",
     "test": "bun test --timeout 30000 --max-concurrency 1 --path-ignore-patterns='**/e2e/**' ./apps ./packages",
     "test:integration": "bun test --timeout 30000 --max-concurrency 1 integration.test.ts",
-    "test:e2e": "bunx playwright install chromium && bun test --timeout 60000 --max-concurrency 1 ./apps/web/e2e",
+    "test:e2e": "bun run --filter @struct/web build && bunx playwright install chromium && bun test --timeout 60000 --max-concurrency 1 ./apps/web/e2e",
     "migrations:up": "bun run --filter @struct/api migrations:up",
     "migrations:down": "bun run --filter @struct/api migrations:down",
     "migrations:create": "bun run --filter @struct/persistence migrations:create",
@@ -32,6 +32,7 @@
     "directory:eval": "bun run --filter @struct/evaluation directory:eval",
     "recursive:eval": "bun run --filter @struct/evaluation phase-06:eval",
     "bench": "bun run --filter @struct/evaluation bench",
+    "v1:performance": "bun run scripts/v1-performance-gate.ts",
     "secrets:scan": "bun run scripts/secrets-scan.ts",
     "docs:lint": "bun run scripts/docs-lint.ts"
   },

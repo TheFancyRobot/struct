@@ -10,6 +10,10 @@ import {
 import { Schema } from 'effect'
 /* eslint-disable no-unused-vars -- Babel does not mark type-only imports as used. */
 import { chromium, type Page } from 'playwright'
+import {
+  startAppServer,
+  stopAppServer,
+} from './support/app-server'
 /* eslint-enable no-unused-vars */
 
 const uuid = (suffix: string) =>
@@ -40,7 +44,7 @@ const semantics = {
 }
 
 let browser: Awaited<ReturnType<typeof chromium.launch>>
-let web: ReturnType<typeof Bun.spawn>
+let web: Awaited<ReturnType<typeof startAppServer>>
 
 function documentEvidence(suffix: string, claimSignature: string) {
   return {
@@ -548,29 +552,13 @@ async function noOverflow(page: Page): Promise<void> {
 beforeAll(async () => {
   await rm(screenshotRoot, { recursive: true, force: true })
   await mkdir(screenshotRoot, { recursive: true })
-  web = Bun.spawn(
-    ['bun', 'run', 'dev', '--', '--host', '127.0.0.1', '--port', '4177'],
-    {
-      cwd: new URL('..', import.meta.url).pathname,
-      stdout: 'ignore',
-      stderr: 'ignore',
-    },
-  )
-  for (let attempt = 0; attempt < 50; attempt += 1) {
-    try {
-      if ((await fetch(origin)).ok) break
-    } catch {
-      // Vite is still starting.
-    }
-    await Bun.sleep(100)
-  }
+  web = await startAppServer(4177)
   browser = await chromium.launch({ headless: true })
 })
 
 afterAll(async () => {
   await browser?.close()
-  web?.kill()
-  await web?.exited
+  await stopAppServer(web)
 })
 
 describe('report workspace browser workflow', () => {

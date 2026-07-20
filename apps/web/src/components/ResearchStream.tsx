@@ -29,17 +29,11 @@ import { saveCompletedResearchFinding } from '../api/artifacts'
 import { RecursiveRunTimeline } from './RecursiveRunTimeline'
 import { PartialFindingsPanel } from './PartialFindingsPanel'
 import { mergeRecursiveRead } from './recursive-progress-state'
-import {
-  MixedSourceReport,
-  type MixedSourceReportModel,
-} from './MixedSourceReport'
-
 interface ResearchStreamProps {
   readonly projectId: ProjectId
   readonly threadId: ResearchThreadId
   readonly runId: ResearchRunId
   readonly workspaceId?: WorkspaceId
-  readonly demoReport?: MixedSourceReportModel
 }
 
 const eventLabel = (event: ResearchEvent): string => {
@@ -83,10 +77,6 @@ const failureGuidance = (errorTag: string): string => {
 }
 
 export const ResearchStream: Component<ResearchStreamProps> = (props) => {
-  if (props.demoReport !== undefined) {
-    return <MixedSourceReport report={props.demoReport} />
-  }
-
   const [state, setState] = createStore<{ events: ResearchEvent[] }>({ events: [] })
   const [recursiveRead, { refetch: refetchRecursive }] = createResource(
     () => [props.projectId, props.runId] as const,
