@@ -6,7 +6,7 @@ title: Implement Tool Registry Typed Failures Retries and Recovery
 step_id: STEP-05-05
 phase: '[[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|Phase 05 typed research planning and bounded execution]]'
 status: completed
-owner: step-05-05-worker
+owner: step-05-05-review-fix
 created: '2026-07-17'
 updated: '2026-07-20'
 depends_on:
@@ -20,7 +20,7 @@ tags:
 context_id: SESSION-2026-07-20-041804
 active_session_id: 05_Sessions/2026-07-20-041804-implement-tool-registry-typed-failures-retries-and-recovery-step-05-05-worker
 context_status: completed
-context_summary: Implemented and validated the typed Effect registry, bounded retry/recovery, reachable mixed-source Fred worker execution, cancellation polling, checkpoint replay safety, and exact dataset citation preservation.
+context_summary: 'Completed PR review remediation: production dataset lineage reaches typed planning and exact queries; dataset citations persist atomically with run linkage; tool retries commit durable artifacts before deduped shared state; evidence and model deadlines are bounded; all repository and live integration gates pass.'
 ---
 
 # Step 05 - Implement Tool Registry Typed Failures Retries and Recovery
@@ -52,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_05_implement-tool-registry-typed-failures-retries-and-recovery/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_05_implement-tool-registry-typed-failures-retries-and-recovery/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: completed
+- Current owner: step-05-05-review-fix
+- Last touched: 2026-07-20
+- Next action: Root orchestrator should publish and merge the reviewed STEP-05-05 branch, then begin STEP-05-06 only after the zero-defect gate remains green.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

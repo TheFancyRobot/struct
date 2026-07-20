@@ -19,7 +19,10 @@ import {
   type ResearchRun,
 } from '@struct/domain'
 import { DeterministicDatasetQueryOutput } from '@struct/data-engine'
-import type { ArtifactStoreShape } from '@struct/source-storage'
+import {
+  StorageWriteError,
+  type ArtifactStoreShape,
+} from '@struct/source-storage'
 import { Effect, Option, Runtime, Schema } from 'effect'
 import { makeProductionResearchWorkflow } from './research-workflow.js'
 
@@ -35,6 +38,9 @@ const ids = {
   ),
   dataset: ResearchPlanNodeId.make(
     'aa0e8400-e29b-41d4-a716-446655440008',
+  ),
+  directory: ResearchPlanNodeId.make(
+    'aa0e8400-e29b-41d4-a716-446655440014',
   ),
   source: SourceVersionId.make('aa0e8400-e29b-41d4-a716-446655440009'),
   datasetId: DatasetId.make('aa0e8400-e29b-41d4-a716-446655440010'),
@@ -126,6 +132,71 @@ const checkpoint: ResearchExecutionCheckpoint = {
 }
 
 describe('production research workflow', () => {
+  it('bounds an injected hanging synthesis during the model use phase', async () => {
+    const boundedPlan: ResearchPlan = {
+      ...plan,
+      budget: {
+        ...plan.budget,
+        maximumElapsedMilliseconds: 5,
+      },
+    }
+    const storage: ArtifactStoreShape = {
+      writeObject: () => Effect.dieMessage('hanging model must not write'),
+      readObject: () => Effect.dieMessage('unused'),
+      stageObject: () => Effect.dieMessage('unused'),
+      readStagedObject: () => Effect.dieMessage('unused'),
+    }
+    const workflow = makeProductionResearchWorkflow({
+      storage,
+      runtime: Runtime.defaultRuntime,
+      fredConfig: {
+        providerPackage: 'unused',
+        model: 'unused',
+        maxElapsedMs: 10_000,
+      },
+      retrieve: () => Effect.dieMessage('unused'),
+      queryDataset: () => Effect.dieMessage('unused'),
+      loadDurableState: () => Effect.succeed(Option.some({
+        plan: Option.some(boundedPlan),
+        checkpoint: Option.none(),
+        cancellationStatus: 'none',
+        terminalStatus: Option.none(),
+      })),
+      runSynthesis: () => Effect.never,
+      runGraph: (
+        graphPlan,
+        initial,
+        modelRouting,
+        _policy,
+        graphDependencies,
+      ) => Effect.gen(function* () {
+        const executor = yield* graphDependencies.models.resolve({
+          role: 'synthesis',
+          ...modelRouting.synthesis,
+        })
+        yield* executor.execute(graphPlan.nodes[0]!, new AbortController().signal)
+        return initial
+      }).pipe(Effect.mapError(() =>
+        new ResearchWorkflowError({
+          stage: 'test-graph',
+          message: 'test graph failed',
+        }))),
+    })
+
+    const exit = await Effect.runPromiseExit(workflow.run({
+      run,
+      workspaceId: ids.workspace,
+      projectId: ids.project,
+      sourceVersionIds: [],
+      plan: boundedPlan,
+      resumeCheckpoint: Option.none(),
+      onCheckpoint: () => Effect.void,
+      onRetrievalCompleted: () => Effect.void,
+    }))
+    expect(exit._tag).toBe('Failure')
+    expect(String(exit)).toContain('ResearchProviderFailure')
+  })
+
   it('finalizes a fully committed checkpoint from durable artifacts without replay', async () => {
     const bytes = new TextEncoder().encode(JSON.stringify({
       kind: 'research-answer',
@@ -246,10 +317,26 @@ describe('production research workflow', () => {
           evidenceRefs: [],
         },
         {
+          id: ids.directory,
+          kind: 'directory-navigation',
+          goal: 'Browse the directory evidence.',
+          dependencies: [ids.document],
+          inputRefs: [{
+            kind: 'source-version',
+            sourceVersionId: ids.source,
+          }],
+          evidenceRefs: [],
+          toolInput: {
+            kind: 'directory-navigation',
+            query: 'Browse the directory evidence.',
+            maximumResults: 80,
+          },
+        },
+        {
           id: ids.dataset,
           kind: 'dataset-query',
           goal: 'Inspect the exact value.',
-          dependencies: [ids.document],
+          dependencies: [ids.directory],
           inputRefs: [{
             kind: 'dataset-snapshot',
             datasetId: ids.datasetId,
@@ -291,6 +378,11 @@ describe('production research workflow', () => {
             maximumCalls: 1,
           },
           {
+            toolId: 'directory-navigation',
+            capability: 'directory:navigate',
+            maximumCalls: 1,
+          },
+          {
             toolId: 'dataset-query',
             capability: 'dataset:query',
             maximumCalls: 1,
@@ -299,16 +391,47 @@ describe('production research workflow', () => {
       },
       budget: {
         ...plan.budget,
-        maximumSteps: 3,
-        maximumToolCalls: 2,
+        maximumSteps: 4,
+        maximumToolCalls: 3,
       },
     }
     let retrievalAttempts = 0
     let datasetCalls = 0
     let checkpoints = 0
     let artifactIndex = 0
+    let datasetArtifactAttempts = 0
+    let evidenceArtifactAttempts = 0
+    let synthesizedDatasetResults = 0
+    let synthesizedEvidence: ReadonlyArray<{
+      readonly locator: string
+    }> = []
     const storage: ArtifactStoreShape = {
       writeObject: (value, options) => {
+        if (
+          options.mediaType === 'application/vnd.struct.research-evidence+json'
+        ) {
+          evidenceArtifactAttempts += 1
+          if (evidenceArtifactAttempts === 1) {
+            return Effect.fail(new StorageWriteError({
+              operation: 'writeObject',
+              reason: 'transient-test-failure',
+              message: 'Transient evidence artifact write failed',
+            }))
+          }
+        }
+        if (
+          options.mediaType
+            === 'application/vnd.struct.research-dataset-result+json'
+        ) {
+          datasetArtifactAttempts += 1
+          if (datasetArtifactAttempts === 1) {
+            return Effect.fail(new StorageWriteError({
+              operation: 'writeObject',
+              reason: 'transient-test-failure',
+              message: 'Transient dataset artifact write failed',
+            }))
+          }
+        }
         artifactIndex += 1
         return Effect.succeed({
           ref: `artifact://sha256/${String(artifactIndex).padStart(64, '0')}`,
@@ -329,7 +452,15 @@ describe('production research workflow', () => {
         model: 'unused',
         maxElapsedMs: 10_000,
       },
-      retrieve: () => {
+      retrieve: (input) => {
+        if (input.query === 'Browse the directory evidence.') {
+          return Effect.succeed(Array.from({ length: 80 }, (_, index) => ({
+            sourceVersionId: ids.source,
+            locator: `directory:${index}`,
+            excerpt: `Directory evidence ${index}`,
+            rank: index,
+          })))
+        }
         retrievalAttempts += 1
         return retrievalAttempts === 1
           ? Effect.fail(new Error('transient'))
@@ -350,16 +481,20 @@ describe('production research workflow', () => {
         cancellationStatus: 'none',
         terminalStatus: Option.none(),
       })),
-      runSynthesis: (input) => Effect.succeed({
-        answer: 'The value is 42.',
-        citations: [{
-          sourceVersionId: ids.source,
-          locator: 'lines:1-1',
-        }],
-        datasetCitations: input.datasetResults.flatMap(
-          (result) => result.citations,
-        ),
-      }),
+      runSynthesis: (input) => {
+        synthesizedDatasetResults = input.datasetResults.length
+        synthesizedEvidence = input.evidence
+        return Effect.succeed({
+          answer: 'The value is 42.',
+          citations: [{
+            sourceVersionId: ids.source,
+            locator: 'lines:1-1',
+          }],
+          datasetCitations: input.datasetResults.flatMap(
+            (result) => result.citations,
+          ),
+        })
+      },
       runGraph: (
         graphPlan,
         initial,
@@ -382,6 +517,12 @@ describe('production research workflow', () => {
               'dataset:query',
             )
             yield* executor.execute(node, signal)
+          } else if (node.kind === 'directory-navigation') {
+            const executor = yield* graphDependencies.tools.resolve(
+              'directory-navigation',
+              'directory:navigate',
+            )
+            yield* executor.execute(node, signal)
           } else if (node.kind === 'answer-synthesis') {
             const executor = yield* graphDependencies.models.resolve({
               role: 'synthesis',
@@ -394,8 +535,8 @@ describe('production research workflow', () => {
           ...initial,
           status: 'completed' as const,
           completedNodeIds: graphPlan.nodes.map((node) => node.id),
-          steps: 3,
-          toolCalls: 2,
+          steps: 4,
+          toolCalls: 3,
           modelCalls: 1,
         }
         yield* graphDependencies.onStateCommitted?.(completed)
@@ -421,8 +562,14 @@ describe('production research workflow', () => {
       onRetrievalCompleted: () => Effect.void,
     }))
 
-    expect(retrievalAttempts).toBe(2)
-    expect(datasetCalls).toBe(1)
+    expect(retrievalAttempts).toBe(3)
+    expect(evidenceArtifactAttempts).toBe(3)
+    expect(datasetCalls).toBe(2)
+    expect(datasetArtifactAttempts).toBe(2)
+    expect(synthesizedDatasetResults).toBe(1)
+    expect(synthesizedEvidence).toHaveLength(80)
+    expect(synthesizedEvidence[0]?.locator).toBe('lines:1-1')
+    expect(synthesizedEvidence[79]?.locator).toBe('directory:78')
     expect(checkpoints).toBe(1)
     expect(result.answer.datasetCitations).toEqual(datasetOutput.citations)
   })

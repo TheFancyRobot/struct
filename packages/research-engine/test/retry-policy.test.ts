@@ -149,6 +149,7 @@ describe('research retry policy', () => {
   })
 
   it('rejects automatic retries without idempotency protection', async () => {
+    let calls = 0
     const exit = await Effect.runPromiseExit(executeResearchToolWithRetry(
       { ...context, idempotent: false, idempotencyKey: null },
       policy,
@@ -156,8 +157,12 @@ describe('research retry policy', () => {
         sleep: () => Effect.void,
         onAttempt: () => Effect.void,
       },
-      () => Effect.succeed('must-not-run'),
+      () => Effect.sync(() => {
+        calls += 1
+        return 'must-not-run'
+      }),
     ))
     expect(String(exit)).toContain('ResearchToolRetrySafetyError')
+    expect(calls).toBe(0)
   })
 })

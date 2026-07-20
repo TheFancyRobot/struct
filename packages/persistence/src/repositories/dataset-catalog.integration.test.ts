@@ -188,6 +188,16 @@ describeIf('DatasetCatalogRepo (PostgreSQL)', () => {
     )
     expect(snapshots.map((snapshot) => snapshot.version)).toEqual([1, 2])
     expect(snapshots[1]).toEqual(secondSnapshot)
+    expect(await run(DatasetCatalogRepo.resolveResearchSourceScopes(
+      workspaceId,
+      projectId,
+      [sourceVersionId],
+    ))).toEqual([{
+      kind: 'dataset',
+      datasetId,
+      datasetSnapshotId: secondSnapshotId,
+      sourceVersionIds: [sourceVersionId],
+    }])
 
     const conflictingSnapshot = await Effect.runPromiseExit(
       DatasetCatalogRepo.createSnapshot({

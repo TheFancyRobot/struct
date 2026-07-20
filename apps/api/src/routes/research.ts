@@ -42,11 +42,11 @@ export const startResearch = (
   Effect.gen(function* () {
     const question = input.question.trim()
     const uniqueVersions = [...new Set(input.sourceVersionIds)]
-    if (question.length === 0 || question.length > 4000) {
+    if (question.length === 0 || question.length > 2_048) {
       return yield* new ValidationError({
         field: 'question',
         reason: 'invalid-length',
-        message: 'Research question must contain between 1 and 4000 characters',
+        message: 'Research question must contain between 1 and 2048 characters',
       })
     }
     if (

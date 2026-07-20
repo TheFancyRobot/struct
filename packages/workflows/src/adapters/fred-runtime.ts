@@ -426,7 +426,11 @@ export const runFredBoundedResearchGraph = (
 > =>
   Effect.acquireUseRelease(
     Effect.tryPromise({
-      try: () => factory.create(signal),
+      try: (deadlineSignal) => createFredBeforeDeadline(
+        factory,
+        config.maxElapsedMs,
+        AbortSignal.any([deadlineSignal, signal]),
+      ),
       catch: () =>
         new ResearchWorkflowError({
           stage: 'fred-runtime',
@@ -449,12 +453,12 @@ export const runFredBoundedResearchGraph = (
             })),
         )
         const result = yield* Effect.tryPromise({
-          try: () => factory.execute(
+          try: (deadlineSignal) => factory.execute(
             fred,
             workflow,
             initialState,
             config.maxElapsedMs,
-            signal,
+            AbortSignal.any([deadlineSignal, signal]),
           ),
           catch: () =>
             new ResearchWorkflowError({
@@ -496,6 +500,7 @@ export const runFredResearchCritique = (
   input: typeResearchEvidenceAgentInput,
   model: string,
   config: FredRuntimeConfig,
+  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
 ): Effect.Effect<
   typeResearchEvidenceAssessment,
   ResearchProviderFailure,
@@ -504,7 +509,7 @@ export const runFredResearchCritique = (
   Effect.acquireUseRelease(
     Effect.tryPromise({
       try: (signal) => createFredBeforeDeadline(
-        makeDefaultFactory(config.otlpEndpoint),
+        factory,
         config.maxElapsedMs,
         signal,
       ),
@@ -537,17 +542,26 @@ export const runFredResearchCritique = (
     (fred) => Effect.promise(() =>
       boundedShutdown(fred, EMERGENCY_SHUTDOWN_MS)
     ),
+  ).pipe(
+    Effect.timeoutFail({
+      duration: config.maxElapsedMs,
+      onTimeout: () =>
+        new ResearchProviderFailure({
+          message: 'Critique model exceeded elapsed-time budget',
+        }),
+    }),
   )
 
 export const runFredResearchSynthesis = (
   input: typeResearchEvidenceAgentInput,
   model: string,
   config: FredRuntimeConfig,
+  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
 ): Effect.Effect<typeResearchAnswer, ResearchProviderFailure, never> =>
   Effect.acquireUseRelease(
     Effect.tryPromise({
       try: (signal) => createFredBeforeDeadline(
-        makeDefaultFactory(config.otlpEndpoint),
+        factory,
         config.maxElapsedMs,
         signal,
       ),
@@ -580,6 +594,14 @@ export const runFredResearchSynthesis = (
     (fred) => Effect.promise(() =>
       boundedShutdown(fred, EMERGENCY_SHUTDOWN_MS)
     ),
+  ).pipe(
+    Effect.timeoutFail({
+      duration: config.maxElapsedMs,
+      onTimeout: () =>
+        new ResearchProviderFailure({
+          message: 'Synthesis model exceeded elapsed-time budget',
+        }),
+    }),
   )
 
 export const runFredWalkingSkeleton = (

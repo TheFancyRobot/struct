@@ -642,6 +642,7 @@ describeIf('walking skeleton full vertical slice', () => {
         sourceVersionId,
         locator: citation.locator,
       }],
+      datasetCitations: [],
     })
   })
 })

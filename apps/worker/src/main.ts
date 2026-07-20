@@ -69,6 +69,7 @@ import {
 import { processOneIngestionJob } from './jobs/ingest-source'
 import { processOneResearchJob } from './jobs/run-research'
 import { makeProductionResearchWorkflow } from './jobs/research-workflow'
+import { makeProductionResearchPlanningPolicy } from './jobs/research-planning'
 import { processOneSourceTextReindex } from './jobs/reindex-source-text'
 import { processOneDatasetMaterialization } from './jobs/materialize-dataset'
 import { runWorkerPollLoops } from './polling'
@@ -150,8 +151,13 @@ const program = Effect.gen(function* () {
     },
     client: dataEngineClient,
   })
-  const deterministicDatasetQuery = makeDeterministicDatasetQueryService({
-    query: readOnlySql,
+  const deterministicDatasetQueryFor = (
+    preview: Effect.Effect.Success<ReturnType<typeof readOnlySql.execute>>,
+  ) => makeDeterministicDatasetQueryService({
+    // The authorized read-only service has already executed this exact typed
+    // request. Reuse that immutable result so citation persistence cannot
+    // issue the same sidecar query a second time.
+    query: { execute: () => Effect.succeed(preview) },
     store: {
       record: (result, citations) =>
         DatasetQueryEvidenceRepo.record(result, citations).pipe(
@@ -304,41 +310,21 @@ const program = Effect.gen(function* () {
         ResearchRunRepo.findById(runId).pipe(Effect.provide(researchRunLayer)),
     },
     planning: {
-      plan: ({ run, workspaceId, projectId, sourceVersionIds }) => {
-        const sourceScopes = sourceVersionIds.map((sourceVersionId) => ({
-          kind: 'document' as const,
-          sourceVersionId,
-        }))
-        const toolPolicy = {
-          grants: [
-            {
-              toolId: 'hybrid-retrieval' as const,
-              capability: 'document:retrieve' as const,
-              maximumCalls: 2,
-            },
-            {
-              toolId: 'citation-validation' as const,
-              capability: 'citation:validate' as const,
-              maximumCalls: 1,
-            },
-            {
-              toolId: 'directory-navigation' as const,
-              capability: 'directory:navigate' as const,
-              maximumCalls: 1,
-            },
-          ],
-        }
-        const budgetCeiling = {
-          maximumSteps: 8,
-          maximumModelCalls: 4,
-          maximumToolCalls: 4,
-          maximumTokens: 32_000,
-          maximumElapsedMilliseconds: fredConfig.maxElapsedMs,
-          maximumEstimatedCostMicros: 1_000_000,
-          maximumFanOut: 1,
-          maximumRevisions: 1,
-        }
-        return runFredResearchPlanning({
+      plan: ({ run, workspaceId, projectId, sourceVersionIds }) =>
+        Effect.gen(function* () {
+        const sourceScopes = yield* DatasetCatalogRepo
+          .resolveResearchSourceScopes(
+            workspaceId,
+            projectId,
+            sourceVersionIds,
+          )
+          .pipe(Effect.provide(datasetCatalogLayer))
+        const { toolPolicy, budgetCeiling } =
+          makeProductionResearchPlanningPolicy(
+            sourceScopes,
+            fredConfig.maxElapsedMs,
+          )
+        return yield* runFredResearchPlanning({
           classifier: {
             workspaceId,
             projectId,
@@ -356,7 +342,7 @@ const program = Effect.gen(function* () {
             budgetCeiling,
           },
         }, fredConfig)
-      },
+      }),
     },
     workflow: makeProductionResearchWorkflow({
       storage,
@@ -423,7 +409,7 @@ const program = Effect.gen(function* () {
           toolId: "dataset-query", capability: "dataset:query",
           nodeId: node.id, runId: plan.runId, message: "Dataset query spec is invalid",
         })))
-        return yield* deterministicDatasetQuery.execute(input).pipe(
+        return yield* deterministicDatasetQueryFor(preview).execute(input).pipe(
           Effect.mapError((failure) =>
             failure instanceof DatasetQueryAuthenticationError
             || failure instanceof DatasetQueryAuthorizationError

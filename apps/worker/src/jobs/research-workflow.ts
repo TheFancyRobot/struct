@@ -53,6 +53,7 @@ const AnswerArtifact = Schema.Struct({
 })
 
 type Artifact = ResearchExecutionCheckpoint['state']['completed'][number]['artifacts'][number]
+const MAX_COMBINED_EVIDENCE = 80
 
 export interface ProductionResearchWorkflowDeps {
   readonly storage: ArtifactStoreShape
@@ -135,6 +136,28 @@ export function makeProductionResearchWorkflow(
         let datasetResults:
           ReadonlyArray<DeterministicDatasetQueryOutputType> = []
         let answer: typeResearchAnswer | undefined
+        const appendEvidence = (items: ReadonlyArray<TextEvidence>): void => {
+          const identities = new Set(
+            evidence.map((item) =>
+              `${item.sourceVersionId}\u0000${item.locator}\u0000${item.excerpt}`
+            ),
+          )
+          const unique = items.filter((item) => {
+            const identity =
+              `${item.sourceVersionId}\u0000${item.locator}\u0000${item.excerpt}`
+            if (identities.has(identity)) return false
+            identities.add(identity)
+            return true
+          })
+          evidence = [...evidence, ...unique].slice(0, MAX_COMBINED_EVIDENCE)
+        }
+        const commitDatasetResult = (
+          result: DeterministicDatasetQueryOutputType,
+        ): void => {
+          if (!datasetResults.some((item) => item.result.id === result.result.id)) {
+            datasetResults = [...datasetResults, result]
+          }
+        }
         const datasetCitationsAreExact = (
           candidate: typeResearchAnswer,
         ): boolean => {
@@ -175,10 +198,13 @@ export function makeProductionResearchWorkflow(
               byteLength: stored.byteLength,
               mediaType,
             }
-            artifactsByNode.set(nodeId, [
-              ...(artifactsByNode.get(nodeId) ?? []),
-              artifact,
-            ])
+            const existing = artifactsByNode.get(nodeId) ?? []
+            if (!existing.some((item) =>
+              item.digest === artifact.digest
+              && item.mediaType === artifact.mediaType
+            )) {
+              artifactsByNode.set(nodeId, [...existing, artifact])
+            }
             return artifact
           },
         )
@@ -197,12 +223,9 @@ export function makeProductionResearchWorkflow(
                 artifact.mediaType
                 === 'application/vnd.struct.research-evidence+json'
               ) {
-                evidence = [
-                  ...evidence,
-                  ...Schema.decodeUnknownSync(EvidenceArtifact)(
-                    decoded,
-                  ).evidence,
-                ]
+                appendEvidence(
+                  Schema.decodeUnknownSync(EvidenceArtifact)(decoded).evidence,
+                )
               } else if (
                 artifact.mediaType
                 === 'application/vnd.struct.research-answer+json'
@@ -218,7 +241,7 @@ export function makeProductionResearchWorkflow(
                     result: DeterministicDatasetQueryOutput,
                   }),
                 )(decoded)
-                datasetResults = [...datasetResults, value.result]
+                commitDatasetResult(value.result)
               }
             }
           }
@@ -285,7 +308,6 @@ export function makeProductionResearchWorkflow(
                     runId: run.id,
                     message: 'Document retrieval provider failed',
                   })))
-                evidence = [...evidence, ...result]
                 const artifact = yield* writeArtifact(
                   node.id,
                   { kind: 'research-evidence', evidence: result },
@@ -298,6 +320,7 @@ export function makeProductionResearchWorkflow(
                     runId: run.id,
                     message: 'Research evidence artifact could not be stored',
                   })))
+                appendEvidence(result)
                 yield* onRetrievalCompleted(result).pipe(
                   Effect.asVoid,
                   Effect.mapError(() =>
@@ -365,7 +388,6 @@ export function makeProductionResearchWorkflow(
                     runId: run.id,
                     message: 'Directory navigation provider failed',
                   })))
-                evidence = [...evidence, ...result]
                 const artifact = yield* writeArtifact(
                   node.id,
                   { kind: 'research-evidence', evidence: result },
@@ -378,6 +400,7 @@ export function makeProductionResearchWorkflow(
                     runId: run.id,
                     message: 'Directory evidence artifact could not be stored',
                   })))
+                appendEvidence(result)
                 return {
                   progressFingerprint: `directory:${node.id}`,
                   artifacts: [artifact],
@@ -408,7 +431,6 @@ export function makeProductionResearchWorkflow(
                       message: 'Dataset query node is invalid',
                     })))
                 const result = yield* dependencies.queryDataset({ plan, node })
-                datasetResults = [...datasetResults, result]
                 const encodedResult = yield* Schema.encode(
                   DeterministicDatasetQueryOutput,
                 )(result).pipe(Effect.mapError(() =>
@@ -431,6 +453,7 @@ export function makeProductionResearchWorkflow(
                     runId: run.id,
                     message: 'Dataset result artifact could not be stored',
                   })))
+                commitDatasetResult(result)
                 return {
                   progressFingerprint: `dataset:${node.id}`,
                   artifacts: [artifact],
@@ -508,7 +531,7 @@ export function makeProductionResearchWorkflow(
         const models = {
           resolve: (route: typeResolvedModelRoute) => Effect.succeed({
             execute: (node: typeof ResearchPlanNode.Type) =>
-              route.role === 'critique'
+              (route.role === 'critique'
                 ? runCritique({
                     question: run.question,
                     node,
@@ -559,7 +582,18 @@ export function makeProductionResearchWorkflow(
                       new ResearchProviderFailure({
                         message: 'Research synthesis failed',
                       })),
+                  )).pipe(
+                Effect.timeoutFail({
+                  duration: Math.min(
+                    dependencies.fredConfig.maxElapsedMs,
+                    plan.budget.maximumElapsedMilliseconds,
                   ),
+                  onTimeout: () =>
+                    new ResearchProviderFailure({
+                      message: 'Research model exceeded elapsed-time budget',
+                    }),
+                }),
+              ),
           }),
         }
         const initial = Option.match(resumeCheckpoint, {

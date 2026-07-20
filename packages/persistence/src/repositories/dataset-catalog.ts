@@ -8,6 +8,7 @@ import {
   DatasetSnapshot,
   DatasetSnapshotId,
   ProjectId,
+  ResearchSourceScope,
   Sha256Digest,
   SourceId,
   SourceVersionId,
@@ -75,6 +76,16 @@ const DatasetSnapshotSourceRow = Schema.Struct({
   source_id: SourceId,
   source_version_id: SourceVersionId,
   content_hash: Sha256Digest,
+})
+const ResearchScopeSourceRow = Schema.Struct({
+  source_version_id: SourceVersionId,
+  kind: Schema.Literal('document', 'dataset', 'directory', 'file'),
+  ordinal: PositiveInteger,
+})
+const ResearchDatasetScopeRow = Schema.Struct({
+  dataset_id: DatasetId,
+  dataset_snapshot_id: DatasetSnapshotId,
+  source_version_ids: Schema.Array(SourceVersionId).pipe(Schema.minItems(1)),
 })
 
 export class DatasetCatalogScopeError
@@ -671,12 +682,129 @@ export class DatasetCatalogRepo extends Effect.Service<DatasetCatalogRepo>()(
         },
       )
 
+      const resolveResearchSourceScopes = Effect.fn(
+        'DatasetCatalogRepo.resolveResearchSourceScopes',
+      )(function* (
+        workspaceId: typeof WorkspaceId.Type,
+        projectId: typeof ProjectId.Type,
+        sourceVersionIds: ReadonlyArray<typeof SourceVersionId.Type>,
+      ) {
+        const loaded = yield* Effect.tryPromise({
+          try: () => sql.transaction(async (transaction) => {
+            const sources = await transaction.unsafe(
+              `SELECT selected.id AS source_version_id,
+                      source.kind,
+                      selected.ordinality::int AS ordinal
+               FROM unnest($3::uuid[]) WITH ORDINALITY selected(id, ordinality)
+               JOIN source_versions version ON version.id = selected.id
+               JOIN sources source ON source.id = version.source_id
+               JOIN projects project ON project.id = source.project_id
+               WHERE source.project_id = $2
+                 AND project.workspace_id = $1
+               ORDER BY selected.ordinality`,
+              [workspaceId, projectId, sourceVersionIds],
+            )
+            const datasets = await transaction.unsafe(
+              `WITH fully_covered AS (
+                 SELECT snapshot.id,
+                        snapshot.dataset_id,
+                        snapshot.version
+                 FROM dataset_snapshots snapshot
+                 JOIN dataset_snapshot_sources selected_source
+                   ON selected_source.snapshot_id = snapshot.id
+                  AND selected_source.source_version_id = ANY($3::uuid[])
+                 WHERE snapshot.workspace_id = $1
+                   AND snapshot.project_id = $2
+                 GROUP BY snapshot.id, snapshot.dataset_id, snapshot.version
+                 HAVING COUNT(*) = (
+                   SELECT COUNT(*)
+                   FROM dataset_snapshot_sources all_source
+                   WHERE all_source.snapshot_id = snapshot.id
+                 )
+               ),
+               latest AS (
+                 SELECT DISTINCT ON (dataset_id)
+                        id,
+                        dataset_id
+                 FROM fully_covered
+                 ORDER BY dataset_id, version DESC, id DESC
+               )
+               SELECT latest.dataset_id,
+                      latest.id AS dataset_snapshot_id,
+                      array_agg(lineage.source_version_id ORDER BY lineage.ordinal)
+                        AS source_version_ids
+               FROM latest
+               JOIN dataset_snapshot_sources lineage
+                 ON lineage.snapshot_id = latest.id
+               GROUP BY latest.dataset_id, latest.id
+               ORDER BY MIN(array_position($3::uuid[], lineage.source_version_id)),
+                        latest.dataset_id`,
+              [workspaceId, projectId, sourceVersionIds],
+            )
+            return { sources, datasets }
+          }),
+          catch: () => queryError('research source-scope resolution'),
+        })
+        const sourceRows = yield* Effect.forEach(loaded.sources, (row) =>
+          Schema.decodeUnknown(ResearchScopeSourceRow)(row).pipe(
+            Effect.mapError(() => decodeError('snapshot')),
+          ))
+        if (sourceRows.length !== sourceVersionIds.length) {
+          return yield* new DatasetCatalogScopeError({
+            entity: 'source-version',
+            id: sourceVersionIds.find((id) =>
+              !sourceRows.some((row) => row.source_version_id === id)
+            ) ?? 'unknown',
+            message: 'Research source version was not found in this workspace and project',
+          })
+        }
+        const datasetRows = yield* Effect.forEach(loaded.datasets, (row) =>
+          Schema.decodeUnknown(ResearchDatasetScopeRow)(row).pipe(
+            Effect.mapError(() => decodeError('snapshot')),
+          ))
+        const coveredDatasetVersions = new Set(
+          datasetRows.flatMap((row) => row.source_version_ids),
+        )
+        const unresolvedDataset = sourceRows.find(
+          (row) =>
+            row.kind === 'dataset'
+            && !coveredDatasetVersions.has(row.source_version_id),
+        )
+        if (unresolvedDataset !== undefined) {
+          return yield* new DatasetCatalogScopeError({
+            entity: 'source-version',
+            id: unresolvedDataset.source_version_id,
+            message: 'Dataset source version has no fully materialized snapshot',
+          })
+        }
+        return yield* Effect.forEach([
+          ...sourceRows.flatMap((row) =>
+            row.kind === 'dataset'
+              ? []
+              : [{
+                  kind: 'document' as const,
+                  sourceVersionId: row.source_version_id,
+                }]
+          ),
+          ...datasetRows.map((row) => ({
+            kind: 'dataset' as const,
+            datasetId: row.dataset_id,
+            datasetSnapshotId: row.dataset_snapshot_id,
+            sourceVersionIds: row.source_version_ids,
+          })),
+        ], (scope) =>
+          Schema.decodeUnknown(ResearchSourceScope)(scope).pipe(
+            Effect.mapError(() => decodeError('snapshot')),
+          ))
+      })
+
       return {
         createDataset,
         createSchemaFamily,
         createSnapshot,
         getSchemaFamily,
         listSnapshots,
+        resolveResearchSourceScopes,
       }
     }),
   },

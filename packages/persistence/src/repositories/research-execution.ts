@@ -472,6 +472,7 @@ function validateOwnedEvent(
 
 function validateCompletionAggregate(input: CompleteResearchInput): void {
   const answerCitations = input.answer.citations
+  const datasetCitations = input.answer.datasetCitations ?? []
   const sourceScope = completionSourceScope(input)
   if (answerCitations.length !== input.citations.length) {
     throw new ResearchAggregateMismatchError('citations')
@@ -491,6 +492,13 @@ function validateCompletionAggregate(input: CompleteResearchInput): void {
     ) {
       throw new ResearchAggregateMismatchError(`citations[${index}]`)
     }
+  }
+  if (
+    datasetCitations.length > MAX_RESEARCH_CITATION_COUNT
+    || new Set(datasetCitations.map((citation) => citation.id)).size
+      !== datasetCitations.length
+  ) {
+    throw new ResearchAggregateMismatchError('answer.datasetCitations')
   }
 }
 
@@ -951,6 +959,43 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
             if (Number(authorizedRows[0]?.['count']) !== sourceScope.sourceVersionIds.length) {
               throw new ResearchScopeMismatchError('research-source-scope-mismatch')
             }
+            const datasetCitations = input.answer.datasetCitations ?? []
+            if (datasetCitations.length > 0) {
+              const datasetCitationRows = await transaction.unsafe(
+                `SELECT citation.id
+                 FROM dataset_citations citation
+                 WHERE citation.id = ANY($1::uuid[])
+                   AND citation.workspace_id = $2
+                   AND citation.project_id = $3
+                   AND NOT EXISTS (
+                     SELECT 1
+                     FROM dataset_snapshot_sources lineage
+                     WHERE lineage.snapshot_id = citation.dataset_snapshot_id
+                       AND NOT (
+                         lineage.source_version_id = ANY($4::uuid[])
+                       )
+                   )`,
+                [
+                  datasetCitations.map((citation) => citation.id),
+                  input.job.workspaceId,
+                  sourceScope.projectId,
+                  sourceScope.sourceVersionIds,
+                ],
+              )
+              const authorizedDatasetCitationIds = new Set(
+                datasetCitationRows.map((row) => row['id']),
+              )
+              if (
+                authorizedDatasetCitationIds.size !== datasetCitations.length
+                || datasetCitations.some((citation) =>
+                  !authorizedDatasetCitationIds.has(citation.id)
+                )
+              ) {
+                throw new ResearchScopeMismatchError(
+                  'research-dataset-citation-scope-mismatch',
+                )
+              }
+            }
             const validationEventRows = await transaction.unsafe(
               `SELECT payload
                FROM event_journal
@@ -1040,6 +1085,18 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
             )
             if (resultRows.length !== 1) {
               throw new Error('research-result-insert-conflict')
+            }
+            for (const [ordinal, citation] of datasetCitations.entries()) {
+              const linkageRows = await transaction.unsafe(
+                `INSERT INTO research_run_dataset_citations (
+                   run_id, dataset_citation_id, ordinal
+                 ) VALUES ($1, $2, $3)
+                 RETURNING dataset_citation_id`,
+                [input.runId, citation.id, ordinal],
+              )
+              if (linkageRows.length !== 1) {
+                throw new Error('research-dataset-citation-link-conflict')
+              }
             }
             for (const citation of input.citations) {
               const citationRows = await transaction.unsafe(
