@@ -34,6 +34,8 @@ function requestInput() {
     policy: {
       maximumDepth: 4,
       maximumFanOut: 8,
+      maximumPartitionItems: 100,
+      maximumPartitionAttempts: 3,
       maximumConcurrency: 4,
       maximumElapsedMilliseconds: 60_000,
       maximumTokens: 100_000,
@@ -69,6 +71,7 @@ describe('recursive analysis domain contracts', () => {
         nodes: [
           {
             id: rootId,
+            groupKey: sha('8'),
             requestId: request.id,
             parentId: null,
             depth: 0,
@@ -77,6 +80,7 @@ describe('recursive analysis domain contracts', () => {
           },
           {
             id: childId,
+            groupKey: sha('9'),
             requestId: request.id,
             parentId: rootId,
             depth: 1,
@@ -117,6 +121,10 @@ describe('recursive analysis domain contracts', () => {
       ['maximumDepth', 17],
       ['maximumFanOut', 0],
       ['maximumFanOut', 65],
+      ['maximumPartitionItems', 0],
+      ['maximumPartitionItems', 25_001],
+      ['maximumPartitionAttempts', 0],
+      ['maximumPartitionAttempts', 17],
       ['maximumConcurrency', 0],
       ['maximumConcurrency', 65],
       ['maximumElapsedMilliseconds', 0],
@@ -148,6 +156,7 @@ describe('recursive analysis domain contracts', () => {
     const child = RecursiveDecompositionNodeId.make(sha('d'))
     const node = {
       id: root,
+      groupKey: sha('8'),
       requestId: request.id,
       parentId: null,
       depth: 0,

@@ -52,6 +52,8 @@ function policyFields(
   return [
     String(policy.maximumDepth),
     String(policy.maximumFanOut),
+    String(policy.maximumPartitionItems),
+    String(policy.maximumPartitionAttempts),
     String(policy.maximumConcurrency),
     String(policy.maximumElapsedMilliseconds),
     String(policy.maximumTokens),
@@ -79,6 +81,7 @@ export function computeRecursiveDecompositionNodeId(
 ): RecursiveDecompositionNodeId {
   return RecursiveDecompositionNodeId.make(digestFields([
     node.requestId,
+    node.groupKey,
     node.parentId ?? '',
     String(node.depth),
     ...orderCanonicalIdentities(node.sourceVersionIds),
@@ -91,7 +94,13 @@ export function computeRecursivePartitionId(
   return RecursivePartitionId.make(digestFields([
     partition.nodeId,
     partition.schemaFamily,
+    partition.pathGroup,
+    partition.sizeBand,
+    partition.planId,
     String(partition.byteLength),
+    String(partition.estimatedTokens),
+    String(partition.estimatedCostMicros),
+    String(partition.estimatedArtifactBytes),
     ...orderCanonicalIdentities(partition.sourceVersionIds),
     ...orderCanonicalIdentities(partition.entryKeys),
   ]))

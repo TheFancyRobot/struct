@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T07:53:35.423Z",
+  "generatedAt": "2026-07-20T08:37:36.984Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -2334,6 +2334,92 @@
       "hash": "c30f2a866c1a8fafa015372b01d1ec281d1a6161e37a613814ad69331bf2ef97",
       "mtimeMs": 1784496880034.3704,
       "size": 6925,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "apps/worker/src/jobs/partition-analysis.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "PartitionAnalysisJournalEvent",
+          "kind": "type",
+          "line": 11,
+          "exported": true,
+          "endLine": 11
+        },
+        {
+          "name": "DurablePartitionAnalysis",
+          "kind": "interface",
+          "line": 26,
+          "exported": true,
+          "endLine": 26
+        },
+        {
+          "name": "PartitionAnalysisJournal",
+          "kind": "interface",
+          "line": 31,
+          "exported": true,
+          "endLine": 31
+        },
+        {
+          "name": "missing",
+          "kind": "function",
+          "line": 58,
+          "exported": false,
+          "endLine": 58,
+          "signature": "(planId: string)"
+        },
+        {
+          "name": "makePartitionAnalysisJob",
+          "kind": "const",
+          "line": 66,
+          "exported": true,
+          "endLine": 66
+        }
+      ],
+      "imports": [
+        {
+          "source": "CorpusPartitioning",
+          "specifier": "@struct/research-engine",
+          "imported": [
+            "CorpusPartitioning"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "prepareRecursiveAnalysis",
+          "specifier": "@struct/workflows",
+          "imported": [
+            "prepareRecursiveAnalysis"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect, Option",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Option"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "a82f2cc5445935e1666672fe162b5577e5cea210a064e0114f53d2ec4dd8030c",
+      "mtimeMs": 1784536481374.108,
+      "size": 4866,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -5796,6 +5882,193 @@
       "parser": "regex"
     },
     {
+      "path": "packages/domain/src/partition-status.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "Counter",
+          "kind": "const",
+          "line": 18,
+          "exported": false,
+          "endLine": 18
+        },
+        {
+          "name": "NonBlank",
+          "kind": "const",
+          "line": 23,
+          "exported": false,
+          "endLine": 23
+        },
+        {
+          "name": "StableIdentity",
+          "kind": "const",
+          "line": 28,
+          "exported": false,
+          "endLine": 28
+        },
+        {
+          "name": "compareUtf8",
+          "kind": "function",
+          "line": 32,
+          "exported": false,
+          "endLine": 32,
+          "signature": "(left: string, right: string)"
+        },
+        {
+          "name": "RecursiveCorpusManifestEntry",
+          "kind": "const",
+          "line": 44,
+          "exported": true,
+          "endLine": 44
+        },
+        {
+          "name": "RecursiveCorpusManifestEntry",
+          "kind": "type",
+          "line": 69,
+          "exported": true,
+          "endLine": 69
+        },
+        {
+          "name": "RecursiveCorpusManifest",
+          "kind": "const",
+          "line": 72,
+          "exported": true,
+          "endLine": 72
+        },
+        {
+          "name": "RecursiveCorpusManifest",
+          "kind": "type",
+          "line": 89,
+          "exported": true,
+          "endLine": 89
+        },
+        {
+          "name": "RecursiveSkippedEntry",
+          "kind": "const",
+          "line": 92,
+          "exported": true,
+          "endLine": 92
+        },
+        {
+          "name": "RecursiveSkippedEntry",
+          "kind": "type",
+          "line": 99,
+          "exported": true,
+          "endLine": 99
+        },
+        {
+          "name": "RecursivePartitionPlan",
+          "kind": "const",
+          "line": 102,
+          "exported": true,
+          "endLine": 102
+        },
+        {
+          "name": "RecursivePartitionPlan",
+          "kind": "type",
+          "line": 118,
+          "exported": true,
+          "endLine": 118
+        },
+        {
+          "name": "RecursivePartitionLease",
+          "kind": "const",
+          "line": 121,
+          "exported": true,
+          "endLine": 121
+        },
+        {
+          "name": "RecursivePartitionLease",
+          "kind": "type",
+          "line": 125,
+          "exported": true,
+          "endLine": 125
+        },
+        {
+          "name": "RecursivePartitionProgress",
+          "kind": "const",
+          "line": 128,
+          "exported": true,
+          "endLine": 128
+        },
+        {
+          "name": "RecursivePartitionProgress",
+          "kind": "type",
+          "line": 143,
+          "exported": true,
+          "endLine": 143
+        },
+        {
+          "name": "RecursiveSchedulerState",
+          "kind": "const",
+          "line": 146,
+          "exported": true,
+          "endLine": 146
+        },
+        {
+          "name": "RecursiveSchedulerState",
+          "kind": "type",
+          "line": 167,
+          "exported": true,
+          "endLine": 167
+        },
+        {
+          "name": "RecursivePartitionClaim",
+          "kind": "const",
+          "line": 170,
+          "exported": true,
+          "endLine": 170
+        },
+        {
+          "name": "RecursivePartitionClaim",
+          "kind": "type",
+          "line": 174,
+          "exported": true,
+          "endLine": 174
+        },
+        {
+          "name": "canonicalize",
+          "kind": "function",
+          "line": 177,
+          "exported": false,
+          "endLine": 177,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "computeRecursiveCorpusManifestDigest",
+          "kind": "function",
+          "line": 189,
+          "exported": true,
+          "endLine": 189
+        }
+      ],
+      "imports": [
+        {
+          "source": "Schema",
+          "specifier": "effect",
+          "imported": [
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "SourceVersionId",
+          "specifier": "./branded-ids.js",
+          "imported": [
+            "SourceVersionId"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "45fddca98a372f2274e39f1aace0f203f336f16afdc36c489674d0711ef84a74",
+      "mtimeMs": 1784534881234.5793,
+      "size": 6220,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
       "path": "packages/domain/src/recursive-analysis.ts",
       "language": "TypeScript",
       "symbols": [
@@ -5942,212 +6215,212 @@
         {
           "name": "RecursiveAnalysisPolicy",
           "kind": "type",
-          "line": 93,
+          "line": 99,
           "exported": true,
-          "endLine": 93
+          "endLine": 99
         },
         {
           "name": "RecursiveCheckpointLink",
           "kind": "const",
-          "line": 96,
-          "exported": true,
-          "endLine": 96
-        },
-        {
-          "name": "RecursiveCheckpointLink",
-          "kind": "type",
           "line": 102,
           "exported": true,
           "endLine": 102
         },
         {
+          "name": "RecursiveCheckpointLink",
+          "kind": "type",
+          "line": 108,
+          "exported": true,
+          "endLine": 108
+        },
+        {
           "name": "RecursiveAnalysisRequest",
           "kind": "const",
-          "line": 105,
+          "line": 111,
           "exported": true,
-          "endLine": 105
+          "endLine": 111
         },
         {
           "name": "RecursiveAnalysisRequest",
           "kind": "type",
-          "line": 133,
+          "line": 139,
           "exported": true,
-          "endLine": 133
+          "endLine": 139
         },
         {
           "name": "RecursiveDecompositionNode",
           "kind": "const",
-          "line": 136,
+          "line": 142,
           "exported": true,
-          "endLine": 136
+          "endLine": 142
         },
         {
           "name": "RecursiveDecompositionNode",
           "kind": "type",
-          "line": 153,
+          "line": 160,
           "exported": true,
-          "endLine": 153
+          "endLine": 160
         },
         {
           "name": "RecursiveDecomposition",
           "kind": "const",
-          "line": 156,
-          "exported": true,
-          "endLine": 156
-        },
-        {
-          "name": "RecursiveDecomposition",
-          "kind": "type",
           "line": 163,
           "exported": true,
           "endLine": 163
         },
         {
+          "name": "RecursiveDecomposition",
+          "kind": "type",
+          "line": 170,
+          "exported": true,
+          "endLine": 170
+        },
+        {
           "name": "RecursivePartition",
           "kind": "const",
-          "line": 166,
+          "line": 173,
           "exported": true,
-          "endLine": 166
+          "endLine": 173
         },
         {
           "name": "RecursivePartition",
           "kind": "type",
-          "line": 184,
-          "exported": true,
-          "endLine": 184
-        },
-        {
-          "name": "RecursiveBatchInput",
-          "kind": "const",
-          "line": 186,
-          "exported": true,
-          "endLine": 186
-        },
-        {
-          "name": "RecursiveBatchInput",
-          "kind": "type",
-          "line": 194,
-          "exported": true,
-          "endLine": 194
-        },
-        {
-          "name": "RecursiveSufficiency",
-          "kind": "const",
           "line": 197,
           "exported": true,
           "endLine": 197
         },
         {
+          "name": "RecursiveBatchInput",
+          "kind": "const",
+          "line": 199,
+          "exported": true,
+          "endLine": 199
+        },
+        {
+          "name": "RecursiveBatchInput",
+          "kind": "type",
+          "line": 207,
+          "exported": true,
+          "endLine": 207
+        },
+        {
+          "name": "RecursiveSufficiency",
+          "kind": "const",
+          "line": 210,
+          "exported": true,
+          "endLine": 210
+        },
+        {
           "name": "RecursiveSufficiency",
           "kind": "type",
-          "line": 225,
+          "line": 238,
           "exported": true,
-          "endLine": 225
+          "endLine": 238
         },
         {
           "name": "RecursiveTerminalReason",
           "kind": "const",
-          "line": 228,
+          "line": 241,
           "exported": true,
-          "endLine": 228
+          "endLine": 241
         },
         {
           "name": "RecursiveTerminalReason",
           "kind": "type",
-          "line": 244,
+          "line": 261,
           "exported": true,
-          "endLine": 244
+          "endLine": 261
         },
         {
           "name": "RecursiveTerminalState",
           "kind": "const",
-          "line": 247,
+          "line": 264,
           "exported": true,
-          "endLine": 247
+          "endLine": 264
         },
         {
           "name": "RecursiveTerminalState",
           "kind": "type",
-          "line": 251,
+          "line": 268,
           "exported": true,
-          "endLine": 251
+          "endLine": 268
         },
         {
           "name": "RecursiveBatchResult",
           "kind": "const",
-          "line": 254,
+          "line": 271,
           "exported": true,
-          "endLine": 254
+          "endLine": 271
         },
         {
           "name": "RecursiveBatchResult",
           "kind": "type",
-          "line": 335,
+          "line": 352,
           "exported": true,
-          "endLine": 335
+          "endLine": 352
         },
         {
           "name": "RecursiveAggregationResult",
           "kind": "const",
-          "line": 338,
+          "line": 355,
           "exported": true,
-          "endLine": 338
+          "endLine": 355
         },
         {
           "name": "RecursiveAggregationResult",
           "kind": "type",
-          "line": 427,
+          "line": 444,
           "exported": true,
-          "endLine": 427
+          "endLine": 444
         },
         {
           "name": "recursiveParseFailure",
           "kind": "function",
-          "line": 430,
+          "line": 447,
           "exported": false,
-          "endLine": 430
+          "endLine": 447
         },
         {
           "name": "decompositionFailure",
           "kind": "function",
-          "line": 448,
+          "line": 465,
           "exported": false,
-          "endLine": 448
+          "endLine": 465
         },
         {
           "name": "decodeRecursiveAnalysisRequest",
           "kind": "const",
-          "line": 567,
+          "line": 584,
           "exported": true,
-          "endLine": 567
+          "endLine": 584
         },
         {
           "name": "decodeRecursiveDecomposition",
           "kind": "const",
-          "line": 575,
+          "line": 592,
           "exported": true,
-          "endLine": 575
+          "endLine": 592
         },
         {
           "name": "decodeRecursiveBatchResult",
           "kind": "const",
-          "line": 589,
+          "line": 606,
           "exported": true,
-          "endLine": 589
+          "endLine": 606
         },
         {
           "name": "decodeRecursiveBatchInput",
           "kind": "const",
-          "line": 597,
+          "line": 614,
           "exported": true,
-          "endLine": 597
+          "endLine": 614
         },
         {
           "name": "decodeRecursiveAggregationResult",
           "kind": "const",
-          "line": 605,
+          "line": 622,
           "exported": true,
-          "endLine": 605
+          "endLine": 622
         }
       ],
       "imports": [
@@ -6179,9 +6452,9 @@
         }
       ],
       "exports": [],
-      "hash": "27caa75e58c8d790f4af3155ffbad577ddf4d8daaf6fe2fd6d25113a55d5bb6c",
-      "mtimeMs": 1784533549792.9111,
-      "size": 23629,
+      "hash": "c5936e3e7455c80189ec8aeedf3a1875e732727f516db179dd10f09f4e5e2e72",
+      "mtimeMs": 1784535611725.2913,
+      "size": 24169,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -13753,156 +14026,156 @@
         {
           "name": "computeRecursiveAnalysisRequestId",
           "kind": "function",
-          "line": 65,
+          "line": 67,
           "exported": true,
-          "endLine": 65
+          "endLine": 67
         },
         {
           "name": "computeRecursiveDecompositionNodeId",
           "kind": "function",
-          "line": 77,
+          "line": 79,
           "exported": true,
-          "endLine": 77
+          "endLine": 79
         },
         {
           "name": "computeRecursivePartitionId",
           "kind": "function",
-          "line": 88,
+          "line": 91,
           "exported": true,
-          "endLine": 88
+          "endLine": 91
         },
         {
           "name": "computeRecursiveBatchId",
           "kind": "function",
-          "line": 100,
+          "line": 109,
           "exported": true,
-          "endLine": 100
+          "endLine": 109
         },
         {
           "name": "computeRecursiveEvidenceId",
           "kind": "function",
-          "line": 114,
+          "line": 123,
           "exported": true,
-          "endLine": 114
+          "endLine": 123
         },
         {
           "name": "computeRecursiveContradictionId",
           "kind": "function",
-          "line": 126,
+          "line": 135,
           "exported": true,
-          "endLine": 126
+          "endLine": 135
         },
         {
           "name": "computeRecursiveFindingId",
           "kind": "function",
-          "line": 139,
+          "line": 148,
           "exported": true,
-          "endLine": 139
+          "endLine": 148
         },
         {
           "name": "computeRecursiveSufficiencyId",
           "kind": "function",
-          "line": 159,
+          "line": 168,
           "exported": true,
-          "endLine": 159
+          "endLine": 168
         },
         {
           "name": "terminalReasonFields",
           "kind": "function",
-          "line": 169,
+          "line": 178,
           "exported": false,
-          "endLine": 169
+          "endLine": 178
         },
         {
           "name": "computeRecursiveTerminalStateId",
           "kind": "function",
-          "line": 177,
+          "line": 186,
           "exported": true,
-          "endLine": 177
+          "endLine": 186
         },
         {
           "name": "computeRecursiveAggregationId",
           "kind": "function",
-          "line": 183,
+          "line": 192,
           "exported": true,
-          "endLine": 183
+          "endLine": 192
         },
         {
           "name": "identityFailure",
           "kind": "function",
-          "line": 207,
+          "line": 216,
           "exported": false,
-          "endLine": 207
+          "endLine": 216
         },
         {
           "name": "batchContractFailure",
           "kind": "function",
-          "line": 220,
+          "line": 229,
           "exported": false,
-          "endLine": 220
+          "endLine": 229
         },
         {
           "name": "validateRecursiveRequestContract",
           "kind": "const",
-          "line": 233,
+          "line": 242,
           "exported": true,
-          "endLine": 233
+          "endLine": 242
         },
         {
           "name": "validateRecursiveDecompositionContract",
           "kind": "const",
-          "line": 247,
+          "line": 256,
           "exported": true,
-          "endLine": 247
+          "endLine": 256
         },
         {
           "name": "validateContradictionIdentity",
           "kind": "const",
-          "line": 264,
+          "line": 273,
           "exported": false,
-          "endLine": 264
+          "endLine": 273
         },
         {
           "name": "validateFindingIdentity",
           "kind": "const",
-          "line": 280,
+          "line": 289,
           "exported": false,
-          "endLine": 280
+          "endLine": 289
         },
         {
           "name": "validateSufficiencyAndTerminal",
           "kind": "function",
-          "line": 309,
+          "line": 318,
           "exported": false,
-          "endLine": 309
+          "endLine": 318
         },
         {
           "name": "validateRecursiveBatchResultContract",
           "kind": "const",
-          "line": 336,
+          "line": 345,
           "exported": true,
-          "endLine": 336
+          "endLine": 345
         },
         {
           "name": "validateRecursiveBatchInputContract",
           "kind": "const",
-          "line": 390,
+          "line": 399,
           "exported": true,
-          "endLine": 390
+          "endLine": 399
         },
         {
           "name": "validateRecursiveAggregationContract",
           "kind": "const",
-          "line": 427,
+          "line": 436,
           "exported": true,
-          "endLine": 427
+          "endLine": 436
         },
         {
           "name": "ValidRecursiveDecomposition",
           "kind": "type",
-          "line": 466,
+          "line": 475,
           "exported": true,
-          "endLine": 466
+          "endLine": 475
         }
       ],
       "imports": [
@@ -13924,9 +14197,9 @@
         }
       ],
       "exports": [],
-      "hash": "773b02438b580704a418c13fc3293277e4ed4b974ef121779e32ca5c8f6069da",
-      "mtimeMs": 1784533549793.254,
-      "size": 14799,
+      "hash": "c737a7943473ff61fab86ecd602afeabea4dbab851da5834bebc8ec402026da2",
+      "mtimeMs": 1784535611725.737,
+      "size": 15104,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -14429,6 +14702,212 @@
       "hash": "9ec61c19d756e5395c25da2c108c4a8f3660fcc6dc40c98c67aa587d7fd323a5",
       "mtimeMs": 1784514897939.9656,
       "size": 2662,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/research-engine/src/partition-corpus.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "PartitionDraft",
+          "kind": "interface",
+          "line": 20,
+          "exported": false,
+          "endLine": 20
+        },
+        {
+          "name": "NodeDraft",
+          "kind": "interface",
+          "line": 35,
+          "exported": false,
+          "endLine": 35
+        },
+        {
+          "name": "stableHash",
+          "kind": "function",
+          "line": 42,
+          "exported": false,
+          "endLine": 42,
+          "signature": "(label: string, value: unknown)"
+        },
+        {
+          "name": "compareUtf8",
+          "kind": "function",
+          "line": 49,
+          "exported": false,
+          "endLine": 49,
+          "signature": "(left: string, right: string)"
+        },
+        {
+          "name": "canonicalize",
+          "kind": "function",
+          "line": 61,
+          "exported": false,
+          "endLine": 61,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "canonicalJson",
+          "kind": "function",
+          "line": 74,
+          "exported": false,
+          "endLine": 74,
+          "signature": "(value: unknown)"
+        },
+        {
+          "name": "failure",
+          "kind": "function",
+          "line": 78,
+          "exported": false,
+          "endLine": 78
+        },
+        {
+          "name": "sizeBand",
+          "kind": "function",
+          "line": 91,
+          "exported": false,
+          "endLine": 91
+        },
+        {
+          "name": "pathGroup",
+          "kind": "function",
+          "line": 103,
+          "exported": false,
+          "endLine": 103,
+          "signature": "(path: string)"
+        },
+        {
+          "name": "compareEntries",
+          "kind": "function",
+          "line": 108,
+          "exported": false,
+          "endLine": 108
+        },
+        {
+          "name": "uniqueSources",
+          "kind": "function",
+          "line": 130,
+          "exported": false,
+          "endLine": 130
+        },
+        {
+          "name": "sameSet",
+          "kind": "function",
+          "line": 139,
+          "exported": false,
+          "endLine": 139
+        },
+        {
+          "name": "createPartitionDrafts",
+          "kind": "function",
+          "line": 147,
+          "exported": false,
+          "endLine": 147
+        },
+        {
+          "name": "createTree",
+          "kind": "function",
+          "line": 267,
+          "exported": false,
+          "endLine": 267
+        },
+        {
+          "name": "assertPlan",
+          "kind": "function",
+          "line": 428,
+          "exported": false,
+          "endLine": 428
+        },
+        {
+          "name": "assertState",
+          "kind": "function",
+          "line": 531,
+          "exported": false,
+          "endLine": 531
+        },
+        {
+          "name": "isCounter",
+          "kind": "function",
+          "line": 667,
+          "exported": false,
+          "endLine": 667,
+          "signature": "(value: number)"
+        },
+        {
+          "name": "CorpusPartitioning",
+          "kind": "class",
+          "line": 671,
+          "exported": true,
+          "endLine": 671
+        }
+      ],
+      "imports": [
+        {
+          "source": "Effect, Schema",
+          "specifier": "effect",
+          "imported": [
+            "Effect",
+            "Schema"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        },
+        {
+          "source": "",
+          "specifier": "@struct/domain",
+          "kind": "dynamic"
+        }
+      ],
+      "exports": [],
+      "hash": "d812bb0892f2abf2864a47198eb95c9ca2efb78eb0b73694df073b58fa5e2d5c",
+      "mtimeMs": 1784536481373.765,
+      "size": 38633,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -16482,6 +16961,51 @@
       "hash": "83e2a3744c09c1b92e8f0fa200bd517c778d28eef5fcc40bc0cad4394f26e90d",
       "mtimeMs": 1784506183890.2825,
       "size": 11770,
+      "generated": false,
+      "vendor": false,
+      "parser": "regex"
+    },
+    {
+      "path": "packages/workflows/src/graphs/recursive-analysis.ts",
+      "language": "TypeScript",
+      "symbols": [
+        {
+          "name": "PreparedRecursiveAnalysis",
+          "kind": "interface",
+          "line": 5,
+          "exported": true,
+          "endLine": 5
+        },
+        {
+          "name": "prepareRecursiveAnalysis",
+          "kind": "const",
+          "line": 14,
+          "exported": true,
+          "endLine": 14
+        }
+      ],
+      "imports": [
+        {
+          "source": "CorpusPartitioning",
+          "specifier": "@struct/research-engine",
+          "imported": [
+            "CorpusPartitioning"
+          ],
+          "kind": "static"
+        },
+        {
+          "source": "Effect",
+          "specifier": "effect",
+          "imported": [
+            "Effect"
+          ],
+          "kind": "static"
+        }
+      ],
+      "exports": [],
+      "hash": "1af3e5b92dbd8a1e2da8bfebe33a9fb37f7cb768186cd3df5bd40e196437ca25",
+      "mtimeMs": 1784535076156.2502,
+      "size": 827,
       "generated": false,
       "vendor": false,
       "parser": "regex"

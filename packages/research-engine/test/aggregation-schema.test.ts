@@ -53,6 +53,8 @@ function requestWithoutId() {
     policy: {
       maximumDepth: 4,
       maximumFanOut: 8,
+      maximumPartitionItems: 100,
+      maximumPartitionAttempts: 3,
       maximumConcurrency: 4,
       maximumElapsedMilliseconds: 60_000,
       maximumTokens: 100_000,
@@ -164,6 +166,7 @@ describe('recursive canonical identities', () => {
     const request = requestWithoutId()
     const requestId = computeRecursiveAnalysisRequestId(request)
     const node = {
+      groupKey: sha('9'),
       requestId,
       parentId: null,
       depth: 0,
@@ -177,9 +180,15 @@ describe('recursive canonical identities', () => {
     const partition = {
       nodeId,
       schemaFamily: 'incident-v1',
+      pathGroup: 'incidents',
+      sizeBand: 'small' as const,
+      planId: request.planId,
       sourceVersionIds: [sourceB, sourceA],
       entryKeys: ['z.json', 'a.json'],
       byteLength: 512,
+      estimatedTokens: 128,
+      estimatedCostMicros: 64,
+      estimatedArtifactBytes: 256,
     }
     const partitionId = computeRecursivePartitionId(partition)
     expect(partitionId).toBe(computeRecursivePartitionId({
@@ -467,9 +476,15 @@ describe('recursive canonical identities', () => {
     const partitionWithoutIdentity = {
       nodeId,
       schemaFamily: 'incident-v1',
+      pathGroup: 'incidents',
+      sizeBand: 'small' as const,
+      planId: request.planId,
       sourceVersionIds: [sourceA],
       entryKeys: ['incidents/1.json'],
       byteLength: 512,
+      estimatedTokens: 128,
+      estimatedCostMicros: 64,
+      estimatedArtifactBytes: 256,
     }
     const partition = {
       ...partitionWithoutIdentity,
@@ -532,14 +547,21 @@ describe('recursive canonical identities', () => {
   })
 
   it('binds batch evidence lineage and coverage to the expected partition', async () => {
-    const requestId = computeRecursiveAnalysisRequestId(requestWithoutId())
+    const request = requestWithoutId()
+    const requestId = computeRecursiveAnalysisRequestId(request)
     const nodeId = RecursiveDecompositionNodeId.make(sha('1'))
     const partitionWithoutIdentity = {
       nodeId,
       schemaFamily: 'incident-v1',
+      pathGroup: 'incidents',
+      sizeBand: 'small' as const,
+      planId: request.planId,
       sourceVersionIds: [sourceA],
       entryKeys: ['incidents/1.json'],
       byteLength: 512,
+      estimatedTokens: 128,
+      estimatedCostMicros: 64,
+      estimatedArtifactBytes: 256,
     }
     const partition = {
       ...partitionWithoutIdentity,

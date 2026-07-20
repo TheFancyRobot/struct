@@ -92,7 +92,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|PHASE-05 Typed Research Planning and Bounded Execution]]
-- Current phase status: active; STEP-06-01 and its BUG-0011 remediation are completed, reviewed, and merged; STEP-06-02 is ready to activate
+- Current phase status: active; STEP-06-01 and its BUG-0011 remediation are completed, reviewed, and merged; STEP-06-02 is implemented and root-validated pending publication, automated review, and merge
 - Next phase: [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|PHASE-07 Hybrid Cross-Source Research]]
 <!-- AGENT-END:phase-linear-context -->
 
@@ -123,7 +123,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-steps -->
 - [x] [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_01_define-recursive-decomposition-and-aggregation-contracts|STEP-06-01 Define Recursive Decomposition and Aggregation Contracts]]
-- [ ] [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_02_implement-bounded-corpus-partitioning-and-scheduling|STEP-06-02 Implement Bounded Corpus Partitioning and Scheduling]]
+- [x] [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_02_implement-bounded-corpus-partitioning-and-scheduling|STEP-06-02 Implement Bounded Corpus Partitioning and Scheduling]]
 - [ ] [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_03_implement-deterministic-batch-extraction-and-evidence-artifacts|STEP-06-03 Implement Deterministic Batch Extraction and Evidence Artifacts]]
 - [ ] [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_04_implement-recursive-fred-synthesis-and-contradiction-handling|STEP-06-04 Implement Recursive Fred Synthesis and Contradiction Handling]]
 - [ ] [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_05_add-progress-drilldown-and-partial-result-ux|STEP-06-05 Add Progress Drilldown and Partial Result UX]]
