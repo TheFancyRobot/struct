@@ -97,6 +97,7 @@ restarts PostgreSQL and the data engine, and checks the same fingerprint again:
 DATABASE_URL=postgres://struct:struct@127.0.0.1:5432/struct_recovery_test \
 STRUCT_ALLOW_DESTRUCTIVE_RESET=struct_recovery_test \
 ARTIFACT_STORAGE_ROOT=.local/artifacts_recovery_test \
+RECOVERY_RETURN_ARTIFACT_STORAGE_ROOT=.local/artifacts \
 DATA_ENGINE_TOKEN="$DATA_ENGINE_TOKEN" \
   bun run ops:recovery-proof
 ```

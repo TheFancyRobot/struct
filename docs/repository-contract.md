@@ -29,6 +29,7 @@ All commands run from the repository root via the Bun workspace scripts that STE
 | `bun run ops database:verify` / `artifacts:verify` | Verify dependency readiness and content-addressed artifact integrity | root operations | STEP-09-02 |
 | `bun run ops stack:restart` | Restart Compose dependencies and wait for authenticated readiness | root operations | STEP-09-02 |
 | `bun run ops:recovery-proof` | Prove isolated backup/restore, integrity, immutability, and restart recovery | root operations | STEP-09-02 |
+| `bun run v1:performance` | Verify versioned v1 workload budgets and resilience evidence | root evaluation | v1 release gate |
 | `bun run ops application:verify` | Fail closed unless web, API, and worker are ready after deployment/rollback | root operations | STEP-09-02 |
 | `bun run corpus:smoke` | Run a small synthetic subset of the evaluation corpus | `packages/evaluation` | Phase 04 |
 | `bun run corpus:generate` | Generate a deterministic smoke or full 25,000-record corpus | `packages/evaluation` | STEP-04-05 |

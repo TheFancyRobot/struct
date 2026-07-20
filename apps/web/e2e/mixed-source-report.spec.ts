@@ -3,6 +3,10 @@ import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
 /* eslint-disable no-unused-vars -- Type-only import is consumed by TypeScript. */
 import { chromium, type Page as typePage } from 'playwright'
+import {
+  startAppServer,
+  stopAppServer,
+} from './support/app-server'
 /* eslint-enable no-unused-vars */
 
 const projectId = 'f80e8400-e29b-41d4-a716-446655440001'
@@ -16,7 +20,7 @@ const screenshotRoot = path.resolve(
 )
 
 let browser: Awaited<ReturnType<typeof chromium.launch>>
-let web: ReturnType<typeof Bun.spawn>
+let web: Awaited<ReturnType<typeof startAppServer>>
 
 interface PageFailures {
   readonly consoleErrors: string[]
@@ -62,7 +66,7 @@ async function openDemo(
 ): Promise<void> {
   const response = await page.goto(
     `${baseUrl}?demo=mixed-source&state=${state}`,
-    { waitUntil: 'networkidle' },
+    { waitUntil: 'commit' },
   )
   expect(response?.status()).toBe(200)
 }
@@ -79,29 +83,13 @@ async function assertNoOverflow(page: typePage): Promise<void> {
 
 beforeAll(async () => {
   await mkdir(screenshotRoot, { recursive: true })
-  web = Bun.spawn(
-    ['bun', 'run', 'dev', '--', '--host', '127.0.0.1', '--port', '4175'],
-    {
-      cwd: new URL('..', import.meta.url).pathname,
-      stdout: 'ignore',
-      stderr: 'ignore',
-    },
-  )
-  for (let attempt = 0; attempt < 50; attempt += 1) {
-    try {
-      if ((await fetch(origin)).ok) break
-    } catch {
-      // Vite is still starting.
-    }
-    await Bun.sleep(100)
-  }
+  web = await startAppServer(4175)
   browser = await chromium.launch({ headless: true })
 })
 
 afterAll(async () => {
   await browser?.close()
-  web?.kill()
-  await web?.exited
+  await stopAppServer(web)
 })
 
 describe('mixed-source report browser workflow', () => {
@@ -229,7 +217,7 @@ describe('mixed-source report browser workflow', () => {
     await page.getByRole('button', { name: 'Switch to light theme' }).click()
     expect(await page.evaluate(() => localStorage.getItem('struct-theme')))
       .toBe('struct-light')
-    await page.reload({ waitUntil: 'networkidle' })
+    await page.reload({ waitUntil: 'commit' })
     expect(await page.locator('.app-shell').getAttribute('data-theme'))
       .toBe('struct-light')
     expectNoFailures(failures)

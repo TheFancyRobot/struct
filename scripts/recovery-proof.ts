@@ -18,6 +18,58 @@ const ids = {
 
 const hash = `sha256:${'a'.repeat(64)}`
 
+export function recoveryReturnArtifactRoot(configuredArtifactRoot: string): string {
+  if (!configuredArtifactRoot.endsWith('_recovery_test')) {
+    throw new Error('Recovery proof artifact root must end in _recovery_test')
+  }
+  return configuredArtifactRoot.slice(0, -'_recovery_test'.length)
+}
+
+export async function runWithRecoveryCleanup(
+  operation: () => Promise<void>,
+  cleanup: () => Promise<void>,
+): Promise<void> {
+  let operationFailure: unknown
+  try {
+    await operation()
+  } catch (cause) {
+    operationFailure = cause
+  }
+
+  let cleanupFailure: unknown
+  try {
+    await cleanup()
+  } catch (cause) {
+    cleanupFailure = cause
+  }
+
+  if (operationFailure !== undefined && cleanupFailure !== undefined) {
+    throw new AggregateError(
+      [operationFailure, cleanupFailure],
+      'Recovery proof and recovery cleanup both failed',
+    )
+  }
+  if (operationFailure !== undefined) throw operationFailure
+  if (cleanupFailure !== undefined) throw cleanupFailure
+}
+
+export async function runRecoveryCleanupSteps(
+  steps: ReadonlyArray<() => Promise<void>>,
+): Promise<void> {
+  const failures: unknown[] = []
+  for (const step of steps) {
+    try {
+      await step()
+    } catch (cause) {
+      failures.push(cause)
+    }
+  }
+  if (failures.length === 1) throw failures[0]
+  if (failures.length > 1) {
+    throw new AggregateError(failures, 'Multiple recovery cleanup steps failed')
+  }
+}
+
 async function seed(sql: postgres.Sql, artifactRef: string, contentHash: string): Promise<void> {
   await sql.begin(async (tx) => {
     await tx`INSERT INTO workspaces (id, name) VALUES (${ids.workspace}, 'Recovery proof workspace')`
@@ -123,12 +175,19 @@ async function main(): Promise<void> {
     throw new Error('Recovery proof requires ARTIFACT_STORAGE_ROOT ending in _recovery_test')
   }
   const artifactRoot = resolve(configuredArtifactRoot)
+  const returnArtifactRoot = resolve(
+    process.env.RECOVERY_RETURN_ARTIFACT_STORAGE_ROOT
+      ?? recoveryReturnArtifactRoot(configuredArtifactRoot),
+  )
+  if (returnArtifactRoot === artifactRoot || returnArtifactRoot.endsWith('_recovery_test')) {
+    throw new Error('Recovery return artifact root must be a distinct non-test path')
+  }
 
   const archive = resolveBackupPath('.local/backups/recovery-proof.dump')
   const artifactArchive = '.local/backups/recovery-proof.artifacts'
   await runOperation(['database:reset'])
   const sql = postgres(databaseUrl, { max: 1, idle_timeout: 2 })
-  try {
+  await runWithRecoveryCleanup(async () => {
     await rm(artifactRoot, { recursive: true, force: true })
     await mkdir(artifactRoot, { recursive: true })
     const bytes = new TextEncoder().encode('Struct recovery proof artifact bytes')
@@ -158,10 +217,24 @@ async function main(): Promise<void> {
     const restarted = await fingerprint(sql)
     if (restarted !== before) throw new Error('Dependency restart changed durable state')
     process.stdout.write('Recovery proof passed: database and artifact reset, backup, restore, integrity, immutability, and restart\n')
-  } finally {
-    await sql.end()
-    await rm(artifactRoot, { recursive: true, force: true })
-  }
+  }, () => runRecoveryCleanupSteps([
+    () => sql.end(),
+    () => rm(artifactRoot, { recursive: true, force: true }),
+    () => mkdir(returnArtifactRoot, { recursive: true }).then(() => undefined),
+    async () => {
+      const recoveryArtifactRoot = process.env.ARTIFACT_STORAGE_ROOT
+      process.env.ARTIFACT_STORAGE_ROOT = returnArtifactRoot
+      try {
+        await runOperation(['stack:restart'])
+      } finally {
+        if (recoveryArtifactRoot === undefined) {
+          delete process.env.ARTIFACT_STORAGE_ROOT
+        } else {
+          process.env.ARTIFACT_STORAGE_ROOT = recoveryArtifactRoot
+        }
+      }
+    },
+  ]))
 }
 
 if (import.meta.main) {

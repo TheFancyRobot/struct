@@ -1,5 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { chromium } from 'playwright'
+import {
+  startAppServer,
+  stopAppServer,
+} from './support/app-server'
 
 const projectId = '750e8400-e29b-41d4-a716-446655440001'
 const threadId = '750e8400-e29b-41d4-a716-446655440002'
@@ -11,38 +15,16 @@ const sourceVersionId = '750e8400-e29b-41d4-a716-446655440007'
 const origin = 'http://127.0.0.1:4173'
 
 let browser: Awaited<ReturnType<typeof chromium.launch>>
-let web: ReturnType<typeof Bun.spawn>
+let web: Awaited<ReturnType<typeof startAppServer>>
 
 beforeAll(async () => {
-  web = Bun.spawn(
-    ['bun', 'run', 'dev', '--', '--host', '127.0.0.1', '--port', '4173'],
-    {
-      cwd: new URL('..', import.meta.url).pathname,
-      stdout: 'ignore',
-      stderr: 'ignore',
-    },
-  )
-
-  let ready = false
-  for (let attempt = 0; attempt < 40; attempt += 1) {
-    try {
-      if ((await fetch(origin)).ok) {
-        ready = true
-        break
-      }
-    } catch {
-      // The server is not accepting connections yet.
-    }
-    await Bun.sleep(100)
-  }
-  if (!ready) throw new Error(`Web server did not become ready at ${origin}`)
+  web = await startAppServer(4173)
   browser = await chromium.launch({ headless: true })
 })
 
 afterAll(async () => {
   await browser?.close()
-  web?.kill()
-  await web?.exited
+  await stopAppServer(web)
 })
 
 describe('walking-skeleton browser path', () => {

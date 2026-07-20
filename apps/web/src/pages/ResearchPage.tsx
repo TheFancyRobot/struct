@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars -- Babel's parser does not mark Solid JSX component imports as used. */
 import { useParams, useSearchParams } from '@solidjs/router'
-import { createMemo, type Component } from 'solid-js'
+import { Show, createMemo, type Component } from 'solid-js'
 import {
   ProjectId,
   ResearchRunId,
@@ -9,6 +9,7 @@ import {
 } from '@struct/domain'
 import { ResearchStream } from '../components/ResearchStream'
 import {
+  MixedSourceReport,
   mixedSourceDemoFixture,
   type MixedSourceReportStatus,
 } from '../components/MixedSourceReport'
@@ -46,19 +47,25 @@ export const ResearchPage: Component = () => {
         <h1 id="document-research-title">Grounded analysis</h1>
         <p>Follow committed progress from corpus partition to exact evidence.</p>
       </header>
-      <ResearchStream
-        projectId={ProjectId.make(params.projectId ?? '')}
-        threadId={ResearchThreadId.make(params.threadId ?? '')}
-        runId={ResearchRunId.make(params.runId ?? '')}
-        workspaceId={
-          typeof searchParams.workspaceId === 'string'
-            && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-              .test(searchParams.workspaceId)
-            ? WorkspaceId.make(searchParams.workspaceId)
-            : undefined
-        }
-        demoReport={demoReport()}
-      />
+      <Show
+        when={demoReport()}
+        fallback={(
+          <ResearchStream
+            projectId={ProjectId.make(params.projectId ?? '')}
+            threadId={ResearchThreadId.make(params.threadId ?? '')}
+            runId={ResearchRunId.make(params.runId ?? '')}
+            workspaceId={
+              typeof searchParams.workspaceId === 'string'
+                && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+                  .test(searchParams.workspaceId)
+                ? WorkspaceId.make(searchParams.workspaceId)
+                : undefined
+            }
+          />
+        )}
+      >
+        {(report) => <MixedSourceReport report={report()} />}
+      </Show>
     </section>
   )
 }
