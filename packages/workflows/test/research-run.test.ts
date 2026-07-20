@@ -283,6 +283,63 @@ describe('bounded research run graph', () => {
     expect(second.edges).toEqual(first.edges)
   })
 
+  it('compiles recursive-analysis nodes to the bounded recursive tool route', async () => {
+    const recursiveNodeId = ResearchPlanNodeId.make(
+      '920e8400-e29b-41d4-a716-446655440009',
+    )
+    const recursiveSource = SourceVersionId.make(
+      '920e8400-e29b-41d4-a716-446655440010',
+    )
+    const recursivePlan: ResearchPlan = {
+      ...plan,
+      sourceScopes: [{
+        kind: 'recursive',
+        sourceVersionIds: [ids.source, recursiveSource],
+      }],
+      nodes: [{
+        id: recursiveNodeId,
+        kind: 'recursive-analysis',
+        goal: 'Prepare bounded recursive corpus analysis.',
+        dependencies: [],
+        inputRefs: [{
+          kind: 'recursive-source-set',
+          sourceVersionIds: [ids.source, recursiveSource],
+        }],
+        evidenceRefs: [],
+        toolInput: { kind: 'recursive-analysis' },
+      }],
+      toolPolicy: {
+        grants: [{
+          toolId: 'recursive-analysis',
+          capability: 'recursive:analyze',
+          maximumCalls: 1,
+        }],
+      },
+      budget: {
+        ...plan.budget,
+        maximumSteps: 1,
+        maximumModelCalls: 0,
+      },
+    }
+    const resolutions: unknown[] = []
+    const graph = await Effect.runPromise(compileResearchRunWorkflow(
+      recursivePlan,
+      routing,
+      policy,
+      dependencies({
+        resolve: (toolId, capability) => {
+          resolutions.push({ toolId, capability })
+          return Effect.succeed({ execute: () => Effect.succeed(result) })
+        },
+      }, succeedingModels),
+    ))
+    await functionNode(graph, recursiveNodeId).fn(context(initialState()))
+    expect(resolutions).toEqual([{
+      toolId: 'recursive-analysis',
+      capability: 'recursive:analyze',
+    }])
+  })
+
   it('derives dependency order instead of trusting canonical node-id order', async () => {
     const reversedPlan: ResearchPlan = {
       ...plan,

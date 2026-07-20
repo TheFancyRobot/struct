@@ -11,6 +11,9 @@ export function makeProductionResearchPlanningPolicy(
   const includesDataset = sourceScopes.some(
     (scope) => scope.kind === 'dataset',
   )
+  const includesRecursive = sourceScopes.some(
+    (scope) => scope.kind === 'recursive',
+  )
   return {
     toolPolicy: {
       grants: [
@@ -36,12 +39,19 @@ export function makeProductionResearchPlanningPolicy(
               maximumCalls: 1,
             }]
           : []),
+        ...(includesRecursive
+          ? [{
+              toolId: 'recursive-analysis' as const,
+              capability: 'recursive:analyze' as const,
+              maximumCalls: 1,
+            }]
+          : []),
       ],
     },
     budgetCeiling: {
       maximumSteps: 8,
       maximumModelCalls: 4,
-      maximumToolCalls: includesDataset ? 4 : 3,
+      maximumToolCalls: 3 + Number(includesDataset) + Number(includesRecursive),
       maximumTokens: 32_000,
       maximumElapsedMilliseconds,
       maximumEstimatedCostMicros: 1_000_000,

@@ -36,4 +36,21 @@ describe('production research planning policy', () => {
     })
     expect(dataset.budgetCeiling.maximumToolCalls).toBe(4)
   })
+
+  it('grants recursive analysis only for an explicit recursive source scope', () => {
+    const recursive = makeProductionResearchPlanningPolicy([{
+      kind: 'recursive',
+      sourceVersionIds: [
+        sourceVersionId,
+        SourceVersionId.make('ab0e8400-e29b-41d4-a716-446655440004'),
+      ],
+    }], 60_000)
+
+    expect(recursive.toolPolicy.grants).toContainEqual({
+      toolId: 'recursive-analysis',
+      capability: 'recursive:analyze',
+      maximumCalls: 1,
+    })
+    expect(recursive.budgetCeiling.maximumToolCalls).toBe(4)
+  })
 })

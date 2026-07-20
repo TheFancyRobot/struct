@@ -81,6 +81,7 @@ function planningInput() {
     classification: {
       version: '1',
       kind: 'mixed',
+      routes: ['document', 'dataset'],
       mode: 'quick',
       requiresExactComputation: false,
       confidence: 0.95,
@@ -220,9 +221,23 @@ describe('deterministic research-plan validation', () => {
       },
     }
 
-    for (const proposal of [document, dataset, mixed]) {
+    for (const [proposal, kind] of [
+      [document, 'document'],
+      [dataset, 'dataset'],
+      [mixed, 'mixed'],
+    ] as const) {
+      const scopedInput = Schema.decodeUnknownSync(ResearchPlanningInput)({
+        ...planningInput(),
+        classification: {
+          ...planningInput().classification,
+          kind,
+          routes: kind === 'mixed'
+            ? ['document', 'dataset']
+            : [kind],
+        },
+      })
       const normalized = await Effect.runPromise(
-        validateResearchPlan(planningInput(), proposal),
+        validateResearchPlan(scopedInput, proposal),
       )
       expect(Schema.is(ResearchPlan)(normalized)).toBe(true)
     }
@@ -351,6 +366,7 @@ describe('deterministic research-plan validation', () => {
       classification: {
         version: '1',
         kind: 'mixed',
+        routes: ['document', 'dataset'],
         mode: 'quick',
         requiresExactComputation: true,
         confidence: 0.99,
