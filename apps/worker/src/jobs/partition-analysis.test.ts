@@ -90,10 +90,13 @@ describe('partition analysis worker journal surface', () => {
     let creates = 0
     const job = makePartitionAnalysisJob({
       load: (planId) => Effect.succeed(Option.fromNullable(values.get(planId))),
-      create: (value, event) => Effect.sync(() => {
+      createOrLoad: (value, event) => Effect.sync(() => {
+        const existing = values.get(value.plan.id)
+        if (existing !== undefined) return existing
         creates += 1
         values.set(value.plan.id, value)
         events.push(event)
+        return value
       }),
       compareAndSwap: (expected, value, event) => Effect.sync(() => {
         if (values.get(value.plan.id) !== expected) return false
@@ -104,8 +107,10 @@ describe('partition analysis worker journal surface', () => {
     })
     const input = fixture()
 
-    const enqueued = await run(job.enqueue(input.manifest, input.request))
-    const duplicate = await run(job.enqueue(input.manifest, input.request))
+    const [enqueued, duplicate] = await Promise.all([
+      run(job.enqueue(input.manifest, input.request)),
+      run(job.enqueue(input.manifest, input.request)),
+    ])
     expect(duplicate).toEqual(enqueued)
     expect(creates).toBe(1)
 
@@ -147,7 +152,7 @@ describe('partition analysis worker journal surface', () => {
         await bothLoaded
         return Option.some(snapshot)
       }),
-      create: () => Effect.void,
+      createOrLoad: (value) => Effect.succeed(value),
       compareAndSwap: (expected, next) => Effect.sync(() => {
         if (current !== expected) return false
         current = next
@@ -170,7 +175,7 @@ describe('partition analysis worker journal surface', () => {
   it('returns a typed not-found failure for unknown monitoring identity', async () => {
     const job = makePartitionAnalysisJob({
       load: () => Effect.succeed(Option.none()),
-      create: () => Effect.void,
+      createOrLoad: (value) => Effect.succeed(value),
       compareAndSwap: () => Effect.succeed(true),
     })
     const result = await run(Effect.either(
@@ -194,7 +199,7 @@ describe('partition analysis worker journal surface', () => {
     }
     const job = makePartitionAnalysisJob({
       load: () => Effect.succeed(Option.some(corrupted)),
-      create: () => Effect.void,
+      createOrLoad: (value) => Effect.succeed(value),
       compareAndSwap: () => Effect.succeed(true),
     })
     const result = await run(Effect.either(

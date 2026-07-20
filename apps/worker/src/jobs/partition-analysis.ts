@@ -35,10 +35,14 @@ export interface PartitionAnalysisJournal {
     Option.Option<DurablePartitionAnalysis>,
     JobClaimError
   >
-  readonly create: (
-    value: DurablePartitionAnalysis,
+  /**
+   * Atomically creates the candidate and its event or returns the already
+   * durable value when another worker won the same stable identity.
+   */
+  readonly createOrLoad: (
+    candidate: DurablePartitionAnalysis,
     event: PartitionAnalysisJournalEvent,
-  ) => Effect.Effect<void, JobClaimError>
+  ) => Effect.Effect<DurablePartitionAnalysis, JobClaimError>
   /**
    * Atomically persists `next` and its event only when the durable value still
    * equals `expected`. Implementations must perform one transactional
@@ -67,29 +71,22 @@ export const makePartitionAnalysisJob = (
     request: import('@struct/domain').RecursiveAnalysisRequest,
   ) {
     const prepared = yield* prepareRecursiveAnalysis(manifest, request)
-    const durable = yield* journal.load(prepared.plan.id)
-    if (Option.isSome(durable)) {
-      yield* CorpusPartitioning.validate(
-        durable.value.plan,
-        durable.value.scheduler,
-      )
-      if (
-        durable.value.plan.manifestDigest !== prepared.plan.manifestDigest
-        || durable.value.plan.request.id !== prepared.plan.request.id
-      ) {
-        return yield* new JobClaimError({
-          operation: 'partition-analysis-enqueue',
-          reason: 'idempotency-conflict',
-          message: 'Existing partition analysis does not match the stable plan identity',
-        })
-      }
-      return durable.value
-    }
-    yield* journal.create(prepared, {
+    const durable = yield* journal.createOrLoad(prepared, {
       type: 'partition-analysis-enqueued',
       planId: prepared.plan.id,
     })
-    return prepared
+    yield* CorpusPartitioning.validate(durable.plan, durable.scheduler)
+    if (
+      durable.plan.manifestDigest !== prepared.plan.manifestDigest
+      || durable.plan.request.id !== prepared.plan.request.id
+    ) {
+      return yield* new JobClaimError({
+        operation: 'partition-analysis-enqueue',
+        reason: 'idempotency-conflict',
+        message: 'Existing partition analysis does not match the stable plan identity',
+      })
+    }
+    return durable
   })
 
   const monitor = Effect.fn('PartitionAnalysisJob.monitor')(function* (

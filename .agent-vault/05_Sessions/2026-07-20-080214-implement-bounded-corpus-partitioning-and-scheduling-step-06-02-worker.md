@@ -12,7 +12,7 @@ phase: '[[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive 
 context:
   context_id: SESSION-2026-07-20-080214
   status: completed
-  updated_at: '2026-07-20T08:11:00.000Z'
+  updated_at: '2026-07-20T08:34:00.000Z'
   current_focus:
     summary: STEP-06-02 is implemented and root-validated; publication, automated review, and merge remain.
     target: '[[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_02_implement-bounded-corpus-partitioning-and-scheduling|STEP-06-02 Implement Bounded Corpus Partitioning and Scheduling]]'
@@ -57,6 +57,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-END:session-execution-log -->
 - 08:23 - Root self-review fixed terminal-state cancellation, timeout reason preservation, final mixed-outcome convergence, canonical reconstructed plan/state validation, persisted per-partition estimates, and monitor-time corruption rejection before publication.
 - 08:32 - Validated both Codex review findings as real, terminalized final-attempt lease loss, replaced unconditional journal saves with atomic compare-and-swap for claim/resume, and added final-attempt plus concurrent-claim regressions.
+- 08:34 - Validated all three CodeRabbit findings, made enqueue atomically create-or-load, replaced quadratic tree traversal with indexed linear BFS, corrected durable context recency, and re-ran the full gate.
 
 ## Findings
 
@@ -66,6 +67,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Monitoring is a trust boundary and validates reconstructed plan, lease, artifact, progress, and budget invariants before exposing state.
 - Lease-loss recovery is a retry transition and must terminalize a running partition already at `maximumPartitionAttempts`; it cannot create attempt N+1.
 - Worker claim and resume publication must be one transactional compare-and-swap against the loaded durable snapshot so concurrent workers cannot duplicate execution or erase leases.
+- Stable-id enqueue must atomically create-or-load the journal record and event; a prior load followed by create permits duplicate creation under parallel enqueue.
+- Decomposition-tree traversal must use a node lookup map and queue cursor so large bounded corpora do not incur quadratic parent discovery or array shifting.
 
 ## Context Handoff
 
@@ -106,6 +109,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Root typecheck, lint, import boundaries, production build, docs lint, secrets scan, and Compose config gates passed.
 - Post-review repository suite: 563 passed, 164 opt-in integration skips, 0 failed; typecheck, lint, imports, build, docs, secrets, and Compose config remained green.
 - New regressions prove a lost final attempt cannot be reclaimed and exactly one of two concurrent claims can atomically publish from the same durable snapshot.
+- Final review-remediation suite: 563 passed, 164 opt-in integration skips, 0 failed; focused worker tests prove two parallel enqueues create one durable record, and all static, build, docs, secrets, and Compose gates passed.
 
 ## Bugs Encountered
 

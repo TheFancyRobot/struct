@@ -327,14 +327,16 @@ function createTree(
       )
     }
     const parentByChild = new Map<RecursiveDecompositionNodeId, RecursiveDecompositionNodeId>()
+    const nodeById = new Map<RecursiveDecompositionNodeId, NodeDraft>()
     for (const node of all) {
       for (const childId of node.childIds) parentByChild.set(childId, node.id)
+      nodeById.set(node.id, node)
     }
     const depthById = new Map<RecursiveDecompositionNodeId, number>([[root.id, 0]])
     const queue = [root.id]
-    while (queue.length > 0) {
-      const parentId = queue.shift()!
-      const parent = all.find((node) => node.id === parentId)!
+    for (let head = 0; head < queue.length; head += 1) {
+      const parentId = queue[head]!
+      const parent = nodeById.get(parentId)!
       const depth = depthById.get(parentId)!
       for (const childId of parent.childIds) {
         depthById.set(childId, depth + 1)

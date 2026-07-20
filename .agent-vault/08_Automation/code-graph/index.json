@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T08:32:50.297Z",
+  "generatedAt": "2026-07-20T08:37:36.984Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -2366,17 +2366,17 @@
         {
           "name": "missing",
           "kind": "function",
-          "line": 54,
+          "line": 58,
           "exported": false,
-          "endLine": 54,
+          "endLine": 58,
           "signature": "(planId: string)"
         },
         {
           "name": "makePartitionAnalysisJob",
           "kind": "const",
-          "line": 62,
+          "line": 66,
           "exported": true,
-          "endLine": 62
+          "endLine": 66
         }
       ],
       "imports": [
@@ -2417,9 +2417,9 @@
         }
       ],
       "exports": [],
-      "hash": "ecfb6c14a029e0e1b13970c6f4b5976d32c76e633f3f8fe597f8d7d6e028d810",
-      "mtimeMs": 1784536251983.4802,
-      "size": 4855,
+      "hash": "a82f2cc5445935e1666672fe162b5577e5cea210a064e0114f53d2ec4dd8030c",
+      "mtimeMs": 1784536481374.108,
+      "size": 4866,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -14816,31 +14816,31 @@
         {
           "name": "assertPlan",
           "kind": "function",
-          "line": 426,
+          "line": 428,
           "exported": false,
-          "endLine": 426
+          "endLine": 428
         },
         {
           "name": "assertState",
           "kind": "function",
-          "line": 529,
+          "line": 531,
           "exported": false,
-          "endLine": 529
+          "endLine": 531
         },
         {
           "name": "isCounter",
           "kind": "function",
-          "line": 665,
+          "line": 667,
           "exported": false,
-          "endLine": 665,
+          "endLine": 667,
           "signature": "(value: number)"
         },
         {
           "name": "CorpusPartitioning",
           "kind": "class",
-          "line": 669,
+          "line": 671,
           "exported": true,
-          "endLine": 669
+          "endLine": 671
         }
       ],
       "imports": [
@@ -14905,9 +14905,9 @@
         }
       ],
       "exports": [],
-      "hash": "11596e54303e27397f00f711945b130108cb244c0824cff3a2a000f58f2d7dad",
-      "mtimeMs": 1784536251983.1733,
-      "size": 38521,
+      "hash": "d812bb0892f2abf2864a47198eb95c9ca2efb78eb0b73694df073b58fa5e2d5c",
+      "mtimeMs": 1784536481373.765,
+      "size": 38633,
       "generated": false,
       "vendor": false,
       "parser": "regex"
