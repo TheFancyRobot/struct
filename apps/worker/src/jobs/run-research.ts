@@ -3,6 +3,7 @@ import {
   CitationId,
   EventJournalId,
   ProjectId,
+  ResearchContractValidationError,
   SourceVersionId,
   ValidationError,
 } from '@struct/domain'
@@ -14,6 +15,7 @@ import {
   withWalkingSliceSpan,
 } from '@struct/observability'
 import type * as Research from '@struct/research-engine'
+import { selectResearchRecovery } from '@struct/research-engine'
 
 interface ResearchPayload {
   readonly projectId: ProjectId
@@ -50,11 +52,57 @@ export interface ResearchWorkerDeps {
       readonly job: typeof Domain.JobQueue.Type
       readonly event: typeof Domain.EventJournal.Type
     }) => Effect.Effect<unknown, unknown, never>
+    readonly loadDurableState: (
+      workspaceId: typeof Domain.WorkspaceId.Type,
+      projectId: ProjectId,
+      runId: typeof Domain.ResearchRun.Type['id'],
+    ) => Effect.Effect<Option.Option<{
+      readonly plan: Option.Option<typeof Domain.ResearchPlan.Type>
+      readonly checkpoint: Option.Option<
+        typeof Domain.ResearchExecutionCheckpoint.Type
+      >
+      readonly cancellationStatus: 'none' | 'requested' | 'acknowledged'
+      readonly terminalStatus: Option.Option<
+        'completed' | 'failed' | 'cancelled'
+      >
+    }>, unknown, never>
+    readonly persistPlan: (input: {
+      readonly workspaceId: typeof Domain.WorkspaceId.Type
+      readonly projectId: ProjectId
+      readonly job: typeof Domain.JobQueue.Type
+      readonly plan: typeof Domain.ResearchPlan.Type
+      readonly eventId: typeof EventJournalId.Type
+      readonly createdAt: bigint
+    }) => Effect.Effect<void, unknown, never>
+    readonly persistCheckpoint: (input: {
+      readonly workspaceId: typeof Domain.WorkspaceId.Type
+      readonly projectId: ProjectId
+      readonly job: typeof Domain.JobQueue.Type
+      readonly checkpoint: typeof Domain.ResearchExecutionCheckpoint.Type
+      readonly eventId: typeof EventJournalId.Type
+      readonly createdAt: bigint
+    }) => Effect.Effect<void, unknown, never>
+    readonly persistPlanningFailure: (input: {
+      readonly workspaceId: typeof Domain.WorkspaceId.Type
+      readonly projectId: ProjectId
+      readonly job: typeof Domain.JobQueue.Type
+      readonly failure: typeof ResearchContractValidationError.Type
+      readonly eventId: typeof EventJournalId.Type
+      readonly createdAt: bigint
+    }) => Effect.Effect<void, unknown, never>
   }
   readonly runs: {
     readonly findById: (
       runId: typeof Domain.ResearchRun.Type['id'],
     ) => Effect.Effect<typeof Domain.ResearchRun.Type, unknown, never>
+  }
+  readonly planning: {
+    readonly plan: (input: {
+      readonly run: typeof Domain.ResearchRun.Type
+      readonly workspaceId: typeof Domain.WorkspaceId.Type
+      readonly projectId: ProjectId
+      readonly sourceVersionIds: ReadonlyArray<SourceVersionId>
+    }) => Effect.Effect<typeof Domain.ResearchPlan.Type, unknown, never>
   }
   readonly workflow: {
     readonly run: (input: {
@@ -62,6 +110,13 @@ export interface ResearchWorkerDeps {
       readonly workspaceId: typeof Domain.JobQueue.Type['workspaceId']
       readonly projectId: ProjectId
       readonly sourceVersionIds: ReadonlyArray<SourceVersionId>
+      readonly plan: typeof Domain.ResearchPlan.Type
+      readonly resumeCheckpoint: Option.Option<
+        typeof Domain.ResearchExecutionCheckpoint.Type
+      >
+      readonly onCheckpoint: (
+        checkpoint: typeof Domain.ResearchExecutionCheckpoint.Type,
+      ) => Effect.Effect<void, unknown, never>
       readonly onRetrievalCompleted: (
         evidence: ReadonlyArray<typeof Domain.TextEvidence.Type>,
       ) => Effect.Effect<unknown, unknown, never>
@@ -76,6 +131,12 @@ class ResearchLeaseHeartbeatError
       cause: Schema.Unknown,
       message: Schema.String,
     },
+  ) {}
+
+class ResearchPlanningFailurePersisted
+  extends Schema.TaggedError<ResearchPlanningFailurePersisted>()(
+    'ResearchPlanningFailurePersisted',
+    { message: Schema.String },
   ) {}
 
 function decodePayload(
@@ -208,6 +269,69 @@ export const processOneResearchJob = (
           job.entityId as typeof Domain.ResearchRun.Type['id'],
         )
         const payload = yield* decodePayload(job.payload)
+        const loadedDurable = yield* deps.jobs.loadDurableState(
+          job.workspaceId,
+          payload.projectId,
+          run.id,
+        )
+        const durable = Option.getOrElse(loadedDurable, () => ({
+          plan: Option.none<typeof Domain.ResearchPlan.Type>(),
+          checkpoint: Option.none<
+            typeof Domain.ResearchExecutionCheckpoint.Type
+          >(),
+          cancellationStatus: 'none' as const,
+          terminalStatus: Option.none<
+            'completed' | 'failed' | 'cancelled'
+          >(),
+        }))
+        if (Option.isSome(durable.terminalStatus)) return
+        if (durable.cancellationStatus !== 'none') return
+        const plan = Option.isSome(durable.plan)
+          ? durable.plan.value
+          : yield* deps.planning.plan({
+              run,
+              workspaceId: job.workspaceId,
+              projectId: payload.projectId,
+              sourceVersionIds: payload.sourceVersionIds,
+            }).pipe(
+              Effect.catchAll((failure) => {
+                const persistedFailure =
+                  failure instanceof ResearchContractValidationError
+                    ? failure
+                    : new ResearchContractValidationError({
+                        contract: 'plan',
+                        reason: 'malformed',
+                        path: 'provider',
+                        message: 'Research planning failed',
+                      })
+                return deps.jobs.persistPlanningFailure({
+                  workspaceId: job.workspaceId,
+                  projectId: payload.projectId,
+                  job,
+                  failure: persistedFailure,
+                  eventId: deps.randomEventId(),
+                  createdAt: deps.now(),
+                }).pipe(
+                  Effect.zipRight(Effect.fail(
+                    new ResearchPlanningFailurePersisted({
+                      message: 'Research planning failure was persisted',
+                    }),
+                  )),
+                )
+              }),
+            )
+        if (Option.isNone(durable.plan)) {
+          yield* deps.jobs.persistPlan({
+            workspaceId: job.workspaceId,
+            projectId: payload.projectId,
+            job,
+            plan,
+            eventId: deps.randomEventId(),
+            createdAt: deps.now(),
+          })
+        }
+        const recovery = yield* selectResearchRecovery(plan, durable)
+        if (recovery.kind === 'terminal' || recovery.kind === 'cancel') return
         const result = yield* withWalkingSliceSpan(
           'fred-run',
           {
@@ -221,6 +345,20 @@ export const processOneResearchJob = (
             workspaceId: job.workspaceId,
             projectId: payload.projectId,
             sourceVersionIds: payload.sourceVersionIds,
+            plan,
+            resumeCheckpoint: recovery.kind === 'resume'
+              || recovery.kind === 'finalize'
+              ? Option.some(recovery.checkpoint)
+              : Option.none(),
+            onCheckpoint: (checkpoint) =>
+              deps.jobs.persistCheckpoint({
+                workspaceId: job.workspaceId,
+                projectId: payload.projectId,
+                job,
+                checkpoint,
+                eventId: deps.randomEventId(),
+                createdAt: deps.now(),
+              }),
             onRetrievalCompleted: (evidence) =>
               deps.jobs.appendInProgressEvent(
                 job,
@@ -291,6 +429,10 @@ export const processOneResearchJob = (
         return yield* Effect.fail(executed.left.cause)
       }
       if (isOwnershipLost(executed.left)) {
+        return { processed: true, jobId: job.id }
+      }
+      if (executed.left instanceof ResearchPlanningFailurePersisted) {
+        yield* incrementWalkingSliceMetric('runs.failed')
         return { processed: true, jobId: job.id }
       }
       const failed = yield* deps.jobs.fail({

@@ -82,6 +82,14 @@ export interface ResearchRunGraphDependencies {
   readonly models: ResearchModelResolver
   readonly now: () => number
   readonly estimatedCostMicros: (node: ResearchPlanNode) => number
+  readonly onStateCommitted?: (
+    state: typeof ResearchGraphState.Type,
+  ) => Effect.Effect<void, ResearchProviderFailure, never>
+  readonly isCancellationRequested?: () => Effect.Effect<
+    boolean,
+    ResearchProviderFailure,
+    never
+  >
 }
 
 const toolByNodeKind: Readonly<
@@ -100,6 +108,10 @@ const toolByNodeKind: Readonly<
   'dataset-query': {
     toolId: 'dataset-query',
     capability: 'dataset:query',
+  },
+  'directory-navigation': {
+    toolId: 'directory-navigation',
+    capability: 'directory:navigate',
   },
   'citation-validation': {
     toolId: 'citation-validation',
@@ -212,6 +224,13 @@ function executionEffect(
 ) {
   return Effect.gen(function* () {
     if (signal.aborted) return yield* interrupted()
+    if (state.completedNodeIds.includes(node.id)) return state
+    if (
+      deps.isCancellationRequested !== undefined
+      && (yield* deps.isCancellationRequested())
+    ) {
+      return yield* interrupted()
+    }
     const action = actionForNode(node, deps.estimatedCostMicros(node))
     const begun = yield* beginResearchAction(
       plan,
@@ -272,9 +291,13 @@ function executionEffect(
       result,
       deps.now(),
     )
-    return completed.completedNodeIds.length === plan.nodes.length
+    const committed = completed.completedNodeIds.length === plan.nodes.length
       ? { ...completed, status: 'completed' as const }
       : completed
+    if (deps.onStateCommitted !== undefined) {
+      yield* deps.onStateCommitted(committed)
+    }
+    return committed
   })
 }
 

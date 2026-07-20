@@ -1,18 +1,25 @@
+/* eslint-disable no-unused-vars -- Babel's parser does not mark type-only imports as used. */
 import { Clock, Config, Effect, Runtime, Schema } from 'effect'
 import type * as Fred from '@fancyrobot/fred'
 import {
   EvidenceContradictionError,
   EvidenceInsufficientError,
+  type ResearchContractValidationError as typeResearchContractValidationError,
   ResearchCitationValidationError,
+  type ResearchPlan as typeResearchPlan,
+  type ResearchAnswer as typeResearchAnswer,
   ResearchWorkflowError,
   RetrievalQueryError,
 } from '@struct/domain'
 import { tracingOtlpEndpointConfig } from '@struct/observability'
 import {
   DocumentResearchWorkflowResult,
+  type ResearchExecutionPolicy as typeResearchExecutionPolicy,
+  ResearchGraphState,
+  ResearchProviderFailure,
+  validateResearchPlan,
   WalkingSkeletonWorkflowResult,
 } from '@struct/research-engine'
-// eslint-disable-next-line no-unused-vars -- Type-only namespace is consumed by TypeScript.
 import type * as Research from '@struct/research-engine'
 import {
   documentPlannerAgent,
@@ -21,15 +28,35 @@ import {
   makeDocumentResearchWorkflow,
   makeHybridDocumentRetrievalTool,
 } from '../graphs/document-research.js'
-// eslint-disable-next-line no-unused-vars -- Type-only namespace is consumed by TypeScript.
 import type * as DocumentResearch from '../graphs/document-research.js'
 import {
   answerSynthesizerAgent,
   makeSearchTextTool,
   makeWalkingSkeletonWorkflow,
 } from '../graphs/walking-skeleton.js'
-// eslint-disable-next-line no-unused-vars -- Type-only namespace is consumed by TypeScript.
 import type * as WalkingSkeleton from '../graphs/walking-skeleton.js'
+import {
+  compileResearchRunWorkflow,
+  type ResearchRunGraphDependencies as typeResearchRunGraphDependencies,
+} from '../graphs/research-run.js'
+import type {
+  ResearchModelRoutingPolicy as typeResearchModelRoutingPolicy,
+} from '../model-routing.js'
+import {
+  questionClassifierAgent,
+  type QuestionClassifierInput as typeQuestionClassifierInput,
+} from '../agents/question-classifier.js'
+import {
+  researchPlannerAgent,
+  type ResearchPlannerInput as typeResearchPlannerInput,
+} from '../agents/research-planner.js'
+import {
+  researchAnswerAgent,
+  researchEvidenceCriticAgent,
+  type ResearchEvidenceAgentInput as typeResearchEvidenceAgentInput,
+  type ResearchEvidenceAssessment as typeResearchEvidenceAssessment,
+} from '../agents/research-execution.js'
+/* eslint-enable no-unused-vars */
 
 export interface FredRuntimeConfig {
   readonly providerPackage: string
@@ -58,7 +85,8 @@ export interface FredClientFactory {
     workflow: Fred.WorkflowIR,
     input:
       | typeof Research.WalkingSkeletonResearchInput.Type
-      | typeof Research.DocumentResearchInput.Type,
+      | typeof Research.DocumentResearchInput.Type
+      | typeof ResearchGraphState.Type,
     maxElapsedMs: number,
     signal: AbortSignal,
   ) => Promise<Fred.WorkflowExecutionResult>
@@ -297,6 +325,284 @@ export const preflightFredRuntime = (
       }),
     )
   })
+
+export const runFredResearchPlanning = (
+  input: {
+    readonly classifier: typeQuestionClassifierInput
+    readonly planner: Omit<typeResearchPlannerInput, 'classification'>
+  },
+  config: FredRuntimeConfig,
+  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+): Effect.Effect<
+  typeResearchPlan,
+  typeResearchContractValidationError | ResearchWorkflowError,
+  never
+> =>
+  Effect.acquireUseRelease(
+    Effect.tryPromise({
+      try: (signal) => createFredBeforeDeadline(
+        factory,
+        config.maxElapsedMs,
+        signal,
+      ),
+      catch: () =>
+        new ResearchWorkflowError({
+          stage: 'fred-runtime',
+          message: 'Fred runtime could not be created',
+        }),
+    }),
+    (fred) =>
+      Effect.tryPromise({
+        try: async (signal) => {
+          assertActive(signal)
+          const provider = await fred.providers.use(config.providerPackage)
+          const classifier = await fred.agents.register(
+            questionClassifierAgent(provider.id, config.model),
+          )
+          const planner = await fred.agents.register(
+            researchPlannerAgent(provider.id, config.model),
+          )
+          const classification = await Runtime.runPromise(fred.runtime)(
+            classifier.run(input.classifier, [], {
+              sessionId: input.planner.runId,
+            }),
+            { signal },
+          )
+          if (classification.output === undefined) {
+            throw new Error('Question classifier returned no typed output')
+          }
+          const planningInput: typeResearchPlannerInput = {
+            ...input.planner,
+            classification: classification.output,
+          }
+          const proposal = await Runtime.runPromise(fred.runtime)(
+            planner.run(planningInput, [], {
+              sessionId: input.planner.runId,
+            }),
+            { signal },
+          )
+          if (proposal.output === undefined) {
+            throw new Error('Research planner returned no typed output')
+          }
+          return { planningInput, proposal: proposal.output }
+        },
+        catch: () =>
+          new ResearchWorkflowError({
+            stage: 'research-planning-provider',
+            message: 'Research planning provider failed',
+          }),
+      }).pipe(
+        Effect.flatMap(({ planningInput, proposal }) =>
+          validateResearchPlan(planningInput, proposal),
+        ),
+      ),
+    (fred) => Effect.promise(() =>
+      boundedShutdown(fred, EMERGENCY_SHUTDOWN_MS)
+    ),
+  ).pipe(
+    Effect.timeoutFail({
+      duration: config.maxElapsedMs,
+      onTimeout: () =>
+        new ResearchWorkflowError({
+          stage: 'research-planning-provider',
+          message: 'Research planning exceeded elapsed-time budget',
+        }),
+    }),
+  )
+
+export const runFredBoundedResearchGraph = (
+  plan: typeResearchPlan,
+  initialState: typeof ResearchGraphState.Type,
+  routing: typeResearchModelRoutingPolicy,
+  policy: typeResearchExecutionPolicy,
+  dependencies: typeResearchRunGraphDependencies,
+  config: FredRuntimeConfig,
+  signal: AbortSignal,
+  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+): Effect.Effect<
+  typeof ResearchGraphState.Type,
+  ResearchWorkflowError,
+  never
+> =>
+  Effect.acquireUseRelease(
+    Effect.tryPromise({
+      try: (deadlineSignal) => createFredBeforeDeadline(
+        factory,
+        config.maxElapsedMs,
+        AbortSignal.any([deadlineSignal, signal]),
+      ),
+      catch: () =>
+        new ResearchWorkflowError({
+          stage: 'fred-runtime',
+          message: 'Fred runtime could not be created',
+        }),
+    }),
+    (fred) =>
+      Effect.gen(function* () {
+        const workflow = yield* compileResearchRunWorkflow(
+          plan,
+          routing,
+          policy,
+          dependencies,
+          signal,
+        ).pipe(
+          Effect.mapError(() =>
+            new ResearchWorkflowError({
+              stage: 'workflow-compilation',
+              message: 'Bounded research graph could not be compiled',
+            })),
+        )
+        const result = yield* Effect.tryPromise({
+          try: (deadlineSignal) => factory.execute(
+            fred,
+            workflow,
+            initialState,
+            config.maxElapsedMs,
+            AbortSignal.any([deadlineSignal, signal]),
+          ),
+          catch: () =>
+            new ResearchWorkflowError({
+              stage: 'workflow-execution',
+              message: 'Bounded research graph failed',
+            }),
+        })
+        if (!result.success || result.status !== 'completed') {
+          return yield* new ResearchWorkflowError({
+            stage: 'workflow-execution',
+            message: 'Bounded research graph did not complete',
+          })
+        }
+        return yield* Schema.decodeUnknown(ResearchGraphState)(
+          result.finalOutput,
+        ).pipe(
+          Effect.mapError(() =>
+            new ResearchWorkflowError({
+              stage: 'workflow-output',
+              message: 'Bounded research graph output was invalid',
+            })),
+        )
+      }),
+    (fred) => Effect.promise(() =>
+      boundedShutdown(fred, EMERGENCY_SHUTDOWN_MS)
+    ),
+  ).pipe(
+    Effect.timeoutFail({
+      duration: config.maxElapsedMs,
+      onTimeout: () =>
+        new ResearchWorkflowError({
+          stage: 'workflow-execution',
+          message: 'Bounded research graph exceeded elapsed-time budget',
+        }),
+    }),
+  )
+
+export const runFredResearchCritique = (
+  input: typeResearchEvidenceAgentInput,
+  model: string,
+  config: FredRuntimeConfig,
+  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+): Effect.Effect<
+  typeResearchEvidenceAssessment,
+  ResearchProviderFailure,
+  never
+> =>
+  Effect.acquireUseRelease(
+    Effect.tryPromise({
+      try: (signal) => createFredBeforeDeadline(
+        factory,
+        config.maxElapsedMs,
+        signal,
+      ),
+      catch: () =>
+        new ResearchProviderFailure({
+          message: 'Critique model runtime failed',
+        }),
+    }),
+    (fred) =>
+      Effect.tryPromise({
+        try: async (signal) => {
+          const provider = await fred.providers.use(config.providerPackage)
+          const agent = await fred.agents.register(
+            researchEvidenceCriticAgent(provider.id, model),
+          )
+          const response = await Runtime.runPromise(fred.runtime)(
+            agent.run(input),
+            { signal },
+          )
+          if (response.output === undefined) {
+            throw new Error('Critique model returned no typed output')
+          }
+          return response.output
+        },
+        catch: () =>
+          new ResearchProviderFailure({
+            message: 'Critique model failed',
+          }),
+      }),
+    (fred) => Effect.promise(() =>
+      boundedShutdown(fred, EMERGENCY_SHUTDOWN_MS)
+    ),
+  ).pipe(
+    Effect.timeoutFail({
+      duration: config.maxElapsedMs,
+      onTimeout: () =>
+        new ResearchProviderFailure({
+          message: 'Critique model exceeded elapsed-time budget',
+        }),
+    }),
+  )
+
+export const runFredResearchSynthesis = (
+  input: typeResearchEvidenceAgentInput,
+  model: string,
+  config: FredRuntimeConfig,
+  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+): Effect.Effect<typeResearchAnswer, ResearchProviderFailure, never> =>
+  Effect.acquireUseRelease(
+    Effect.tryPromise({
+      try: (signal) => createFredBeforeDeadline(
+        factory,
+        config.maxElapsedMs,
+        signal,
+      ),
+      catch: () =>
+        new ResearchProviderFailure({
+          message: 'Synthesis model runtime failed',
+        }),
+    }),
+    (fred) =>
+      Effect.tryPromise({
+        try: async (signal) => {
+          const provider = await fred.providers.use(config.providerPackage)
+          const agent = await fred.agents.register(
+            researchAnswerAgent(provider.id, model),
+          )
+          const response = await Runtime.runPromise(fred.runtime)(
+            agent.run(input),
+            { signal },
+          )
+          if (response.output === undefined) {
+            throw new Error('Synthesis model returned no typed output')
+          }
+          return response.output
+        },
+        catch: () =>
+          new ResearchProviderFailure({
+            message: 'Synthesis model failed',
+          }),
+      }),
+    (fred) => Effect.promise(() =>
+      boundedShutdown(fred, EMERGENCY_SHUTDOWN_MS)
+    ),
+  ).pipe(
+    Effect.timeoutFail({
+      duration: config.maxElapsedMs,
+      onTimeout: () =>
+        new ResearchProviderFailure({
+          message: 'Synthesis model exceeded elapsed-time budget',
+        }),
+    }),
+  )
 
 export const runFredWalkingSkeleton = (
   input: typeof Research.WalkingSkeletonResearchInput.Type,

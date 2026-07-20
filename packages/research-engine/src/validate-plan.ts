@@ -92,6 +92,7 @@ const compatibleCapability: Readonly<
 > = {
   'hybrid-retrieval': 'document:retrieve',
   'dataset-query': 'dataset:query',
+  'directory-navigation': 'directory:navigate',
   'citation-validation': 'citation:validate',
 }
 
@@ -100,6 +101,7 @@ const nodeTool: Partial<
 > = {
   'document-retrieval': 'hybrid-retrieval',
   'dataset-query': 'dataset-query',
+  'directory-navigation': 'directory-navigation',
   'citation-validation': 'citation-validation',
 }
 
@@ -170,7 +172,10 @@ function validateScope(
     const directInputs = node.inputRefs.filter(
       (ref) => ref.kind !== 'node-output',
     )
-    if (node.kind === 'document-retrieval') {
+    if (
+      node.kind === 'document-retrieval'
+      || node.kind === 'directory-navigation'
+    ) {
       if (
         directInputs.length === 0
         || directInputs.some((ref) =>
@@ -181,6 +186,16 @@ function validateScope(
           'missing-reference',
           `nodes.${node.id}.inputRefs`,
           'A document-retrieval node requires authorized document source-version inputs',
+        )
+      }
+      if (
+        node.kind === 'directory-navigation'
+        && node.toolInput?.kind !== 'directory-navigation'
+      ) {
+        return failure(
+          'malformed',
+          `nodes.${node.id}.toolInput`,
+          'A directory-navigation node requires a typed navigation spec',
         )
       }
     } else if (node.kind === 'dataset-query') {
@@ -198,11 +213,28 @@ function validateScope(
           'A dataset-query node requires authorized dataset-snapshot inputs',
         )
       }
+      if (
+        node.toolInput?.kind !== 'dataset-query'
+        || !allowed.datasetSnapshots.has(
+          `${node.toolInput.snapshot.datasetId}:${node.toolInput.snapshot.datasetSnapshotId}`,
+        )
+        || (
+          node.toolInput.operation === 'inspect'
+          && node.toolInput.columns.length === 0
+        )
+      ) {
+        return failure(
+          'missing-reference',
+          `nodes.${node.id}.toolInput`,
+          'A dataset-query node requires a typed query spec inside its authorized immutable snapshot scope',
+        )
+      }
     }
     for (const ref of node.inputRefs) {
       const authorized = ref.kind === 'source-version'
         ? (
             node.kind === 'document-retrieval'
+              || node.kind === 'directory-navigation'
               ? allowed.documentSourceVersions.has(ref.sourceVersionId)
               : allowed.sourceVersions.has(ref.sourceVersionId)
           )

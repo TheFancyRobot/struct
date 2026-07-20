@@ -7,6 +7,8 @@ import {
   EventJournalId,
   JobQueueId,
   ProjectId,
+  ResearchPlanId,
+  ResearchPlanNodeId,
   ResearchRunId,
   ResearchThreadId,
   SourceId,
@@ -32,6 +34,60 @@ const workspaceId = WorkspaceId.make('f50e8400-e29b-41d4-a716-446655440000')
 const projectId = ProjectId.make('f50e8400-e29b-41d4-a716-446655440001')
 const sourceId = SourceId.make('f50e8400-e29b-41d4-a716-446655440002')
 const sourceVersionId = SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440003')
+
+const integrationPlanning = {
+  plan: ({
+    run,
+    workspaceId,
+    projectId,
+    sourceVersionIds,
+  }: {
+    readonly run: { readonly id: typeof ResearchRunId.Type; readonly question: string }
+    readonly workspaceId: typeof WorkspaceId.Type
+    readonly projectId: typeof ProjectId.Type
+    readonly sourceVersionIds: ReadonlyArray<typeof SourceVersionId.Type>
+  }) => Effect.succeed({
+    version: '1' as const,
+    id: ResearchPlanId.make(crypto.randomUUID()),
+    runId: run.id,
+    workspaceId,
+    projectId,
+    objective: run.question,
+    sourceScopes: sourceVersionIds.map((versionId) => ({
+      kind: 'document' as const,
+      sourceVersionId: versionId,
+    })),
+    nodes: [{
+      id: ResearchPlanNodeId.make(crypto.randomUUID()),
+      kind: 'document-retrieval' as const,
+      goal: run.question,
+      dependencies: [],
+      inputRefs: [{
+        kind: 'source-version' as const,
+        sourceVersionId: sourceVersionIds[0]!,
+      }],
+      evidenceRefs: [],
+    }],
+    evidenceRequirements: [],
+    toolPolicy: {
+      grants: [{
+        toolId: 'hybrid-retrieval' as const,
+        capability: 'document:retrieve' as const,
+        maximumCalls: 1,
+      }],
+    },
+    budget: {
+      maximumSteps: 1,
+      maximumModelCalls: 0,
+      maximumToolCalls: 1,
+      maximumTokens: 1,
+      maximumElapsedMilliseconds: 60_000,
+      maximumEstimatedCostMicros: 1,
+      maximumFanOut: 1,
+      maximumRevisions: 0,
+    },
+  }),
+}
 const crossLineSourceId = SourceId.make('f50e8400-e29b-41d4-a716-446655440004')
 const crossLineSourceVersionId = SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440005')
 const distantTermsSourceId = SourceId.make('f50e8400-e29b-41d4-a716-446655440006')
@@ -422,10 +478,29 @@ describeIf('research walking slice real DB integration', () => {
           ResearchExecutionRepo.complete(input).pipe(Effect.provide(executionLayer)),
         fail: (input) =>
           ResearchExecutionRepo.fail(input).pipe(Effect.provide(executionLayer)),
+        loadDurableState: (workspaceId, projectId, durableRunId) =>
+          ResearchExecutionRepo.loadDurableState(
+            workspaceId,
+            projectId,
+            durableRunId,
+          ).pipe(Effect.provide(executionLayer)),
+        persistPlan: (input) =>
+          ResearchExecutionRepo.persistPlan(input).pipe(
+            Effect.provide(executionLayer),
+          ),
+        persistCheckpoint: (input) =>
+          ResearchExecutionRepo.persistCheckpoint(input).pipe(
+            Effect.provide(executionLayer),
+          ),
+        persistPlanningFailure: (input) =>
+          ResearchExecutionRepo.persistPlanningFailure(input).pipe(
+            Effect.provide(executionLayer),
+          ),
       },
       runs: {
         findById: (id) => ResearchRunRepo.findById(id).pipe(Effect.provide(runLayer)),
       },
+      planning: integrationPlanning,
       workflow: {
         run: ({
           run,
@@ -494,6 +569,7 @@ describeIf('research walking slice real DB integration', () => {
     expect(citations).toHaveLength(1)
     expect(events.map((item) => item['event_type'])).toEqual([
       'research-started',
+      'research-plan-accepted',
       'retrieval-completed',
       'citations-validated',
       'research-completed',
@@ -529,6 +605,7 @@ describeIf('research walking slice real DB integration', () => {
 
     expect(blockedEvents.map((item) => item['event_type'])).toEqual([
       'research-started',
+      'research-plan-accepted',
       'retrieval-completed',
     ])
     expect(blockedRun['status']).toBe('in-progress')
@@ -546,6 +623,7 @@ describeIf('research walking slice real DB integration', () => {
     expect(job['status']).toBe('failed')
     expect(finalEvents.map((item) => item['event_type'])).toEqual([
       'research-started',
+      'research-plan-accepted',
       'retrieval-completed',
       'research-failed',
     ])
@@ -878,6 +956,7 @@ describeIf('research walking slice real DB integration', () => {
     expect(result).toHaveLength(0)
     expect(events.map((item) => item['event_type'])).toEqual([
       'research-started',
+      'research-plan-accepted',
       'retrieval-completed',
       'research-failed',
     ])
@@ -1074,10 +1153,29 @@ describeIf('research walking slice real DB integration', () => {
           ResearchExecutionRepo.complete(input).pipe(Effect.provide(executionLayer)),
         fail: (input) =>
           ResearchExecutionRepo.fail(input).pipe(Effect.provide(executionLayer)),
+        loadDurableState: (workspaceId, projectId, durableRunId) =>
+          ResearchExecutionRepo.loadDurableState(
+            workspaceId,
+            projectId,
+            durableRunId,
+          ).pipe(Effect.provide(executionLayer)),
+        persistPlan: (input) =>
+          ResearchExecutionRepo.persistPlan(input).pipe(
+            Effect.provide(executionLayer),
+          ),
+        persistCheckpoint: (input) =>
+          ResearchExecutionRepo.persistCheckpoint(input).pipe(
+            Effect.provide(executionLayer),
+          ),
+        persistPlanningFailure: (input) =>
+          ResearchExecutionRepo.persistPlanningFailure(input).pipe(
+            Effect.provide(executionLayer),
+          ),
       },
       runs: {
         findById: (id) => ResearchRunRepo.findById(id).pipe(Effect.provide(runLayer)),
       },
+      planning: integrationPlanning,
       workflow: {
         run: ({ onRetrievalCompleted }) =>
           Effect.gen(function* () {
@@ -1149,11 +1247,12 @@ describeIf('research walking slice real DB integration', () => {
     expect(results).toHaveLength(0)
     expect(events.map((item) => item['event_type'])).toEqual([
       'research-started',
+      'research-plan-accepted',
       'retrieval-completed',
       'research-failed',
     ])
     expect(JSON.stringify(events)).not.toContain('citations-validated')
-    expect(events[2]?.['payload']).toMatchObject({
+    expect(events[3]?.['payload']).toMatchObject({
       errorTag: 'ResearchJobStaleError',
       message: 'Research failed',
     })

@@ -9,6 +9,7 @@ import {
   ResearchThreadId,
   SourceVersionId,
 } from './branded-ids.js'
+import { DatasetCitation } from './dataset-query-evidence.js'
 
 const Cursor = Schema.String.pipe(Schema.pattern(/^(0|[1-9]\d*)$/))
 
@@ -102,6 +103,7 @@ export const ResearchCompletedEvent = Schema.Struct({
       sourceVersionId: SourceVersionId,
       locator: Schema.String,
     })),
+    datasetCitations: Schema.Array(DatasetCitation).pipe(Schema.maxItems(80)),
   }),
 })
 

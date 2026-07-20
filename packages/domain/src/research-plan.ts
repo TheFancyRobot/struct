@@ -71,6 +71,7 @@ export type ResearchEvidenceRequirement =
 export const ResearchToolId = Schema.Literal(
   'hybrid-retrieval',
   'dataset-query',
+  'directory-navigation',
   'citation-validation',
 )
 export type ResearchToolId = Schema.Schema.Type<typeof ResearchToolId>
@@ -78,6 +79,7 @@ export type ResearchToolId = Schema.Schema.Type<typeof ResearchToolId>
 export const ResearchToolCapability = Schema.Literal(
   'document:retrieve',
   'dataset:query',
+  'directory:navigate',
   'citation:validate',
 )
 export type ResearchToolCapability =
@@ -91,7 +93,7 @@ export const ResearchToolPolicy = Schema.Struct({
       Schema.positive(),
       Schema.lessThanOrEqualTo(256),
     ),
-  })).pipe(Schema.maxItems(3)),
+  })).pipe(Schema.maxItems(4)),
 })
 export type ResearchToolPolicy = Schema.Schema.Type<typeof ResearchToolPolicy>
 
@@ -113,11 +115,54 @@ export const ResearchPlanInputRef = Schema.Union(
 export type ResearchPlanInputRef =
   Schema.Schema.Type<typeof ResearchPlanInputRef>
 
+const QueryAlias = Schema.String.pipe(
+  Schema.pattern(/^[a-z][a-z0-9_]{0,62}$/),
+)
+const PositiveInteger = Schema.Number.pipe(Schema.int(), Schema.positive())
+
+export const ResearchDatasetQuerySpec = Schema.Struct({
+  kind: Schema.Literal('dataset-query'),
+  operation: Schema.Literal('inspect', 'count'),
+  snapshot: Schema.Struct({
+    alias: QueryAlias,
+    datasetId: DatasetId,
+    datasetSnapshotId: DatasetSnapshotId,
+  }),
+  columns: Schema.Array(
+    Schema.String.pipe(Schema.pattern(/^[A-Za-z_][A-Za-z0-9_]{0,127}$/)),
+  ).pipe(Schema.maxItems(32)),
+  rowLimit: PositiveInteger.pipe(Schema.lessThanOrEqualTo(1_000)),
+  limits: Schema.Struct({
+    maxRows: PositiveInteger,
+    maxOutputBytes: PositiveInteger,
+    maxMemoryMb: PositiveInteger,
+    timeoutMs: PositiveInteger,
+  }),
+})
+export type ResearchDatasetQuerySpec =
+  Schema.Schema.Type<typeof ResearchDatasetQuerySpec>
+
+export const ResearchDirectoryNavigationSpec = Schema.Struct({
+  kind: Schema.Literal('directory-navigation'),
+  query: NonBlankString,
+  maximumResults: PositiveInteger.pipe(Schema.lessThanOrEqualTo(80)),
+})
+export type ResearchDirectoryNavigationSpec =
+  Schema.Schema.Type<typeof ResearchDirectoryNavigationSpec>
+
+export const ResearchPlanToolInput = Schema.Union(
+  ResearchDatasetQuerySpec,
+  ResearchDirectoryNavigationSpec,
+)
+export type ResearchPlanToolInput =
+  Schema.Schema.Type<typeof ResearchPlanToolInput>
+
 export const ResearchPlanNode = Schema.Struct({
   id: ResearchPlanNodeId,
   kind: Schema.Literal(
     'document-retrieval',
     'dataset-query',
+    'directory-navigation',
     'evidence-evaluation',
     'answer-synthesis',
     'citation-validation',
@@ -126,6 +171,7 @@ export const ResearchPlanNode = Schema.Struct({
   dependencies: Schema.Array(ResearchPlanNodeId).pipe(Schema.maxItems(64)),
   inputRefs: Schema.Array(ResearchPlanInputRef).pipe(Schema.maxItems(64)),
   evidenceRefs: Schema.Array(EvidenceRequirementId).pipe(Schema.maxItems(64)),
+  toolInput: Schema.optional(ResearchPlanToolInput),
 })
 export type ResearchPlanNode = Schema.Schema.Type<typeof ResearchPlanNode>
 

@@ -192,7 +192,7 @@ export const ResearchGraphState = Schema.Struct({
   noProgressCount: Counter,
   lastProgressFingerprint: Schema.NullOr(Fingerprint),
   actionFingerprints: Schema.Array(Fingerprint).pipe(Schema.maxItems(64)),
-  toolGrantUsage: Schema.Array(ResearchToolGrantUsage).pipe(Schema.maxItems(3)),
+  toolGrantUsage: Schema.Array(ResearchToolGrantUsage).pipe(Schema.maxItems(4)),
   completedNodeIds: Schema.Array(ResearchPlanNodeId).pipe(Schema.maxItems(64)),
   artifacts: Schema.Array(ResearchArtifactRef).pipe(Schema.maxItems(256)),
   stopReason: Schema.NullOr(ResearchStopReason),

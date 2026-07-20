@@ -340,6 +340,7 @@ describe('research budget enforcer', () => {
           toolGrantUsage: [
             { toolId: 'dataset-query' as const, capability: 'dataset:query' as const, count: 1 },
             { toolId: 'citation-validation' as const, capability: 'citation:validate' as const, count: 1 },
+            { toolId: 'directory-navigation' as const, capability: 'directory:navigate' as const, count: 1 },
             { toolId: 'hybrid-retrieval' as const, capability: 'citation:validate' as const, count: 1 },
           ],
         },

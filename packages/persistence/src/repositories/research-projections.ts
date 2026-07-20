@@ -1,5 +1,5 @@
-/* eslint-disable no-unused-vars -- Babel's parser does not mark type-only imports as used. */
-import { Effect } from 'effect'
+import { Effect, Schema } from 'effect'
+import { DatasetCitation } from '@struct/domain'
 import type * as typeDomain from '@struct/domain'
 import { EntityNotFoundError, QueryError } from '../errors.js'
 import { SqlClient } from '../sql-client.js'
@@ -12,6 +12,9 @@ export interface CompletedResearchProjection {
     readonly sourceVersionId: string
     readonly locator: string
   }>
+  readonly datasetCitations: ReadonlyArray<
+    typeof typeDomain.DatasetCitation.Type
+  >
 }
 
 export interface CitationSourceProjection {
@@ -116,25 +119,66 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
             try: () => sql.unsafe(
               `SELECT result.answer,
                       COALESCE(
-                        jsonb_agg(
+                        (
+                          SELECT jsonb_agg(
                           jsonb_build_object(
                             'id', citation.id,
                             'sourceVersionId', citation.source_version_id,
                             'locator', citation.locator
                           )
                           ORDER BY citation.created_at, citation.id
-                        ) FILTER (WHERE citation.id IS NOT NULL),
+                          )
+                          FROM citations citation
+                          WHERE citation.run_id = result.run_id
+                        ),
                         '[]'::jsonb
-                      ) AS citations
+                      ) AS citations,
+                      COALESCE(
+                        (
+                          SELECT jsonb_agg(
+                            jsonb_build_object(
+                              'id', dataset_citation.id,
+                              'queryResultSnapshotId',
+                                dataset_citation.query_result_snapshot_id,
+                              'workspaceId', dataset_citation.workspace_id,
+                              'projectId', dataset_citation.project_id,
+                              'datasetId', dataset_citation.dataset_id,
+                              'datasetSnapshotId',
+                                dataset_citation.dataset_snapshot_id,
+                              'schemaHash', dataset_citation.schema_hash,
+                              'parquetDigest', dataset_citation.parquet_digest,
+                              'resultHash', dataset_citation.result_hash,
+                              'resultArtifactHash',
+                                dataset_citation.result_artifact_hash,
+                              'canonicalSql', dataset_citation.canonical_sql,
+                              'selectedColumns',
+                                dataset_citation.selected_columns,
+                              'rowStart', dataset_citation.row_start,
+                              'rowEndExclusive',
+                                dataset_citation.row_end_exclusive,
+                              'createdAt',
+                                floor(
+                                  extract(epoch FROM dataset_citation.created_at)
+                                  * 1000
+                                )
+                            )
+                            ORDER BY linkage.ordinal
+                          )
+                          FROM research_run_dataset_citations linkage
+                          JOIN dataset_citations dataset_citation
+                            ON dataset_citation.id
+                              = linkage.dataset_citation_id
+                          WHERE linkage.run_id = result.run_id
+                        ),
+                        '[]'::jsonb
+                      ) AS dataset_citations
                FROM research_run_results result
                JOIN research_runs run ON run.id = result.run_id
                JOIN research_threads thread ON thread.id = run.thread_id
                JOIN projects project ON project.id = thread.project_id
-               LEFT JOIN citations citation ON citation.run_id = result.run_id
                WHERE result.run_id = $1
                  AND thread.project_id = $2
-                 AND project.workspace_id = $3
-               GROUP BY result.answer`,
+                 AND project.workspace_id = $3`,
               [runId, projectId, workspaceId],
             ),
             catch: () => new QueryError({
@@ -152,13 +196,23 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
             })
           }
           const citations = row['citations']
-          if (!Array.isArray(citations)) {
+          const datasetCitations = row['dataset_citations']
+          if (!Array.isArray(citations) || !Array.isArray(datasetCitations)) {
             return yield* new QueryError({
               operation: 'findCompleted',
               entity: 'ResearchProjection',
               message: 'Research result data is invalid',
             })
           }
+          const decodedDatasetCitations = yield* Schema.decodeUnknown(
+            Schema.Array(DatasetCitation).pipe(Schema.maxItems(80)),
+          )(datasetCitations).pipe(
+            Effect.mapError(() => new QueryError({
+              operation: 'findCompleted',
+              entity: 'ResearchProjection',
+              message: 'Research dataset citation data is invalid',
+            })),
+          )
           return {
             answer: row['answer'],
             citations: citations.flatMap((value) => {
@@ -174,6 +228,7 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
                   }]
                 : []
             }),
+            datasetCitations: decodedDatasetCitations,
           } satisfies CompletedResearchProjection
         },
       )

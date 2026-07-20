@@ -4,11 +4,12 @@
  * Runtime entry point — Effect.runPromise at the application boundary.
  */
 
-import { Effect, Layer, Runtime } from 'effect'
+import { Effect, Layer, Runtime, Schema } from 'effect'
 import postgres from 'postgres'
 import {
   DatasetCatalogRepo,
   DatasetMaterializationRepo,
+  DatasetQueryEvidenceRepo,
   JobQueueRepo,
   QueryError,
   ResearchExecutionRepo,
@@ -18,22 +19,42 @@ import {
   SourceVersionRepo,
   SqlClientLive,
 } from '@struct/persistence'
-import { DataEngineClient } from '@struct/data-engine'
-import { CitationId, EventJournalId, SourceVersionId } from '@struct/domain'
+import {
+  DataEngineClient,
+  DataEngineProtocolError,
+  DataEngineTransportError,
+  DatasetQueryAuthorizationError,
+  DatasetQueryAuthenticationError,
+  DatasetQueryCatalogError,
+  DatasetQueryToolPersistenceError,
+  DeterministicDatasetQueryInput,
+  makeDeterministicDatasetQueryService,
+  makeReadOnlySqlService,
+} from '@struct/data-engine'
+import {
+  CitationId,
+  DatasetCitationId,
+  EventJournalId,
+  QueryResultSnapshotId,
+  ResearchPlanId,
+  ResearchToolInputValidationError,
+  ResearchToolAuthorizationError,
+  ResearchToolProviderUnavailableError,
+  ResearchToolSidecarUnavailableError,
+  SourceVersionId,
+} from '@struct/domain'
 import { LocalArtifactStore } from '@struct/source-storage'
 import { ingestTextSource } from '@struct/ingestion'
 import { TextRetrieval } from '@struct/retrieval'
-import { validateAnswerCitations } from '@struct/research-engine'
 import {
   fredRuntimeConfig,
   preflightFredRuntime,
-  runFredWalkingSkeleton,
+  runFredResearchPlanning,
 } from '@struct/workflows'
 import {
   makeTracingLayer,
   renderWalkingSliceMetrics,
   tracingOtlpEndpointConfig,
-  withWalkingSliceSpan,
 } from '@struct/observability'
 import {
   artifactStorageRootConfig,
@@ -47,6 +68,8 @@ import {
 } from './config'
 import { processOneIngestionJob } from './jobs/ingest-source'
 import { processOneResearchJob } from './jobs/run-research'
+import { makeProductionResearchWorkflow } from './jobs/research-workflow'
+import { makeProductionResearchPlanningPolicy } from './jobs/research-planning'
 import { processOneSourceTextReindex } from './jobs/reindex-source-text'
 import { processOneDatasetMaterialization } from './jobs/materialize-dataset'
 import { runWorkerPollLoops } from './polling'
@@ -95,9 +118,62 @@ const program = Effect.gen(function* () {
     DatasetMaterializationRepo.Default,
     sqlLayer,
   )
+  const datasetQueryEvidenceLayer = Layer.provide(
+    DatasetQueryEvidenceRepo.Default,
+    sqlLayer,
+  )
   const dataEngineClient = yield* DataEngineClient.pipe(
     Effect.provide(DataEngineClient.Default),
   )
+  const readOnlySql = makeReadOnlySqlService({
+    authorization: {
+      authenticate: (credential) =>
+        credential === 'research-worker'
+          ? Effect.succeed({ userId: 'research-worker' })
+          : Effect.fail(new DatasetQueryAuthenticationError({
+              message: 'Dataset query worker credential is invalid',
+            })),
+      authorize: () => Effect.void,
+    },
+    catalog: {
+      resolve: (workspaceId, projectId, snapshots) =>
+        DatasetMaterializationRepo.resolveQuerySnapshots(
+          workspaceId,
+          projectId,
+          snapshots,
+        ).pipe(
+          Effect.provide(datasetMaterializationLayer),
+          Effect.mapError(() =>
+            new DatasetQueryCatalogError({
+              message: 'Dataset query snapshot scope could not be resolved',
+            })),
+        ),
+    },
+    client: dataEngineClient,
+  })
+  const deterministicDatasetQueryFor = (
+    preview: Effect.Effect.Success<ReturnType<typeof readOnlySql.execute>>,
+  ) => makeDeterministicDatasetQueryService({
+    // The authorized read-only service has already executed this exact typed
+    // request. Reuse that immutable result so citation persistence cannot
+    // issue the same sidecar query a second time.
+    query: { execute: () => Effect.succeed(preview) },
+    store: {
+      record: (result, citations) =>
+        DatasetQueryEvidenceRepo.record(result, citations).pipe(
+          Effect.provide(datasetQueryEvidenceLayer),
+          Effect.mapError(() =>
+            new DatasetQueryToolPersistenceError({
+              message: 'Dataset query evidence could not be persisted',
+            })),
+        ),
+    },
+    identity: {
+      resultId: () => QueryResultSnapshotId.make(crypto.randomUUID()),
+      citationId: () => DatasetCitationId.make(crypto.randomUUID()),
+      now: () => BigInt(Date.now()),
+    },
+  })
   const effectRuntime = yield* Effect.runtime<never>()
   let ready = false
   yield* Effect.acquireRelease(
@@ -210,68 +286,161 @@ const program = Effect.gen(function* () {
         ),
       fail: (input) =>
         ResearchExecutionRepo.fail(input).pipe(Effect.provide(researchExecutionLayer)),
+      loadDurableState: (workspaceId, projectId, runId) =>
+        ResearchExecutionRepo.loadDurableState(
+          workspaceId,
+          projectId,
+          runId,
+        ).pipe(Effect.provide(researchExecutionLayer)),
+      persistPlan: (input) =>
+        ResearchExecutionRepo.persistPlan(input).pipe(
+          Effect.provide(researchExecutionLayer),
+        ),
+      persistCheckpoint: (input) =>
+        ResearchExecutionRepo.persistCheckpoint(input).pipe(
+          Effect.provide(researchExecutionLayer),
+        ),
+      persistPlanningFailure: (input) =>
+        ResearchExecutionRepo.persistPlanningFailure(input).pipe(
+          Effect.provide(researchExecutionLayer),
+        ),
     },
     runs: {
       findById: (runId) =>
         ResearchRunRepo.findById(runId).pipe(Effect.provide(researchRunLayer)),
     },
-    workflow: {
-      run: ({ run, workspaceId, projectId, sourceVersionIds, onRetrievalCompleted }) =>
+    planning: {
+      plan: ({ run, workspaceId, projectId, sourceVersionIds }) =>
         Effect.gen(function* () {
-          return yield* runFredWalkingSkeleton(
-            {
-              runId: run.id,
-              workspaceId,
-              projectId,
-              sourceVersionIds: [...sourceVersionIds],
-              question: run.question,
-            },
-            {
-              searchText: (input, signal) =>
-                Runtime.runPromise(effectRuntime)(
-                  withWalkingSliceSpan(
-                    'retrieval',
-                    {
-                      workspaceId: input.workspaceId,
-                      projectId: input.projectId,
-                      runId: input.runId,
-                    },
-                    TextRetrieval.searchText({
-                      workspaceId: input.workspaceId,
-                      projectId: input.projectId,
-                      sourceVersionIds: [...input.sourceVersionIds],
-                      query: input.question,
-                      limit: 5,
-                    }).pipe(
-                      Effect.map((result) => result.evidence),
-                      Effect.provide(retrievalLayer),
-                    ),
-                  ),
-                  { signal },
-                ),
-              onRetrievalCompleted: (evidence, signal) =>
-                Runtime.runPromise(effectRuntime)(
-                  onRetrievalCompleted(evidence).pipe(Effect.asVoid),
-                  { signal },
-                ),
-              validate: (answer, evidence, question, signal) =>
-                Runtime.runPromise(effectRuntime)(
-                  withWalkingSliceSpan(
-                    'citation-validation',
-                    {
-                      workspaceId,
-                      projectId,
-                      runId: run.id,
-                    },
-                    validateAnswerCitations(answer, evidence, question),
-                  ),
-                  { signal },
-                ),
-            },
-            fredConfig,
+        const sourceScopes = yield* DatasetCatalogRepo
+          .resolveResearchSourceScopes(
+            workspaceId,
+            projectId,
+            sourceVersionIds,
           )
-        }),
+          .pipe(Effect.provide(datasetCatalogLayer))
+        const { toolPolicy, budgetCeiling } =
+          makeProductionResearchPlanningPolicy(
+            sourceScopes,
+            fredConfig.maxElapsedMs,
+          )
+        return yield* runFredResearchPlanning({
+          classifier: {
+            workspaceId,
+            projectId,
+            question: run.question,
+            sourceScopes,
+          },
+          planner: {
+            planId: ResearchPlanId.make(crypto.randomUUID()),
+            runId: run.id,
+            workspaceId,
+            projectId,
+            question: run.question,
+            sourceScopes,
+            toolPolicy,
+            budgetCeiling,
+          },
+        }, fredConfig)
+      }),
     },
+    workflow: makeProductionResearchWorkflow({
+      storage,
+      runtime: effectRuntime,
+      fredConfig,
+      loadDurableState: (workspaceId, projectId, runId) =>
+        ResearchExecutionRepo.loadDurableState(workspaceId, projectId, runId).pipe(
+          Effect.provide(researchExecutionLayer),
+        ),
+      retrieve: (input) =>
+        TextRetrieval.searchText({ ...input, sourceVersionIds: [...input.sourceVersionIds] }).pipe(
+          Effect.map((result) => result.evidence),
+          Effect.provide(retrievalLayer),
+        ),
+      queryDataset: ({ plan, node }) => Effect.gen(function* () {
+        if (node.toolInput?.kind !== "dataset-query") {
+          return yield* new ResearchToolInputValidationError({
+            toolId: "dataset-query", capability: "dataset:query",
+            nodeId: node.id, runId: plan.runId,
+            message: "Dataset query requires a typed operation spec",
+          })
+        }
+        const spec = node.toolInput
+        const alias = `"${spec.snapshot.alias}"`
+        const sql = spec.operation === "count"
+          ? `SELECT COUNT(*) AS row_count FROM ${alias}`
+          : `SELECT ${
+              spec.columns.map((column) => `"${column}"`).join(", ")
+            } FROM ${alias} LIMIT ${spec.rowLimit}`
+        const query = {
+          credential: "research-worker", workspaceId: plan.workspaceId,
+          projectId: plan.projectId, sql,
+          snapshots: [{ alias: spec.snapshot.alias, datasetId: spec.snapshot.datasetId, snapshotId: spec.snapshot.datasetSnapshotId }],
+          limits: spec.limits,
+        }
+        const preview = yield* readOnlySql.execute(query).pipe(
+          Effect.mapError((failure) =>
+            failure instanceof DatasetQueryAuthenticationError
+            || failure instanceof DatasetQueryAuthorizationError
+              ? new ResearchToolAuthorizationError({
+                  toolId: "dataset-query", capability: "dataset:query",
+                  nodeId: node.id, runId: plan.runId,
+                  workspaceId: plan.workspaceId, projectId: plan.projectId,
+                  detail: "dataset-query-authorization",
+                  message: "Dataset query is not authorized",
+                })
+              : failure instanceof DataEngineTransportError
+                  || failure instanceof DataEngineProtocolError
+                ? new ResearchToolSidecarUnavailableError({
+                    toolId: "dataset-query", capability: "dataset:query",
+                    nodeId: node.id, runId: plan.runId,
+                    message: "Dataset query sidecar failed",
+                  })
+                : new ResearchToolInputValidationError({
+                    toolId: "dataset-query", capability: "dataset:query",
+                    nodeId: node.id, runId: plan.runId,
+                    message: "Dataset query request is invalid",
+                  })),
+        )
+        const input = yield* Schema.decodeUnknown(DeterministicDatasetQueryInput)({
+          query,
+          citations: [{ datasetId: spec.snapshot.datasetId, datasetSnapshotId: spec.snapshot.datasetSnapshotId, selectedColumns: preview.columns.map((column) => column.name), rowStart: 0, rowEndExclusive: preview.rows.length }],
+        }).pipe(Effect.mapError(() => new ResearchToolInputValidationError({
+          toolId: "dataset-query", capability: "dataset:query",
+          nodeId: node.id, runId: plan.runId, message: "Dataset query spec is invalid",
+        })))
+        return yield* deterministicDatasetQueryFor(preview).execute(input).pipe(
+          Effect.mapError((failure) =>
+            failure instanceof DatasetQueryAuthenticationError
+            || failure instanceof DatasetQueryAuthorizationError
+              ? new ResearchToolAuthorizationError({
+                  toolId: "dataset-query", capability: "dataset:query",
+                  nodeId: node.id, runId: plan.runId,
+                  workspaceId: plan.workspaceId, projectId: plan.projectId,
+                  detail: "dataset-query-authorization",
+                  message: "Dataset query is not authorized",
+                })
+              : failure instanceof DataEngineTransportError
+                  || failure instanceof DataEngineProtocolError
+                ? new ResearchToolSidecarUnavailableError({
+                    toolId: "dataset-query", capability: "dataset:query",
+                    nodeId: node.id, runId: plan.runId,
+                    message: "Dataset query sidecar failed",
+                  })
+                : failure instanceof DatasetQueryToolPersistenceError
+                  ? new ResearchToolProviderUnavailableError({
+                      toolId: "dataset-query", capability: "dataset:query",
+                      nodeId: node.id, runId: plan.runId,
+                      message: "Dataset evidence persistence failed",
+                    })
+                  : new ResearchToolInputValidationError({
+                      toolId: "dataset-query", capability: "dataset:query",
+                      nodeId: node.id, runId: plan.runId,
+                      message: "Dataset query result is invalid",
+                    })),
+        )
+      }),
+    }),
   }))
 
   const reindexPoll = Effect.suspend(() => processOneSourceTextReindex({

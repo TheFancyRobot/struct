@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
 import * as Ids from './branded-ids.js'
+import { DatasetCitation } from './dataset-query-evidence.js'
 export { SourceVersion } from './source-version.js'
 
 // --- Enums / Literals ---
@@ -113,6 +114,9 @@ export const ResearchAnswer = Schema.Struct({
     Schema.pattern(/\S/),
   ),
   citations: Schema.Array(ResearchCitation),
+  datasetCitations: Schema.optional(
+    Schema.Array(DatasetCitation).pipe(Schema.maxItems(80)),
+  ),
 })
 export type ResearchAnswer = Schema.Schema.Type<typeof ResearchAnswer>
 

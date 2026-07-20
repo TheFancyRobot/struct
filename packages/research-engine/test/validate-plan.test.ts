@@ -123,6 +123,23 @@ function mixedPlan() {
           datasetSnapshotId: ids.snapshot,
         }],
         evidenceRefs: [ids.datasetEvidence],
+        toolInput: {
+          kind: 'dataset-query',
+          operation: 'count',
+          snapshot: {
+            alias: 'records',
+            datasetId: ids.dataset,
+            datasetSnapshotId: ids.snapshot,
+          },
+          columns: [],
+          rowLimit: 1,
+          limits: {
+            maxRows: 1,
+            maxOutputBytes: 1_000,
+            maxMemoryMb: 64,
+            timeoutMs: 1_000,
+          },
+        },
       },
       {
         id: ids.synthesisNode,

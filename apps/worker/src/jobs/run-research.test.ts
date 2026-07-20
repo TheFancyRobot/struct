@@ -7,8 +7,11 @@ import {
   EventJournalId,
   JobQueueId,
   ProjectId,
+  ResearchPlanId,
+  ResearchPlanNodeId,
   ResearchRunId,
   ResearchCitationValidationError,
+  ResearchContractValidationError,
   ResearchThreadId,
   SourceVersionId,
   UnsupportedSourceTypeError,
@@ -24,6 +27,8 @@ const workspaceId = WorkspaceId.make('e50e8400-e29b-41d4-a716-446655440000')
 const projectId = ProjectId.make('e50e8400-e29b-41d4-a716-446655440001')
 const sourceVersionId = SourceVersionId.make('e50e8400-e29b-41d4-a716-446655440002')
 const runId = ResearchRunId.make('e50e8400-e29b-41d4-a716-446655440003')
+const planId = ResearchPlanId.make('e50e8400-e29b-41d4-a716-446655440006')
+const nodeId = ResearchPlanNodeId.make('e50e8400-e29b-41d4-a716-446655440007')
 const job: typeof JobQueue.Type = {
   id: JobQueueId.make('e50e8400-e29b-41d4-a716-446655440004'),
   workspaceId,
@@ -50,6 +55,41 @@ const evidence = [{
   excerpt: 'Launch is July 18.',
   rank: 1,
 }] as const
+const plan = {
+  version: '1' as const,
+  id: planId,
+  runId,
+  workspaceId,
+  projectId,
+  objective: run.question,
+  sourceScopes: [{ kind: 'document' as const, sourceVersionId }],
+  nodes: [{
+    id: nodeId,
+    kind: 'document-retrieval' as const,
+    goal: 'Retrieve evidence.',
+    dependencies: [],
+    inputRefs: [{ kind: 'source-version' as const, sourceVersionId }],
+    evidenceRefs: [],
+  }],
+  evidenceRequirements: [],
+  toolPolicy: {
+    grants: [{
+      toolId: 'hybrid-retrieval' as const,
+      capability: 'document:retrieve' as const,
+      maximumCalls: 1,
+    }],
+  },
+  budget: {
+    maximumSteps: 1,
+    maximumModelCalls: 0,
+    maximumToolCalls: 1,
+    maximumTokens: 1,
+    maximumElapsedMilliseconds: 60_000,
+    maximumEstimatedCostMicros: 1,
+    maximumFanOut: 1,
+    maximumRevisions: 0,
+  },
+}
 
 function deps(failWorkflow = false) {
   const events: string[] = []
@@ -91,8 +131,18 @@ function deps(failWorkflow = false) {
         eventPayloads.push(input.event.payload)
         return Effect.void
       },
+      loadDurableState: () => Effect.succeed(Option.some({
+        plan: Option.none(),
+        checkpoint: Option.none(),
+        cancellationStatus: 'none' as const,
+        terminalStatus: Option.none(),
+      })),
+      persistPlan: () => Effect.void,
+      persistCheckpoint: () => Effect.void,
+      persistPlanningFailure: () => Effect.void,
     },
     runs: { findById: () => Effect.succeed(run) },
+    planning: { plan: () => Effect.succeed(plan) },
     workflow: {
       run: ({ onRetrievalCompleted }) =>
         failWorkflow
@@ -475,6 +525,77 @@ describe('processOneResearchJob', () => {
 
     expect(Exit.isFailure(exit)).toBe(true)
     expect(base.calls.completed).toHaveLength(0)
+    expect(base.calls.failed).toHaveLength(0)
+  })
+
+  it('persists one typed planning terminal without a second generic failure', async () => {
+    const base = deps()
+    let planningFailures = 0
+    let workflowCalls = 0
+    const testDeps: ResearchWorkerDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        persistPlanningFailure: () => Effect.sync(() => {
+          planningFailures += 1
+        }),
+      },
+      planning: {
+        plan: () => Effect.fail(new ResearchContractValidationError({
+          contract: 'plan',
+          reason: 'malformed',
+          path: 'provider',
+          message: 'Research planning failed',
+        })),
+      },
+      workflow: {
+        run: () => Effect.sync(() => {
+          workflowCalls += 1
+          throw new Error('must not execute')
+        }),
+      },
+    }
+
+    expect(await Effect.runPromise(processOneResearchJob(testDeps)))
+      .toEqual({ processed: true, jobId: job.id })
+    expect(planningFailures).toBe(1)
+    expect(workflowCalls).toBe(0)
+    expect(base.calls.failed).toHaveLength(0)
+  })
+
+  it('does not plan or execute a durably cancelled run', async () => {
+    const base = deps()
+    let planningCalls = 0
+    let workflowCalls = 0
+    const testDeps: ResearchWorkerDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        loadDurableState: () => Effect.succeed(Option.some({
+          plan: Option.none(),
+          checkpoint: Option.none(),
+          cancellationStatus: 'requested',
+          terminalStatus: Option.none(),
+        })),
+      },
+      planning: {
+        plan: () => Effect.sync(() => {
+          planningCalls += 1
+          return plan
+        }),
+      },
+      workflow: {
+        run: () => Effect.sync(() => {
+          workflowCalls += 1
+          throw new Error('must not execute')
+        }),
+      },
+    }
+
+    expect(await Effect.runPromise(processOneResearchJob(testDeps)))
+      .toEqual({ processed: true, jobId: job.id })
+    expect(planningCalls).toBe(0)
+    expect(workflowCalls).toBe(0)
     expect(base.calls.failed).toHaveLength(0)
   })
 })

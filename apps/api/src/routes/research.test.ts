@@ -11,7 +11,7 @@ import {
   WorkspaceId,
 } from '@struct/domain'
 import { QueryError } from '@struct/persistence'
-import { startResearch } from './research'
+import { startResearch, type StartResearchDeps } from './research'
 
 const workspaceId = WorkspaceId.make('d50e8400-e29b-41d4-a716-446655440000')
 const projectId = ProjectId.make('d50e8400-e29b-41d4-a716-446655440001')
@@ -79,6 +79,43 @@ describe('startResearch', () => {
     expect(Exit.isFailure(empty)).toBe(true)
     expect(Exit.isFailure(duplicate)).toBe(true)
     expect(registered).toBe(false)
+  })
+
+  it('accepts exactly 2048 question characters and rejects 2049 before persistence', async () => {
+    let registrations = 0
+    const deps = {
+      now: () => 0n,
+      randomThreadId: () => ResearchThreadId.make(crypto.randomUUID()),
+      randomRunId: () => ResearchRunId.make(crypto.randomUUID()),
+      randomJobId: () => JobQueueId.make(crypto.randomUUID()),
+      randomEventId: () => EventJournalId.make(crypto.randomUUID()),
+      register: ((input) => {
+        registrations += 1
+        return Effect.succeed({
+          thread: input.thread,
+          run: input.run,
+          job: input.job,
+          event: input.event,
+        })
+      }) satisfies StartResearchDeps['register'],
+    }
+
+    const accepted = await Effect.runPromiseExit(startResearch({
+      workspaceId,
+      projectId,
+      sourceVersionIds: [sourceVersionId],
+      question: 'a'.repeat(2_048),
+    }, deps))
+    const rejected = await Effect.runPromiseExit(startResearch({
+      workspaceId,
+      projectId,
+      sourceVersionIds: [sourceVersionId],
+      question: 'a'.repeat(2_049),
+    }, deps))
+
+    expect(Exit.isSuccess(accepted)).toBe(true)
+    expect(Exit.isFailure(rejected)).toBe(true)
+    expect(registrations).toBe(1)
   })
 
   it('preserves authorization and infrastructure registration failures', async () => {

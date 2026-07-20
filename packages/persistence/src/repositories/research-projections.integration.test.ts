@@ -3,7 +3,11 @@ import { Effect, Exit, Layer } from 'effect'
 import postgres from 'postgres'
 import {
   CitationId,
+  DatasetCitationId,
+  DatasetId,
+  DatasetSnapshotId,
   ProjectId,
+  QueryResultSnapshotId,
   ResearchRunId,
   ResearchThreadId,
   WorkspaceId,
@@ -28,6 +32,17 @@ const documentId = 'e70e8400-e29b-41d4-a716-446655440011'
 const documentLocator = 'document:paragraph:1,chars:18-36,bytes:18-36'
 const sourceWithoutDocumentId = 'e70e8400-e29b-41d4-a716-446655440014'
 const versionWithoutDocumentId = 'e70e8400-e29b-41d4-a716-446655440015'
+const datasetId = DatasetId.make('e70e8400-e29b-41d4-a716-446655440016')
+const datasetFamilyId = 'e70e8400-e29b-41d4-a716-446655440017'
+const datasetSnapshotId = DatasetSnapshotId.make(
+  'e70e8400-e29b-41d4-a716-446655440018',
+)
+const queryResultId = QueryResultSnapshotId.make(
+  'e70e8400-e29b-41d4-a716-446655440019',
+)
+const datasetCitationId = DatasetCitationId.make(
+  'e70e8400-e29b-41d4-a716-446655440020',
+)
 
 describeIf('ResearchProjectionRepo integration', () => {
   const sql = postgres(DATABASE_URL ?? '', { max: 2, idle_timeout: 5 })
@@ -45,8 +60,8 @@ describeIf('ResearchProjectionRepo integration', () => {
     )
     await sql.unsafe(
       `INSERT INTO source_versions (id, source_id, version, artifact_ref, content_hash)
-       VALUES ($1, $2, 1, 'artifact://projection', 'sha256:projection')`,
-      [sourceVersionId, sourceId],
+       VALUES ($1, $2, 1, 'artifact://projection', $3)`,
+      [sourceVersionId, sourceId, `sha256:${'a'.repeat(64)}`],
     )
     await sql.unsafe(
       `INSERT INTO documents (
@@ -73,6 +88,119 @@ describeIf('ResearchProjectionRepo integration', () => {
       `INSERT INTO research_run_results (run_id, answer, citations)
        VALUES ($1, 'July 18.', '[]'::jsonb)`,
       [runId],
+    )
+    await sql.unsafe(
+      `INSERT INTO dataset_assets (
+         id, workspace_id, project_id, name, lifecycle_status
+       ) VALUES ($1, $2, $3, 'Projection dataset', 'active')`,
+      [datasetId, workspaceId, projectId],
+    )
+    await sql.unsafe(
+      `INSERT INTO dataset_schema_families (
+         id, dataset_id, workspace_id, project_id, schema_hash
+       ) VALUES ($1, $2, $3, $4, $5)`,
+      [
+        datasetFamilyId,
+        datasetId,
+        workspaceId,
+        projectId,
+        `sha256:${'1'.repeat(64)}`,
+      ],
+    )
+    await sql.unsafe(
+      `INSERT INTO dataset_field_schemas (
+         schema_family_id, ordinal, name, source_type, logical_type, nullable
+       ) VALUES ($1, 0, 'value', 'integer', 'integer', false)`,
+      [datasetFamilyId],
+    )
+    await sql.unsafe(
+      `INSERT INTO dataset_snapshots (
+         id, dataset_id, workspace_id, project_id, version,
+         schema_family_id, content_hash
+       ) VALUES ($1, $2, $3, $4, 1, $5, $6)`,
+      [
+        datasetSnapshotId,
+        datasetId,
+        workspaceId,
+        projectId,
+        datasetFamilyId,
+        `sha256:${'2'.repeat(64)}`,
+      ],
+    )
+    await sql.unsafe(
+      `INSERT INTO dataset_snapshot_sources (
+         snapshot_id, dataset_id, workspace_id, project_id, ordinal,
+         source_id, source_version_id, content_hash
+       ) VALUES ($1, $2, $3, $4, 0, $5, $6, $7)`,
+      [
+        datasetSnapshotId,
+        datasetId,
+        workspaceId,
+        projectId,
+        sourceId,
+        sourceVersionId,
+        `sha256:${'a'.repeat(64)}`,
+      ],
+    )
+    await sql.unsafe(
+      `INSERT INTO query_result_snapshots (
+         id, workspace_id, project_id, request_hash, protocol_version,
+         engine_version, engine_config_hash, canonical_sql, dataset_snapshots,
+         schema_hash, result_hash, result_artifact_hash, columns, rows,
+         row_count, truncated, executed_at
+       ) VALUES (
+         $1, $2, $3, $4, '1', 'duckdb-test', $5,
+         'SELECT "value" FROM "records" LIMIT 1', $6::jsonb, $7, $8, $9,
+         $10::jsonb, $11::jsonb, 1, false, NOW()
+       )`,
+      [
+        queryResultId,
+        workspaceId,
+        projectId,
+        `sha256:${'3'.repeat(64)}`,
+        `sha256:${'4'.repeat(64)}`,
+        JSON.stringify([{
+          alias: 'records',
+          datasetId,
+          snapshotId: datasetSnapshotId,
+          schemaHash: `sha256:${'1'.repeat(64)}`,
+          parquetDigest: '5'.repeat(64),
+        }]),
+        `sha256:${'1'.repeat(64)}`,
+        `sha256:${'6'.repeat(64)}`,
+        `sha256:${'7'.repeat(64)}`,
+        JSON.stringify([{ ordinal: 0, name: 'value', type: 'BIGINT' }]),
+        JSON.stringify([['42']]),
+      ],
+    )
+    await sql.unsafe(
+      `INSERT INTO dataset_citations (
+         id, query_result_snapshot_id, workspace_id, project_id,
+         dataset_id, dataset_snapshot_id, schema_hash, parquet_digest,
+         result_hash, result_artifact_hash, canonical_sql, selected_columns,
+         row_start, row_end_exclusive
+       ) VALUES (
+         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+         'SELECT "value" FROM "records" LIMIT 1', '["value"]'::jsonb, 0, 1
+       )`,
+      [
+        datasetCitationId,
+        queryResultId,
+        workspaceId,
+        projectId,
+        datasetId,
+        datasetSnapshotId,
+        `sha256:${'1'.repeat(64)}`,
+        '5'.repeat(64),
+        `sha256:${'6'.repeat(64)}`,
+        `sha256:${'7'.repeat(64)}`,
+      ],
+    )
+    await sql.unsafe(
+      `INSERT INTO research_run_dataset_citations (
+         run_id, dataset_citation_id, ordinal
+       ) VALUES ($1, $2, 0)`,
+      [runId, datasetCitationId],
     )
     await sql.unsafe(
       `INSERT INTO citations (id, run_id, source_version_id, locator, status)
@@ -117,6 +245,11 @@ describeIf('ResearchProjectionRepo integration', () => {
   afterAll(async () => {
     await sql.unsafe(`DELETE FROM event_journal WHERE workspace_id = $1`, [workspaceId])
     await sql.unsafe(`DELETE FROM research_threads WHERE project_id = $1`, [projectId])
+    await sql.unsafe(
+      `DELETE FROM query_result_snapshots WHERE workspace_id = $1`,
+      [workspaceId],
+    )
+    await sql.unsafe(`DELETE FROM dataset_assets WHERE workspace_id = $1`, [workspaceId])
     await sql.unsafe(`DELETE FROM source_versions WHERE source_id = $1`, [sourceId])
     await sql.unsafe(`DELETE FROM sources WHERE id = $1`, [sourceId])
     await sql.unsafe(`DELETE FROM projects WHERE id = $1`, [projectId])
@@ -166,6 +299,16 @@ describeIf('ResearchProjectionRepo integration', () => {
       id: citationId,
       sourceVersionId,
       locator: documentLocator,
+    })
+    expect(completed.datasetCitations).toHaveLength(1)
+    expect(completed.datasetCitations[0]).toMatchObject({
+      id: datasetCitationId,
+      queryResultSnapshotId: queryResultId,
+      datasetId,
+      datasetSnapshotId,
+      selectedColumns: ['value'],
+      rowStart: 0,
+      rowEndExclusive: 1,
     })
     expect(citation.content).toBe('Normalized before\nLaunch is July 18.\nAfter')
     expect(lineCitation.content).toBe(
