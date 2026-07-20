@@ -54,10 +54,10 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Root created `agent/step-06-05` from merged `main`, confirmed STEP-06-04/PR #37 handoff, loaded the refined brief/validation contract, and selected a NotebookLM-inspired slate/blue workbench with responsive light/dark Playwright coverage.
 - Implemented and self-reviewed STEP-06-05 with SolidJS, frontend-design, Effect, persistence, API, and Playwright coverage.
 - Closed two root review rounds covering production writers, ownership, replay, projection merging, recovery, timestamps, citations, lineage, and frontend race/accessibility behavior.
-- Final gates: 618 repository tests and 11 Playwright tests passed; typecheck/build/lint/import/docs/secrets/diff checks are clean.
+- Final gates: 624 repository tests and 11 Playwright tests passed; typecheck/build/lint/import/docs/secrets/diff checks are clean.
 - Root independent review reran all 11 Playwright browser workflows and visually inspected full-page screenshots at 1440px, 1024px, and 390px in light and dark themes. All layouts were readable, responsive, free of horizontal overflow, and produced no console, page, or request failures.
 - Root review found and fixed one bounded-reader defect: the recursive progress API rejected an event history exactly at the 65,536-event limit and could request beyond the declared cap. The reader now allows the exact boundary and uses a one-event overflow probe without fetching beyond the bound.
-- Added exact-limit and overflow regression tests. Final repository gate: 618 passed, 164 skipped, 0 failed; Playwright: 11 passed, 0 failed; typecheck, build, lint, import boundaries, docs links, secrets scan, and diff check all passed.
+- Added exact-limit and overflow regression tests. Final repository gate after review remediation: 624 passed, 164 skipped, 0 failed; Playwright: 11 passed, 0 failed; typecheck, build, lint, import boundaries, docs links, secrets scan, and diff check all passed.
 - 2026-07-20: Remediated verified PR review findings in one impact-checked pass: synchronized the step snapshot with active frontmatter, corrected final test counts, recorded the resolved bounded-reader boundary defect, separated OS theme detection from explicit preference persistence, propagated the active theme to the document root, and made the HTML background theme-aware. Added Playwright regression coverage for OS detection, explicit persistence, reload behavior, and light/dark document-root backgrounds.
 
 ## Findings
@@ -91,14 +91,15 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-START:session-validation-run -->
 - Command: `bun run test && bun run test:e2e && bun run typecheck && bun run build && bun run lint && bun run lint:imports && bun run docs:lint && bun run secrets:scan`
 - Result: passed
-- Notes: 618 tests passed, 164 skipped, zero failed; 11 Playwright scenarios passed; all static, documentation, import-boundary, and secret-scan gates were green.
+- Notes: 624 tests passed, 164 skipped, zero failed; 11 Playwright scenarios passed; all static, documentation, import-boundary, and secret-scan gates were green.
 <!-- AGENT-END:session-validation-run -->
-- Review remediation validation: 618 unit tests passed, 164 skipped, zero failed; all 11 Playwright scenarios passed, including OS-theme non-persistence, explicit preference persistence/reload, responsive light/dark screenshots, and document-root background assertions; typecheck, ESLint, dependency/import boundaries, and diff whitespace checks passed.
+- Review remediation validation: 624 unit tests passed, 164 skipped, zero failed; all 11 Playwright scenarios passed, including OS-theme non-persistence, explicit preference persistence/reload, responsive light/dark screenshots, and document-root background assertions; typecheck, ESLint, dependency/import boundaries, and diff whitespace checks passed.
 
 ## Bugs Encountered
 
 <!-- AGENT-START:session-bugs-encountered -->
 - Resolved: the bounded recursive-analysis event reader incorrectly rejected an exact-limit history as overflow. The reader now accepts exactly the configured limit, probes one additional event to detect true overflow, and has regression coverage for both boundaries.
+- Resolved: recursive progress and cancellation timeouts surfaced raw browser `DOMException` messages. Both calls now normalize abort and timeout failures to operation-specific user guidance while preserving unrelated network failures, with six regression cases.
 <!-- AGENT-END:session-bugs-encountered -->
 
 ## Decisions Made or Updated

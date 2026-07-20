@@ -41,10 +41,21 @@ export async function fetchRecursiveAnalysis(
   projectId: typeDomain.ProjectId,
   runId: typeDomain.ResearchRunId,
 ): Promise<typeDomain.RecursiveRunProgress | null> {
-  const response = await fetch(
-    `/api/projects/${projectId}/runs/${runId}/recursive-analysis`,
-    { signal: AbortSignal.timeout(10_000) },
-  )
+  let response: Response
+  try {
+    response = await fetch(
+      `/api/projects/${projectId}/runs/${runId}/recursive-analysis`,
+      { signal: AbortSignal.timeout(10_000) },
+    )
+  } catch (error) {
+    if (
+      error instanceof DOMException
+      && (error.name === 'AbortError' || error.name === 'TimeoutError')
+    ) {
+      throw new Error('Recursive analysis could not be loaded. Try again.')
+    }
+    throw error
+  }
   if (response.status === 404) return null
   if (!response.ok) {
     throw new Error('Recursive analysis could not be loaded. Try again.')
@@ -62,14 +73,25 @@ export async function cancelResearchRun(
   runId: typeDomain.ResearchRunId,
   workspaceId: typeDomain.WorkspaceId,
 ): Promise<void> {
-  const response = await fetch(
-    `/api/projects/${projectId}/runs/${runId}/cancel?workspaceId=${workspaceId}`,
-    {
-      method: 'POST',
-      headers: { 'Idempotency-Key': `web-cancel-${runId}` },
-      signal: AbortSignal.timeout(10_000),
-    },
-  )
+  let response: Response
+  try {
+    response = await fetch(
+      `/api/projects/${projectId}/runs/${runId}/cancel?workspaceId=${workspaceId}`,
+      {
+        method: 'POST',
+        headers: { 'Idempotency-Key': `web-cancel-${runId}` },
+        signal: AbortSignal.timeout(10_000),
+      },
+    )
+  } catch (error) {
+    if (
+      error instanceof DOMException
+      && (error.name === 'AbortError' || error.name === 'TimeoutError')
+    ) {
+      throw new Error('Cancellation could not be requested. Try again.')
+    }
+    throw error
+  }
   if (!response.ok) {
     throw new Error('Cancellation could not be requested. Try again.')
   }
