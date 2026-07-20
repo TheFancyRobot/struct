@@ -324,6 +324,26 @@ describe('hybrid question decomposition and source routing', () => {
       .toBe('missing-dependency')
   })
 
+  it('rejects duplicate synthesis evidence that masks a missing requirement', async () => {
+    const duplicateEvidence = {
+      ...plan(),
+      nodes: plan().nodes.map((node) =>
+        node.kind === 'answer-synthesis'
+          ? {
+              ...node,
+              evidenceRefs: [
+                ids.documentEvidence,
+                ids.datasetEvidence,
+                ids.datasetEvidence,
+              ],
+            }
+          : node),
+    }
+
+    expect(await reason(validateResearchPlan(input(), duplicateEvidence)))
+      .toBe('missing-reference')
+  })
+
   it('round-trips stable recursive source identities and rejects widening', async () => {
     const decoded = await Effect.runPromise(validateResearchPlan(input(), plan()))
     const encoded = Schema.encodeSync(ResearchPlan)(decoded)

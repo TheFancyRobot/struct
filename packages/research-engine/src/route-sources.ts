@@ -141,9 +141,10 @@ export const routeResearchPlan = Effect.fn('ResearchPlan.routeSources')(
       const requiredEvidence = new Set(
         plan.evidenceRequirements.map((requirement) => requirement.id),
       )
+      const referencedEvidence = new Set(synthesis.evidenceRefs)
       if (
-        synthesis.evidenceRefs.length !== requiredEvidence.size
-        || synthesis.evidenceRefs.some((id) => !requiredEvidence.has(id))
+        referencedEvidence.size !== requiredEvidence.size
+        || [...requiredEvidence].some((id) => !referencedEvidence.has(id))
       ) {
         return yield* routeFailure(
           'missing-reference',

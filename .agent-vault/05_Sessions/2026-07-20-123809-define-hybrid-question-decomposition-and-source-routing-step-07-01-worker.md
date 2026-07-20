@@ -54,6 +54,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 12:40-12:50 - Extended the existing `ResearchPlan`, classifier, planner, validation, normalization, production policy, and Fred compiler contracts without introducing a parallel plan abstraction.
 - 12:47 - Self-review corrected implicit mixed-source over-routing by adding an explicit unique bounded `routes` classification field; authorized-but-unselected recursive sources now remain dormant.
 - 12:50 - Completed focused, type, lint, import-boundary, full-suite, and vault validation gates.
+- 14:11 - Root validated and fixed both CodeRabbit findings: propagated the five-grant ceiling through execution state/budget enforcement and rejected duplicate synthesis evidence masking a missing requirement.
 
 ## Findings
 
@@ -72,6 +73,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-START:session-changed-paths -->
 - `packages/domain/src/research-plan.ts` and tests
 - `packages/research-engine/src/{question-decomposition,route-sources,validate-plan,normalize-plan,index}.ts` and tests
+- `packages/research-engine/src/{execution-policy,budget-enforcer}.ts` and regression tests
 - `packages/workflows/src/{agents,graphs}` affected contracts and tests
 - `apps/worker/src/jobs/research-planning.ts` and tests
 - `packages/evaluation/src/phase-05-evaluation.ts`
@@ -84,7 +86,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-START:session-validation-run -->
 - Command: focused tests; `bun run typecheck`; `bun run lint`; `bun run lint:imports`; `bun run test`; `vault_validate doctor`
 - Result: passed
-- Notes: 45 focused tests and 636 full-suite tests passed; 164 integration tests skipped; zero failures or validation warnings.
+- Notes: 45 initial focused tests and 636 full-suite tests passed; both review remediations then passed 36 impacted tests, typecheck, lint, and import-boundary validation.
 <!-- AGENT-END:session-validation-run -->
 
 ## Bugs Encountered

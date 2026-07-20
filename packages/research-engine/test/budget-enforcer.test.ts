@@ -342,6 +342,7 @@ describe('research budget enforcer', () => {
             { toolId: 'citation-validation' as const, capability: 'citation:validate' as const, count: 1 },
             { toolId: 'directory-navigation' as const, capability: 'directory:navigate' as const, count: 1 },
             { toolId: 'hybrid-retrieval' as const, capability: 'citation:validate' as const, count: 1 },
+            { toolId: 'recursive-analysis' as const, capability: 'recursive:analyze' as const, count: 1 },
           ],
         },
         result: { progressFingerprint: 'overflow', artifacts: [] },
