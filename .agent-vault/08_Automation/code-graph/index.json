@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T07:32:32.300Z",
+  "generatedAt": "2026-07-20T07:53:35.423Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -6082,72 +6082,72 @@
         {
           "name": "RecursiveBatchResult",
           "kind": "type",
-          "line": 319,
+          "line": 335,
           "exported": true,
-          "endLine": 319
+          "endLine": 335
         },
         {
           "name": "RecursiveAggregationResult",
           "kind": "const",
-          "line": 322,
+          "line": 338,
           "exported": true,
-          "endLine": 322
+          "endLine": 338
         },
         {
           "name": "RecursiveAggregationResult",
           "kind": "type",
-          "line": 397,
+          "line": 427,
           "exported": true,
-          "endLine": 397
+          "endLine": 427
         },
         {
           "name": "recursiveParseFailure",
           "kind": "function",
-          "line": 400,
+          "line": 430,
           "exported": false,
-          "endLine": 400
+          "endLine": 430
         },
         {
           "name": "decompositionFailure",
           "kind": "function",
-          "line": 418,
+          "line": 448,
           "exported": false,
-          "endLine": 418
+          "endLine": 448
         },
         {
           "name": "decodeRecursiveAnalysisRequest",
-          "kind": "const",
-          "line": 537,
-          "exported": true,
-          "endLine": 537
-        },
-        {
-          "name": "decodeRecursiveDecomposition",
-          "kind": "const",
-          "line": 545,
-          "exported": true,
-          "endLine": 545
-        },
-        {
-          "name": "decodeRecursiveBatchResult",
-          "kind": "const",
-          "line": 559,
-          "exported": true,
-          "endLine": 559
-        },
-        {
-          "name": "decodeRecursiveBatchInput",
           "kind": "const",
           "line": 567,
           "exported": true,
           "endLine": 567
         },
         {
-          "name": "decodeRecursiveAggregationResult",
+          "name": "decodeRecursiveDecomposition",
           "kind": "const",
           "line": 575,
           "exported": true,
           "endLine": 575
+        },
+        {
+          "name": "decodeRecursiveBatchResult",
+          "kind": "const",
+          "line": 589,
+          "exported": true,
+          "endLine": 589
+        },
+        {
+          "name": "decodeRecursiveBatchInput",
+          "kind": "const",
+          "line": 597,
+          "exported": true,
+          "endLine": 597
+        },
+        {
+          "name": "decodeRecursiveAggregationResult",
+          "kind": "const",
+          "line": 605,
+          "exported": true,
+          "endLine": 605
         }
       ],
       "imports": [
@@ -6179,9 +6179,9 @@
         }
       ],
       "exports": [],
-      "hash": "565bf59feb223991374b1697dd2b7b205f707acd12a18f3976ccc42435af22b9",
-      "mtimeMs": 1784532523107.6682,
-      "size": 22378,
+      "hash": "27caa75e58c8d790f4af3155ffbad577ddf4d8daaf6fe2fd6d25113a55d5bb6c",
+      "mtimeMs": 1784533549792.9111,
+      "size": 23629,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -6621,7 +6621,7 @@
       ],
       "exports": [],
       "hash": "e3817e8b930b5aea08dcde880f19d76f0627ebbefc7befd8496008ef3bb506be",
-      "mtimeMs": 1784532490652.606,
+      "mtimeMs": 1784533403587.685,
       "size": 6383,
       "generated": false,
       "vendor": false,
@@ -7538,7 +7538,7 @@
       ],
       "exports": [],
       "hash": "8c14cd186f39cbee160123258e73210c5c7cd403f769849984ceeb8fffe403f3",
-      "mtimeMs": 1784532056580.0798,
+      "mtimeMs": 1784533403587.8125,
       "size": 4250,
       "generated": false,
       "vendor": false,
@@ -13835,67 +13835,74 @@
           "endLine": 207
         },
         {
+          "name": "batchContractFailure",
+          "kind": "function",
+          "line": 220,
+          "exported": false,
+          "endLine": 220
+        },
+        {
           "name": "validateRecursiveRequestContract",
           "kind": "const",
-          "line": 220,
+          "line": 233,
           "exported": true,
-          "endLine": 220
+          "endLine": 233
         },
         {
           "name": "validateRecursiveDecompositionContract",
           "kind": "const",
-          "line": 234,
+          "line": 247,
           "exported": true,
-          "endLine": 234
+          "endLine": 247
         },
         {
           "name": "validateContradictionIdentity",
           "kind": "const",
-          "line": 251,
+          "line": 264,
           "exported": false,
-          "endLine": 251
+          "endLine": 264
         },
         {
           "name": "validateFindingIdentity",
           "kind": "const",
-          "line": 267,
+          "line": 280,
           "exported": false,
-          "endLine": 267
+          "endLine": 280
         },
         {
           "name": "validateSufficiencyAndTerminal",
           "kind": "function",
-          "line": 296,
+          "line": 309,
           "exported": false,
-          "endLine": 296
+          "endLine": 309
         },
         {
           "name": "validateRecursiveBatchResultContract",
           "kind": "const",
-          "line": 323,
+          "line": 336,
           "exported": true,
-          "endLine": 323
+          "endLine": 336
         },
         {
           "name": "validateRecursiveBatchInputContract",
           "kind": "const",
-          "line": 349,
+          "line": 390,
           "exported": true,
-          "endLine": 349
+          "endLine": 390
         },
         {
           "name": "validateRecursiveAggregationContract",
           "kind": "const",
-          "line": 386,
+          "line": 427,
           "exported": true,
-          "endLine": 386
+          "endLine": 427
         },
         {
           "name": "ValidRecursiveDecomposition",
           "kind": "type",
-          "line": 425,
+          "line": 466,
           "exported": true,
-          "endLine": 425
+          "endLine": 466
         }
       ],
       "imports": [
@@ -13917,9 +13924,9 @@
         }
       ],
       "exports": [],
-      "hash": "3efbe358b3bc5232469d7e8a52d19c656b14a770f7dfc612ad514410774fc4ec",
-      "mtimeMs": 1784532594062.1785,
-      "size": 13555,
+      "hash": "773b02438b580704a418c13fc3293277e4ed4b974ef121779e32ca5c8f6069da",
+      "mtimeMs": 1784533549793.254,
+      "size": 14799,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -14045,7 +14052,7 @@
       ],
       "exports": [],
       "hash": "76e64987ae437aadc4997beb250dd7e30cb2b2f4e4698908883c16fd7f5f1378",
-      "mtimeMs": 1784532429068.7703,
+      "mtimeMs": 1784533403588.05,
       "size": 1439,
       "generated": false,
       "vendor": false,
