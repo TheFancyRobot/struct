@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0.0",
+  "issue": "fred-generic-checkpoint-resume-gap",
+  "runtime": "generic-typescript",
+  "reproduction": {
+    "setup": [
+      "Create a schema-constrained workflow with one idempotent tool node.",
+      "Persist the workflow output and external artifact references after the tool commit."
+    ],
+    "action": [
+      "Terminate the worker after the committed checkpoint is visible.",
+      "Create a replacement process and resume with the same workflow identity and checkpoint."
+    ],
+    "expected": "The replacement process restores the checkpoint without invoking the completed tool.",
+    "observed": "Fred provides orchestration checkpoints, while product event ordering, artifact restoration, and idempotent tool suppression require a product-local adapter."
+  },
+  "productDisposition": "product-local-adapter",
+  "deliveryBlocked": false
+}

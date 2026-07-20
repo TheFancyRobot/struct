@@ -5,6 +5,9 @@
  */
 
 import { Config, Effect, Schema } from 'effect'
+import { resolve } from 'node:path'
+
+const repositoryRoot = resolve(import.meta.dir, '../../..')
 
 const positive = (name: string) => ({
   message: `${name} must be positive`,
@@ -21,7 +24,8 @@ export const databaseUrlConfig = Config.string('DATABASE_URL')
 
 /** Local filesystem artifact root for finalized source artifacts. */
 export const artifactStorageRootConfig = Config.string('ARTIFACT_STORAGE_ROOT').pipe(
-  Config.withDefault('./.local/artifacts'),
+  Config.withDefault('.local/artifacts'),
+  Config.map((root) => resolve(repositoryRoot, root)),
 )
 
 /** Worker polling interval for durable jobs. */

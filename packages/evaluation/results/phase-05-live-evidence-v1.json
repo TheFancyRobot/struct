@@ -1,0 +1,51 @@
+{
+  "evidenceVersion": "1",
+  "source": "live-postgresql-compose",
+  "runId": "960e8400-e29b-41d4-a716-446655440003",
+  "recovery": {
+    "reconnectCursor": 10173,
+    "committedEventSequences": [
+      10173,
+      10174
+    ],
+    "reconnectEventSequences": [
+      10174
+    ],
+    "terminalStates": 1,
+    "duplicateDurableEffects": 0,
+    "completedDatasetQueryReplays": 0,
+    "datasetProviderCallsAfterReplacement": 0,
+    "uncommittedDatasetProviderCallsAfterReplacement": 1,
+    "artifactCheckpointMode": "by-reference",
+    "datasetArtifactCommitted": true,
+    "datasetIdempotencyCommitPersisted": true,
+    "checkpointBytes": 1158,
+    "initialProcessId": 44935,
+    "replacementProcessId": 44985,
+    "gates": {
+      "restartAfterPlan": true,
+      "restartAfterToolAttemptBeforeCommit": true,
+      "restartAfterCheckpointCommit": true,
+      "restartDuringCancellation": true
+    },
+    "failureHistory": [
+      {
+        "kind": "provider",
+        "tag": "DataEngineTransportError"
+      },
+      {
+        "kind": "model",
+        "tag": "ResearchProviderFailure"
+      }
+    ]
+  },
+  "runtime": {
+    "host": "bun",
+    "bunVersion": "1.3.13",
+    "sidecarNodeVersion": "v24.18.0",
+    "authenticatedHealth": true,
+    "isolatedNoEgress": true,
+    "bunHostHealthyDuringSidecarRestart": true,
+    "sidecarRecovered": true
+  }
+}

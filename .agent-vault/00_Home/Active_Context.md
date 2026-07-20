@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-20._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_06_evaluate-planning-execution-replay-and-recovery|STEP-05-06 Evaluate Planning Execution Replay and Recovery]] - status: planned - phase: [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|Phase 05 typed research planning and bounded execution]]
+- Current step: [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_06_evaluate-planning-execution-replay-and-recovery|STEP-05-06 Evaluate Planning Execution Replay and Recovery]] - status: completed; PR review and merge pending - phase: [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|PHASE-05 Typed Research Planning and Bounded Execution]]
 - Active phase: [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|PHASE-05 Typed Research Planning and Bounded Execution]] - status: active - updated: 2026-07-20
-- Also active: 42 more additional steps.
+- Phase 06 remains planned and must not activate until STEP-05-06 merges and the phase-refinement gate completes.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -38,13 +38,13 @@ _Last refreshed: 2026-07-20._
 - Phase 02 is completed and merged through STEP-02-06 with deterministic retrieval, exact provenance, bounded core-Fred document research, SolidJS citation navigation, and injection-resistance evaluation.
 - Phase 03 and STEP-03-01 through STEP-03-06 are completed and merged.
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
-- Phase 05 refinement and STEP-05-01 through STEP-05-04 are merged. STEP-05-05 implementation and zero-defect validation are complete on its dedicated branch; review and merge remain before STEP-05-06 begins.
+- Phase 05 refinement and STEP-05-01 through STEP-05-05 are merged. STEP-05-06 implementation, review remediation, and zero-defect validation are complete on its dedicated branch; PR review and merge remain.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 
 ## Out Of Scope Right Now
 
 - A second runtime, queue, database, filesystem service, client state framework, or Fred executor.
-- STEP-05-06 and later work until STEP-05-05 is merged.
+- STEP-06-01 and later work until STEP-05-06 is merged and Phase 06 refinement passes.
 - Later-phase release work.
 
 ## Working Assumptions
@@ -61,7 +61,7 @@ _Last refreshed: 2026-07-20._
 
 ## Open Questions
 
-- No unresolved design question blocks STEP-05-04 review and merge.
+- No unresolved design question blocks STEP-05-06 review and merge.
 
 ## Critical Bugs
 
@@ -71,6 +71,6 @@ _Last refreshed: 2026-07-20._
 
 ## Next Actions
 
-- Review, publish, and merge [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_05_implement-tool-registry-typed-failures-retries-and-recovery|STEP-05-05 Implement Tool Registry Typed Failures Retries and Recovery]].
-- Do not begin STEP-05-06 until STEP-05-05 is merged and the zero-defect gate is green.
+- Review, publish, and merge [[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_06_evaluate-planning-execution-replay-and-recovery|STEP-05-06 Evaluate Planning Execution Replay and Recovery]].
+- After merge, run the mandatory Phase 06 refinement gate before activating STEP-06-01.
 - Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.
