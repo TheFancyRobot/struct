@@ -320,14 +320,9 @@ This preserves reproducibility, makes citations stable, and prevents historical 
 - **Ownership:** `packages/persistence` owns migration files and the schema definition. `apps/api` is the sole executor of migrations — it owns the connection pool, the schema boundary, and the typed migration CLI. No other app or package may run migrations; `apps/worker` consumes the schema and never mutates it.
 - **Baseline ordering:** the first migration creates the `pgvector` extension (`CREATE EXTENSION IF NOT EXISTS vector`) before any table or index migration. Subsequent migrations run in strict timestamped order. Full-text search indexes and `pgvector` HNSW/IVFFlat indexes migrate after their owning tables.
 - **Forward:** `bun run migrations:up` (executed by `apps/api`) applies all pending migrations in order.
-- **Rollback:** `bun run migrations:down` (executed by `apps/api`) reverts exactly one migration. A migration must be reversible or explicitly marked irreversible with a recorded reason; irreversible, data-losing migrations require an ADR.
-- **Test contract:** `migrations:up && migrations:down && migrations:up` against an ephemeral PostgreSQL instance must be idempotent and leave a clean schema. This round-trip is a required CI gate (see [`docs/repository-contract.md`](./repository-contract.md)).
-- **Upgrade indexing:** the text-index migration durably queues every existing
-  `SourceVersion` from its stored manifest ref, tenant scope, and immutable
-  content hash. A worker reconstructs the index from normalized artifacts with
-  bounded retries; unavailable artifacts remain explicitly observable in
-  `source_text_reindex_jobs` and never masquerade as a completed empty index.
-- **Recovery policy:** forward-only is the production default. Rollback is permitted in dev and CI for reversible migrations only. No production rollback may be executed without a matching ADR for irreversible steps.
+- **Greenfield reset:** `STRUCT_ALLOW_DESTRUCTIVE_RESET=<database> bun run ops database:reset` drops and recreates an explicitly approved loopback `struct*` database, then applies every migration. There is no legacy database, cross-version compatibility contract, or data-preservation migration.
+- **Test contract:** clean create and guarded drop/recreate against an isolated PostgreSQL database must be deterministic and leave the complete current schema. The recovery proof additionally verifies backup/restore of representative v1 state.
+- **Rollback:** application rollback deploys a retained known-good Bun artifact against the current schema. If the schema is unusable, restore its paired PostgreSQL and artifact-store backups; do not attempt a cross-version migration rollback.
 - **Executor uniqueness:** a CI/static check verifies that migration-runner imports live only in `apps/api`; any migration import in `apps/worker` or `apps/web` fails the gate.
 
 ## 7. Product event journal and SSE model

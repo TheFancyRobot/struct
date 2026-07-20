@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-20._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_02_harden-deployments-migrations-backups-and-rollback|STEP-09-02 Harden Deployments Migrations Backups and Rollback]] - status: planned - phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]]
+- Current step: [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_03_complete-performance-capacity-and-resilience-testing|STEP-09-03 Complete Performance Capacity and Resilience Testing]] - status: planned - phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]]
 - Active phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]] - status: in_progress - owner: Codex - updated: 2026-07-20
-- Also active: 22 more additional steps.
+- Also active: 21 more additional steps.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -40,7 +40,7 @@ _Last refreshed: 2026-07-20._
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
 - Phase 06 is completed, reviewed, and merged through STEP-06-06.
-- Phase 07 is complete and merged. Phase 08 is refined and its first lifecycle-contract step is complete, independently validated, and ready for publication.
+- Phase 07 and Phase 08 are complete and merged. Phase 09 is refined; authentication and deployment recovery are complete and awaiting the normal merge handoff before resilience work begins.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 
 ## Out Of Scope Right Now
@@ -62,7 +62,7 @@ _Last refreshed: 2026-07-20._
 
 ## Open Questions
 
-- No unresolved design question or confirmed defect remains in STEP-07-06.
+- No unresolved design question or confirmed defect remains in the completed Phase 09 work.
 
 ## Critical Bugs
 
@@ -72,5 +72,5 @@ _Last refreshed: 2026-07-20._
 
 ## Next Actions
 
-- Publish and merge the completed report-lifecycle contract, then execute the citation-validation and provenance-graph step on its own branch.
+- Publish and merge deployment recovery, then execute performance, capacity, and resilience hardening on its own branch.
 - Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.

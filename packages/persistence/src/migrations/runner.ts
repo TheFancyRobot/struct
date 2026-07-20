@@ -20,6 +20,7 @@
  */
 
 import { Effect, Schema } from 'effect'
+import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { migrations } from './manifest.js'
 
@@ -57,14 +58,15 @@ export class MigrationError extends Schema.TaggedError<MigrationError>()('Migrat
 const CREATE_TRACKING_TABLE = `
   CREATE TABLE IF NOT EXISTS _migrations (
     name TEXT PRIMARY KEY,
+    checksum TEXT NOT NULL CHECK (checksum ~ '^sha256:[0-9a-f]{64}$'),
     applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )
 `
 
-const SELECT_APPLIED = `SELECT name FROM _migrations ORDER BY name`
+const SELECT_APPLIED = `SELECT name, checksum FROM _migrations ORDER BY name`
 
-const INSERT_MIGRATION = (name: string) =>
-  `INSERT INTO _migrations (name) VALUES ('${name}')`
+const INSERT_MIGRATION = (name: string, checksum: string) =>
+  `INSERT INTO _migrations (name, checksum) VALUES ('${name}', '${checksum}')`
 
 const DELETE_MIGRATION = (name: string) =>
   `DELETE FROM _migrations WHERE name = '${name}'`
@@ -83,9 +85,13 @@ async function readSqlFile(filePath: string): Promise<string> {
 /**
  * Get the list of already-applied migration names.
  */
-async function getAppliedMigrations(sql: SqlExecutor): Promise<Set<string>> {
-  const rows = (await sql.unsafe(SELECT_APPLIED)) as Array<{ name: string }>
-  return new Set(rows.map((r) => r.name))
+async function getAppliedMigrations(sql: SqlExecutor): Promise<Map<string, string>> {
+  const rows = (await sql.unsafe(SELECT_APPLIED)) as Array<{ name: string; checksum: string }>
+  return new Map(rows.map((row) => [row.name, row.checksum]))
+}
+
+function checksum(sqlContent: string): string {
+  return `sha256:${createHash('sha256').update(sqlContent).digest('hex')}`
 }
 
 /**
@@ -101,13 +107,20 @@ export const runMigrationsUp = (sql: SqlExecutorWithTransactions): Effect.Effect
       const applied = await getAppliedMigrations(sql)
 
       for (const migration of migrations) {
-        if (applied.has(migration.name)) continue
+        const sqlContent = await readSqlFile(migration.upPath)
+        const expectedChecksum = checksum(sqlContent)
+        const appliedChecksum = applied.get(migration.name)
+        if (appliedChecksum !== undefined) {
+          if (appliedChecksum !== expectedChecksum) {
+            throw new Error(`Migration checksum mismatch: ${migration.name}`)
+          }
+          continue
+        }
 
         // Wrap migration SQL + tracking insert in a transaction
         await sql.begin(async (tx) => {
-          const sqlContent = await readSqlFile(migration.upPath)
           await tx.unsafe(sqlContent)
-          await tx.unsafe(INSERT_MIGRATION(migration.name))
+          await tx.unsafe(INSERT_MIGRATION(migration.name, expectedChecksum))
         })
       }
     },
@@ -128,7 +141,7 @@ export const runMigrationsDown = (sql: SqlExecutorWithTransactions): Effect.Effe
       if (applied.size === 0) return
 
       // Find the last applied migration (by name ordering, which matches migration order)
-      const lastAppliedName = Array.from(applied).sort().pop()
+      const lastAppliedName = Array.from(applied.keys()).sort().pop()
       if (!lastAppliedName) return
 
       const migration = migrations.find((m) => m.name === lastAppliedName)
