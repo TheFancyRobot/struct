@@ -1,4 +1,6 @@
+/* eslint-disable no-unused-vars -- Babel's parser does not mark type-only namespace imports as used. */
 import type * as Fred from '@fancyrobot/fred'
+/* eslint-enable no-unused-vars */
 import {
   // eslint-disable-next-line no-unused-vars -- Type-only imports are consumed by TypeScript.
   type ResearchPlan,
@@ -168,7 +170,7 @@ function timeBudgetStopped(
   })
 }
 
-function actionForNode(
+export function researchActionForNode(
   node: ResearchPlanNode,
   estimatedCostMicros: number,
 ): ResearchAction {
@@ -194,6 +196,41 @@ function actionForNode(
     estimatedCostMicros,
   }
 }
+
+export const executeResearchNodeProvider = Effect.fn(
+  'ResearchRunGraph.executeProvider',
+)(function* (
+  node: ResearchPlanNode,
+  action: ResearchAction,
+  routing: ResearchModelRoutingPolicy,
+  deps: ResearchRunGraphDependencies,
+  signal: AbortSignal,
+) {
+  if (signal.aborted) return yield* interrupted()
+  return yield* (action.kind === 'tool'
+    ? Effect.gen(function* () {
+      const executor = yield* deps.tools.resolve(
+        action.toolId,
+        action.capability,
+      )
+      return yield* executor.execute(node, signal)
+    }).pipe(
+      Effect.catchTag(
+        'ResearchProviderFailure',
+        () => Effect.fail(providerStopped(null)),
+      ),
+    )
+    : Effect.gen(function* () {
+      const route = yield* resolveModelRoute(routing, action.role)
+      const executor = yield* deps.models.resolve(route)
+      return yield* executor.execute(node, signal)
+    }).pipe(
+      Effect.catchTag(
+        'ResearchProviderFailure',
+        () => Effect.fail(providerStopped(action.role)),
+      ),
+    ))
+})
 
 function topologicalNodes(plan: ResearchPlan): ReadonlyArray<ResearchPlanNode> {
   const pending = new Map(plan.nodes.map((node) => [node.id, node]))
@@ -235,7 +272,7 @@ function executionEffect(
     ) {
       return yield* interrupted()
     }
-    const action = actionForNode(node, deps.estimatedCostMicros(node))
+    const action = researchActionForNode(node, deps.estimatedCostMicros(node))
     const begun = yield* beginResearchAction(
       plan,
       policy,
@@ -255,30 +292,13 @@ function executionEffect(
         elapsedBeforeProvider,
       )
     }
-    const providerEffect = action.kind === 'tool'
-      ? Effect.gen(function* () {
-        const executor = yield* deps.tools.resolve(
-          action.toolId,
-          action.capability,
-        )
-        return yield* executor.execute(node, signal)
-      }).pipe(
-        Effect.catchTag(
-          'ResearchProviderFailure',
-          () => providerStopped(null),
-        ),
-      )
-      : Effect.gen(function* () {
-        const route = yield* resolveModelRoute(routing, action.role)
-        const executor = yield* deps.models.resolve(route)
-        return yield* executor.execute(node, signal)
-      }).pipe(
-        Effect.catchTag(
-          'ResearchProviderFailure',
-          () => providerStopped(action.role),
-        ),
-      )
-    const result = yield* providerEffect.pipe(
+    const result = yield* executeResearchNodeProvider(
+      node,
+      action,
+      routing,
+      deps,
+      signal,
+    ).pipe(
       Effect.timeoutFail({
         duration: remainingMilliseconds,
         onTimeout: () => timeBudgetStopped(
@@ -346,7 +366,7 @@ export const compileResearchRunWorkflow = Effect.fn(
       to: node.id,
     }),
   )
-  return {
+  const workflow: Fred.WorkflowIR = {
     id: RESEARCH_RUN_WORKFLOW_ID,
     source: 'native',
     entry: orderedNodes[0]!.id,
@@ -354,7 +374,8 @@ export const compileResearchRunWorkflow = Effect.fn(
     output: ResearchGraphState,
     nodes,
     edges,
-  } satisfies Fred.WorkflowIR
+  }
+  return workflow
 })
 
 export type ResearchRunCompilationFailure = IncompatibleModelRoute
