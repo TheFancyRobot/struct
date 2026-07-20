@@ -268,9 +268,6 @@ describeIf('walking skeleton full vertical slice', () => {
               Effect.provide(versionLayer),
             ),
         },
-        sources: {
-          findProjectId: () => Effect.succeed(projectId),
-        },
         textIndex: {
           indexText: (input) =>
             TextRetrieval.indexText(input).pipe(Effect.provide(retrievalLayer)),

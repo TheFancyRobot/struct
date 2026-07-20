@@ -65,6 +65,7 @@ describe('API entrypoint config validation', () => {
               API_PORT: String(port),
               DATABASE_URL: 'postgres://struct:struct@localhost:5432/struct',
               API_AUTH_TOKEN: 'entrypoint-test-api-token',
+              API_WORKSPACE_ID: '910e8400-e29b-41d4-a716-446655440000',
               ARTIFACT_STORAGE_ROOT: root,
             },
           },

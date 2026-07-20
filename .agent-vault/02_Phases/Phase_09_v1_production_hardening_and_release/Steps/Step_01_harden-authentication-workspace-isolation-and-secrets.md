@@ -5,22 +5,23 @@ contract_version: 1
 title: Harden Authentication Workspace Isolation and Secrets
 step_id: STEP-09-01
 phase: '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]]'
-status: planned
-owner: ''
+status: completed
+owner: auth-workspace-isolation
 created: '2026-07-17'
 updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_06_evaluate-report-fidelity-version-drift-and-auditability|STEP-08-06 Evaluate Report Fidelity Version Drift and Auditability]]'
 related_sessions:
   - '[[05_Sessions/2026-07-20-211503-harden-authentication-workspace-isolation-and-secrets-phase-09-refinement|SESSION-2026-07-20-211503 phase-09-refinement session for Harden Authentication Workspace Isolation and Secrets]]'
+  - '[[05_Sessions/2026-07-20-214123-harden-authentication-workspace-isolation-and-secrets-auth-workspace-isolation|SESSION-2026-07-20-214123 auth-workspace-isolation session for Harden Authentication Workspace Isolation and Secrets]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
-context_id: SESSION-2026-07-20-211503
-active_session_id: SESSION-2026-07-20-211503
-context_status: ready
-context_summary: Phase 09 is refined; STEP-09-01 is execution-ready after the refinement is reviewed and committed.
+context_id: SESSION-2026-07-20-214123
+active_session_id: SESSION-2026-07-20-214123
+context_status: complete
+context_summary: Minimal server-side identity boundary binds the bearer credential to one workspace; every API, SSE, project, artifact, dataset, directory, research, citation, and report route fails closed, worker payloads require explicit scope, secrets are redacted, and all validation is green.
 ---
 
 # Step 01 - Harden Authentication Workspace Isolation and Secrets
@@ -73,6 +74,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 <!-- AGENT-START:step-session-history -->
 - 2026-07-20 - [[05_Sessions/2026-07-20-211503-harden-authentication-workspace-isolation-and-secrets-phase-09-refinement|SESSION-2026-07-20-211503 phase-09-refinement session for Harden Authentication Workspace Isolation and Secrets]] - Session created.
+- 2026-07-20 - [[05_Sessions/2026-07-20-214123-harden-authentication-workspace-isolation-and-secrets-auth-workspace-isolation|SESSION-2026-07-20-214123 auth-workspace-isolation session for Harden Authentication Workspace Isolation and Secrets]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

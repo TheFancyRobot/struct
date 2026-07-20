@@ -23,6 +23,13 @@ The last command starts the web, API, and worker applications together.
 
 Set a real provider key in `.env`, then seed the Phase 01 project fixture:
 
+Export the same API credential configured in `.env` for the direct API calls
+below:
+
+```sh
+export API_AUTH_TOKEN='replace-with-the-value-from-.env'
+```
+
 ```sh
 docker compose exec -T postgres psql -U struct -d struct -c \
   "INSERT INTO workspaces (id, name) VALUES ('310e8400-e29b-41d4-a716-446655440000', 'Demo') ON CONFLICT DO NOTHING; INSERT INTO projects (id, workspace_id, name) VALUES ('310e8400-e29b-41d4-a716-446655440001', '310e8400-e29b-41d4-a716-446655440000', 'Walking skeleton') ON CONFLICT DO NOTHING;"
@@ -32,6 +39,7 @@ Register one UTF-8 source and let the running worker ingest it:
 
 ```sh
 curl -sS -X POST http://localhost:3001/api/projects/310e8400-e29b-41d4-a716-446655440001/sources \
+  -H "authorization: Bearer $API_AUTH_TOKEN" \
   -H 'content-type: application/json' \
   -d '{"workspaceId":"310e8400-e29b-41d4-a716-446655440000","projectId":"310e8400-e29b-41d4-a716-446655440001","name":"launch.txt","mediaType":"text/plain","contentBase64":"VGhlIGxhdW5jaCBkYXRlIGlzIEp1bHkgMTgu"}'
 SOURCE_VERSION_ID=
@@ -43,18 +51,22 @@ for attempt in $(seq 1 30); do
 done
 [ -n "$SOURCE_VERSION_ID" ] || { echo "Source ingestion timed out" >&2; exit 1; }
 RESEARCH_RESPONSE=$(curl -sS -X POST http://localhost:3001/api/projects/310e8400-e29b-41d4-a716-446655440001/research \
+  -H "authorization: Bearer $API_AUTH_TOKEN" \
   -H 'content-type: application/json' \
   -d "{\"workspaceId\":\"310e8400-e29b-41d4-a716-446655440000\",\"projectId\":\"310e8400-e29b-41d4-a716-446655440001\",\"sourceVersionIds\":[\"$SOURCE_VERSION_ID\"],\"question\":\"What is the launch date?\"}")
 RUN_ID=$(RESEARCH_RESPONSE="$RESEARCH_RESPONSE" bun -e \
   'console.log(JSON.parse(Bun.env.RESEARCH_RESPONSE).runId)')
 THREAD_ID=$(RESEARCH_RESPONSE="$RESEARCH_RESPONSE" bun -e \
   'console.log(JSON.parse(Bun.env.RESEARCH_RESPONSE).threadId)')
-curl -N "http://localhost:3001/api/projects/310e8400-e29b-41d4-a716-446655440001/runs/$RUN_ID/events"
+curl -N \
+  -H "authorization: Bearer $API_AUTH_TOKEN" \
+  "http://localhost:3001/api/projects/310e8400-e29b-41d4-a716-446655440001/runs/$RUN_ID/events"
 ```
 
 The `research-completed` event contains citation IDs in `data.citations[].id`.
 Fetch a cited excerpt at
-`/api/projects/310e8400-e29b-41d4-a716-446655440001/research/$THREAD_ID/citation/<citationId>`.
+`/api/projects/310e8400-e29b-41d4-a716-446655440001/research/$THREAD_ID/citation/<citationId>`
+with the same bearer header.
 
 The API, worker, Fred workflow, retrieval, citation validation, and SSE replay all
 correlate on persisted workspace/project/source/run/job identities. Logs never

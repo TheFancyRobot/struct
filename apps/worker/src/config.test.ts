@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test'
-import { Effect, ConfigProvider, Layer, Exit } from 'effect'
+import { Effect, ConfigProvider, Layer, Exit, Redacted } from 'effect'
 import { resolve } from 'node:path'
 import {
   artifactStorageRootConfig,
@@ -51,7 +51,9 @@ describe('Worker Database URL Config', () => {
     const result = await Effect.runPromise(
       databaseUrlConfig.pipe(Effect.provide(Layer.setConfigProvider(provider))),
     )
-    expect(result).toBe('postgres://struct:struct@localhost:5432/struct')
+    expect(Redacted.value(result)).toBe(
+      'postgres://struct:struct@localhost:5432/struct',
+    )
   })
 
   it('fails when DATABASE_URL not set', async () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test'
 import { Effect, ConfigProvider, Layer, Exit, Redacted } from 'effect'
-import { apiAuthTokenConfig, apiPortConfig, artifactStorageRootConfig, databaseUrlConfig, maxTextSourceBytesConfig } from './config'
+import { apiAuthTokenConfig, apiPortConfig, apiWorkspaceIdConfig, artifactStorageRootConfig, databaseUrlConfig, maxTextSourceBytesConfig } from './config'
 
 describe('API Config', () => {
   it('uses default port 3001 when API_PORT not set', async () => {
@@ -36,7 +36,9 @@ describe('API Database URL Config', () => {
     const result = await Effect.runPromise(
       databaseUrlConfig.pipe(Effect.provide(Layer.setConfigProvider(provider))),
     )
-    expect(result).toBe('postgres://struct:struct@localhost:5432/struct')
+    expect(Redacted.value(result)).toBe(
+      'postgres://struct:struct@localhost:5432/struct',
+    )
   })
 
   it('fails when DATABASE_URL not set', async () => {
@@ -70,6 +72,26 @@ describe('API authentication token config', () => {
         ),
       )
       expect(Exit.isFailure(result)).toBe(true)
+    }
+  })
+})
+
+describe('API identity workspace config', () => {
+  it('requires a valid workspace UUID', async () => {
+    const valid = await Effect.runPromise(apiWorkspaceIdConfig.pipe(
+      Effect.provide(Layer.setConfigProvider(ConfigProvider.fromMap(new Map([
+        ['API_WORKSPACE_ID', '910e8400-e29b-41d4-a716-446655440000'],
+      ])))),
+    ))
+    expect(String(valid)).toBe('910e8400-e29b-41d4-a716-446655440000')
+
+    for (const entries of [new Map<string, string>(), new Map([
+      ['API_WORKSPACE_ID', 'not-a-workspace'],
+    ])]) {
+      const exit = await Effect.runPromiseExit(apiWorkspaceIdConfig.pipe(
+        Effect.provide(Layer.setConfigProvider(ConfigProvider.fromMap(entries))),
+      ))
+      expect(Exit.isFailure(exit)).toBe(true)
     }
   })
 })

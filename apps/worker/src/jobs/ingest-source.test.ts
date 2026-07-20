@@ -115,9 +115,6 @@ function deps(overrides: Partial<Omit<IngestionWorkerDeps, 'calls'>> = {}): Inge
         return Effect.succeed(version)
       },
     },
-    sources: {
-      findProjectId: () => Effect.succeed(projectId),
-    },
     textIndex: {
       indexText: (input) => {
         calls.indexedInputs.push(input)
@@ -292,7 +289,7 @@ describe('processOneIngestionJob', () => {
     expect(testDeps.calls.versions[0]).toMatchObject({ version: 5 })
   })
 
-  it('derives project scope for legacy queued payloads that predate projectId', async () => {
+  it('fails closed when a queued payload omits its project scope', async () => {
     const base = deps()
     const testDeps: IngestionWorkerTestDeps = {
       ...base,
@@ -305,8 +302,8 @@ describe('processOneIngestionJob', () => {
           entityId: sourceId,
           status: 'in-progress' as const,
           payload: {
-            stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/legacy.md',
-            name: 'legacy.md',
+            stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/unscoped.md',
+            name: 'unscoped.md',
             mediaType: 'text/markdown',
             byteLength: 10,
           },
@@ -320,13 +317,9 @@ describe('processOneIngestionJob', () => {
 
     await Effect.runPromise(processOneIngestionJob(testDeps))
 
-    expect(testDeps.calls.completed).toEqual([jobId])
-    expect(testDeps.calls.indexedInputs).toEqual([{
-      workspaceId,
-      projectId,
-      sourceVersionId,
-      content: 'hello source text',
-    }])
+    expect(testDeps.calls.completed).toEqual([])
+    expect(testDeps.calls.failed).toEqual([jobId])
+    expect(testDeps.calls.indexedInputs).toEqual([])
   })
 
   it('records sanitized ingestion-failed and retries a typed infrastructure failure while attempts remain', async () => {

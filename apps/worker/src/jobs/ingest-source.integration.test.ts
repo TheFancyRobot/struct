@@ -169,9 +169,6 @@ describeIf('ingestion retryability real PostgreSQL controls', () => {
           findBySourceId: () => Effect.succeed([]),
           createForIngestionAttempt: (_job, version) => Effect.succeed(version),
         },
-        sources: {
-          findProjectId: () => Effect.succeed(projectId),
-        },
         textIndex: {
           indexText: () => Effect.void,
         },

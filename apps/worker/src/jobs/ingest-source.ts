@@ -51,11 +51,6 @@ export interface IngestionWorkerDeps {
       version: typeof SourceVersion.Type,
     ) => Effect.Effect<typeof SourceVersion.Type, PersistenceError, never>
   }
-  readonly sources: {
-    readonly findProjectId: (
-      sourceId: SourceId,
-    ) => Effect.Effect<import('@struct/domain').ProjectId, unknown, never>
-  }
   readonly textIndex: {
     readonly indexText: (input: {
       readonly workspaceId: typeof JobQueue.Type['workspaceId']
@@ -161,9 +156,7 @@ export function classifyIngestionFailure(
 
 function decodePayload(
   payload: Record<string, unknown>,
-  sourceId: SourceId,
-  deps: IngestionWorkerDeps,
-): Effect.Effect<IngestionPayload, ValidationError | unknown, never> {
+): Effect.Effect<IngestionPayload, ValidationError, never> {
   const stagedRef = payload['stagedRef']
   const name = payload['name']
   const mediaType = payload['mediaType']
@@ -175,17 +168,15 @@ function decodePayload(
     return Effect.fail(new ValidationError({ field: 'payload', reason: 'invalid', message: 'Ingestion payload is missing source metadata' }))
   }
   return Effect.gen(function* () {
-    const decodedProjectId = typeof projectId === 'undefined'
-      ? yield* deps.sources.findProjectId(sourceId)
-      : yield* Effect.try({
-          try: () => Schema.decodeUnknownSync(ProjectId)(projectId),
-          catch: () =>
-            new ValidationError({
-              field: 'payload.projectId',
-              reason: 'invalid',
-              message: 'Ingestion payload projectId is invalid',
-            }),
-        })
+    const decodedProjectId = yield* Effect.try({
+      try: () => Schema.decodeUnknownSync(ProjectId)(projectId),
+      catch: () =>
+        new ValidationError({
+          field: 'payload.projectId',
+          reason: 'invalid',
+          message: 'Ingestion payload projectId is invalid',
+        }),
+    })
     return {
       stagedRef: stagedRef as StagedArtifactRef,
       name,
@@ -350,7 +341,7 @@ export const processOneIngestionJob = (
       },
       Effect.gen(function* () {
         const payloadResult = yield* Effect.either(
-          decodePayload(job.payload, job.entityId as SourceId, deps),
+          decodePayload(job.payload),
         )
         if (payloadResult._tag === 'Left') {
           yield* failJob(deps, job, payloadResult.left)

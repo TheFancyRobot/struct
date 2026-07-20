@@ -4,7 +4,7 @@
  * Runtime entry point — Effect.runPromise at the application boundary.
  */
 
-import { Effect, Layer, Runtime, Schema } from 'effect'
+import { Effect, Layer, Redacted, Runtime, Schema } from 'effect'
 import postgres from 'postgres'
 import {
   DatasetCatalogRepo,
@@ -15,7 +15,6 @@ import {
   ResearchExecutionRepo,
   ResearchRunRepo,
   SourceTextReindexRepo,
-  SourceRepo,
   SourceVersionRepo,
   SqlClientLive,
 } from '@struct/persistence'
@@ -102,13 +101,16 @@ const program = Effect.gen(function* () {
   })
   const storage = yield* LocalArtifactStore.make({ root: artifactRoot })
   const sql = yield* Effect.acquireRelease(
-    Effect.sync(() => postgres(databaseUrl, { max: 5, idle_timeout: 5, connect_timeout: 2 })),
+    Effect.sync(() => postgres(Redacted.value(databaseUrl), {
+      max: 5,
+      idle_timeout: 5,
+      connect_timeout: 2,
+    })),
     (client) => Effect.promise(() => client.end({ timeout: 5 })).pipe(Effect.orDie),
   )
   const sqlLayer = SqlClientLive(sql)
   const jobLayer = Layer.provide(JobQueueRepo.Default, sqlLayer)
   const sourceVersionLayer = Layer.provide(SourceVersionRepo.Default, sqlLayer)
-  const sourceLayer = Layer.provide(SourceRepo.Default, sqlLayer)
   const retrievalLayer = Layer.provide(TextRetrieval.Default, sqlLayer)
   const researchExecutionLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
   const researchRunLayer = Layer.provide(ResearchRunRepo.Default, sqlLayer)
@@ -242,13 +244,6 @@ const program = Effect.gen(function* () {
       createForIngestionAttempt: (job, version) =>
         SourceVersionRepo.createForIngestionAttempt(job, version).pipe(
           Effect.provide(sourceVersionLayer),
-        ),
-    },
-    sources: {
-      findProjectId: (sourceId) =>
-        SourceRepo.findById(sourceId).pipe(
-          Effect.map((source) => source.projectId),
-          Effect.provide(sourceLayer),
         ),
     },
     textIndex: {

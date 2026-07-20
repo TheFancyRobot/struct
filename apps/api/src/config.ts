@@ -6,6 +6,7 @@
  */
 
 import { Config, Redacted } from 'effect'
+import { WorkspaceId } from '@struct/domain'
 
 const positive = (name: string) => ({
   message: `${name} must be positive`,
@@ -18,7 +19,7 @@ export const apiPortConfig = Config.number('API_PORT').pipe(
 )
 
 /** Database connection URL (required, no default). */
-export const databaseUrlConfig = Config.string('DATABASE_URL')
+export const databaseUrlConfig = Config.redacted('DATABASE_URL')
 
 /** Single-user API bearer credential used until user/session auth lands. */
 export const apiAuthTokenConfig = Config.redacted('API_AUTH_TOKEN').pipe(
@@ -26,6 +27,11 @@ export const apiAuthTokenConfig = Config.redacted('API_AUTH_TOKEN').pipe(
     message: 'API_AUTH_TOKEN must contain at least 16 characters',
     validation: (value) => Redacted.value(value).length >= 16,
   }),
+)
+
+/** Workspace owned by the configured single-user API identity. */
+export const apiWorkspaceIdConfig = Config.string('API_WORKSPACE_ID').pipe(
+  Config.mapAttempt((value) => WorkspaceId.make(value)),
 )
 
 /** Local filesystem artifact root for upload staging. */
