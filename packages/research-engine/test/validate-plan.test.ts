@@ -78,6 +78,13 @@ function planningInput() {
     workspaceId: ids.workspace,
     projectId: ids.project,
     question: 'Compare the policy with the exact dataset total.',
+    classification: {
+      version: '1',
+      kind: 'mixed',
+      mode: 'quick',
+      requiresExactComputation: false,
+      confidence: 0.95,
+    },
     sourceScopes,
     toolPolicy,
     budgetCeiling,
@@ -156,9 +163,12 @@ function mixedPlan() {
   }
 }
 
-async function reason(proposal: unknown): Promise<string | undefined> {
+async function reason(
+  proposal: unknown,
+  input: ReturnType<typeof planningInput> = planningInput(),
+): Promise<string | undefined> {
   const result = await Effect.runPromise(
-    Effect.either(validateResearchPlan(planningInput(), proposal)),
+    Effect.either(validateResearchPlan(input, proposal)),
   )
   return Either.isLeft(result) ? result.left.reason : undefined
 }
@@ -281,6 +291,99 @@ describe('deterministic research-plan validation', () => {
     expect(first).toEqual(second)
   })
 
+  it('allows a dataset scope to narrow its authorized source-version set', async () => {
+    const input = Schema.decodeUnknownSync(ResearchPlanningInput)({
+      ...planningInput(),
+      sourceScopes: [
+        sourceScopes[0],
+        {
+          ...sourceScopes[1],
+          sourceVersionIds: [
+            ids.datasetVersion,
+            ids.additionalDatasetVersion,
+          ],
+        },
+      ],
+    })
+    const normalized = await Effect.runPromise(
+      validateResearchPlan(input, mixedPlan()),
+    )
+    const datasetScope = normalized.sourceScopes.find(
+      (scope) => scope.kind === 'dataset',
+    )
+    expect(datasetScope?.sourceVersionIds.map(String)).toEqual([
+      ids.datasetVersion,
+    ])
+
+    const widened = {
+      ...mixedPlan(),
+      sourceScopes: [
+        sourceScopes[0],
+        {
+          ...sourceScopes[1],
+          sourceVersionIds: [ids.additionalDatasetVersion],
+        },
+      ],
+    }
+    expect(await reason(widened)).toBe('missing-reference')
+  })
+
+  it('enforces exact-computation classification before returning a plan', async () => {
+    const exactInput = Schema.decodeUnknownSync(ResearchPlanningInput)({
+      ...planningInput(),
+      classification: {
+        version: '1',
+        kind: 'mixed',
+        mode: 'quick',
+        requiresExactComputation: true,
+        confidence: 0.99,
+      },
+    })
+    expect(await reason(mixedPlan(), exactInput)).toBeUndefined()
+
+    const plan = mixedPlan()
+    const documentOnly = {
+      ...plan,
+      sourceScopes: [sourceScopes[0]],
+      nodes: [plan.nodes[0]],
+      evidenceRequirements: [plan.evidenceRequirements[0]],
+      toolPolicy: { grants: [toolPolicy.grants[0]] },
+      budget: {
+        ...plan.budget,
+        maximumSteps: 1,
+        maximumModelCalls: 0,
+        maximumToolCalls: 1,
+      },
+    }
+    expect(await reason(documentOnly, exactInput)).toBe('missing-reference')
+
+    const withoutDatasetQuery = {
+      ...documentOnly,
+      sourceScopes: [...sourceScopes],
+    }
+    expect(await reason(withoutDatasetQuery, exactInput)).toBe(
+      'unsupported-tool',
+    )
+
+    const disconnectedDatasetQuery = {
+      ...plan,
+      nodes: plan.nodes.map((node) =>
+        node.id === ids.synthesisNode
+          ? {
+              ...node,
+              dependencies: [ids.documentNode],
+              inputRefs: [{
+                kind: 'node-output',
+                nodeId: ids.documentNode,
+              }],
+            }
+          : node),
+    }
+    expect(await reason(disconnectedDatasetQuery, exactInput)).toBe(
+      'unsupported-tool',
+    )
+  })
+
   it('rejects unknown or incompatible tools and capabilities', async () => {
     const plan = mixedPlan()
     expect(await reason({
@@ -371,6 +474,39 @@ describe('deterministic research-plan validation', () => {
     })).toBe('missing-reference')
   })
 
+  it('requires compatible authorized direct inputs for each tool node', async () => {
+    const plan = mixedPlan()
+    const replaceInputs = (
+      nodeId: string,
+      inputRefs: ReadonlyArray<Record<string, string>>,
+    ) => ({
+      ...plan,
+      nodes: plan.nodes.map((node) =>
+        node.id === nodeId ? { ...node, inputRefs } : node),
+    })
+
+    expect(await reason(replaceInputs(ids.documentNode, [])))
+      .toBe('missing-reference')
+    expect(await reason(replaceInputs(ids.documentNode, [{
+      kind: 'dataset-snapshot',
+      datasetId: ids.dataset,
+      datasetSnapshotId: ids.snapshot,
+    }])))
+      .toBe('missing-reference')
+    expect(await reason(replaceInputs(ids.datasetNode, [])))
+      .toBe('missing-reference')
+    expect(await reason(replaceInputs(ids.datasetNode, [{
+      kind: 'source-version',
+      sourceVersionId: ids.datasetVersion,
+    }])))
+      .toBe('missing-reference')
+    expect(await reason(replaceInputs(ids.synthesisNode, [{
+      kind: 'source-version',
+      sourceVersionId: uuid('446655449996'),
+    }])))
+      .toBe('missing-reference')
+  })
+
   it('rejects identity, question, grant, and plan budget expansion', async () => {
     const plan = mixedPlan()
     expect(await reason({ ...plan, id: uuid('446655449997') }))
@@ -386,27 +522,14 @@ describe('deterministic research-plan validation', () => {
         }],
       },
     })).toBe('invalid-budget')
-    expect(await reason({
-      ...plan,
-      nodes: [
-        ...plan.nodes,
-        {
-          id: ids.extraNodeOne,
-          kind: 'document-retrieval',
-          goal: 'Retrieve more policy evidence.',
-          dependencies: [],
-          inputRefs: [{
-            kind: 'source-version',
-            sourceVersionId: ids.documentVersion,
-          }],
-          evidenceRefs: [ids.documentEvidence],
-        },
-      ],
-      budget: {
-        ...plan.budget,
-        maximumSteps: 4,
+    const lowerStepCeiling = Schema.decodeUnknownSync(ResearchPlanningInput)({
+      ...planningInput(),
+      budgetCeiling: {
+        ...budgetCeiling,
+        maximumSteps: 2,
       },
-    })).toBe('invalid-budget')
+    })
+    expect(await reason(plan, lowerStepCeiling)).toBe('invalid-budget')
     expect(await reason({
       ...plan,
       budget: {

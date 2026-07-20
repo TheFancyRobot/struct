@@ -1,6 +1,7 @@
 import {
   decodeResearchPlan,
   ProjectId,
+  QuestionClassification,
   ResearchBudget,
   ResearchContractValidationError,
   ResearchPlanId,
@@ -26,6 +27,7 @@ export const ResearchPlanningInput = Schema.Struct({
   workspaceId: WorkspaceId,
   projectId: ProjectId,
   question: ResearchQuestion,
+  classification: QuestionClassification,
   sourceScopes: Schema.Array(ResearchSourceScope).pipe(
     Schema.minItems(1),
     Schema.maxItems(256),
@@ -52,12 +54,13 @@ function failure(
   })
 }
 
-function sourceScopeKey(
-  scope: Domain.ResearchPlan['sourceScopes'][number],
+function datasetScopeKey(
+  scope: Extract<
+    Domain.ResearchPlan['sourceScopes'][number],
+    { readonly kind: 'dataset' }
+  >,
 ): string {
-  return scope.kind === 'document'
-    ? `document:${scope.sourceVersionId}`
-    : `dataset:${scope.datasetId}:${scope.datasetSnapshotId}:${[...scope.sourceVersionIds].sort().join(',')}`
+  return `${scope.datasetId}:${scope.datasetSnapshotId}`
 }
 
 function allowedSourceReferences(
@@ -130,17 +133,72 @@ function validateScope(
   input: ResearchPlanningInput,
   plan: Domain.ResearchPlan,
 ): ResearchContractValidationError | undefined {
-  const allowedScopes = new Set(input.sourceScopes.map(sourceScopeKey))
-  if (plan.sourceScopes.some((scope) => !allowedScopes.has(sourceScopeKey(scope)))) {
-    return failure(
-      'missing-reference',
-      'sourceScopes',
-      'A proposed plan must not widen its authorized source scope',
-    )
+  const allowedDocuments = new Set(
+    input.sourceScopes.flatMap((scope) =>
+      scope.kind === 'document' ? [scope.sourceVersionId] : []),
+  )
+  const allowedDatasets = new Map<string, Set<string>>()
+  for (const scope of input.sourceScopes) {
+    if (scope.kind !== 'dataset') continue
+    const key = datasetScopeKey(scope)
+    const sourceVersions = allowedDatasets.get(key) ?? new Set<string>()
+    for (const sourceVersionId of scope.sourceVersionIds) {
+      sourceVersions.add(sourceVersionId)
+    }
+    allowedDatasets.set(key, sourceVersions)
+  }
+  for (const scope of plan.sourceScopes) {
+    const authorized = scope.kind === 'document'
+      ? allowedDocuments.has(scope.sourceVersionId)
+      : (() => {
+          const sourceVersions = allowedDatasets.get(datasetScopeKey(scope))
+          return sourceVersions !== undefined
+            && scope.sourceVersionIds.every((sourceVersionId) =>
+              sourceVersions.has(sourceVersionId))
+        })()
+    if (!authorized) {
+      return failure(
+        'missing-reference',
+        'sourceScopes',
+        'A proposed plan must not widen its authorized source scope',
+      )
+    }
   }
 
   const allowed = allowedSourceReferences(plan.sourceScopes)
   for (const node of plan.nodes) {
+    const directInputs = node.inputRefs.filter(
+      (ref) => ref.kind !== 'node-output',
+    )
+    if (node.kind === 'document-retrieval') {
+      if (
+        directInputs.length === 0
+        || directInputs.some((ref) =>
+          ref.kind !== 'source-version'
+          || !allowed.documentSourceVersions.has(ref.sourceVersionId))
+      ) {
+        return failure(
+          'missing-reference',
+          `nodes.${node.id}.inputRefs`,
+          'A document-retrieval node requires authorized document source-version inputs',
+        )
+      }
+    } else if (node.kind === 'dataset-query') {
+      if (
+        directInputs.length === 0
+        || directInputs.some((ref) =>
+          ref.kind !== 'dataset-snapshot'
+          || !allowed.datasetSnapshots.has(
+            `${ref.datasetId}:${ref.datasetSnapshotId}`,
+          ))
+      ) {
+        return failure(
+          'missing-reference',
+          `nodes.${node.id}.inputRefs`,
+          'A dataset-query node requires authorized dataset-snapshot inputs',
+        )
+      }
+    }
     for (const ref of node.inputRefs) {
       const authorized = ref.kind === 'source-version'
         ? (
@@ -177,6 +235,53 @@ function validateScope(
         'An evidence requirement must remain inside the proposed source scope',
       )
     }
+  }
+  return undefined
+}
+
+function validateClassification(
+  input: ResearchPlanningInput,
+  plan: Domain.ResearchPlan,
+): ResearchContractValidationError | undefined {
+  if (!input.classification.requiresExactComputation) return undefined
+
+  const hasAuthorizedDataset = input.sourceScopes.some(
+    (scope) => scope.kind === 'dataset',
+  )
+  const hasProposedDataset = plan.sourceScopes.some(
+    (scope) => scope.kind === 'dataset',
+  )
+  if (!hasAuthorizedDataset || !hasProposedDataset) {
+    return failure(
+      'missing-reference',
+      'sourceScopes',
+      'Exact computation requires an authorized dataset scope in the proposed plan',
+    )
+  }
+  const nodes = new Map(plan.nodes.map((node) => [node.id, node] as const))
+  const reachesDatasetQuery = (
+    node: Domain.ResearchPlanNode,
+    visited: Set<string>,
+  ): boolean =>
+    node.inputRefs.some((ref) => {
+      if (ref.kind !== 'node-output' || visited.has(ref.nodeId)) return false
+      const dependency = nodes.get(ref.nodeId)
+      if (dependency === undefined) return false
+      if (dependency.kind === 'dataset-query') return true
+      visited.add(ref.nodeId)
+      return reachesDatasetQuery(dependency, visited)
+    })
+  const hasDatasetQueryPath = plan.nodes.some(
+    (node) =>
+      node.kind === 'answer-synthesis'
+      && reachesDatasetQuery(node, new Set([node.id])),
+  )
+  if (!hasDatasetQueryPath) {
+    return failure(
+      'unsupported-tool',
+      'nodes',
+      'Exact computation requires validated dataset-query output on a path to answer synthesis',
+    )
   }
   return undefined
 }
@@ -318,6 +423,7 @@ export const validateResearchPlan = Effect.fn('ResearchPlan.validate')(
     for (const error of [
       validateIdentity(input, plan),
       validateScope(input, plan),
+      validateClassification(input, plan),
       validatePolicy(input, plan),
       validateBudget(input, plan),
     ]) {

@@ -54,12 +54,14 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Started STEP-05-02 from its refined execution brief and validation plan.
 - Loaded the required Effect skills; the local Effect source prerequisite is present.
 - Scope is limited to focused tool-free Fred classifier/planner agent configs plus deterministic validation/normalization and tests.
+- PR #28 review remediation: validated and fixed classification-to-plan enforcement, dataset subset authorization, required compatible direct tool inputs, Active Context refresh-date drift, and the masked maximum-steps regression. Root follow-up additionally required dataset-query output to reach answer synthesis, closing the disconnected-node bypass before publication.
 
 ## Findings
 
 - The STEP-05-01 domain decoder already owns malformed schemas, graph identity, missing dependencies/references, cycles, fan-out, and node-count budgets; STEP-05-02 composes policy and caller-owned ceiling checks around it rather than duplicating those contracts.
 - Canonical normalization must include nested dataset-scope and document-evidence source-version sets, not only outer arrays.
 - Document evidence must remain document-scoped; dataset lineage source versions cannot authorize document retrieval or document evidence.
+- Actionable PR #28 findings were confirmed against executable paths and remediated. Generic docstrings, duplicate source-scope schema extraction, and shared validation/normalization scope-key extraction were not defects and were intentionally not implemented; validation and normalization require different dataset key semantics.
 
 ## Context Handoff
 
@@ -92,6 +94,10 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Command: `bun run build`; `bun run docs:lint`; `bun run secrets:scan`; `bun install --frozen-lockfile`
 - Result: passed — all apps built, 42 Markdown files validated, 941 paths scanned with no committed secrets, and lockfile/install unchanged
 <!-- AGENT-END:session-validation-run -->
+- PR #28 remediation focused gate: `bun test packages/research-engine packages/workflows` passed — 55 tests, 172 assertions, 0 failures.
+- PR #28 remediation static gate: `bun run typecheck`; `bun run lint`; `bun run lint:imports` passed — no TypeScript, ESLint, dependency, or package-boundary defects.
+- PR #28 remediation repository gate: `bun run test` passed — 450 tests, 152 environment-gated skips, 0 failures, 1780 assertions.
+- PR #28 remediation release-adjacent gate: `bun run build`; `bun run docs:lint`; `bun run secrets:scan`; `bun install --frozen-lockfile` passed — all apps built, 42 Markdown files validated, 941 repository paths and branch-history blobs scanned with no committed secrets, and 362 installs across 482 packages checked with no lockfile changes.
 
 ## Bugs Encountered
 

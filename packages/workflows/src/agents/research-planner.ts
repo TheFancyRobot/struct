@@ -1,7 +1,6 @@
 // eslint-disable-next-line no-unused-vars -- Type-only namespace is consumed by TypeScript.
 import type * as Fred from '@fancyrobot/fred'
 import {
-  QuestionClassification,
   ResearchPlan,
   ResearchWorkflowError,
 } from '@struct/domain'
@@ -10,10 +9,7 @@ import { Schema } from 'effect'
 
 export const RESEARCH_PLANNER_AGENT_ID = 'struct.research-planner'
 
-export const ResearchPlannerInput = Schema.Struct({
-  ...ResearchPlanningInput.fields,
-  classification: QuestionClassification,
-})
+export const ResearchPlannerInput = ResearchPlanningInput
 export type ResearchPlannerInput =
   Schema.Schema.Type<typeof ResearchPlannerInput>
 

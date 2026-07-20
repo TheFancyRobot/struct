@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-20T02:03:46.800Z",
+  "generatedAt": "2026-07-20T02:23:38.572Z",
   "root": "/Users/dino/dev/struct",
   "files": [
     {
@@ -12265,93 +12265,100 @@
         {
           "name": "ResearchQuestion",
           "kind": "const",
-          "line": 17,
+          "line": 18,
           "exported": true,
-          "endLine": 17
+          "endLine": 18
         },
         {
           "name": "ResearchPlanningInput",
           "kind": "const",
-          "line": 23,
+          "line": 24,
           "exported": true,
-          "endLine": 23
+          "endLine": 24
         },
         {
           "name": "ResearchPlanningInput",
           "kind": "type",
-          "line": 36,
+          "line": 38,
           "exported": true,
-          "endLine": 36
+          "endLine": 38
         },
         {
           "name": "PlanFailureReason",
           "kind": "type",
-          "line": 39,
+          "line": 41,
           "exported": false,
-          "endLine": 39
+          "endLine": 41
         },
         {
           "name": "failure",
           "kind": "function",
-          "line": 42,
+          "line": 44,
           "exported": false,
-          "endLine": 42
+          "endLine": 44
         },
         {
-          "name": "sourceScopeKey",
+          "name": "datasetScopeKey",
           "kind": "function",
-          "line": 55,
+          "line": 57,
           "exported": false,
-          "endLine": 55
+          "endLine": 57
         },
         {
           "name": "allowedSourceReferences",
           "kind": "function",
-          "line": 63,
+          "line": 66,
           "exported": false,
-          "endLine": 63
+          "endLine": 66
         },
         {
           "name": "validateIdentity",
           "kind": "function",
-          "line": 103,
+          "line": 106,
           "exported": false,
-          "endLine": 103
+          "endLine": 106
         },
         {
           "name": "validateScope",
           "kind": "function",
-          "line": 129,
+          "line": 132,
           "exported": false,
-          "endLine": 129
+          "endLine": 132
+        },
+        {
+          "name": "validateClassification",
+          "kind": "function",
+          "line": 242,
+          "exported": false,
+          "endLine": 242
         },
         {
           "name": "validatePolicy",
           "kind": "function",
-          "line": 184,
+          "line": 289,
           "exported": false,
-          "endLine": 184
+          "endLine": 289
         },
         {
           "name": "budgetKeys",
           "kind": "const",
-          "line": 259,
+          "line": 364,
           "exported": false,
-          "endLine": 259
+          "endLine": 364
         },
         {
           "name": "validateBudget",
           "kind": "function",
-          "line": 270,
+          "line": 375,
           "exported": false,
-          "endLine": 270
+          "endLine": 375
         },
         {
           "name": "validateResearchPlan",
           "kind": "const",
-          "line": 315,
+          "line": 420,
           "exported": true,
-          "endLine": 315
+          "endLine": 420
         }
       ],
       "imports": [
@@ -12374,9 +12381,9 @@
         }
       ],
       "exports": [],
-      "hash": "fb106c29c2704cfc0f2fd93c056a5ca311b9544fb0702145c087b09a97e5205d",
-      "mtimeMs": 1784512961847.5288,
-      "size": 9781,
+      "hash": "3279086a518229dbb947e10dd2f61127a7567d317ffbd6c52598ba6b1952ecad",
+      "mtimeMs": 1784514040726.0771,
+      "size": 13268,
       "generated": false,
       "vendor": false,
       "parser": "regex"
@@ -13735,37 +13742,37 @@
         {
           "name": "RESEARCH_PLANNER_AGENT_ID",
           "kind": "const",
-          "line": 11,
+          "line": 10,
           "exported": true,
-          "endLine": 11
+          "endLine": 10
         },
         {
           "name": "ResearchPlannerInput",
           "kind": "const",
+          "line": 12,
+          "exported": true,
+          "endLine": 12
+        },
+        {
+          "name": "ResearchPlannerInput",
+          "kind": "type",
           "line": 13,
           "exported": true,
           "endLine": 13
         },
         {
-          "name": "ResearchPlannerInput",
-          "kind": "type",
-          "line": 17,
-          "exported": true,
-          "endLine": 17
-        },
-        {
           "name": "researchPlannerAgent",
           "kind": "const",
-          "line": 20,
+          "line": 16,
           "exported": true,
-          "endLine": 20
+          "endLine": 16
         },
         {
           "name": "researchPlannerProviderFailure",
           "kind": "function",
-          "line": 39,
+          "line": 35,
           "exported": true,
-          "endLine": 39,
+          "endLine": 35,
           "doc": "Keeps provider failures typed at the planner boundary without retaining\nprovider payloads, credentials, or unbounded diagnostic data."
         }
       ],
@@ -13788,9 +13795,9 @@
         }
       ],
       "exports": [],
-      "hash": "6fe14f8601f18cfaf3dd0e5f1ef01b433b4c78a9e551b5c06c22bd95cc8b535b",
-      "mtimeMs": 1784512626436.389,
-      "size": 1662,
+      "hash": "086803cb7c7290fa8b96dfcc48be37a1d2aeda949655a3b5762315daec91b071",
+      "mtimeMs": 1784514186939.2615,
+      "size": 1562,
       "generated": false,
       "vendor": false,
       "parser": "regex"
