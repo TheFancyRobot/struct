@@ -10,7 +10,7 @@ import { migrations } from './manifest'
  */
 function createFakeSqlExecutor(): SqlExecutorWithTransactions & { queries: string[] } {
   const queries: string[] = []
-  const appliedMigrations = new Set<string>()
+  const appliedMigrations = new Map<string, string>()
 
   const executor: SqlExecutorWithTransactions & { queries: string[] } = {
     queries,
@@ -21,12 +21,12 @@ function createFakeSqlExecutor(): SqlExecutorWithTransactions & { queries: strin
       if (query.includes('CREATE TABLE IF NOT EXISTS _migrations')) {
         return []
       }
-      if (query.includes('SELECT name FROM _migrations')) {
-        return Array.from(appliedMigrations).map((name) => ({ name }))
+      if (query.includes('SELECT name, checksum FROM _migrations')) {
+        return Array.from(appliedMigrations, ([name, checksum]) => ({ name, checksum }))
       }
       if (query.startsWith('INSERT INTO _migrations')) {
-        const match = query.match(/'([^']+)'/)
-        if (match) appliedMigrations.add(match[1])
+        const matches = [...query.matchAll(/'([^']+)'/g)]
+        if (matches[0]?.[1] && matches[1]?.[1]) appliedMigrations.set(matches[0][1], matches[1][1])
         return []
       }
       if (query.startsWith('DELETE FROM _migrations WHERE name')) {
@@ -132,10 +132,23 @@ describe('Migration Runner', () => {
       const migrationSqlQueries = fakeSql.queries.filter(
         (q) =>
           !q.includes('CREATE TABLE IF NOT EXISTS _migrations') &&
-          !q.includes('SELECT name FROM _migrations') &&
+          !q.includes('SELECT name, checksum FROM _migrations') &&
           !q.startsWith('INSERT INTO _migrations'),
       )
       expect(migrationSqlQueries).toHaveLength(0)
+    })
+
+    it('rejects an applied migration whose SQL checksum changed', async () => {
+      const mismatched: SqlExecutorWithTransactions = {
+        unsafe: async (query) => query.includes('SELECT name, checksum')
+          ? [{ name: migrations[0]?.name, checksum: `sha256:${'0'.repeat(64)}` }]
+          : [],
+        begin: async (fn) => fn(mismatched),
+      }
+
+      await expect(Effect.runPromise(runMigrationsUp(mismatched))).rejects.toThrow(
+        `Migration checksum mismatch: ${migrations[0]?.name}`,
+      )
     })
   })
 
@@ -166,7 +179,7 @@ describe('Migration Runner', () => {
 
       // Should only have the tracking table creation and select query
       const migrationQueries = fakeSql.queries.filter(
-        (q) => !q.includes('CREATE TABLE IF NOT EXISTS _migrations') && !q.includes('SELECT name FROM _migrations'),
+        (q) => !q.includes('CREATE TABLE IF NOT EXISTS _migrations') && !q.includes('SELECT name, checksum FROM _migrations'),
       )
       expect(migrationQueries).toHaveLength(0)
     })

@@ -20,7 +20,7 @@ selected production topology.
 
 | Service | Owner (lifecycle/config) | Port / socket | Volume / root | Health check | Startup order | Shutdown | Reset behavior |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| PostgreSQL 16 + pgvector | `apps/api` (migrations/schema) | `5432` (host→container) | `./.local/pgdata` (gitignored, persistent) | `pg_isready -h localhost -p 5432 -U struct` or `SELECT 1` | 1 (first) | stop container / `pg_ctl stop` | drop volume, then `migrations:up` |
+| PostgreSQL 16 + pgvector | `apps/api` (migrations/schema) | `5432` (host→container) | `./.local/pgdata` (gitignored bind mount) | `pg_isready -h localhost -p 5432 -U struct` and operator `SELECT 1` | 1 (first) | stop container / `pg_ctl stop` | guarded database drop/recreate, then `migrations:up` |
 | Artifact storage (dev FS adapter) | `packages/source-storage` adapter; written by `apps/worker`, read by `apps/api` | none (filesystem path) | `./.local/artifacts` (gitignored, persistent) | directory exists and is writable | 2 (after PG, before worker) | no process to stop | delete `./.local/artifacts` |
 | DuckDB data-plane sidecar | `packages/data-engine` owns the typed client/protocol; Compose owns service lifecycle | sidecar is internal/no-egress; fixed-target gateway publishes authenticated `127.0.0.1:4300` and has no mounts | `./.local/artifacts` read-only and the `data-engine-scratch` local Docker volume read/write | authenticated `GET /healthz`; host Bun-client materialization/query integration probe | after artifact storage, before worker | stop/restart sidecar and gateway; remove unpromoted partials | `docker compose down -v` removes scratch |
 | `apps/worker` | itself | no inbound HTTP; optional metrics on `3002`; authenticated data-engine access through the loopback gateway | reads `./.local/artifacts` | `GET /healthz` on metrics port (optional) or process liveness | 3 (after PG + storage dirs) | `SIGTERM`; finish in-flight, checkpoint, exit | stop process |
@@ -42,9 +42,9 @@ Ownership rules captured by the table:
 **Startup order:** PostgreSQL → artifact directory + data-engine scratch volume →
 DuckDB sidecar → `apps/worker` → `apps/api` → `apps/web`.
 
-Run `bun run local:prepare` before the first `docker compose up`. The command
-creates and verifies the host-user-writable artifact root; Compose refuses to
-silently create it as a root-owned bind source.
+`bun run ops stack:up` prepares and verifies the host-user-writable PostgreSQL
+and artifact roots, validates the Compose model, waits for all container health
+checks, and probes PostgreSQL plus the authenticated data-engine gateway.
 
 **Shutdown order:** reverse. Stop the sidecar after the worker and before
 PostgreSQL. The worker must finish or checkpoint
@@ -53,17 +53,19 @@ in-flight jobs before exit; the API must drain SSE streams.
 **Reset (clean local state):**
 
 ```bash
-# local-only reset commands
-bun run dev:stop              # stop web/api/worker
-docker compose down -v        # stop and remove PG container + volume (or stop local PG)
-rm -rf ./.local               # remove host-visible pgdata and artifacts
-bun run local:prepare         # create the artifact root as the host user
-docker compose up -d --wait   # start PostgreSQL, data engine, and loopback gateway
-bun run migrations:up         # apps/api rebuilds schema + pgvector extension
-bun run dev                   # start worker, api, web
+# local-only reset commands; approval must equal DATABASE_URL's database
+bun run dev:stop
+bun run ops stack:up
+STRUCT_ALLOW_DESTRUCTIVE_RESET=struct bun run ops database:reset
+bun run dev
 ```
 
-Reset is a destructive local-only operation. It must never be wired to a production path.
+Reset is an explicit greenfield drop/recreate operation. It is limited to a
+loopback `struct*` PostgreSQL database and fails unless the approval value
+exactly matches the target. It does not delete the `./.local/pgdata` bind mount;
+`docker compose down -v` removes only Compose-managed scratch volumes. See the
+[deployment and recovery runbook](./operations/deployment-recovery.md) for
+backup, restore, restart, and rollback procedures.
 
 For a built web process, run `bun run --filter @struct/web build` followed by
 `bun run --filter @struct/web start`. The Bun server serves the generated
@@ -167,56 +169,9 @@ Without Docker, deterministic DuckDB materialization is unavailable:
 - **Performance numbers are machine-specific.** Re-run `bun run src/benchmarks/run.ts` on the target host for that host's evidence (STEP-00-03). Do not cite spike timings as universal claims.
 - **Full evaluation requires the ~25,000-file corpus.** Corpus generation and the quality gates are owned by STEP-00-06 / Phase 04; a local dev box without the corpus cannot run the pre-release evaluation gate.
 - **Model-dependent paths require provider API keys.** Any research/ingestion path that calls a model needs `FRED_*` provider keys; absence is a reproduction blocker, not a bug.
-- **Irreversible migrations need an ADR.** A local rollback that hits an irreversible migration cannot proceed without the matching decision record (see [`architecture.md` §6.5](./architecture.md)).
-
-### Source text reindexing after upgrade
-
-Migration `0003_research_text_index` does not assume an empty installation. It
-creates one `source_text_reindex_jobs` row for every existing immutable
-`SourceVersion`, and a trigger creates the same durable state for future
-versions. The worker reads the stored manifest and normalized artifact, verifies
-the normalized bytes against `content_hash`, indexes in the recorded workspace
-and project scope, and atomically marks the row `completed`.
-
-Check upgrade progress and failures with:
-
-```sql
-SELECT status, last_error_code, count(*)
-FROM source_text_reindex_jobs
-GROUP BY status, last_error_code
-ORDER BY status, last_error_code;
-```
-
-Migration `0004_event_journal_commit_order` replaces the `BIGSERIAL` column
-default with a `BEFORE INSERT` allocator. The allocator takes a
-transaction-scoped PostgreSQL advisory lock before calling the owned sequence,
-so no higher event cursor can commit and become a reconnect checkpoint while a
-lower cursor transaction is still open. The trigger intentionally overrides
-caller-supplied cursors, applies to every insert path, and permits gaps when a
-transaction rolls back.
-
-`artifact-unavailable` is an explicit terminal/retry state, not a silently empty
-index. It means the deployment's `ARTIFACT_STORAGE_ROOT` does not contain the
-content-addressed objects referenced by the source-version manifest. Restore or
-mount the original artifact store first, then requeue only the affected rows:
-
-```sql
-UPDATE source_text_reindex_jobs
-SET status = 'pending', last_error_code = NULL, updated_at = NOW()
-WHERE status = 'failed'
-  AND last_error_code = 'artifact-unavailable'
-  AND attempts < max_attempts;
-```
-
-Do not requeue hash mismatches until the immutable artifact/content-hash
-inconsistency has been investigated, and never reset `attempts`: it is the
-durable retry/lease-fencing history. If the attempt budget is exhausted, use an
-explicit audited operator decision before increasing `max_attempts`.
-
-Retrieval readiness follows the tenant-scoped immutable
-`source_text_index` row, not the background lease status. Indexed content is
-searchable while its reindex job is `pending` or `in-progress`; a missing index
-row fails closed instead of being reported as ordinary zero-result evidence.
+- **Schema development is greenfield.** Breaking changes use guarded
+  drop/recreate. There is no legacy database, compatibility layer, upgrade
+  reindex procedure, or data-preservation script to operate.
 
 ## 5. DuckDB local boundary
 

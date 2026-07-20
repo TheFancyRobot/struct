@@ -10,6 +10,7 @@ services:
       POSTGRES_DB: struct
     volumes:
       - ./.local/pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h localhost -p 5432 -U struct"]
       interval: 5s
@@ -59,6 +60,8 @@ services:
     image: struct-data-engine:local
     container_name: struct-data-engine-gateway
     command: ["node", "gateway.mjs"]
+    environment:
+      DATA_ENGINE_TOKEN: "${DATA_ENGINE_TOKEN:-struct-local-data-engine-token}"
     depends_on:
       data-engine:
         condition: service_healthy
@@ -76,6 +79,17 @@ services:
     mem_limit: 64m
     cpus: 0.25
     restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4300/healthz',{headers:{authorization:'Bearer '+process.env.DATA_ENGINE_TOKEN}}).then(r=>process.exit(r.ok?0:1),()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 networks:
   data-engine:

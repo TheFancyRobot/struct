@@ -54,7 +54,9 @@ docker compose up -d --wait    # PostgreSQL, data engine, and loopback gateway
 bun run dev                     # starts web (3000), api (3001), worker (3002) in parallel
 ```
 
-> Migrations (`bun run migrations:up` / `bun run migrations:down`) are implemented and executed only through `apps/api` as the sole migration executor. The healthz endpoint works without a database connection.
+> Schema creation runs only through `apps/api`. Greenfield reset is guarded by
+> the root operations command; see the deployment recovery runbook. The healthz
+> endpoint works without a database connection.
 
 Docker-unavailable fallback, platform notes, and reset steps are in [docs/local-development.md](./docs/local-development.md).
 
@@ -69,7 +71,7 @@ bun run build       # build all apps (web Vite, api/worker tsc)
 bun run test:integration   # PostgreSQL-backed integration tests
 bun run test:e2e           # Bun-native web navigation test
 bun run migrations:up      # apply implemented PostgreSQL/pgvector migrations through apps/api
-bun run migrations:down    # roll back one implemented migration through apps/api
+bun run ops database:reset # guarded greenfield drop/recreate + current schema
 bun run corpus:smoke        # deterministic Phase 02 retrieval/provenance/injection gate
 bun run corpus:generate --profile full --out /absolute/path/corpus
 bun run corpus:compare-hashes /path/a/manifest.json /path/b/manifest.json

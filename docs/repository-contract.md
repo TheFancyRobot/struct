@@ -21,8 +21,11 @@ All commands run from the repository root via the Bun workspace scripts that STE
 | `bun run test:integration` | Integration tests (apps/api, apps/worker, persistence, data-engine) | root scripts | Phase 01+ |
 | `bun run test:e2e` | Browser/end-to-end tests for visible UI states | root scripts | Phase 01+ |
 | `bun run migrations:up` | Apply pending migrations (sole executor: `apps/api`) | `apps/api` | STEP-01-01 |
-| `bun run migrations:down` | Roll back exactly one migration (sole executor: `apps/api`) | `apps/api` | STEP-01-01 |
 | `bun run migrations:create` | Scaffold a new timestamped migration in `packages/persistence` | `packages/persistence` | Phase 02+ |
+| `bun run ops stack:up` | Validate and start Compose dependencies through authenticated readiness | root operations | STEP-09-02 |
+| `bun run ops database:reset` | Guarded greenfield database drop/recreate and migration | root operations + `apps/api` | STEP-09-02 |
+| `bun run ops:recovery-proof` | Prove isolated backup/restore, integrity, immutability, and restart recovery | root operations | STEP-09-02 |
+| `bun run ops application:verify` | Fail closed unless web, API, and worker are ready after deployment/rollback | root operations | STEP-09-02 |
 | `bun run corpus:smoke` | Run a small synthetic subset of the evaluation corpus | `packages/evaluation` | Phase 04 |
 | `bun run corpus:generate` | Generate a deterministic smoke or full 25,000-record corpus | `packages/evaluation` | STEP-04-05 |
 | `bun run corpus:compare-hashes` | Verify and compare two generated corpus manifests and all on-disk files | `packages/evaluation` | STEP-04-05 |
@@ -52,7 +55,7 @@ Three gate tiers. Each check names its owner. Gate-tier *thresholds* (pass/fail 
 | `bun run build` | root | all apps + packages build |
 | `bun run secrets:scan` | CI | reject committed secrets / `.env` leakage |
 | `bun run docs:lint` | docs | link-check canonical docs |
-| migration round-trip | `apps/api` + `packages/persistence` | `migrations:up && migrations:down && migrations:up` on ephemeral PG; idempotent + clean |
+| greenfield schema recreation | `apps/api` + root operations | guarded drop/recreate + `migrations:up` on isolated PG; deterministic and clean |
 | executor-uniqueness check | CI | migration-runner imports live only in `apps/api` |
 | release-lockfile check | CI | release lockfile resolves to published Fred pins, not a `file:` link (DEC-0001) |
 
@@ -75,7 +78,7 @@ Three gate tiers. Each check names its owner. Gate-tier *thresholds* (pass/fail 
 | `bun run corpus:eval` | `packages/evaluation` | full ~25,000-file corpus; exactness, semantic coverage, provenance, injection resistance, recovery (DEC-0011) |
 | security review | STEP-00-05 owner | threat-model and trust-boundary verification matrix sign-off |
 | `bun run bench` | owning package | performance benchmarks on the release hardware; results recorded with machine metadata |
-| migration forward + rollback on production-like | `apps/api` | reversible set verified; irreversible steps have ADRs |
+| deployment recovery on production-like | root operations + `apps/api` | backup/restore and known-good app rollback verified without cross-version compatibility |
 | release notes + docs | docs | architecture, roadmap, implementation-plan, and ADRs consistent with the tag |
 | release lockfile pinned | CI | published Fred pins only; no dev-only local link |
 

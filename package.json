@@ -12,6 +12,8 @@
     "dev": "bun run local:prepare && bun run --parallel --filter './apps/*' dev",
     "dev:stop": "lsof -t -i:3000 -i:3001 -i:3002 | xargs kill 2>/dev/null; docker compose down",
     "local:prepare": "bun run scripts/prepare-local-storage.ts",
+    "ops": "bun run scripts/production-operations.ts",
+    "ops:recovery-proof": "bun run scripts/recovery-proof.ts",
     "build": "bun run --filter @struct/web build && bun run --filter @struct/api build && bun run --filter @struct/worker build",
     "typecheck": "bun --bun tsc --noEmit --project tsconfig.base.json && bun --bun tsc --noEmit --project apps/web/tsconfig.json && bun --bun tsc --noEmit --project apps/api/tsconfig.json && bun --bun tsc --noEmit --project apps/worker/tsconfig.json && bun --bun tsc --noEmit --project packages/domain/tsconfig.json && bun --bun tsc --noEmit --project packages/persistence/tsconfig.json && bun --bun tsc --noEmit --project packages/source-storage/tsconfig.json && bun --bun tsc --noEmit --project packages/document-processing/tsconfig.json && bun --bun tsc --noEmit --project packages/ingestion/tsconfig.json && bun --bun tsc --noEmit --project packages/retrieval/tsconfig.json && bun --bun tsc --noEmit --project packages/research-engine/tsconfig.json && bun --bun tsc --noEmit --project packages/workflows/tsconfig.json && bun --bun tsc --noEmit --project packages/observability/tsconfig.json && bun --bun tsc --noEmit --project packages/evaluation/tsconfig.json",
     "lint": "bun --bun eslint .",
@@ -44,6 +46,7 @@
     "@types/bun": "^1.3.0",
     "@types/node": "24.0.0",
     "dependency-cruiser": "18.1.0",
+    "postgres": "^3.4.9",
     "eslint": "9.39.2",
     "typescript": "7.0.2"
   }

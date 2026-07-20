@@ -3,14 +3,16 @@ import { constants } from 'node:fs'
 import { resolve } from 'node:path'
 
 const repositoryRoot = resolve(import.meta.dir, '..')
-const artifactRoot = resolve(
-  repositoryRoot,
-  process.env.ARTIFACT_STORAGE_ROOT ?? '.local/artifacts',
-)
+const roots = [
+  resolve(repositoryRoot, process.env.ARTIFACT_STORAGE_ROOT ?? '.local/artifacts'),
+  resolve(repositoryRoot, '.local/pgdata'),
+] as const
 
-await mkdir(artifactRoot, { recursive: true })
-const metadata = await lstat(artifactRoot)
-if (!metadata.isDirectory() || metadata.isSymbolicLink()) {
-  throw new Error('Local artifact storage must be a real directory')
+for (const root of roots) {
+  await mkdir(root, { recursive: true })
+  const metadata = await lstat(root)
+  if (!metadata.isDirectory() || metadata.isSymbolicLink()) {
+    throw new Error(`Local storage must be a real directory: ${root}`)
+  }
+  await access(root, constants.R_OK | constants.W_OK | constants.X_OK)
 }
-await access(artifactRoot, constants.R_OK | constants.W_OK | constants.X_OK)
