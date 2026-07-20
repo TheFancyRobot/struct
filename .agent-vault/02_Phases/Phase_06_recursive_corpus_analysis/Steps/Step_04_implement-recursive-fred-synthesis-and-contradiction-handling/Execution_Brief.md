@@ -50,3 +50,13 @@
 
 - Step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_04_implement-recursive-fred-synthesis-and-contradiction-handling|STEP-06-04 Implement Recursive Fred Synthesis and Contradiction Handling]]
 - Phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+
+## Refined Execution Contract
+
+- Target-rooted reading: this brief and `Validation_Plan.md`; Outcomes for STEP-06-01 through STEP-06-03; Phase 06; `apps/worker/src/jobs/research-workflow.ts`; Phase 05 execution policy/recovery notes; Agent Workflow; DEC-0007 and DEC-0010.
+- Compose focused Fred batch-judgment, sufficiency/contradiction, and hierarchical synthesis nodes over bounded STEP-06-03 artifacts. Keep agents tool-free except through registered typed Effect tools; label all artifact content untrusted and persist decisions/results without chain-of-thought.
+- Enforce deterministic recursion/stop transitions, evidence/artifact reuse, coverage thresholds, contradiction retention, and all execution budgets before each node/model call. There must be no model invocation per file and no prompt containing the complete corpus.
+- Persist checkpoint-compatible progress after idempotent domain commits so cancellation, retry, provider failure, worker replacement, and process restart resume from committed nodes without duplicate artifacts/model results.
+- Produce typed complete, partial, insufficient, cancelled, budget-exhausted, and failed outcomes with supporting/conflicting/missing/excluded evidence lineage.
+- Downstream check: preserve Phase 05 retry/replay/cursor semantics and produce the progress tree/partial result contracts needed by STEP-06-05.
+- Explicit non-goals: no deterministic computation inside prompts, broad autonomous agent, hidden contradiction suppression, UI, compatibility work, or full 25,000-file release run.

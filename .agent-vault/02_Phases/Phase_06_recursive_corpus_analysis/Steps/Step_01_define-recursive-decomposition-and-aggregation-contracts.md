@@ -8,14 +8,19 @@ phase: '[[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive 
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-17'
+updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_06_evaluate-planning-execution-replay-and-recovery|STEP-05-06 Evaluate Planning Execution Replay and Recovery]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-20-070758-define-recursive-decomposition-and-aggregation-contracts-phase-06-refinement-worker|SESSION-2026-07-20-070758 phase-06-refinement-worker session for Define Recursive Decomposition and Aggregation Contracts]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-20-070758
+active_session_id: 05_Sessions/2026-07-20-070758-define-recursive-decomposition-and-aggregation-contracts-phase-06-refinement-worker
+context_status: ready
+context_summary: Phase 06 is refined and active; STEP-06-01 is planned, independently executable, and ready to begin on its dedicated branch after a fresh execution session is created.
 ---
 
 # Step 01 - Define Recursive Decomposition and Aggregation Contracts
@@ -48,8 +53,8 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 <!-- AGENT-START:step-agent-managed-snapshot -->
 - Status: planned
 - Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_01_define-recursive-decomposition-and-aggregation-contracts/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_01_define-recursive-decomposition-and-aggregation-contracts/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Last touched: 2026-07-20
+- Next action: Create a fresh STEP-06-01 execution session and dedicated branch, then implement only the refined [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_01_define-recursive-decomposition-and-aggregation-contracts/Execution_Brief|Execution Brief]] against its [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_01_define-recursive-decomposition-and-aggregation-contracts/Validation_Plan|Validation Plan]].
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -59,7 +64,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-20 - [[05_Sessions/2026-07-20-070758-define-recursive-decomposition-and-aggregation-contracts-phase-06-refinement-worker|SESSION-2026-07-20-070758 phase-06-refinement-worker session for Define Recursive Decomposition and Aggregation Contracts]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

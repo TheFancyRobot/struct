@@ -50,3 +50,13 @@
 
 - Step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_06_evaluate-25000-file-recursive-analysis-and-recovery|STEP-06-06 Evaluate 25000-File Recursive Analysis and Recovery]]
 - Phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+
+## Refined Execution Contract
+
+- Target-rooted reading: this brief and `Validation_Plan.md`; Outcomes for STEP-06-01 through STEP-06-05; Phase 06; `packages/evaluation/src/corpus.ts`; existing corpus scripts/results; DEC-0011; then only implementation files implicated by a confirmed evaluation defect.
+- Extend the deterministic evaluation harness to generate and verify exactly 25,000 files from the committed seed/specification, compare manifest/content/ground-truth hashes, run recursive analysis through production contracts, and emit a versioned machine-readable plus human-readable report.
+- Gate deterministic exactness, semantic coverage, supporting/conflicting/missing/excluded lineage, prompt-injection resistance, partition/artifact identity, budget compliance, no per-file model-call path, partial-result honesty, and documented time/token/cost/byte/artifact bounds.
+- Exercise real restart boundaries for scheduler, extraction, artifact commit, Fred aggregation, SSE replay, cancellation, provider/model failures, storage failure, and DuckDB sidecar restart; prove committed work is reused and no duplicate domain effects occur.
+- Make the release-facing evaluation command fail closed on stale/tampered artifacts, changed generator/spec/ground truth, threshold regression, or missing live evidence. Preserve reviewable evidence without committing the generated 25,000-file corpus.
+- Downstream check: rerun all phase-specific and repository gates; any confirmed defect discovered here is fixed and regression-covered before Phase 06 can close.
+- Explicit non-goals: no unrelated feature expansion, benchmark theater, private corpus dependency, compatibility/data-migration work, or v1.0 release action.

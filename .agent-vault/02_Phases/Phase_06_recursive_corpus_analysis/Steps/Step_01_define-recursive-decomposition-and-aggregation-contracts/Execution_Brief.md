@@ -50,3 +50,13 @@
 
 - Step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_01_define-recursive-decomposition-and-aggregation-contracts|STEP-06-01 Define Recursive Decomposition and Aggregation Contracts]]
 - Phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+
+## Refined Execution Contract
+
+- Target-rooted reading: this brief and `Validation_Plan.md`; the parent Phase 06 note; `packages/domain/src/research-plan.ts`, `packages/domain/src/research-execution.ts`, and `packages/domain/src/typed-errors.ts`; then only the linked Domain Model, Agent Workflow, DEC-0007, DEC-0010, and DEC-0011 sections needed to settle a boundary.
+- Add exported Effect Schema contracts and branded identities for recursive request, decomposition node, deterministic partition, batch input/result, evidence artifact reference, coverage, contradiction, aggregation result, sufficiency, and terminal/stop reason. Decode every persistence/network/model boundary and make invalid graphs or limits typed failures.
+- Specify canonical ordering and hashing inputs so identical source versions, plan, contract version, and policy yield stable node, partition, artifact, and aggregation identities. Exclude timestamps, attempts, worker identity, and display text from identity.
+- State invariants for lineage, supporting/conflicting/missing/excluded evidence, partial completeness, deterministic terminal reasons, depth/fan-out/concurrency/time/token/cost/byte/artifact limits, and checkpoint compatibility with Phase 05 execution state.
+- Export the contracts through package entry points and add focused encode/decode, invalid-input, stable-hash/order, and invariant tests.
+- Downstream check: compile existing planning, persistence, worker, API, and evaluation consumers so the new vocabulary does not duplicate or weaken Phase 05 contracts.
+- Explicit non-goals: no scheduler, persistence migration, extraction, Fred workflow, API, UI, compatibility layer, or release action in this step.

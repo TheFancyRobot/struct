@@ -33,3 +33,12 @@
 
 - Step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_03_implement-deterministic-batch-extraction-and-evidence-artifacts|STEP-06-03 Implement Deterministic Batch Extraction and Evidence Artifacts]]
 - Phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+
+## Refined Acceptance and Commands
+
+- Prove deterministic artifact bytes/hashes and exact aggregates across input ordering and process restart; prove changed source/version/query inputs change identity.
+- Verify complete lineage, exclusion/truncation accounting, hostile-content labeling, sandbox/auth enforcement, idempotent commit, cancellation, storage failure cleanup, and reuse without re-extraction.
+- Exercise sidecar restart through the real Compose network and confirm the Bun host never imports a native DuckDB runtime.
+- Run focused source-storage/data-engine/research-engine/persistence tests, `docker compose up -d postgres data-engine data-engine-gateway`, the relevant integration suite, then `bun run typecheck`, `bun run test`, `bun run lint`, `bun run lint:imports`, `bun run build`, and `docker compose config --quiet`.
+- Re-run Phase 04 deterministic SQL/provenance and Phase 05 replay tests affected by artifact/checkpoint changes.
+- Confirm step/context mirrors and `vault_validate target=doctor` are clean.

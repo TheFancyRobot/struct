@@ -50,3 +50,13 @@
 
 - Step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_02_implement-bounded-corpus-partitioning-and-scheduling|STEP-06-02 Implement Bounded Corpus Partitioning and Scheduling]]
 - Phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+
+## Refined Execution Contract
+
+- Target-rooted reading: this brief and `Validation_Plan.md`; STEP-06-01 Outcome and exported contracts; Phase 06; `packages/evaluation/src/corpus.ts`; Phase 05 execution policy/checkpoint files discovered through the code graph; DEC-0007 and DEC-0011.
+- Implement an Effect service that converts an immutable corpus manifest plus typed research/decomposition request into canonically ordered partitions and a bounded execution tree. Partition by declared schema family, normalized path, deterministic size bands, and plan needs without reading whole-file payloads.
+- Enforce depth, fan-out, item/byte, concurrency, time, token, model-cost, and artifact budgets before dispatch. Reject impossible requests and cycles deterministically with the STEP-06-01 typed failures.
+- Persist/reconstruct only the scheduler state needed for stable lease, cancellation, retry, and resume semantics, reusing Phase 05 product journal/checkpoint conventions and idempotent identities.
+- Add deterministic fixtures including reordered manifests, mixed schema families, empty corpora, oversized items, exact boundary limits, cancellation, lease loss, and resume after committed partitions.
+- Downstream check: ensure later extraction receives stable bounded batches, existing research execution still resumes, and corpus generator hashes remain unchanged.
+- Explicit non-goals: no content extraction, evidence synthesis, Fred/model calls, per-file model path, UI, compatibility work, or full 25,000-file acceptance run.

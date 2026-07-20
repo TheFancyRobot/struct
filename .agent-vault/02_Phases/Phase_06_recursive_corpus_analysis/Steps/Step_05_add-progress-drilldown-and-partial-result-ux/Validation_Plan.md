@@ -34,3 +34,12 @@
 
 - Step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_05_add-progress-drilldown-and-partial-result-ux|STEP-06-05 Add Progress Drilldown and Partial Result UX]]
 - Phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+
+## Refined Acceptance and Commands
+
+- Add unit/contract tests for event decoding, committed-event ordering, cursor replay, authorization, cancellation, partial quality derivation, loading/empty/error/retry states, and complete versus partial outcomes.
+- Use Playwright for real user workflows and reconnect/cancel/error paths in light and dark mode at 1440, 1024, and 390 pixel widths. Capture reviewable screenshots at each resolution/theme; assert no horizontal overflow, clipping, overlap, inaccessible controls, console errors, failed network requests, or uncaught page errors.
+- Cover keyboard-only navigation, visible focus, dialogs/disclosures, citation/progress drilldown, theme persistence, reduced motion, loading skeletons, empty states, degraded/partial results, and API/SSE failure recovery.
+- Run focused web/API tests, `bun run test:e2e`, `bun run typecheck`, `bun run test`, `bun run lint`, `bun run lint:imports`, and `bun run build`.
+- Manually inspect every captured screenshot and trace at the three required widths; fix defects and downstream regressions in existing directory/source/research/citation workflows before completion.
+- Confirm step/context mirrors and `vault_validate target=doctor` are clean.

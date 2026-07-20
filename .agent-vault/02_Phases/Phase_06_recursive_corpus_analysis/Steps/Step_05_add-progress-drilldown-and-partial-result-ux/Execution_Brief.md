@@ -50,3 +50,12 @@
 
 - Step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_05_add-progress-drilldown-and-partial-result-ux|STEP-06-05 Add Progress Drilldown and Partial Result UX]]
 - Phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+
+## Refined Execution Contract
+
+- Target-rooted reading: this brief and `Validation_Plan.md`; STEP-06-04 Outcome and its progress/partial contracts; Phase 06; existing API SSE/replay routes; `apps/web/src/components/DirectoryControlPanel.tsx`; DEC-0013 and DEC-0014. Use the SolidJS, frontend-design, and agent-browser skills during implementation, plus the repository Playwright suite for durable coverage.
+- Expose committed run→partition→batch→evidence progress and partial-result quality through typed API/SSE contracts with reconnect cursor semantics, cancellation, authorization, loading/empty/error states, and no optimistic events that precede durable commits.
+- Build a production SolidJS drilldown that shows status, coverage, supporting/conflicting/missing/excluded evidence, retries/failures, timestamps, partial-result caveats, citations, and recovery state. Preserve fine-grained reactivity; do not destructure reactive props or use React patterns.
+- Deliver a cohesive NotebookLM-inspired (not copied) slate/blue theme with deliberate typography and spacing, accessible light/dark modes, responsive navigation/content, keyboard/focus behavior, reduced-motion support, and reusable Tailwind/DaisyUI tokens/components.
+- Downstream check: reconnect/replay must agree with Phase 05 cursor semantics, cancellation must affect worker state, citation navigation remains correct, and visual changes must not regress existing source/directory/research flows.
+- Explicit non-goals: no new backend orchestration semantics, no mock-only production path, no alternate frontend framework/style system, no compatibility layer, and no v1 release.

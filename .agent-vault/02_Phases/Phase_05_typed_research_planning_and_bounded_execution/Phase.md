@@ -4,8 +4,8 @@ template_version: 2
 contract_version: 1
 title: Typed Research Planning and Bounded Execution
 phase_id: PHASE-05
-status: active
-owner: ''
+status: completed
+owner: Codex
 created: '2026-07-17'
 updated: '2026-07-20'
 depends_on:
@@ -95,8 +95,8 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]]
-- Current phase status: active; all implementation and acceptance checks complete, with STEP-05-06 PR review/merge pending
-- Next phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|PHASE-06 Recursive Corpus Analysis]] remains planned until post-merge refinement
+- Current phase status: completed; STEP-05-01 through STEP-05-06 are reviewed and merged through PR #32 (`db6f052`)
+- Next phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|PHASE-06 Recursive Corpus Analysis]] is refined and active
 <!-- AGENT-END:phase-linear-context -->
 
 ## Related Architecture

@@ -51,3 +51,13 @@
 
 - Step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_03_implement-deterministic-batch-extraction-and-evidence-artifacts|STEP-06-03 Implement Deterministic Batch Extraction and Evidence Artifacts]]
 - Phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+
+## Refined Execution Contract
+
+- Target-rooted reading: this brief and `Validation_Plan.md`; STEP-06-01 Outcome; STEP-06-02 Outcome; Phase 06; source-storage artifact contracts; `packages/evaluation/src/corpus.ts`; data-engine query/evidence contracts; DEC-0005, DEC-0006, DEC-0009, and DEC-0011.
+- Implement deterministic batch filtering, field projection, grouping, exact aggregation, and extraction into bounded typed evidence artifacts keyed by the STEP-06-01 identities. Preserve source version, normalized path, record/field locator, schema family, transformation/query identity, counts, exclusions, truncation, and hashes.
+- Store artifacts content-addressably and commit metadata idempotently so completed batches are reused across retry/resume and partial failures do not expose uncommitted artifacts.
+- Keep Bun as the host runtime. Any DuckDB work must traverse the existing authenticated isolated Node 24 LTS `data-engine`/gateway Compose boundary with allowlisted read-only operations and sandboxed roots.
+- Add fixtures for malformed/hostile JSON, schema variation, empty matches, duplicate content, ordering variation, truncation, storage failure, sidecar restart, cancellation, and artifact reuse.
+- Downstream check: confirm scheduler identities round-trip, Fred-facing artifacts are bounded and untrusted-labeled, citation/provenance consumers retain exact locators, and existing Phase 04 query evidence remains valid.
+- Explicit non-goals: no qualitative model judgment, recursive synthesis, UI, new host runtime, raw unrestricted SQL/filesystem access, compatibility layer, or full-corpus release gate.

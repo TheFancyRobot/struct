@@ -35,3 +35,12 @@
 
 - Step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_01_define-recursive-decomposition-and-aggregation-contracts|STEP-06-01 Define Recursive Decomposition and Aggregation Contracts]]
 - Phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+
+## Refined Acceptance and Commands
+
+- Round-trip valid fixtures and reject cycles, duplicate IDs, orphan parents, invalid lineage, impossible coverage totals, unknown stop reasons, and every policy value outside its legal range.
+- Prove hash and ordering stability across input permutations and prove identity changes when source version, plan, contract version, or relevant policy changes.
+- Prove partial aggregation cannot claim complete coverage and contradictions cannot be discarded by construction.
+- Run `bun run --filter @struct/domain test`, `bun run typecheck`, `bun run test`, `bun run lint`, `bun run lint:imports`, and `bun run build`.
+- Inspect downstream compilation and tests for research plan/execution, typed errors, worker workflow, persistence, and evaluation consumers; fix every regression caused by the contract additions before completion.
+- Confirm step/context mirrors, generated context, and `vault_validate target=doctor` are clean.

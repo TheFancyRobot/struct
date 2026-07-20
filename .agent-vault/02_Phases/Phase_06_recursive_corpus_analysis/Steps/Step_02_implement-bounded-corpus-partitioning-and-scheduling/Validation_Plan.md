@@ -37,3 +37,12 @@
 
 - Step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_02_implement-bounded-corpus-partitioning-and-scheduling|STEP-06-02 Implement Bounded Corpus Partitioning and Scheduling]]
 - Phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+
+## Refined Acceptance and Commands
+
+- Prove byte-for-byte identical partition/tree identities for reordered equivalent manifests and distinct identities for relevant source, plan, or policy changes.
+- Prove every configured bound before and during scheduling, deterministic terminal reasons, bounded concurrency, cancellation interruption, lease-loss recovery, and no duplicate committed partition after resume.
+- Prove empty, excluded, unreadable-metadata, oversized, mixed-schema, and exact-limit cases fail closed or produce typed partial state as specified.
+- Run focused domain/research-engine/workflow/persistence tests, then `bun run typecheck`, `bun run test`, `bun run lint`, `bun run lint:imports`, `bun run build`, `bun run corpus:compare-hashes`, and `docker compose config --quiet` when persistence or Compose boundaries are touched.
+- Inspect Phase 05 execution/replay and corpus-generator downstream tests for regressions caused by scheduling changes.
+- Confirm updated step/context mirrors and `vault_validate target=doctor` are clean.

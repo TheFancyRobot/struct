@@ -34,3 +34,12 @@
 
 - Step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_04_implement-recursive-fred-synthesis-and-contradiction-handling|STEP-06-04 Implement Recursive Fred Synthesis and Contradiction Handling]]
 - Phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+
+## Refined Acceptance and Commands
+
+- Prove bounded prompt/artifact sizes, model-call count independent of file count at the leaf level, exact stop conditions, policy checks before calls, and no unregistered tools.
+- Prove contradictions, missing/excluded evidence, coverage, confidence/quality state, and full lineage survive every aggregation level and partial terminal state.
+- Exercise deterministic fake agents plus live recovery where already supported: provider/model typed failures, retry eligibility, cancellation, budget exhaustion, checkpoint resume, worker replacement, and no duplicate committed work.
+- Run focused workflows/research-engine/worker/persistence/evaluation tests, `bun run --cwd apps/worker test:research-replay`, then `bun run typecheck`, `bun run test`, `bun run lint`, `bun run lint:imports`, and `bun run build`.
+- Inspect Phase 05 golden traces/replay and STEP-06-02/03 identity/artifact tests for downstream regressions caused by orchestration changes.
+- Confirm step/context mirrors and `vault_validate target=doctor` are clean.

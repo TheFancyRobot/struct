@@ -38,3 +38,12 @@
 
 - Step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_06_evaluate-25000-file-recursive-analysis-and-recovery|STEP-06-06 Evaluate 25000-File Recursive Analysis and Recovery]]
 - Phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+
+## Refined Acceptance and Commands
+
+- Run `bun run corpus:generate`, `bun run corpus:compare-hashes`, `bun run corpus:smoke`, `bun run corpus:eval`, and `bun run corpus:recovery` against the committed seed/specification and full 25,000-file profile; record wall time, peak resource use, model/tool calls, bytes/artifacts, coverage, exactness, failures, retries, and reuse.
+- Prove a second generation is hash-identical; prove tampered manifest, result, report, artifact, ground truth, or generator version fails before overwriting tracked evidence.
+- Prove injection fixtures cannot alter tools, policy, or citations and that every partial/complete finding retains supporting/conflicting/missing/excluded evidence lineage.
+- Run real process/sidecar restart and cancellation recovery with distinct process identities; verify cursor suffix replay, committed checkpoint reuse, no duplicate effects, and typed terminal failures.
+- Run `docker compose up -d postgres data-engine data-engine-gateway`, relevant integrations, `bun run test:e2e`, `bun run typecheck`, `bun run test`, `bun run lint`, `bun run lint:imports`, `bun run build`, `docker compose config --quiet`, documentation/secrets gates defined by the repository, and inspect required UI screenshots/traces.
+- Confirm all Phase 06 criteria have reproducible evidence, no known defects remain, step/phase/context mirrors are consistent, and `vault_validate target=doctor` is clean. Stop before any v1.0 release action.
