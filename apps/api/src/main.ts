@@ -17,6 +17,7 @@ import {
   DatasetQueryEvidenceRepo,
   DurableArtifactsRepo,
   EntityNotFoundError,
+  ProvenanceGraphRepo,
   ResearchExecutionRepo,
   ResearchProjectionRepo,
   SourceRegistrationRepo,
@@ -39,7 +40,13 @@ import {
   SourceVersionId,
   ValidationError,
 } from '@struct/domain'
-import { LocalArtifactStore } from '@struct/source-storage'
+import {
+  LocalArtifactStore,
+  REPORT_EXPORT_PRODUCER_VERSION,
+  prepareReportExport,
+  publishReportExport,
+  readVerifiedReportExport,
+} from '@struct/source-storage'
 import {
   incrementWalkingSliceMetric,
   logWalkingSlice,
@@ -83,6 +90,7 @@ import {
   reopenDatasetCitation,
 } from './routes/dataset-queries'
 import { durableArtifactRoute } from './routes/durable-artifacts'
+import { reportExportRoute } from './routes/report-export'
 
 interface RegisterRequestBody {
   readonly workspaceId?: unknown
@@ -217,6 +225,10 @@ const server = Effect.gen(function* () {
   )
   const durableArtifactLayer = Layer.provide(
     DurableArtifactsRepo.Default,
+    sqlLayer,
+  )
+  const provenanceGraphLayer = Layer.provide(
+    ProvenanceGraphRepo.Default,
     sqlLayer,
   )
   const effectRuntime = yield* Effect.runtime<never>()
@@ -972,6 +984,172 @@ const server = Effect.gen(function* () {
       if (durableArtifactResponse !== undefined) {
         return durableArtifactResponse
       }
+
+      const reportExportResponse = await Runtime.runPromise(effectRuntime)(
+        reportExportRoute(req, {
+          producerVersion: REPORT_EXPORT_PRODUCER_VERSION,
+          authorize: (credential, workspaceId, projectId) =>
+            Effect.gen(function* () {
+              if (!credentialMatches(apiAuthToken, credential)) {
+                return yield* new DatasetQueryAuthenticationError({
+                  message: 'API bearer credential is invalid',
+                })
+              }
+              const project = yield* ProjectRepo.findById(projectId).pipe(
+                Effect.provide(projectLayer),
+                Effect.mapError(() =>
+                  new DatasetQueryAuthorizationError({
+                    message: 'Report export scope is not authorized',
+                  })),
+              )
+              if (project.workspaceId !== workspaceId) {
+                return yield* new DatasetQueryAuthorizationError({
+                  message: 'Report export scope is not authorized',
+                })
+              }
+            }),
+          findReportRevision: (
+            workspaceId,
+            projectId,
+            reportId,
+            revision,
+          ) => DurableArtifactsRepo.findReportRevision(
+            workspaceId,
+            projectId,
+            reportId,
+            revision,
+          ).pipe(Effect.provide(durableArtifactLayer)),
+          findProvenance: (
+            workspaceId,
+            projectId,
+            reportId,
+            revision,
+          ) => ProvenanceGraphRepo.find(
+            workspaceId,
+            projectId,
+            reportId,
+            revision,
+          ).pipe(Effect.provide(provenanceGraphLayer)),
+          authorizeSources: (report) => Effect.gen(function* () {
+            const versions = yield* Effect.tryPromise({
+              try: () => sql.unsafe(
+                `SELECT version.id, version.artifact_ref
+                 FROM source_versions version
+                 JOIN sources source ON source.id = version.source_id
+                 JOIN projects project ON project.id = source.project_id
+                 WHERE version.id = ANY($1::uuid[])
+                   AND source.project_id = $2
+                   AND project.workspace_id = $3`,
+                [
+                  [...report.sourceVersionIds],
+                  report.projectId,
+                  report.workspaceId,
+                ],
+              ),
+              catch: () => new DatasetQueryAuthorizationError({
+                message: 'Report source authorization could not be checked',
+              }),
+            })
+            if (versions.length !== report.sourceVersionIds.length) {
+              return yield* new DatasetQueryAuthorizationError({
+                message: 'A report source is not visible in this scope',
+              })
+            }
+            yield* Effect.forEach(versions, (version) =>
+              storage.readObject(String(version['artifact_ref']) as
+                `artifact://sha256/${string}`), { concurrency: 4 }).pipe(
+              Effect.mapError(() => new DatasetQueryAuthorizationError({
+                message: 'A report source artifact is no longer available',
+              })),
+            )
+            const datasets = report.claims.flatMap((claim) =>
+              claim.support.kind === 'supported'
+                ? claim.support.evidence.flatMap((evidence) =>
+                    evidence.payload.kind === 'dataset'
+                      ? [evidence.payload.evidence]
+                      : [])
+                : [])
+            for (const evidence of datasets) {
+              const rows = yield* Effect.tryPromise({
+                try: () => sql.unsafe(
+                  `SELECT 1
+                   FROM dataset_citations citation
+                   JOIN query_result_snapshots result
+                     ON result.id = citation.query_result_snapshot_id
+                    AND result.workspace_id = citation.workspace_id
+                    AND result.project_id = citation.project_id
+                   JOIN dataset_snapshots snapshot
+                     ON snapshot.id = citation.dataset_snapshot_id
+                    AND snapshot.dataset_id = citation.dataset_id
+                    AND snapshot.workspace_id = citation.workspace_id
+                    AND snapshot.project_id = citation.project_id
+                   WHERE citation.id = $1
+                     AND citation.workspace_id = $2
+                     AND citation.project_id = $3
+                     AND citation.query_result_snapshot_id = $4
+                     AND citation.dataset_snapshot_id = $5
+                     AND citation.result_hash = $6
+                     AND citation.result_artifact_hash = $7`,
+                  [
+                    evidence.citation.id,
+                    report.workspaceId,
+                    report.projectId,
+                    evidence.citation.queryResultSnapshotId,
+                    evidence.citation.datasetSnapshotId,
+                    evidence.citation.resultHash,
+                    evidence.citation.resultArtifactHash,
+                  ],
+                ),
+                catch: () => new DatasetQueryAuthorizationError({
+                  message: 'Dataset evidence authorization could not be checked',
+                }),
+              })
+              if (rows.length !== 1) {
+                return yield* new DatasetQueryAuthorizationError({
+                  message: 'Dataset evidence is no longer visible',
+                })
+              }
+              yield* storage.readObject(
+                `artifact://sha256/${evidence.citation.resultArtifactHash
+                  .slice('sha256:'.length)}`,
+              ).pipe(
+                Effect.mapError(() => new DatasetQueryAuthorizationError({
+                  message: 'Dataset result artifact is no longer available',
+                })),
+              )
+            }
+            const recursiveArtifacts = report.claims.flatMap((claim) =>
+              claim.support.kind === 'supported'
+                ? claim.support.evidence.flatMap((evidence) =>
+                    evidence.payload.kind === 'recursive'
+                      ? [evidence.payload.reference.artifact.digest]
+                      : [])
+                : [])
+            yield* Effect.forEach(recursiveArtifacts, (digest) =>
+              storage.readObject(
+                `artifact://sha256/${digest.slice('sha256:'.length)}`,
+              ), { concurrency: 4 }).pipe(
+              Effect.mapError(() => new DatasetQueryAuthorizationError({
+                message: 'Recursive evidence artifact is no longer available',
+              })),
+            )
+          }),
+          prepare: (report, provenance) => prepareReportExport({
+            report,
+            provenance,
+            producerVersion: REPORT_EXPORT_PRODUCER_VERSION,
+          }),
+          publish: (report, provenance) => publishReportExport(storage, {
+            report,
+            provenance,
+            producerVersion: REPORT_EXPORT_PRODUCER_VERSION,
+          }).pipe(Effect.map((result) => result.status)),
+          read: (digest) => readVerifiedReportExport(storage, digest).pipe(
+            Effect.map((result) => result.stored),
+          ),
+        }),
+      )
+      if (reportExportResponse !== undefined) return reportExportResponse
 
       if (citationRoute !== null && req.method === 'GET') {
         const identifiers = Effect.try({

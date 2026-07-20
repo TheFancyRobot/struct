@@ -5,17 +5,22 @@ contract_version: 1
 title: Build Export and Share Bundles with Source Snapshots
 step_id: STEP-08-04
 phase: '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]'
-status: planned
-owner: ''
+status: in_review
+owner: export-share-bundles
 created: '2026-07-17'
 updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_03_build-durable-findings-notebooks-and-report-composition|STEP-08-03 Build Durable Findings Notebooks and Report Composition]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-20-184826-build-export-and-share-bundles-with-source-snapshots-export-share-bundles|SESSION-2026-07-20-184826 export-share-bundles session for Build Export and Share Bundles with Source Snapshots]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-20-184826
+active_session_id: SESSION-2026-07-20-184826
+context_status: ready
+context_summary: Implementation and all readiness gates are complete; awaiting root publication and automated review.
 ---
 
 # Step 04 - Build Export and Share Bundles with Source Snapshots
@@ -60,7 +65,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-20 - [[05_Sessions/2026-07-20-184826-build-export-and-share-bundles-with-source-snapshots-export-share-bundles|SESSION-2026-07-20-184826 export-share-bundles session for Build Export and Share Bundles with Source Snapshots]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

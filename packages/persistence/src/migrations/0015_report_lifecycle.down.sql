@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS report_revision_claims;
-DROP TABLE IF EXISTS report_revision_sections;
 DROP TABLE IF EXISTS report_revision_findings;
+DROP TABLE IF EXISTS report_revision_sections;
 DROP TABLE IF EXISTS report_revision_source_versions;
 DROP TRIGGER IF EXISTS report_revision_snapshots_append_only
   ON report_revision_snapshots;

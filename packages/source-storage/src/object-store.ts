@@ -257,6 +257,14 @@ function makeStore(canonicalRoot: string): ArtifactStoreShape {
         try: () => readFile(objectPath),
         catch: (cause) => new StorageReadError({ ref, reason: sanitizeReason(cause), message: 'Artifact could not be read' }),
       })
+      const expectedHash = `sha256:${ref.slice('artifact://sha256/'.length)}`
+      if (hashBytes(bytes) !== expectedHash) {
+        return yield* new StorageReadError({
+          ref,
+          reason: 'content-hash-mismatch',
+          message: 'Artifact bytes do not match their content-addressed ref',
+        })
+      }
       return { bytes: new Uint8Array(bytes), byteLength: bytes.byteLength }
     })
 

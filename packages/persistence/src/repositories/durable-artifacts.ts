@@ -905,6 +905,39 @@ export class DurableArtifactsRepo
           },
         )
 
+        const findReportRevision = Effect.fn(
+          'DurableArtifactsRepo.findReportRevision',
+        )(function* (
+          workspaceId: typeof WorkspaceId.Type,
+          projectId: typeof ProjectId.Type,
+          reportId: typeof ReportId.Type,
+          revision: number,
+        ) {
+          const rows = yield* Effect.tryPromise({
+            try: () => sql.unsafe(
+              `SELECT snapshot
+               FROM report_revision_snapshots
+               WHERE report_id = $1 AND workspace_id = $2
+                 AND project_id = $3 AND revision = $4`,
+              [reportId, workspaceId, projectId, revision],
+            ),
+            catch: () => new DurableArtifactPersistenceError({
+              operation: 'find report revision',
+              message: 'The report revision could not be loaded',
+            }),
+          })
+          if (rows[0] === undefined) {
+            return yield* new DurableArtifactScopeError({
+              entity: 'report',
+              id: reportId,
+              workspaceId,
+              projectId,
+              message: 'The report revision was not found in this scope',
+            })
+          }
+          return yield* decodeReport(rows[0]['snapshot'])
+        })
+
         const findReportRevisionByKey = Effect.fn(
           'DurableArtifactsRepo.findReportRevisionByKey',
         )(function* (
@@ -936,6 +969,7 @@ export class DurableArtifactsRepo
           findFinding,
           saveReport,
           findReport,
+          findReportRevision,
           findReportRevisionByKey,
         }
       }),
