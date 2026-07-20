@@ -5,7 +5,7 @@ contract_version: 1
 title: Evaluate 25000-File Recursive Analysis and Recovery
 step_id: STEP-06-06
 phase: '[[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]'
-status: in-progress
+status: completed
 owner: Codex
 created: '2026-07-17'
 updated: '2026-07-20'
@@ -19,8 +19,8 @@ tags:
   - step
 context_id: SESSION-2026-07-20-113952
 active_session_id: 05_Sessions/2026-07-20-113952-evaluate-25000-file-recursive-analysis-and-recovery-step-06-06-worker
-context_status: ready-for-review
-context_summary: STEP-06-06 deterministic 25,000-file recursive evaluation, scheduler/checkpoint identity recovery, exact minority/contradiction retention, policy-derived bounded-work signals, semantic report verification, and operations evidence are green and ready for root review.
+context_status: completed
+context_summary: 'STEP-06-06 deterministic 25,000-file recursive evaluation, derived recovery and bounded-work evidence, production merge recovery probe, and all verified review remediations passed and merged in PR #39.'
 ---
 
 # Step 06 - Evaluate 25000-File Recursive Analysis and Recovery
@@ -51,10 +51,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_06_evaluate-25000-file-recursive-analysis-and-recovery/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_06_evaluate-25000-file-recursive-analysis-and-recovery/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: completed
+- Current owner: Codex
+- Last touched: 2026-07-20
+- Next action: Refine [[02_Phases/Phase_07_hybrid_cross_source_research/Phase|PHASE-07 Hybrid Cross-Source Research]] before implementation.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
