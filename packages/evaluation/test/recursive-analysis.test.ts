@@ -19,10 +19,10 @@ function rehashReport(
 ): string {
   const { reportSha256: _, ...originalBody } = report
   const body = { ...originalBody, ...bodyChanges }
-  return `${canonicalJson({
+  return canonicalJson({
     ...body,
     reportSha256: sha256(canonicalJson(body)),
-  })}\n`
+  })
 }
 
 const run = () => Effect.runPromise(
@@ -76,6 +76,8 @@ describe('25,000-file recursive analysis evaluation', () => {
     const secondBytes = serializePhase06RecursiveEvaluationReport(second)
 
     expect(secondBytes).toBe(firstBytes)
+    expect(firstBytes.match(/\n*$/)?.[0]).toBe('\n')
+    expect(secondBytes.match(/\n*$/)?.[0]).toBe('\n')
     expect(verifyPhase06RecursiveEvaluationReport(firstBytes)).toEqual(first)
     expect(() =>
       verifyPhase06RecursiveEvaluationReport(
