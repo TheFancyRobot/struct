@@ -18,7 +18,8 @@ Compose PostgreSQL 16/pgvector and authenticated no-egress data-engine services.
 | SSE reconnect/backpressure | 100 events per poll | 330 ms | 2,000 ms |
 | Recursive analysis | 25,000 files | 16,700 ms | 600,000 ms |
 
-The checked report includes hashes of every source evaluation artifact. A
+The checked report includes hashes of every source evaluation artifact and
+every referenced resilience proof. A
 source artifact that is stale, tampered, or no longer passing invalidates this
 gate. Host measurements are reference observations; deterministic correctness,
 capacity, idempotency, and resource ceilings remain the portable gates.
@@ -40,17 +41,13 @@ cleanup failure is reported alongside the primary failure.
 
 ```sh
 bun run v1:performance
-bun test packages/workflows/test/research-run.test.ts \
-  packages/research-engine/test/retry-policy.test.ts \
-  apps/api/src/routes/research-events.test.ts \
-  apps/web/src/hooks/useSSE.test.ts
-DATA_ENGINE_INTEGRATION=1 DATABASE_URL=postgres://struct:struct@127.0.0.1:5432/struct \
-  bun test --timeout 30000 --max-concurrency 1 \
-  apps/worker/test/research-replay.integration.test.ts \
-  apps/worker/src/jobs/reindex-source-text.integration.test.ts \
-  packages/data-engine/test/sidecar.integration.test.ts
-bun run recursive:eval
 ```
+
+This single release command executes the current Phase 02–08 workload
+evaluators, the unit resilience matrix, the real PostgreSQL/data-engine/worker
+fault suite, and the canonical report check. Every child command has a fixed
+wall-clock ceiling and any failure or timeout makes the release gate fail.
+PostgreSQL and the authenticated data-engine Compose services must be healthy.
 
 The canonical report is
 [`packages/evaluation/results/v1-performance-resilience-v1.json`](../../packages/evaluation/results/v1-performance-resilience-v1.json).

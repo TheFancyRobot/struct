@@ -53,6 +53,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-END:session-execution-log -->
 - 2026-07-20 22:31 CDT — Began target-rooted STEP-09-03 execution. Loaded the execution brief, validation plan, Phase 09, DEC-0011, and Effect guidance. Scope is measurement-first reference workloads and deterministic fault coverage; no new infrastructure or Fred replacement timeout controller.
 - Root pre-publication review corrected the completed follow-up/context mirror and strengthened the canonical report so every referenced resilience proof is content-hashed; changing or removing a fault test now invalidates the release gate.
+- Validated the Codex review finding: the original root command checked only versioned evidence. Root replaced it with a live bounded gate that executes Phase 02–08 evaluators, unit fault semantics, real PostgreSQL/data-engine/worker faults, and the canonical report.
 
 ## Findings
 
@@ -96,6 +97,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Repository gates — typecheck, ESLint, import boundaries (230 modules / 650 dependencies), unit (766 pass / 171 skip / 0 fail / 3,074 assertions), build, docs lint, secret scan all passed.
 - Root visually inspected the refreshed 1440×900 dark and 390×844 light responsive captures; both render correctly with the intended slate/blue theme and no visible overflow.
 - Root independent gate: production Playwright 21/21 (374 assertions), recovery cleanup/operations 14/14 (30 assertions), v1 gate 3/3 (12 assertions), real PostgreSQL/sidecar resilience 5/5 (220 assertions), plus typecheck, lint, import boundaries, docs, secrets, vault doctor, diff check, and release of all test ports. Root also verified resilience evidence hashes invalidate the canonical report on proof changes.
+- Review remediation live gate passed all 10 bounded commands. Current observations included structured-query smoke 3,753 ms, 25,000-file evaluation 16,801 ms, real interruption/restart/replacement 5,597 ms, and canonical verification 112 ms; unit regression, typecheck, and ESLint also passed.
 
 ## Bugs Encountered
 
