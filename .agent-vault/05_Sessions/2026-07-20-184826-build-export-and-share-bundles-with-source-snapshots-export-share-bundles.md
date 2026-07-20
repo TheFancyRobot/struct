@@ -122,3 +122,4 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - STEP-08-04 implementation and regression coverage are complete and ready for independent root review.
 - The handoff is clean: all focused, full, integration, build, static-analysis, documentation, security, and dependency-boundary gates pass.
 - No known confirmed defect remains from this work.
+- PR #50 passed the available automated gate with no actionable review feedback and merged into `main` as `690eaa9` on 2026-07-20.

@@ -5,7 +5,7 @@ contract_version: 1
 title: Build Export and Share Bundles with Source Snapshots
 step_id: STEP-08-04
 phase: '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]'
-status: in_review
+status: completed
 owner: export-share-bundles
 created: '2026-07-17'
 updated: '2026-07-20'
@@ -19,8 +19,8 @@ tags:
   - step
 context_id: SESSION-2026-07-20-184826
 active_session_id: SESSION-2026-07-20-184826
-context_status: ready
-context_summary: Implementation and all readiness gates are complete; awaiting root publication and automated review.
+context_status: complete
+context_summary: 'Deterministic verifiable report export bundles merged into main via PR #50 with all gates green.'
 ---
 
 # Step 04 - Build Export and Share Bundles with Source Snapshots
