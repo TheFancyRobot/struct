@@ -37,3 +37,11 @@
 
 - Step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_06_evaluate-report-fidelity-version-drift-and-auditability|STEP-08-06 Evaluate Report Fidelity Version Drift and Auditability]]
 - Phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]
+
+## Refined Zero-Defect Gate — 2026-07-20
+
+- Require 100% exact claim/evidence identity for IDs, versions, locators, SQL/parameters, units, filters, windows, result/artifact hashes, and report revisions; 100% resolvable required citations; 100% authorization and injection containment; and zero silent citation retargets.
+- Every non-valid state must block or permit publication/export exactly as policy specifies, remain visible, and retain an auditable transition/repair history. Restart/replay produces the same semantic result and no duplicate revisions, edges, or bundles.
+- Evaluation report totals are derived from the complete executed case set. Recomputed outer hashes cannot conceal semantic tampering. Canonical serialization/newline behavior is fixed and tested.
+- Run focused evaluation plus API, persistence, storage, research-engine, worker, and Playwright regression suites. Store the tracked result and benchmark/audit docs only after the verifier passes against a clean fixture.
+- Final phase gate: repository typecheck, lint, import/boundary checks, full tests, integration tests, full Playwright responsive/accessibility suite, production build, docs lint, secrets scan, Vault doctor, and independent root review all pass with zero known confirmed defects.

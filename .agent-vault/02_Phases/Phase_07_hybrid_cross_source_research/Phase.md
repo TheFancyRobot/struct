@@ -4,8 +4,8 @@ template_version: 2
 contract_version: 1
 title: Hybrid Cross-Source Research
 phase_id: PHASE-07
-status: planned
-owner: ''
+status: completed
+owner: Codex
 created: '2026-07-17'
 updated: '2026-07-20'
 depends_on:
@@ -62,13 +62,13 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 ## Acceptance Criteria
 
-- [ ] Mixed questions compile to a typed plan whose branches and evidence requirements are visible before or during execution.
-- [ ] Document and dataset branches preserve their separate execution and provenance guarantees while sharing bounded orchestration.
-- [ ] Quantitative claims exactly match validated query results; narrative claims link to source spans; combined claims link to both.
-- [ ] Unit, date, cohort, filter, and version mismatches are normalized, disclosed, or rejected rather than guessed.
-- [ ] Contradictory and insufficient evidence remains visible in the final result.
-- [ ] The primary mixed-source demo runs end to end with replayable progress, cancellation, restart recovery, and navigable citations.
-- [ ] Hybrid-research, provenance, prompt-injection, exactness, semantic-retrieval, cost, and recovery gates pass.
+- [x] Mixed questions compile to a typed plan whose branches and evidence requirements are visible before or during execution.
+- [x] Document and dataset branches preserve their separate execution and provenance guarantees while sharing bounded orchestration.
+- [x] Quantitative claims exactly match validated query results; narrative claims link to source spans; combined claims link to both.
+- [x] Unit, date, cohort, filter, and version mismatches are normalized, disclosed, or rejected rather than guessed.
+- [x] Contradictory and insufficient evidence remains visible in the final result.
+- [x] The primary mixed-source demo runs end to end with replayable progress, cancellation, restart recovery, and navigable citations.
+- [x] Hybrid-research, provenance, prompt-injection, exactness, semantic-retrieval, cost, and recovery gates pass.
 
 ## Delivery Strategy
 
@@ -131,3 +131,10 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - Greenfield policy applies: prefer direct contract changes and drop/recreate for any database schema change; do not add legacy compatibility, migration-preservation scripts, duplicate abstractions, object-storage systems, DuckLake, or unrelated infrastructure.
 - Effect work must follow current repository patterns plus `effect-ts`/`effect-best-practices` with typed errors, named effects, bounded concurrency, cancellation, and trusted-boundary normalization. STEP-07-05 must follow `solidjs`/`frontend-design` and the existing NotebookLM-inspired slate/blue light/dark system, with thorough Playwright responsive/accessibility verification and six inspected screenshots.
 - Every step has an explicit pre-PR self-review, focused tests, typecheck, lint, full suite, security/provenance scan, and clean vault doctor gate. No known confirmed defect may advance.
+
+### Completion Summary — 2026-07-20
+
+- All six steps are complete and the final deterministic hybrid evaluation reports zero known defects.
+- The shipped boundary separates document and dataset execution, normalizes and reconciles typed evidence, guards quantitative synthesis, exposes an explorable SolidJS report, and verifies routing, exactness, provenance, contradiction visibility, resource budgets, recovery, cancellation, and prompt-injection containment.
+- Durable evaluation artifact: `packages/evaluation/results/phase-07-hybrid-research-v1.json`; reproduction: `bun run --filter @struct/evaluation phase-07:eval`.
+- Handoff: Phase 08 is refined against these shipped contracts before durable findings and reports are implemented.

@@ -37,3 +37,11 @@
 
 - Step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_05_add-report-ux-citation-navigation-and-repair|STEP-08-05 Add Report UX Citation Navigation and Repair]]
 - Phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]
+
+## Refined Zero-Defect Gate — 2026-07-20
+
+- Component and Playwright tests cover create/open/edit/save/reload, finding-to-report composition, section reorder, citation opening for every evidence kind, invalid-state filtering, repair choices, revision history, stale-write conflict, publish blocking, export success/failure, and keyboard/back navigation.
+- Responsive Playwright coverage runs at 1440x900, 1024x768, and 390x844 in light and dark modes. Inspect screenshots for overflow, clipped controls, unreadable evidence, hidden status, focus loss, contrast, and density; keep six reviewed screenshots as durable evidence.
+- Accessibility checks cover semantic headings/landmarks, labels, focus order/visibility, dialog focus trapping and escape, live error/status announcement, reduced motion, zoom, keyboard-only repair, and contrast.
+- Tests prove no repair action mutates prior revisions or silently retargets citations, and that every publish/export blocker shown in the UI matches the API’s typed validation result.
+- Run focused Solid component/API tests and the full Playwright suite, then repository typecheck, lint, import/boundary checks, full tests, production build, docs lint, secrets scan, and Vault doctor.

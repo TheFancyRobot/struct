@@ -51,3 +51,11 @@
 
 - Step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_06_evaluate-report-fidelity-version-drift-and-auditability|STEP-08-06 Evaluate Report Fidelity Version Drift and Auditability]]
 - Phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]
+
+## Refined Execution Boundary — 2026-07-20
+
+- Add a deterministic Phase 08 evaluation that exercises the real domain, persistence/service, API, export, and UI-facing contracts shipped in Steps 01–05; fixture-only restatements of expected state do not satisfy the gate.
+- The corpus includes document-only, dataset-only, recursive, and hybrid reports; generated and user-edited revisions; valid, unsupported, stale, broken, unauthorized, incompatible, contradicted, and repaired claims; source refresh/reindex; restart/replay; export round trip; and prompt-injection evidence.
+- Derive fidelity, citation resolution, provenance completeness, publication blocking, drift detection, repair auditability, authorization containment, deterministic export, recovery, and accessibility results from observed case outcomes. Store seed/config, limits, assumptions, case counts, failures, and canonical result hash.
+- The verifier parses through Effect Schema, checks exact case/result counts and IDs, recomputes semantic outcomes from the recorded evidence, and rejects independently tampered status, count, claim, edge, locator, version, hash, authorization, repair history, bundle, resource metric, or outer report hash.
+- Keep evaluation bounded and reproducible with explicit wall-clock, concurrency, artifact-size, and case-count limits. Do not add a production-scale corpus, external service, second runtime, or unrelated performance platform.

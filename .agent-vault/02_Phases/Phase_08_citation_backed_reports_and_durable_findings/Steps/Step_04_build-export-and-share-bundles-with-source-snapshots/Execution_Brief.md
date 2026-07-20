@@ -51,3 +51,11 @@
 
 - Step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_04_build-export-and-share-bundles-with-source-snapshots|STEP-08-04 Build Export and Share Bundles with Source Snapshots]]
 - Phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]
+
+## Refined Execution Boundary — 2026-07-20
+
+- Produce one deterministic export bundle for a publishable report through the existing local content-addressed artifact store. The canonical manifest names report/revision identity, ordered sections and claims, citation validation results, immutable source/query/artifact references, hashes, timestamps, schema version, redaction decisions, and producer version.
+- Include only authorized material required to open and verify citations. Dataset evidence carries SQL, parameters, snapshot/result hash, schema/unit/filter/window metadata, and bounded rows; document evidence carries immutable source version and exact span/page/section locator; recursive/hybrid evidence preserves artifact and dual-source links.
+- Canonical serialization, stable ordering, content hashing, idempotent request keys, bounded size/file counts, atomic publication, retry/restart behavior, and typed terminal failures belong in deterministic Effect services and the existing artifact store. No Fred workflow.
+- The minimal API starts an authorized export and retrieves its status/download. Add a worker job only if existing job durability is necessary for bounded generation; do not invent a second queue or storage protocol.
+- “Share” means an authorized bundle/download within existing workspace policy for v1. Do not add public links, external object storage, email delivery, collaborative permissions, PDF generation, or additional export formats.
