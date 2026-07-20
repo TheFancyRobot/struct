@@ -5,7 +5,7 @@ contract_version: 1
 title: Implement Citation Validation and Provenance Graph
 step_id: STEP-08-02
 phase: '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]'
-status: in_review
+status: completed
 owner: root-orchestrator
 created: '2026-07-17'
 updated: '2026-07-20'
@@ -18,9 +18,9 @@ tags:
   - agent-vault
   - step
 context_id: SESSION-2026-07-20-170450
-active_session_id: 05_Sessions/2026-07-20-170450-implement-citation-validation-and-provenance-graph-citation-provenance-validation
-context_status: ready
-context_summary: Advance [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_02_implement-citation-validation-and-provenance-graph|STEP-08-02 Implement Citation Validation and Provenance Graph]].
+active_session_id: ''
+context_status: complete
+context_summary: 'Citation provenance validation, publication gating, scoped evidence reopening, canonical recursive excerpts, and relational graph persistence merged through PR #48 with all repository and PostgreSQL gates clean.'
 ---
 
 # Step 02 - Implement Citation Validation and Provenance Graph
