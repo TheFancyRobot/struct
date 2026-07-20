@@ -92,6 +92,10 @@ export type ReportId = Schema.Schema.Type<typeof ReportId>
 export const ReportSectionId = BrandedUUID.pipe(Schema.brand('ReportSectionId'))
 export type ReportSectionId = Schema.Schema.Type<typeof ReportSectionId>
 
+/** ProvenanceGraphId — identity of one immutable report-revision projection. */
+export const ProvenanceGraphId = BrandedUUID.pipe(Schema.brand('ProvenanceGraphId'))
+export type ProvenanceGraphId = Schema.Schema.Type<typeof ProvenanceGraphId>
+
 /** ActorId — identity of a user who authored a durable revision. */
 export const ActorId = BrandedUUID.pipe(Schema.brand('ActorId'))
 export type ActorId = Schema.Schema.Type<typeof ActorId>

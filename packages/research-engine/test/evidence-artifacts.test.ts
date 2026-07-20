@@ -18,6 +18,7 @@ import {
   computeBatchEvidenceTransformationIdentity,
   computeRecursiveBatchId,
   computeRecursivePartitionId,
+  renderRecursiveEvidenceExcerpt,
 } from '../src/index.js'
 
 const sourceA = SourceVersionId.make('660e8400-e29b-41d4-a716-446655440001')
@@ -123,6 +124,9 @@ describe('recursive evidence artifacts', () => {
     expect(right.bytes).toEqual(left.bytes)
     expect(left.artifact.sources).toHaveLength(2)
     expect(left.artifact.records).toHaveLength(2)
+    expect(left.artifact.records.every((record) =>
+      record.excerpt === renderRecursiveEvidenceExcerpt(record)))
+      .toBe(true)
     expect(left.artifact.contentTrust.classification)
       .toBe('untrusted-source-content')
   })

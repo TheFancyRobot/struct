@@ -25,6 +25,23 @@ import {
 export const RECURSIVE_EVIDENCE_MEDIA_TYPE =
   'application/vnd.struct.recursive-batch-evidence+json'
 export const MAX_BATCH_SOURCE_BYTES = 67_108_864
+export const MAX_RECURSIVE_EVIDENCE_EXCERPT_CHARACTERS = 4_096
+
+export interface RecursiveEvidenceArtifactRecord extends SelectedBatchRecord {
+  /**
+   * Canonical, immutable citation text. It is the bounded canonical JSON
+   * projection of the selected fields, so creation and reopening share one
+   * deterministic rendering contract.
+   */
+  readonly excerpt: string
+}
+
+export function renderRecursiveEvidenceExcerpt(
+  record: { readonly fields: ReadonlyArray<unknown> },
+): string {
+  return canonicalJson(record.fields)
+    .slice(0, MAX_RECURSIVE_EVIDENCE_EXCERPT_CHARACTERS)
+}
 
 export interface RecursiveEvidenceArtifact {
   readonly kind: 'recursive-batch-evidence'
@@ -47,7 +64,7 @@ export interface RecursiveEvidenceArtifact {
     readonly contentDigest: BatchEvidenceSource['contentDigest']
     readonly contentTrust: 'untrusted-source-content'
   }>
-  readonly records: ReadonlyArray<SelectedBatchRecord>
+  readonly records: ReadonlyArray<RecursiveEvidenceArtifactRecord>
   readonly groups: ReadonlyArray<BatchAggregateGroup>
   readonly counts: BatchSelectionCounts
   readonly exclusions: ReadonlyArray<BatchSelectionExclusion>
@@ -295,7 +312,10 @@ export class BatchEvidenceArtifacts
               contentDigest: source.contentDigest,
               contentTrust: 'untrusted-source-content',
             })),
-            records: selected.records,
+            records: selected.records.map((record) => ({
+              ...record,
+              excerpt: renderRecursiveEvidenceExcerpt(record),
+            })),
             groups: selected.groups,
             counts: selected.counts,
             exclusions: selected.exclusions,
