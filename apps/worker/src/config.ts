@@ -20,7 +20,7 @@ export const workerMetricsPortConfig = Config.number('WORKER_METRICS_PORT').pipe
 )
 
 /** Database connection URL (required, no default). */
-export const databaseUrlConfig = Config.string('DATABASE_URL')
+export const databaseUrlConfig = Config.redacted('DATABASE_URL')
 
 /** Local filesystem artifact root for finalized source artifacts. */
 export const artifactStorageRootConfig = Config.string('ARTIFACT_STORAGE_ROOT').pipe(

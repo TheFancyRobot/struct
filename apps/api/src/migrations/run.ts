@@ -12,7 +12,7 @@
  * connection is always closed, even on failure.
  */
 
-import { Effect } from 'effect'
+import { Effect, Redacted } from 'effect'
 import postgres from 'postgres'
 import { runMigrationsUp, runMigrationsDown, type SqlExecutorWithTransactions } from '@struct/persistence'
 import { databaseUrlConfig } from '../config.js'
@@ -42,7 +42,7 @@ const program = Effect.gen(function* () {
 
   // Use acquireRelease for resource safety — ensures sql.end() is always called
   const sql = yield* Effect.acquireRelease(
-    Effect.sync(() => postgres(databaseUrl)),
+    Effect.sync(() => postgres(Redacted.value(databaseUrl))),
     (sql) => Effect.promise(() => sql.end()).pipe(Effect.ignore),
   )
 

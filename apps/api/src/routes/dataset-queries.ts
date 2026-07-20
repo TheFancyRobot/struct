@@ -163,7 +163,7 @@ export const datasetQueryHistoryResponse = Effect.fn(
       return failure.tag === 'DatasetQueryAuthenticationError'
         ? json({ error: 'DatasetQueryAuthenticationRequired' }, 401)
         : failure.tag === 'DatasetQueryAuthorizationError'
-          ? json({ error: 'DatasetQueryScopeForbidden' }, 403)
+          ? json({ error: 'DatasetQueryNotFound' }, 404)
           : failure.tag === 'DatasetQueryEvidenceScopeError'
         ? json({ error: 'DatasetQueryHistoryNotFound' }, 404)
         : failure.tag === 'ParseError'
@@ -213,7 +213,7 @@ export const datasetCitationResponse = Effect.fn('datasetCitationResponse')(
         return failure.tag === 'DatasetQueryAuthenticationError'
           ? json({ error: 'DatasetQueryAuthenticationRequired' }, 401)
           : failure.tag === 'DatasetQueryAuthorizationError'
-            ? json({ error: 'DatasetQueryScopeForbidden' }, 403)
+            ? json({ error: 'DatasetQueryNotFound' }, 404)
             : failure.tag === 'DatasetQueryEvidenceScopeError'
           ? json({ error: 'DatasetCitationNotFound' }, 404)
           : failure.tag === 'ParseError'

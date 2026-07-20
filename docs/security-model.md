@@ -197,6 +197,21 @@ Controls:
 
 ## 6. Authorization model
 
+The deployable v1 identity boundary uses one server-side bearer credential
+bound to exactly one `API_WORKSPACE_ID`. The credential is loaded as an Effect
+`Redacted` value, is never sent to browser JavaScript, and is compared in
+constant time. Only `GET /healthz` is public; metrics, HTTP API routes, SSE
+streams, citations, artifacts, datasets, directories, research, findings, and
+reports authenticate at the shared request boundary. Every project route then
+loads the project and compares its durable workspace owner with the
+authenticated workspace before route-specific lookup. Missing resources and
+cross-workspace guesses return the same `404 ResourceNotFound` shape.
+
+This is intentionally a minimal single-user production identity boundary, not
+an identity platform. Adding multiple users later requires replacing the
+credential resolver while retaining the same typed workspace authorization
+contract.
+
 ### 6.1 Workspace isolation
 
 Every persisted and retrieved resource must carry workspace identity, including:

@@ -168,7 +168,8 @@ describe('dataset query HTTP read routes', () => {
         },
       },
     ))
-    expect(forbidden?.status).toBe(403)
+    expect(forbidden?.status).toBe(404)
+    expect(await forbidden?.json()).toEqual({ error: 'DatasetQueryNotFound' })
     expect(read).toBe(false)
   })
 })

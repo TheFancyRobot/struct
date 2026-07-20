@@ -4,7 +4,6 @@
  * Runtime entry point — Effect.runPromise at the application boundary.
  */
 
-import { timingSafeEqual } from 'node:crypto'
 import { Cause, Effect, Layer, Option, Redacted, Runtime, Schema } from 'effect'
 import postgres from 'postgres'
 import {
@@ -58,10 +57,18 @@ import {
 import {
   apiPortConfig,
   apiAuthTokenConfig,
+  apiWorkspaceIdConfig,
   artifactStorageRootConfig,
   databaseUrlConfig,
   maxTextSourceBytesConfig,
 } from './config'
+import {
+  ApiAuthorizationError,
+  authenticateApiCredential,
+  authenticateApiRequest,
+  authorizeWorkspace,
+  isPublicApiRequest,
+} from './auth'
 import { registerTextSource } from './routes/sources'
 import {
   decodeDirectoryRegistrationScope,
@@ -112,20 +119,6 @@ function jsonResponse(body: unknown, status = 200): Response {
     status,
     headers: { 'Content-Type': 'application/json' },
   })
-}
-
-function credentialMatches(expected: string, actual: string): boolean {
-  const expectedBytes = Buffer.from(expected)
-  const actualBytes = Buffer.from(actual)
-  return expectedBytes.length === actualBytes.length
-    && timingSafeEqual(expectedBytes, actualBytes)
-}
-
-function bearerCredential(request: Request): string | undefined {
-  const authorization = request.headers.get('Authorization')
-  return authorization?.startsWith('Bearer ')
-    ? authorization.slice('Bearer '.length)
-    : undefined
 }
 
 function parseBody(body: RegisterRequestBody): Effect.Effect<{
@@ -201,12 +194,16 @@ function researchFailureResponse(cause: Cause.Cause<unknown>): Response {
 const server = Effect.gen(function* () {
   const port = yield* apiPortConfig
   const databaseUrl = yield* databaseUrlConfig
-  const apiAuthToken = Redacted.value(yield* apiAuthTokenConfig)
+  const apiAuthToken = yield* apiAuthTokenConfig
+  const apiWorkspaceId = yield* apiWorkspaceIdConfig
   const artifactRoot = yield* artifactStorageRootConfig
   const maxBytes = yield* maxTextSourceBytesConfig
   const storage = yield* LocalArtifactStore.make({ root: artifactRoot })
   const sql = yield* Effect.acquireRelease(
-    Effect.sync(() => postgres(databaseUrl, { max: 5, idle_timeout: 5 })),
+    Effect.sync(() => postgres(Redacted.value(databaseUrl), {
+      max: 5,
+      idle_timeout: 5,
+    })),
     (client) =>
       Effect.promise(() => client.end({ timeout: 5 })).pipe(Effect.orDie),
   )
@@ -232,6 +229,37 @@ const server = Effect.gen(function* () {
     sqlLayer,
   )
   const effectRuntime = yield* Effect.runtime<never>()
+  const authorizeApiScope = Effect.fn('ApiAuth.authorizeScope')(
+    function* (
+      credential: string,
+      workspaceId: typeof WorkspaceId.Type,
+      projectId: typeof ProjectId.Type,
+    ) {
+      const authenticated = yield* authenticateApiCredential(
+        credential,
+        apiAuthToken,
+        apiWorkspaceId,
+      ).pipe(Effect.mapError(() => new DatasetQueryAuthenticationError({
+        message: 'API bearer credential is invalid',
+      })))
+      yield* authorizeWorkspace(authenticated, workspaceId).pipe(
+        Effect.mapError(() => new DatasetQueryAuthorizationError({
+          message: 'Resource scope is not authorized',
+        })),
+      )
+      const project = yield* ProjectRepo.findById(projectId).pipe(
+        Effect.provide(projectLayer),
+        Effect.mapError(() => new DatasetQueryAuthorizationError({
+          message: 'Resource scope is not authorized',
+        })),
+      )
+      if (project.workspaceId !== workspaceId) {
+        return yield* new DatasetQueryAuthorizationError({
+          message: 'Resource scope is not authorized',
+        })
+      }
+    },
+  )
 
   yield* Effect.acquireRelease(
     Effect.sync(() =>
@@ -240,8 +268,45 @@ const server = Effect.gen(function* () {
         async fetch(req: Request) {
       const url = new URL(req.url)
 
-      if (url.pathname === '/healthz' && req.method === 'GET') {
+      if (isPublicApiRequest(req)) {
         return jsonResponse({ status: 'ok', version: '0.0.1-skeleton' })
+      }
+
+      const authenticated = await Runtime.runPromiseExit(effectRuntime)(
+        authenticateApiRequest(req, apiAuthToken, apiWorkspaceId),
+      )
+      if (authenticated._tag === 'Failure') {
+        return jsonResponse({ error: 'AuthenticationRequired' }, 401)
+      }
+      const identity = authenticated.value
+
+      const projectPath = /^\/api\/projects\/([^/]+)/.exec(url.pathname)
+      if (projectPath !== null) {
+        const projectScope = await Runtime.runPromiseExit(effectRuntime)(
+          Effect.gen(function* () {
+            const projectId = yield* Schema.decodeUnknown(ProjectId)(
+              projectPath[1],
+            )
+            const project = yield* ProjectRepo.findById(projectId).pipe(
+              Effect.provide(projectLayer),
+            )
+            yield* authorizeWorkspace(identity, project.workspaceId)
+          }),
+        )
+        if (projectScope._tag === 'Failure') {
+          const failure = Option.getOrUndefined(
+            Cause.failureOption(projectScope.cause),
+          )
+          const isMalformedProjectId = typeof failure === 'object'
+            && failure !== null
+            && '_tag' in failure
+            && failure._tag === 'ParseError'
+          return failure instanceof EntityNotFoundError
+            || failure instanceof ApiAuthorizationError
+            || isMalformedProjectId
+            ? jsonResponse({ error: 'ResourceNotFound' }, 404)
+            : jsonResponse({ error: 'ProjectScopeUnavailable' }, 503)
+        }
       }
       if (url.pathname === '/metrics' && req.method === 'GET') {
         return new Response(
@@ -269,6 +334,7 @@ const server = Effect.gen(function* () {
             }),
           })
           const parsed = yield* decodeDirectoryRegistrationScope(body)
+          yield* authorizeWorkspace(identity, parsed.workspaceId)
           if (
             parsed.projectId !== directoryRoute[1]
           ) {
@@ -306,6 +372,8 @@ const server = Effect.gen(function* () {
             : ''
           const status = failure instanceof ValidationError
             ? 400
+            : failure instanceof ApiAuthorizationError
+              ? 404
             : tag === 'DirectoryControlConflictError'
               && reason === 'scope-not-found'
               ? 404
@@ -337,13 +405,16 @@ const server = Effect.gen(function* () {
         })
         const exit = await Runtime.runPromiseExit(effectRuntime)(
           scope.pipe(
-            Effect.flatMap((decoded) => getDirectoryJobStatus(decoded, {
-              findStatus: (workspaceId, projectId, jobId) =>
-                DirectoryControlRepo.findStatus(
-                  workspaceId,
-                  projectId,
-                  jobId,
-                ).pipe(Effect.provide(directoryControlLayer)),
+            Effect.flatMap((decoded) => Effect.gen(function* () {
+              yield* authorizeWorkspace(identity, decoded.workspaceId)
+              return yield* getDirectoryJobStatus(decoded, {
+                findStatus: (workspaceId, projectId, jobId) =>
+                  DirectoryControlRepo.findStatus(
+                    workspaceId,
+                    projectId,
+                    jobId,
+                  ).pipe(Effect.provide(directoryControlLayer)),
+              })
             })),
           ),
         )
@@ -351,6 +422,8 @@ const server = Effect.gen(function* () {
           const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
           return failure instanceof ValidationError
             ? jsonResponse({ error: 'InvalidDirectoryJobScope' }, 400)
+            : failure instanceof ApiAuthorizationError
+              ? jsonResponse({ error: 'ResourceNotFound' }, 404)
             : jsonResponse({ error: 'DirectoryStatusUnavailable' }, 503)
         }
         if (Option.isNone(exit.value)) {
@@ -390,6 +463,7 @@ const server = Effect.gen(function* () {
               message: 'Directory command scope is invalid',
             }),
           })
+          yield* authorizeWorkspace(identity, scope.workspaceId)
           const command = Schema.decodeUnknownSync(DirectoryControlCommand)(
             directoryCommandRoute[3],
           )
@@ -415,6 +489,8 @@ const server = Effect.gen(function* () {
             : ''
           const status = failure instanceof ValidationError
             ? 400
+            : failure instanceof ApiAuthorizationError
+              ? 404
             : tag === 'DirectoryControlConflictError'
               && typeof failure === 'object'
               && failure !== null
@@ -452,6 +528,9 @@ const server = Effect.gen(function* () {
         const exit = await Runtime.runPromiseExit(effectRuntime)(identifiers)
         if (cursor === undefined || exit._tag === 'Failure') {
           return jsonResponse({ error: 'InvalidDirectoryEventScope' }, 400)
+        }
+        if (exit.value.workspaceId !== identity.workspaceId) {
+          return jsonResponse({ error: 'ResourceNotFound' }, 404)
         }
         const scoped = await Runtime.runPromiseExit(effectRuntime)(
           DirectoryControlRepo.findStatus(
@@ -505,6 +584,7 @@ const server = Effect.gen(function* () {
             catch: () => new Error('Invalid JSON body'),
           })
           const parsed = yield* parseBody(body)
+          yield* authorizeWorkspace(identity, parsed.workspaceId)
           if (parsed.projectId !== sourceRoute[1]) {
             return yield* Effect.fail(new Error('Project scope mismatch'))
           }
@@ -572,7 +652,10 @@ const server = Effect.gen(function* () {
 
         const exit = await Runtime.runPromiseExit(effectRuntime)(program)
         if (exit._tag === 'Failure') {
-          return jsonResponse({ error: 'SourceRegistrationFailed' }, 400)
+          const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
+          return failure instanceof ApiAuthorizationError
+            ? jsonResponse({ error: 'ResourceNotFound' }, 404)
+            : jsonResponse({ error: 'SourceRegistrationFailed' }, 400)
         }
         return jsonResponse({
           sourceId: exit.value.source.id,
@@ -594,6 +677,7 @@ const server = Effect.gen(function* () {
               }),
           })
           const parsed = yield* parseResearchBody(body)
+          yield* authorizeWorkspace(identity, parsed.workspaceId)
           if (parsed.projectId !== researchRoute[1]) {
             return yield* new ValidationError({
               field: 'projectId',
@@ -658,6 +742,10 @@ const server = Effect.gen(function* () {
 
         const exit = await Runtime.runPromiseExit(effectRuntime)(program)
         if (exit._tag === 'Failure') {
+          const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
+          if (failure instanceof ApiAuthorizationError) {
+            return jsonResponse({ error: 'ResourceNotFound' }, 404)
+          }
           return researchFailureResponse(exit.cause)
         }
         return jsonResponse(
@@ -675,13 +763,6 @@ const server = Effect.gen(function* () {
         /^\/api\/projects\/([^/]+)\/runs\/([^/]+)\/events$/.exec(url.pathname)
       if (eventsRoute !== null && req.method === 'GET') {
         const cursor = parseEventCursor(url.searchParams.get('cursor'))
-        const credential = bearerCredential(req)
-        if (
-          credential === undefined
-          || !credentialMatches(apiAuthToken, credential)
-        ) {
-          return jsonResponse({ error: 'ResearchAuthenticationRequired' }, 401)
-        }
         if (cursor === undefined) {
           return jsonResponse({ error: 'InvalidEventCursor' }, 400)
         }
@@ -720,6 +801,9 @@ const server = Effect.gen(function* () {
             ? jsonResponse({ error: 'ResearchEventsUnavailable' }, 503)
             : researchEventScopeFailureResponse(failure)
         }
+        if (scopedRun.value !== identity.workspaceId) {
+          return jsonResponse({ error: 'ResourceNotFound' }, 404)
+        }
         return researchEventsResponse(
           scopedRun.value,
           exit.value.projectId,
@@ -750,13 +834,6 @@ const server = Effect.gen(function* () {
       const cancelRoute =
         /^\/api\/projects\/([^/]+)\/runs\/([^/]+)\/cancel$/.exec(url.pathname)
       if (cancelRoute !== null && req.method === 'POST') {
-        const credential = bearerCredential(req)
-        if (
-          credential === undefined
-          || !credentialMatches(apiAuthToken, credential)
-        ) {
-          return jsonResponse({ error: 'ResearchAuthenticationRequired' }, 401)
-        }
         const scope = Effect.try({
           try: () => ({
             workspaceId: Schema.decodeUnknownSync(WorkspaceId)(
@@ -773,25 +850,30 @@ const server = Effect.gen(function* () {
         })
         const exit = await Runtime.runPromiseExit(effectRuntime)(
           scope.pipe(
-            Effect.flatMap((decoded) => cancelResearch(
-              decoded,
-              req.headers.get('Idempotency-Key') ?? '',
-              {
-                now: () => BigInt(Date.now()),
-                randomEventId: () =>
-                  EventJournalId.make(crypto.randomUUID()),
-                request: (input) =>
-                  ResearchExecutionRepo.requestCancellation(input).pipe(
-                    Effect.provide(researchLayer),
-                  ),
-              },
-            )),
+            Effect.flatMap((decoded) => Effect.gen(function* () {
+              yield* authorizeWorkspace(identity, decoded.workspaceId)
+              return yield* cancelResearch(
+                decoded,
+                req.headers.get('Idempotency-Key') ?? '',
+                {
+                  now: () => BigInt(Date.now()),
+                  randomEventId: () =>
+                    EventJournalId.make(crypto.randomUUID()),
+                  request: (input) =>
+                    ResearchExecutionRepo.requestCancellation(input).pipe(
+                      Effect.provide(researchLayer),
+                    ),
+                },
+              )
+            })),
           ),
         )
         if (exit._tag === 'Failure') {
           const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
           return failure instanceof ValidationError
             ? jsonResponse({ error: 'InvalidResearchCancellation' }, 400)
+            : failure instanceof ApiAuthorizationError
+              ? jsonResponse({ error: 'ResourceNotFound' }, 404)
             : failure instanceof AuthorizationError
               ? jsonResponse({ error: 'ResearchRunNotFound' }, 404)
               : jsonResponse({ error: 'ResearchCancellationUnavailable' }, 503)
@@ -803,13 +885,6 @@ const server = Effect.gen(function* () {
         /^\/api\/projects\/([^/]+)\/runs\/([^/]+)\/recursive-analysis$/
           .exec(url.pathname)
       if (recursiveAnalysisRoute !== null && req.method === 'GET') {
-        const credential = bearerCredential(req)
-        if (
-          credential === undefined
-          || !credentialMatches(apiAuthToken, credential)
-        ) {
-          return jsonResponse({ error: 'ResearchAuthenticationRequired' }, 401)
-        }
         const identifiers = Effect.try({
           try: () => ({
             projectId: Schema.decodeUnknownSync(ProjectId)(
@@ -849,6 +924,9 @@ const server = Effect.gen(function* () {
             ? jsonResponse({ error: 'RecursiveAnalysisUnavailable' }, 503)
             : researchEventScopeFailureResponse(failure)
         }
+        if (scoped.value !== identity.workspaceId) {
+          return jsonResponse({ error: 'ResourceNotFound' }, 404)
+        }
         const loaded = await Runtime.runPromiseExit(effectRuntime)(
           loadRecursiveAnalysis(
             scoped.value,
@@ -886,26 +964,7 @@ const server = Effect.gen(function* () {
 
       const datasetQueryResponse = await Runtime.runPromise(effectRuntime)(
         datasetQueryReadRoute(req, {
-          authorize: (credential, workspaceId, projectId) =>
-            Effect.gen(function* () {
-              if (!credentialMatches(apiAuthToken, credential)) {
-                return yield* new DatasetQueryAuthenticationError({
-                  message: 'API bearer credential is invalid',
-                })
-              }
-              const project = yield* ProjectRepo.findById(projectId).pipe(
-                Effect.provide(projectLayer),
-                Effect.mapError(() =>
-                  new DatasetQueryAuthorizationError({
-                    message: 'Dataset query scope is not authorized',
-                  })),
-              )
-              if (project.workspaceId !== workspaceId) {
-                return yield* new DatasetQueryAuthorizationError({
-                  message: 'Dataset query scope is not authorized',
-                })
-              }
-            }),
+          authorize: authorizeApiScope,
           list: (workspaceId, projectId, limit) =>
             listDatasetQueryHistory(workspaceId, projectId, limit).pipe(
               Effect.provide(datasetQueryEvidenceLayer),
@@ -922,26 +981,7 @@ const server = Effect.gen(function* () {
 
       const durableArtifactResponse = await Runtime.runPromise(effectRuntime)(
         durableArtifactRoute(req, {
-          authorize: (credential, workspaceId, projectId) =>
-            Effect.gen(function* () {
-              if (!credentialMatches(apiAuthToken, credential)) {
-                return yield* new DatasetQueryAuthenticationError({
-                  message: 'API bearer credential is invalid',
-                })
-              }
-              const project = yield* ProjectRepo.findById(projectId).pipe(
-                Effect.provide(projectLayer),
-                Effect.mapError(() =>
-                  new DatasetQueryAuthorizationError({
-                    message: 'Artifact scope is not authorized',
-                  })),
-              )
-              if (project.workspaceId !== workspaceId) {
-                return yield* new DatasetQueryAuthorizationError({
-                  message: 'Artifact scope is not authorized',
-                })
-              }
-            }),
+          authorize: authorizeApiScope,
           saveFinding: (finding, key) =>
             DurableArtifactsRepo.saveFinding(finding, key).pipe(
               Effect.provide(durableArtifactLayer),
@@ -999,26 +1039,7 @@ const server = Effect.gen(function* () {
       const reportExportResponse = await Runtime.runPromise(effectRuntime)(
         reportExportRoute(req, {
           producerVersion: REPORT_EXPORT_PRODUCER_VERSION,
-          authorize: (credential, workspaceId, projectId) =>
-            Effect.gen(function* () {
-              if (!credentialMatches(apiAuthToken, credential)) {
-                return yield* new DatasetQueryAuthenticationError({
-                  message: 'API bearer credential is invalid',
-                })
-              }
-              const project = yield* ProjectRepo.findById(projectId).pipe(
-                Effect.provide(projectLayer),
-                Effect.mapError(() =>
-                  new DatasetQueryAuthorizationError({
-                    message: 'Report export scope is not authorized',
-                  })),
-              )
-              if (project.workspaceId !== workspaceId) {
-                return yield* new DatasetQueryAuthorizationError({
-                  message: 'Report export scope is not authorized',
-                })
-              }
-            }),
+          authorize: authorizeApiScope,
           findReportRevision: (
             workspaceId,
             projectId,

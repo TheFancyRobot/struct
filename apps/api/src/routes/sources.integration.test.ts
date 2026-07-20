@@ -119,9 +119,6 @@ describeIf('single text source ingestion real DB integration', () => {
             Effect.provide(sourceVersionLayer),
           ),
       },
-      sources: {
-        findProjectId: () => Effect.succeed(projectId),
-      },
       textIndex: {
         indexText: (input) => TextRetrieval.indexText(input).pipe(Effect.provide(retrievalLayer)),
       },
