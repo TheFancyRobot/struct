@@ -76,9 +76,25 @@ export type CitationId = Schema.Schema.Type<typeof CitationId>
 export const FindingId = BrandedUUID.pipe(Schema.brand('FindingId'))
 export type FindingId = Schema.Schema.Type<typeof FindingId>
 
+/** ClaimId — identity of one durable claim shared by findings and reports. */
+export const ClaimId = BrandedUUID.pipe(Schema.brand('ClaimId'))
+export type ClaimId = Schema.Schema.Type<typeof ClaimId>
+
+/** ContentRevisionId — identity of one immutable authored text revision. */
+export const ContentRevisionId = BrandedUUID.pipe(Schema.brand('ContentRevisionId'))
+export type ContentRevisionId = Schema.Schema.Type<typeof ContentRevisionId>
+
 /** ReportId — identity of a research report. */
 export const ReportId = BrandedUUID.pipe(Schema.brand('ReportId'))
 export type ReportId = Schema.Schema.Type<typeof ReportId>
+
+/** ReportSectionId — identity of one independently regenerable report section. */
+export const ReportSectionId = BrandedUUID.pipe(Schema.brand('ReportSectionId'))
+export type ReportSectionId = Schema.Schema.Type<typeof ReportSectionId>
+
+/** ActorId — identity of a user who authored a durable revision. */
+export const ActorId = BrandedUUID.pipe(Schema.brand('ActorId'))
+export type ActorId = Schema.Schema.Type<typeof ActorId>
 
 /** DatasetId — identity of a dataset. */
 export const DatasetId = BrandedUUID.pipe(Schema.brand('DatasetId'))
