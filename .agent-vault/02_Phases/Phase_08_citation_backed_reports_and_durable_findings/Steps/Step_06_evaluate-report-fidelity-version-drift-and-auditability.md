@@ -5,17 +5,22 @@ contract_version: 1
 title: Evaluate Report Fidelity Version Drift and Auditability
 step_id: STEP-08-06
 phase: '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]'
-status: planned
-owner: ''
+status: in-review
+owner: report-fidelity-audit
 created: '2026-07-17'
 updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_05_add-report-ux-citation-navigation-and-repair|STEP-08-05 Add Report UX Citation Navigation and Repair]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-20-200206-evaluate-report-fidelity-version-drift-and-auditability-report-fidelity-audit|SESSION-2026-07-20-200206 report-fidelity-audit session for Evaluate Report Fidelity Version Drift and Auditability]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-20-200206
+active_session_id: SESSION-2026-07-20-200206
+context_status: ready-for-review
+context_summary: Real publication and export policies are exercised for all eight citation states; only publishable succeeds, with focused gates clean.
 ---
 
 # Step 06 - Evaluate Report Fidelity Version Drift and Auditability
@@ -60,7 +65,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-20 - [[05_Sessions/2026-07-20-200206-evaluate-report-fidelity-version-drift-and-auditability-report-fidelity-audit|SESSION-2026-07-20-200206 report-fidelity-audit session for Evaluate Report Fidelity Version Drift and Auditability]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

@@ -79,6 +79,7 @@
         "postgres": "^3.4.9",
       },
       "devDependencies": {
+        "@struct/evaluation": "workspace:*",
         "typescript": "7.0.2",
       },
     },
@@ -127,6 +128,7 @@
         "@struct/persistence": "workspace:*",
         "@struct/research-engine": "workspace:*",
         "@struct/retrieval": "workspace:*",
+        "@struct/source-storage": "workspace:*",
         "@struct/workflows": "workspace:*",
         "effect": "3.22.0",
       },
@@ -181,6 +183,7 @@
       "name": "@struct/research-engine",
       "version": "0.0.1",
       "dependencies": {
+        "@struct/data-engine": "workspace:*",
         "@struct/domain": "workspace:*",
         "@struct/observability": "workspace:*",
         "@struct/retrieval": "workspace:*",
