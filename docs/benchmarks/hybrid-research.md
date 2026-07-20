@@ -29,19 +29,24 @@ waivers: any failed criterion makes the report fail.
 
 ## Explicit limits
 
-| Resource | Limit |
-| --- | ---: |
-| Model calls | 1 |
-| Tool calls | 2 |
-| Concurrent branches | 2 |
-| Elapsed time | 10,000 ms |
-| Tokens | 10,000 |
-| Estimated cost | 10 µUSD |
-| Result rows | 10 |
-| Result columns | 8 |
-| Result-summary bytes | 32,768 |
-| Claims | 8 |
-| Output bytes | 65,536 |
+These limits follow the ownership, evidence, and fail-closed contract in
+[`security-model.md` §22](../security-model.md#22-provisional-resource-limits-and-defaults).
+Every observed value and cap is persisted in the tracked report; exceeding any
+cap fails the `bounded-resources` criterion and therefore the entire gate.
+
+| Resource | Limit | Enforcing owner | Auditable evidence | Fail-closed behavior |
+| --- | ---: | --- | --- | --- |
+| Model calls | 1 | `packages/workflows` + `apps/worker` | routed synthesis branch and `resources.observedModelCalls` | typed budget failure; gate fails |
+| Tool calls | 2 | `packages/workflows` | authorized routed branches and `resources.observedToolCalls` | unsupported/excess tool use is rejected; gate fails |
+| Concurrent branches | 2 | `packages/workflows` + `apps/worker` | dependency-free routed branches and `resources.observedConcurrency` | excess fan-out is rejected; gate fails |
+| Elapsed time | 10,000 ms | `apps/worker` | bounded execution trace and `resources.observedElapsedMilliseconds` | timeout interrupts execution with a typed failure; gate fails |
+| Tokens | 10,000 | `packages/workflows` | synthesis output accounting and `resources.observedTokens` | token budget exhaustion stops synthesis; gate fails |
+| Estimated cost | 10 µUSD | `packages/workflows` | routed model/tool accounting and `resources.observedEstimatedCostMicros` | cost budget exhaustion stops synthesis; gate fails |
+| Result rows | 10 | `packages/data-engine` + `packages/research-engine` | bounded query summary and `resources.maximumRows` | oversized result summary is rejected; gate fails |
+| Result columns | 8 | `packages/data-engine` + `packages/research-engine` | bounded query summary and `resources.maximumColumns` | oversized result summary is rejected; gate fails |
+| Result-summary bytes | 32,768 | `packages/research-engine` | canonical query summary and `resources.maximumSummaryBytes` | `output-too-large`; gate fails |
+| Claims | 8 | `packages/research-engine` | validated claims and `resources.maximumClaims` | `output-too-large`; gate fails |
+| Output bytes | 65,536 | `packages/research-engine` | canonical synthesis artifact and `resources.observedArtifactBytes` | `output-too-large`; gate fails |
 
 ## Failure taxonomy
 
