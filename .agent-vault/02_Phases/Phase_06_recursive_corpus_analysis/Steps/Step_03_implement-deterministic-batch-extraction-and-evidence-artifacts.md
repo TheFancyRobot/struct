@@ -5,17 +5,22 @@ contract_version: 1
 title: Implement Deterministic Batch Extraction and Evidence Artifacts
 step_id: STEP-06-03
 phase: '[[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]'
-status: planned
-owner: ''
+status: completed
+owner: Codex
 created: '2026-07-17'
 updated: '2026-07-20'
 depends_on:
   - '[[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_02_implement-bounded-corpus-partitioning-and-scheduling|STEP-06-02 Implement Bounded Corpus Partitioning and Scheduling]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-20-084208-implement-deterministic-batch-extraction-and-evidence-artifacts-step-06-03-worker|SESSION-2026-07-20-084208 step-06-03-worker session for Implement Deterministic Batch Extraction and Evidence Artifacts]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-20-084208
+active_session_id: 05_Sessions/2026-07-20-084208-implement-deterministic-batch-extraction-and-evidence-artifacts-step-06-03-worker
+context_status: completed
+context_summary: STEP-06-03 deterministic selection, bounded exact evidence artifacts, content-addressed publication, atomic metadata commit, and restart-safe reuse are implemented and validated; root review and PR gate remain.
 ---
 
 # Step 03 - Implement Deterministic Batch Extraction and Evidence Artifacts
@@ -59,7 +64,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-20 - [[05_Sessions/2026-07-20-084208-implement-deterministic-batch-extraction-and-evidence-artifacts-step-06-03-worker|SESSION-2026-07-20-084208 step-06-03-worker session for Implement Deterministic Batch Extraction and Evidence Artifacts]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes
