@@ -18,6 +18,8 @@
     "phase-06:eval": "bun src/run-phase-06-recursive-evaluation.ts --check && bun test --timeout 30000 --max-concurrency 1 test/recursive-analysis.test.ts",
     "phase-07:generate": "bun src/run-phase-07-hybrid-evaluation.ts --generate",
     "phase-07:eval": "bun src/run-phase-07-hybrid-evaluation.ts --check && bun test --max-concurrency 1 test/hybrid-research.test.ts",
+    "phase-08:generate": "bun src/run-report-fidelity-evaluation.ts --generate",
+    "phase-08:eval": "bun src/run-report-fidelity-evaluation.ts --check && bun test --max-concurrency 1 test/report-fidelity.test.ts",
     "directory:eval": "bun src/directory-refresh-smoke.ts",
     "bench": "bun src/benchmarks/run.ts",
     "typecheck": "bun --bun tsc --noEmit --project tsconfig.json",
@@ -31,6 +33,7 @@
     "@struct/research-engine": "workspace:*",
     "@struct/retrieval": "workspace:*",
     "@struct/persistence": "workspace:*",
+    "@struct/source-storage": "workspace:*",
     "effect": "3.22.0"
   },
   "devDependencies": {

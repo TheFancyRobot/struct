@@ -21,7 +21,7 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-20._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_06_evaluate-report-fidelity-version-drift-and-auditability|STEP-08-06 Evaluate Report Fidelity Version Drift and Auditability]] - status: planned - phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]]
+- Current step: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_06_evaluate-report-fidelity-version-drift-and-auditability|STEP-08-06 Evaluate Report Fidelity Version Drift and Auditability]] - status: in-review - phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|Phase 08 citation backed reports and durable findings]] - owner: report-fidelity-audit
 - Active phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|PHASE-08 Citation-Backed Reports and Durable Findings]] - status: in_progress - owner: Codex - updated: 2026-07-20
 - Also active: 24 more additional steps.
 <!-- AGENT-END:current-focus -->
