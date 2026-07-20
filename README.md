@@ -2,7 +2,7 @@
 
 A trustworthy, source-grounded research workspace for documents, datasets, and directories. Documents are retrieved, datasets are queried, directories are navigated, and large corpora are recursively analyzed — with deterministic computation, verifiable citations, and durable, resumable work.
 
-> **Current state: Phase 02 document research is implemented through STEP-02-06.** The monorepo now includes versioned document parsing/chunking, PostgreSQL full-text plus pgvector hybrid retrieval, bounded core-Fred evidence workflows, durable research jobs/events, cursor-replayable SSE progress, exact navigable citations, SolidJS research states, and deterministic retrieval/provenance/injection evaluation. All gates pass when validated locally (typecheck, lint, lint:imports, build, native Bun tests, database integration tests, migration up/down/up, Compose config, app smokes).
+> **Current state: Phase 05 typed research execution is implemented through STEP-05-04.** The monorepo includes versioned document and dataset ingestion, PostgreSQL hybrid retrieval, an isolated DuckDB data plane, schema-validated research plans, bounded core-Fred orchestration, durable checkpoints and budgets, authenticated cursor-replayable progress, idempotent cancellation, exact citations, and SolidJS research states. All gates pass when validated locally (typecheck, lint, lint:imports, build, native Bun tests, database integration tests, migration up/down/up, Compose config, and app smokes).
 
 ## Canonical documents
 
@@ -81,6 +81,12 @@ requires `FRED_PROVIDER_PACKAGE` and `FRED_MODEL` at startup and loads the
 configured Fred provider before reporting readiness. Provider-specific credentials
 are required before live model execution; tests use a fixed mock provider and
 require no provider key.
+
+Research progress replays from
+`GET /api/projects/:projectId/runs/:runId/events?cursor=<cursor>`. Cancellation is
+an idempotent `POST /api/projects/:projectId/runs/:runId/cancel?workspaceId=<id>`
+with `Authorization: Bearer <API_AUTH_TOKEN>` and an `Idempotency-Key` header.
+The local Vite proxy adds the bearer credential server-side for browser SSE.
 
 Full command inventory and CI gates in [docs/repository-contract.md](./docs/repository-contract.md).
 

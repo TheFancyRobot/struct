@@ -481,24 +481,35 @@ describeIf('walking skeleton full vertical slice', () => {
     const projectionLayer = serviceLayer(ResearchProjectionRepo.Default, sql)
     const projectionDeps = {
       listEventsAfter: (
+        scopedWorkspaceId: WorkspaceId,
         scopedProjectId: ProjectId,
         scopedRunId: ResearchRunId,
         cursor: bigint,
         limit: number,
       ) =>
         ResearchProjectionRepo.listEventsAfter(
+          scopedWorkspaceId,
           scopedProjectId,
           scopedRunId,
           cursor,
           limit,
         ).pipe(Effect.provide(projectionLayer)),
-      findCompleted: (scopedRunId: ResearchRunId) =>
-        ResearchProjectionRepo.findCompleted(scopedRunId).pipe(
+      findCompleted: (
+        scopedWorkspaceId: WorkspaceId,
+        scopedProjectId: ProjectId,
+        scopedRunId: ResearchRunId,
+      ) =>
+        ResearchProjectionRepo.findCompleted(
+          scopedWorkspaceId,
+          scopedProjectId,
+          scopedRunId,
+        ).pipe(
           Effect.provide(projectionLayer),
         ),
     }
     const streamAbort = new AbortController()
     const response = researchEventsResponse(
+      workspaceId,
       projectId,
       runId,
       0n,
@@ -545,7 +556,7 @@ describeIf('walking skeleton full vertical slice', () => {
     const reopenedProjectionLayer =
       serviceLayer(ResearchProjectionRepo.Default, sql)
     const reopened = await Effect.runPromise(
-      ResearchProjectionRepo.findCompleted(runId).pipe(
+      ResearchProjectionRepo.findCompleted(workspaceId, projectId, runId).pipe(
         Effect.provide(reopenedProjectionLayer),
       ),
     )

@@ -116,11 +116,17 @@ export type {
 } from './repositories/source-registration.js'
 
 export type {
+  CancelResearchInput,
+  CancelResearchResult,
+  CompleteResearchInput,
+  DurableResearchState,
+  FailResearchInput,
+  PersistResearchCheckpointInput,
+  PersistResearchPlanInput,
+  PersistResearchPlanningFailureInput,
+  ResearchExecutionError,
   ResearchRegistrationInput,
   ResearchRegistrationResult,
-  CompleteResearchInput,
-  FailResearchInput,
-  ResearchExecutionError,
 } from './repositories/research-execution.js'
 
 export type {

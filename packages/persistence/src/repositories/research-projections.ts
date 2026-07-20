@@ -37,6 +37,7 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
 
       const listEventsAfter = Effect.fn('ResearchProjectionRepo.listEventsAfter')(
         function* (
+          workspaceId: typeof typeDomain.WorkspaceId.Type,
           projectId: typeof typeDomain.ProjectId.Type,
           runId: typeof typeDomain.ResearchRunId.Type,
           cursor: bigint,
@@ -48,13 +49,16 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
                FROM event_journal event
                JOIN research_runs run ON run.id = event.entity_id
                JOIN research_threads thread ON thread.id = run.thread_id
+               JOIN projects project ON project.id = thread.project_id
                WHERE event.entity_type = 'research'
                  AND event.entity_id = $1
                  AND thread.project_id = $2
-                 AND event.cursor > $3
+                 AND project.workspace_id = $3
+                 AND event.workspace_id = $3
+                 AND event.cursor > $4
                ORDER BY event.cursor ASC
-               LIMIT $4`,
-              [runId, projectId, cursor.toString(), limit],
+               LIMIT $5`,
+              [runId, projectId, workspaceId, cursor.toString(), limit],
             ),
             catch: () => new QueryError({
               operation: 'listEventsAfter',
@@ -76,6 +80,7 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
 
       const runExists = Effect.fn('ResearchProjectionRepo.runExists')(
         function* (
+          workspaceId: typeof typeDomain.WorkspaceId.Type,
           projectId: typeof typeDomain.ProjectId.Type,
           runId: typeof typeDomain.ResearchRunId.Type,
         ) {
@@ -84,10 +89,12 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
               `SELECT 1
                FROM research_runs run
                JOIN research_threads thread ON thread.id = run.thread_id
+               JOIN projects project ON project.id = thread.project_id
                WHERE run.id = $1
                  AND thread.project_id = $2
+                 AND project.workspace_id = $3
                LIMIT 1`,
-              [runId, projectId],
+              [runId, projectId, workspaceId],
             ),
             catch: () => new QueryError({
               operation: 'runExists',
@@ -100,7 +107,11 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
       )
 
       const findCompleted = Effect.fn('ResearchProjectionRepo.findCompleted')(
-        function* (runId: typeof typeDomain.ResearchRunId.Type) {
+        function* (
+          workspaceId: typeof typeDomain.WorkspaceId.Type,
+          projectId: typeof typeDomain.ProjectId.Type,
+          runId: typeof typeDomain.ResearchRunId.Type,
+        ) {
           const rows = yield* Effect.tryPromise({
             try: () => sql.unsafe(
               `SELECT result.answer,
@@ -116,10 +127,15 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
                         '[]'::jsonb
                       ) AS citations
                FROM research_run_results result
+               JOIN research_runs run ON run.id = result.run_id
+               JOIN research_threads thread ON thread.id = run.thread_id
+               JOIN projects project ON project.id = thread.project_id
                LEFT JOIN citations citation ON citation.run_id = result.run_id
                WHERE result.run_id = $1
+                 AND thread.project_id = $2
+                 AND project.workspace_id = $3
                GROUP BY result.answer`,
-              [runId],
+              [runId, projectId, workspaceId],
             ),
             catch: () => new QueryError({
               operation: 'findCompleted',

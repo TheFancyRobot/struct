@@ -3,6 +3,8 @@ import {
   CitationId,
   EventJournalId,
   JobQueueId,
+  ResearchCheckpointId,
+  ResearchPlanId,
   ResearchRunId,
   ResearchThreadId,
   SourceVersionId,
@@ -47,6 +49,47 @@ export const CitationsValidatedEvent = Schema.Struct({
   }),
 })
 
+export const ResearchPlanAcceptedEvent = Schema.Struct({
+  ...EventBase,
+  type: Schema.Literal('research-plan-accepted'),
+  data: Schema.Struct({
+    jobId: JobQueueId,
+    attempt: Schema.Number.pipe(Schema.int(), Schema.nonNegative()),
+    planId: ResearchPlanId,
+  }),
+})
+
+export const ResearchPlanningFailedEvent = Schema.Struct({
+  ...EventBase,
+  type: Schema.Literal('research-planning-failed'),
+  data: Schema.Struct({
+    jobId: JobQueueId,
+    attempt: Schema.Number.pipe(Schema.int(), Schema.nonNegative()),
+    errorTag: Schema.String,
+    reason: Schema.String,
+  }),
+})
+
+export const ResearchCheckpointedEvent = Schema.Struct({
+  ...EventBase,
+  type: Schema.Literal('research-checkpointed'),
+  data: Schema.Struct({
+    jobId: JobQueueId,
+    attempt: Schema.Number.pipe(Schema.int(), Schema.nonNegative()),
+    checkpointId: ResearchCheckpointId,
+    planId: ResearchPlanId,
+  }),
+})
+
+export const ResearchCancelledEvent = Schema.Struct({
+  ...EventBase,
+  type: Schema.Literal('research-cancelled'),
+  data: Schema.Struct({
+    jobId: JobQueueId,
+    attempt: Schema.Number.pipe(Schema.int(), Schema.nonNegative()),
+  }),
+})
+
 export const ResearchCompletedEvent = Schema.Struct({
   ...EventBase,
   type: Schema.Literal('research-completed'),
@@ -75,8 +118,12 @@ export const ResearchFailedEvent = Schema.Struct({
 
 export const ResearchEvent = Schema.Union(
   ResearchStartedEvent,
+  ResearchPlanAcceptedEvent,
+  ResearchPlanningFailedEvent,
+  ResearchCheckpointedEvent,
   RetrievalCompletedEvent,
   CitationsValidatedEvent,
+  ResearchCancelledEvent,
   ResearchCompletedEvent,
   ResearchFailedEvent,
 )

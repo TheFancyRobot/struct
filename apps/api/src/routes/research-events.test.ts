@@ -17,6 +17,7 @@ import {
 
 const projectId = ProjectId.make('b50e8400-e29b-41d4-a716-446655440001')
 const runId = ResearchRunId.make('b50e8400-e29b-41d4-a716-446655440002')
+const workspaceId = WorkspaceId.make('b50e8400-e29b-41d4-a716-446655440004')
 
 describe('research event projection', () => {
   it('validates cursors and emits replayable SSE frames', async () => {
@@ -25,15 +26,16 @@ describe('research event projection', () => {
     expect(parseEventCursor('-1')).toBeUndefined()
 
     const [event] = await Effect.runPromise(loadResearchEvents(
+      workspaceId,
       projectId,
       runId,
       4n,
       {
-        listEventsAfter: (_projectId, _runId, cursor) => {
+        listEventsAfter: (_workspaceId, _projectId, _runId, cursor) => {
           expect(cursor).toBe(4n)
           return Effect.succeed([{
             id: EventJournalId.make('b50e8400-e29b-41d4-a716-446655440003'),
-            workspaceId: WorkspaceId.make('b50e8400-e29b-41d4-a716-446655440004'),
+            workspaceId,
             entityType: 'research',
             entityId: runId,
             eventType: 'research-started',
@@ -57,6 +59,7 @@ describe('research event projection', () => {
     const abort = new AbortController()
     let clockReads = 0
     const response = researchEventsResponse(
+      workspaceId,
       projectId,
       runId,
       0n,
@@ -86,6 +89,7 @@ describe('research event projection', () => {
     let polls = 0
     let sleeps = 0
     const response = researchEventsResponse(
+      workspaceId,
       projectId,
       runId,
       0n,
@@ -128,6 +132,7 @@ describe('research event projection', () => {
     const request = new AbortController()
     let interrupted = false
     const response = researchEventsResponse(
+      workspaceId,
       projectId,
       runId,
       0n,

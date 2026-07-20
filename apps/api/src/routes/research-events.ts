@@ -10,6 +10,7 @@ const HEARTBEAT_INTERVAL_MS = 30_000
 
 export interface ResearchEventDeps {
   readonly listEventsAfter: (
+    workspaceId: typeDomain.WorkspaceId,
     projectId: typeDomain.ProjectId,
     runId: typeDomain.ResearchRunId,
     cursor: bigint,
@@ -20,6 +21,8 @@ export interface ResearchEventDeps {
     never
   >
   readonly findCompleted: (
+    workspaceId: typeDomain.WorkspaceId,
+    projectId: typeDomain.ProjectId,
     runId: typeDomain.ResearchRunId,
   ) => Effect.Effect<
     typePersistence.CompletedResearchProjection,
@@ -49,6 +52,7 @@ export function encodeSseEvent(event: ResearchEvent): string {
 }
 
 export const loadResearchEvents = (
+  workspaceId: typeDomain.WorkspaceId,
   projectId: typeDomain.ProjectId,
   runId: typeDomain.ResearchRunId,
   cursor: bigint,
@@ -60,6 +64,7 @@ export const loadResearchEvents = (
 > =>
   Effect.gen(function* () {
     const events = yield* deps.listEventsAfter(
+      workspaceId,
       projectId,
       runId,
       cursor,
@@ -79,7 +84,7 @@ export const loadResearchEvents = (
               ...base,
               data: {
                 ...event.payload,
-                ...(yield* deps.findCompleted(runId)),
+                ...(yield* deps.findCompleted(workspaceId, projectId, runId)),
               },
             }
           : { ...base, data: event.payload }
@@ -95,6 +100,7 @@ export const loadResearchEvents = (
   })
 
 export function researchEventsResponse(
+  workspaceId: typeDomain.WorkspaceId,
   projectId: typeDomain.ProjectId,
   runId: typeDomain.ResearchRunId,
   initialCursor: bigint,
@@ -140,7 +146,7 @@ export function researchEventsResponse(
       if (pending.length === 0) {
         const exit = await Promise.race([
           Effect.runPromiseExit(
-            loadResearchEvents(projectId, runId, cursor, deps),
+            loadResearchEvents(workspaceId, projectId, runId, cursor, deps),
             { signal: execution.signal },
           ),
           cancellation,

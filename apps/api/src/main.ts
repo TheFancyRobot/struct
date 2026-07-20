@@ -72,6 +72,7 @@ import {
   parseEventCursor,
   researchEventsResponse,
 } from './routes/research-events'
+import { cancelResearch } from './routes/research-cancel'
 import {
   datasetQueryReadRoute,
   listDatasetQueryHistory,
@@ -105,6 +106,13 @@ function credentialMatches(expected: string, actual: string): boolean {
   const actualBytes = Buffer.from(actual)
   return expectedBytes.length === actualBytes.length
     && timingSafeEqual(expectedBytes, actualBytes)
+}
+
+function bearerCredential(request: Request): string | undefined {
+  const authorization = request.headers.get('Authorization')
+  return authorization?.startsWith('Bearer ')
+    ? authorization.slice('Bearer '.length)
+    : undefined
 }
 
 function parseBody(body: RegisterRequestBody): Effect.Effect<{
@@ -646,6 +654,13 @@ const server = Effect.gen(function* () {
         /^\/api\/projects\/([^/]+)\/runs\/([^/]+)\/events$/.exec(url.pathname)
       if (eventsRoute !== null && req.method === 'GET') {
         const cursor = parseEventCursor(url.searchParams.get('cursor'))
+        const credential = bearerCredential(req)
+        if (
+          credential === undefined
+          || !credentialMatches(apiAuthToken, credential)
+        ) {
+          return jsonResponse({ error: 'ResearchAuthenticationRequired' }, 401)
+        }
         if (cursor === undefined) {
           return jsonResponse({ error: 'InvalidEventCursor' }, 400)
         }
@@ -661,36 +676,100 @@ const server = Effect.gen(function* () {
           return jsonResponse({ error: 'ResearchRunNotFound' }, 404)
         }
         const scopedRun = await Runtime.runPromiseExit(effectRuntime)(
-          ResearchProjectionRepo.runExists(
-            exit.value.projectId,
-            exit.value.runId,
-          ).pipe(Effect.provide(projectionLayer)),
+          Effect.gen(function* () {
+            const project = yield* ProjectRepo.findById(exit.value.projectId)
+              .pipe(Effect.provide(projectLayer))
+            const exists = yield* ResearchProjectionRepo.runExists(
+              project.workspaceId,
+              exit.value.projectId,
+              exit.value.runId,
+            ).pipe(Effect.provide(projectionLayer))
+            return { workspaceId: project.workspaceId, exists }
+          }),
         )
         if (scopedRun._tag === 'Failure') {
           return jsonResponse({ error: 'ResearchEventsUnavailable' }, 503)
         }
-        if (!scopedRun.value) {
+        if (!scopedRun.value.exists) {
           return jsonResponse({ error: 'ResearchRunNotFound' }, 404)
         }
         return researchEventsResponse(
+          scopedRun.value.workspaceId,
           exit.value.projectId,
           exit.value.runId,
           cursor,
           {
-            listEventsAfter: (projectId, runId, after, limit) =>
+            listEventsAfter: (workspaceId, projectId, runId, after, limit) =>
               ResearchProjectionRepo.listEventsAfter(
+                workspaceId,
                 projectId,
                 runId,
                 after,
                 limit,
               ).pipe(Effect.provide(projectionLayer)),
-            findCompleted: (runId) =>
-              ResearchProjectionRepo.findCompleted(runId).pipe(
+            findCompleted: (workspaceId, projectId, runId) =>
+              ResearchProjectionRepo.findCompleted(
+                workspaceId,
+                projectId,
+                runId,
+              ).pipe(
                 Effect.provide(projectionLayer),
               ),
           },
           req.signal,
         )
+      }
+
+      const cancelRoute =
+        /^\/api\/projects\/([^/]+)\/runs\/([^/]+)\/cancel$/.exec(url.pathname)
+      if (cancelRoute !== null && req.method === 'POST') {
+        const credential = bearerCredential(req)
+        if (
+          credential === undefined
+          || !credentialMatches(apiAuthToken, credential)
+        ) {
+          return jsonResponse({ error: 'ResearchAuthenticationRequired' }, 401)
+        }
+        const scope = Effect.try({
+          try: () => ({
+            workspaceId: Schema.decodeUnknownSync(WorkspaceId)(
+              url.searchParams.get('workspaceId'),
+            ),
+            projectId: Schema.decodeUnknownSync(ProjectId)(cancelRoute[1]),
+            runId: Schema.decodeUnknownSync(ResearchRunId)(cancelRoute[2]),
+          }),
+          catch: () => new ValidationError({
+            field: 'researchCancel',
+            reason: 'invalid-scope',
+            message: 'Research cancellation scope is invalid',
+          }),
+        })
+        const exit = await Runtime.runPromiseExit(effectRuntime)(
+          scope.pipe(
+            Effect.flatMap((decoded) => cancelResearch(
+              decoded,
+              req.headers.get('Idempotency-Key') ?? '',
+              {
+                now: () => BigInt(Date.now()),
+                randomEventId: () =>
+                  EventJournalId.make(crypto.randomUUID()),
+                request: (input) =>
+                  ResearchExecutionRepo.requestCancellation(input).pipe(
+                    Effect.provide(researchLayer),
+                  ),
+              },
+            )),
+          ),
+        )
+        if (exit._tag === 'Failure') {
+          const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
+          return failure instanceof ValidationError
+            ? jsonResponse({ error: 'InvalidResearchCancellation' }, 400)
+            : failure instanceof AuthorizationError
+              ? jsonResponse({ error: 'ResearchRunNotFound' }, 404)
+              : jsonResponse({ error: 'ResearchCancellationUnavailable' }, 503)
+        }
+        return jsonResponse(exit.value, exit.value.result === 'cancelled' ? 202 : 200)
       }
 
       const citationRoute =

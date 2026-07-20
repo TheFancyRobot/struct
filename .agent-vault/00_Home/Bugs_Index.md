@@ -27,7 +27,7 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 ## Status Buckets
 
 <!-- AGENT-START:bugs-index -->
-_Last rebuilt: 2026-07-19._
+_Last rebuilt: 2026-07-20._
 
 - Notes indexed: 10
 - Status summary: fixed (10)
