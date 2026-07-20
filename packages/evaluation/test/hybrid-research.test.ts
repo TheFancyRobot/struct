@@ -66,7 +66,7 @@ describe('Phase 07 deterministic hybrid research evaluation', () => {
       )?.evidence,
     ).toMatchObject({
       injectedInstructionRejected: true,
-      injectionRejectionReason: 'citation-drift',
+      injectionRejectionReason: 'untrusted-instruction',
       injectionReachedAnswer: false,
     })
     expect(report.resources).toMatchObject({
@@ -76,13 +76,13 @@ describe('Phase 07 deterministic hybrid research evaluation', () => {
       maximumToolCalls: 2,
       observedConcurrency: 2,
       maximumConcurrency: 2,
-      observedElapsedMilliseconds: 10,
+      observedElapsedMilliseconds: 9,
       maximumElapsedMilliseconds: 10_000,
-      observedTokens: 20,
+      observedTokens: 24,
       maximumTokens: 10_000,
       observedEstimatedCostMicros: 3,
       maximumEstimatedCostMicros: 10,
-      observedArtifactBytes: 944,
+      observedArtifactBytes: 1_920,
       maximumRows: 10,
       maximumColumns: 8,
       maximumSummaryBytes: 32_768,

@@ -75,6 +75,11 @@ export const ResearchStopReason = Schema.Union(
     attempted: Counter,
   }),
   Schema.Struct({
+    kind: Schema.Literal('token-budget'),
+    limit: Counter,
+    attempted: Counter,
+  }),
+  Schema.Struct({
     kind: Schema.Literal('time-budget'),
     limit: Counter,
     attempted: Counter,
@@ -162,6 +167,7 @@ export type ResearchAction = Schema.Schema.Type<typeof ResearchAction>
 export const ResearchActionResult = Schema.Struct({
   progressFingerprint: Fingerprint,
   artifacts: Schema.Array(ResearchArtifactRef).pipe(Schema.maxItems(64)),
+  tokens: Schema.optional(Counter),
 })
 export type ResearchActionResult =
   Schema.Schema.Type<typeof ResearchActionResult>
@@ -186,6 +192,7 @@ export const ResearchGraphState = Schema.Struct({
   steps: Counter,
   modelCalls: Counter,
   toolCalls: Counter,
+  tokens: Counter,
   estimatedCostMicros: Counter,
   activeConcurrency: Counter,
   duplicateActionCount: Counter,
@@ -216,6 +223,7 @@ export function initialResearchGraphState(
     steps: 0,
     modelCalls: 0,
     toolCalls: 0,
+    tokens: 0,
     estimatedCostMicros: 0,
     activeConcurrency: 0,
     duplicateActionCount: 0,

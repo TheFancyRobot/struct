@@ -614,6 +614,7 @@ export function makeProductionResearchWorkflow(
             steps: checkpoint.state.budget.used.steps,
             modelCalls: checkpoint.state.budget.used.modelCalls,
             toolCalls: checkpoint.state.budget.used.toolCalls,
+            tokens: checkpoint.state.budget.used.tokens,
             estimatedCostMicros:
               checkpoint.state.budget.used.estimatedCostMicros,
             completedNodeIds: checkpoint.state.completed.map(
@@ -676,7 +677,7 @@ export function makeProductionResearchWorkflow(
                               steps: state.steps,
                               modelCalls: state.modelCalls,
                               toolCalls: state.toolCalls,
-                              tokens: 0,
+                              tokens: state.tokens,
                               elapsedMilliseconds: state.elapsedMilliseconds,
                               estimatedCostMicros: state.estimatedCostMicros,
                               revisions: 0,

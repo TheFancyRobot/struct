@@ -223,12 +223,14 @@ describe('research budget enforcer', () => {
           byteLength: 2_000_000,
           mediaType: 'application/json',
         }],
+        tokens: 37,
       },
       1_002,
     ))
     expect(completed).toMatchObject({
       steps: 1,
       toolCalls: 1,
+      tokens: 37,
       activeConcurrency: 0,
       toolGrantUsage: [{
         toolId: 'hybrid-retrieval',
@@ -245,6 +247,48 @@ describe('research budget enforcer', () => {
     ).toEqual(completed)
     expect(JSON.stringify(encoded)).not.toContain('large tool output')
     expect(JSON.stringify(encoded).length).toBeLessThan(8_192)
+  })
+
+  it('records provider token telemetry and rejects completion beyond the token budget', async () => {
+    const begun = await Effect.runPromise(
+      beginResearchAction(plan, policy, state(), toolAction, 1_001),
+    )
+    const exact = await Effect.runPromise(completeResearchAction(
+      plan,
+      begun,
+      toolAction,
+      {
+        progressFingerprint: 'token-limit',
+        artifacts: [],
+        tokens: plan.budget.maximumTokens,
+      },
+      1_002,
+    ))
+    expect(exact.tokens).toBe(plan.budget.maximumTokens)
+
+    const exceeded = await Effect.runPromise(Effect.either(
+      completeResearchAction(
+        plan,
+        begun,
+        toolAction,
+        {
+          progressFingerprint: 'token-overflow',
+          artifacts: [],
+          tokens: plan.budget.maximumTokens + 1,
+        },
+        1_002,
+      ),
+    ))
+    expect(exceeded).toMatchObject({
+      _tag: 'Left',
+      left: {
+        reason: {
+          kind: 'token-budget',
+          limit: plan.budget.maximumTokens,
+          attempted: plan.budget.maximumTokens + 1,
+        },
+      },
+    })
   })
 
   it('enforces grant usage structurally regardless of caller fingerprint', async () => {

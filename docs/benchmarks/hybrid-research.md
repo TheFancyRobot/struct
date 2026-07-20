@@ -1,9 +1,8 @@
 # Hybrid research evaluation
 
-STEP-07-06 closes Phase 07 with a deterministic, checked-in release gate for
-mixed document and dataset research. The fixture executes the production
-normalization, reconciliation, and synthesis guardrails; it does not score
-hard-coded prose.
+This deterministic, checked-in release gate evaluates mixed document and
+dataset research through the production hybrid scheduler, typed tool registry,
+normalization, reconciliation, and synthesis guardrails.
 
 ## What the gate proves
 
@@ -17,9 +16,14 @@ hard-coded prose.
 - Injection strings in both a document excerpt and a dataset cell remain data:
   they cannot change tool grants, budgets, or citation requirements and do not
   enter the answer. An adversarial draft that follows the injected instruction
-  by dropping its required evidence and dataset citations is rejected by the
-  production validator.
-- Repeated execution is byte-identical. The verifier checks schema, one
+  while retaining valid evidence and dataset citations is rejected specifically
+  as an instruction copied from untrusted evidence.
+- Retrieval, dataset-query, and scheduler failures fail the gate through their
+  typed production boundaries.
+- An interrupted execution checkpoints its completed node, resumes without
+  re-executing it, and completes the remaining nodes. Durable cancellation
+  prevents any provider execution.
+- Repeated report generation is byte-identical. The verifier checks schema, one
   canonical trailing newline, the outer SHA-256, and a fresh authoritative
   execution. Recomputing the outer hash after changing IDs, status, counts,
   evidence, provenance, fixture identity, taxonomy, or newlines still fails.
@@ -36,17 +40,17 @@ cap fails the `bounded-resources` criterion and therefore the entire gate.
 
 | Resource | Limit | Enforcing owner | Auditable evidence | Fail-closed behavior |
 | --- | ---: | --- | --- | --- |
-| Model calls | 1 | `packages/workflows` + `apps/worker` | routed synthesis branch and `resources.observedModelCalls` | typed budget failure; gate fails |
-| Tool calls | 2 | `packages/workflows` | authorized routed branches and `resources.observedToolCalls` | unsupported/excess tool use is rejected; gate fails |
-| Concurrent branches | 2 | `packages/workflows` + `apps/worker` | dependency-free routed branches and `resources.observedConcurrency` | excess fan-out is rejected; gate fails |
-| Elapsed time | 10,000 ms | `apps/worker` | bounded execution trace and `resources.observedElapsedMilliseconds` | timeout interrupts execution with a typed failure; gate fails |
-| Tokens | 10,000 | `packages/workflows` | synthesis output accounting and `resources.observedTokens` | token budget exhaustion stops synthesis; gate fails |
-| Estimated cost | 10 µUSD | `packages/workflows` | routed model/tool accounting and `resources.observedEstimatedCostMicros` | cost budget exhaustion stops synthesis; gate fails |
+| Model calls | 1 | `packages/workflows` + `apps/worker` | committed graph-state counter and `resources.observedModelCalls` | typed budget failure; gate fails |
+| Tool calls | 2 | `packages/workflows` | committed registry-backed graph-state counter and `resources.observedToolCalls` | unsupported/excess tool use is rejected; gate fails |
+| Concurrent branches | 2 | `packages/workflows` + `apps/worker` | live provider concurrency high-water mark and `resources.observedConcurrency` | excess fan-out is rejected; gate fails |
+| Elapsed time | 10,000 ms | `apps/worker` | committed graph elapsed-time counter and `resources.observedElapsedMilliseconds` | timeout interrupts execution with a typed failure; gate fails |
+| Tokens | 10,000 | `packages/workflows` | provider-reported tokens committed to graph/checkpoint state and `resources.observedTokens` | token budget exhaustion rejects completion; gate fails |
+| Estimated cost | 10 µUSD | `packages/workflows` | committed graph cost counter and `resources.observedEstimatedCostMicros` | cost budget exhaustion stops synthesis; gate fails |
 | Result rows | 10 | `packages/data-engine` + `packages/research-engine` | bounded query summary and `resources.maximumRows` | oversized result summary is rejected; gate fails |
 | Result columns | 8 | `packages/data-engine` + `packages/research-engine` | bounded query summary and `resources.maximumColumns` | oversized result summary is rejected; gate fails |
 | Result-summary bytes | 32,768 | `packages/research-engine` | canonical query summary and `resources.maximumSummaryBytes` | `output-too-large`; gate fails |
 | Claims | 8 | `packages/research-engine` | validated claims and `resources.maximumClaims` | `output-too-large`; gate fails |
-| Output bytes | 65,536 | `packages/research-engine` | canonical synthesis artifact and `resources.observedArtifactBytes` | `output-too-large`; gate fails |
+| Output bytes | 65,536 | `packages/research-engine` | committed artifact byte lengths and `resources.observedArtifactBytes` | `output-too-large`; gate fails |
 
 ## Failure taxonomy
 

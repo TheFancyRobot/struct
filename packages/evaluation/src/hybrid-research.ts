@@ -9,8 +9,11 @@ import {
   ProjectId,
   QueryResultSnapshotId,
   ResearchPlanId,
+  ResearchPlanNode,
   ResearchPlanNodeId,
   ResearchRunId,
+  ResearchToolInputValidationError,
+  ResearchToolProviderUnavailableError,
   Sha256Digest,
   SourceVersionId,
   WorkspaceId,
@@ -18,19 +21,32 @@ import {
   type CrossSourceSemantics,
   type DatasetCitationEvidence,
   type ResearchPlan,
+  type ResearchPlanNodeId as typeResearchPlanNodeId,
 } from '@struct/domain'
 import {
   computeRecursiveEvidenceId,
+  initialResearchGraphState,
   normalizeCrossSourceEvidence,
   prepareHybridSynthesis,
   reconcileCrossSourceEvidence,
   routeResearchPlan,
+  ResearchProviderFailure,
+  ResearchActionResult,
   validateHybridSynthesis,
   type HybridSynthesisDraft,
   type HybridSynthesisLimits,
 } from '@struct/research-engine'
+import {
+  runHybridResearchGraph,
+  makeRegistryResearchToolResolver,
+  makeResearchToolRegistry,
+  type ResearchModelResolver,
+  type ResearchModelRoutingPolicy,
+  type ResearchRunGraphDependencies,
+  type ResearchToolResolver,
+} from '@struct/workflows'
 /* eslint-enable no-unused-vars */
-import { Effect, Schema } from 'effect'
+import { Effect, Ref, Schema } from 'effect'
 import { canonicalJson } from './corpus.js'
 
 export const PHASE_07_HYBRID_EVALUATION_ID =
@@ -263,6 +279,50 @@ export const PHASE_07_RESOURCE_LIMITS: HybridSynthesisLimits & {
   maximumEstimatedCostMicros: 10,
 }
 
+const routing: ResearchModelRoutingPolicy = {
+  classification: {
+    primary: {
+      platform: 'deterministic',
+      model: 'classifier',
+      maxSteps: 1,
+      outputContract: 'question-classification.v1',
+    },
+    fallback: null,
+  },
+  planning: {
+    primary: {
+      platform: 'deterministic',
+      model: 'planner',
+      maxSteps: 1,
+      outputContract: 'research-plan.v1',
+    },
+    fallback: null,
+  },
+  critique: {
+    primary: {
+      platform: 'deterministic',
+      model: 'critic',
+      maxSteps: 1,
+      outputContract: 'evidence-assessment.v1',
+    },
+    fallback: null,
+  },
+  synthesis: {
+    primary: {
+      platform: 'deterministic',
+      model: 'synthesizer',
+      maxSteps: 1,
+      outputContract: 'research-answer.v1',
+    },
+    fallback: null,
+  },
+}
+
+const executionPolicy = {
+  maximumDuplicateActions: 1,
+  maximumNoProgressActions: 2,
+}
+
 function sha256(value: string): string {
   return new Bun.CryptoHasher('sha256').update(value).digest('hex')
 }
@@ -399,6 +459,215 @@ function recursiveInput(): CrossSourceEvidenceInput {
   }
 }
 
+interface ProductionExecution {
+  readonly state: ReturnType<typeof initialResearchGraphState>
+  readonly documentInputs: ReadonlyArray<CrossSourceEvidenceInput>
+  readonly datasetInputs: ReadonlyArray<CrossSourceEvidenceInput>
+  readonly providerExecutions: Readonly<Record<string, number>>
+  readonly maximumConcurrency: number
+}
+
+function productionExecution(
+  plan: ResearchPlan,
+  options: {
+    readonly initial?: ReturnType<typeof initialResearchGraphState>
+    readonly signal?: AbortSignal
+    readonly cancellationRequested?: () => Effect.Effect<
+      boolean,
+      ResearchProviderFailure
+    >
+    readonly failTool?: 'hybrid-retrieval' | 'dataset-query'
+    readonly onStateCommitted?: ResearchRunGraphDependencies[
+      'onStateCommitted'
+    ]
+  } = {},
+) {
+  return Effect.gen(function* () {
+    const active = yield* Ref.make(0)
+    const maximumConcurrency = yield* Ref.make(0)
+    const documentInputs = yield* Ref.make<
+      ReadonlyArray<CrossSourceEvidenceInput>
+    >([])
+    const datasetInputs = yield* Ref.make<
+      ReadonlyArray<CrossSourceEvidenceInput>
+    >([])
+    const providerExecutions = yield* Ref.make<
+      Readonly<Record<string, number>>
+    >({})
+    const recordExecution = (nodeId: typeResearchPlanNodeId) =>
+      Ref.update(providerExecutions, (counts) => ({
+        ...counts,
+        [nodeId]: (counts[nodeId] ?? 0) + 1,
+      }))
+    const executeRegistered = (
+      toolId: 'hybrid-retrieval' | 'dataset-query',
+      node: typeof ResearchPlanNode.Type,
+    ) =>
+      Effect.gen(function* () {
+            yield* recordExecution(node.id)
+            const concurrent = yield* Ref.updateAndGet(
+              active,
+              (count) => count + 1,
+            )
+            yield* Ref.update(
+              maximumConcurrency,
+              (maximum) => Math.max(maximum, concurrent),
+            )
+            yield* Effect.yieldNow()
+            if (options.failTool === toolId) {
+              return yield* new ResearchToolProviderUnavailableError({
+                toolId,
+                capability: toolId === 'hybrid-retrieval'
+                  ? 'document:retrieve'
+                  : 'dataset:query',
+                nodeId: node.id,
+                runId: plan.runId,
+                message: `${toolId} deterministic provider failure`,
+              })
+            }
+            if (toolId === 'hybrid-retrieval') {
+              yield* Ref.update(documentInputs, (items) => [
+                ...items,
+                documentInput(),
+              ])
+            } else {
+              yield* Ref.update(datasetInputs, (items) => [
+                ...items,
+                datasetInput(),
+              ])
+            }
+            yield* Ref.update(active, (count) => count - 1)
+            return {
+              progressFingerprint: `${toolId}:${node.id}`,
+              artifacts: [{
+                digest: Sha256Digest.make(
+                  `sha256:${
+                    (toolId === 'hybrid-retrieval' ? '1' : '2').repeat(64)
+                  }`,
+                ),
+                byteLength: toolId === 'hybrid-retrieval' ? 512 : 1_024,
+                mediaType: toolId === 'hybrid-retrieval'
+                  ? 'application/vnd.struct.research-evidence+json'
+                  : 'application/vnd.struct.research-dataset-result+json',
+              }],
+              tokens: 0,
+            }
+          })
+    const registry = makeResearchToolRegistry([
+      {
+        toolId: 'hybrid-retrieval',
+        capability: 'document:retrieve',
+        input: ResearchPlanNode,
+        output: ResearchActionResult,
+        timeoutMilliseconds: 1_000,
+        idempotent: true,
+        authorize: (context) => Effect.succeed(
+          context.workspaceId === plan.workspaceId
+          && context.projectId === plan.projectId,
+        ),
+        execute: (input, context) => Effect.gen(function* () {
+          const node = yield* Schema.decodeUnknown(ResearchPlanNode)(input)
+            .pipe(Effect.mapError(() =>
+              new ResearchToolInputValidationError({
+                toolId: 'hybrid-retrieval',
+                capability: 'document:retrieve',
+                nodeId: context.nodeId,
+                runId: context.runId,
+                message: 'Hybrid retrieval node is invalid',
+              })
+            ))
+          return yield* executeRegistered('hybrid-retrieval', node)
+        }),
+      },
+      {
+        toolId: 'dataset-query',
+        capability: 'dataset:query',
+        input: ResearchPlanNode,
+        output: ResearchActionResult,
+        timeoutMilliseconds: 1_000,
+        idempotent: true,
+        authorize: (context) => Effect.succeed(
+          context.workspaceId === plan.workspaceId
+          && context.projectId === plan.projectId,
+        ),
+        execute: (input, context) => Effect.gen(function* () {
+          const node = yield* Schema.decodeUnknown(ResearchPlanNode)(input)
+            .pipe(Effect.mapError(() =>
+              new ResearchToolInputValidationError({
+                toolId: 'dataset-query',
+                capability: 'dataset:query',
+                nodeId: context.nodeId,
+                runId: context.runId,
+                message: 'Dataset query node is invalid',
+              })
+            ))
+          return yield* executeRegistered('dataset-query', node)
+        }),
+      },
+    ], { trace: () => Effect.void })
+    const tools: ResearchToolResolver = makeRegistryResearchToolResolver(
+      registry,
+      {
+        maximumAttempts: 1,
+        initialBackoffMilliseconds: 1,
+        maximumBackoffMilliseconds: 1,
+      },
+      {
+        workspaceId: plan.workspaceId,
+        projectId: plan.projectId,
+        runId: plan.runId,
+        signal: options.signal ?? new AbortController().signal,
+        idempotencyKey: (nodeId) => `${plan.runId}:${nodeId}`,
+        sleep: () => Effect.void,
+        onRetryAttempt: () => Effect.void,
+      },
+    )
+    const models: ResearchModelResolver = {
+      resolve: () => Effect.succeed({
+        execute: (node) => recordExecution(node.id).pipe(
+          Effect.as({
+            progressFingerprint: `synthesis:${node.id}`,
+            artifacts: [{
+              digest: Sha256Digest.make(`sha256:${'3'.repeat(64)}`),
+              byteLength: 384,
+              mediaType: 'application/vnd.struct.research-answer+json',
+            }],
+            tokens: 24,
+          }),
+        ),
+      }),
+    }
+    let now = options.initial?.startedAtMilliseconds ?? 1_000
+    const state = yield* runHybridResearchGraph(
+      plan,
+      options.initial ?? initialResearchGraphState({
+        runId: plan.runId,
+        planId: plan.id,
+        workspaceId: plan.workspaceId,
+        projectId: plan.projectId,
+      }, now),
+      routing,
+      executionPolicy,
+      {
+        tools,
+        models,
+        now: () => ++now,
+        estimatedCostMicros: () => 1,
+        isCancellationRequested: options.cancellationRequested,
+        onStateCommitted: options.onStateCommitted,
+      },
+      options.signal ?? new AbortController().signal,
+    )
+    return {
+      state,
+      documentInputs: yield* Ref.get(documentInputs),
+      datasetInputs: yield* Ref.get(datasetInputs),
+      providerExecutions: yield* Ref.get(providerExecutions),
+      maximumConcurrency: yield* Ref.get(maximumConcurrency),
+    } satisfies ProductionExecution
+  })
+}
+
 const EvaluationCriterion = Schema.Struct({
   id: Schema.Literal(...CRITERION_IDS),
   status: Schema.Literal('passed', 'failed'),
@@ -496,8 +765,9 @@ const evaluate = Effect.fn('HybridResearchEvaluation.run')(function* () {
     researchPlan,
     ['document', 'dataset'],
   )
+  const production = yield* productionExecution(researchPlan)
   const normalized = yield* normalizeCrossSourceEvidence(
-    [documentInput(), datasetInput()],
+    [...production.documentInputs, ...production.datasetInputs],
     scope,
   )
   const aligned = yield* reconcileCrossSourceEvidence(
@@ -599,7 +869,7 @@ const evaluate = Effect.fn('HybridResearchEvaluation.run')(function* () {
       ...draft.claims[0]!,
       text: injection,
       evidenceIds: draft.claims[0]!.evidenceIds,
-      datasetCitationIds: [],
+      datasetCitationIds: draft.claims[0]!.datasetCitationIds,
     }],
   }
   const injectedInstruction = yield* validateHybridSynthesis(
@@ -611,6 +881,72 @@ const evaluate = Effect.fn('HybridResearchEvaluation.run')(function* () {
     contradictory,
     PHASE_07_RESOURCE_LIMITS,
   ).pipe(Effect.either)
+  const retrievalFailure = yield* productionExecution(researchPlan, {
+    failTool: 'hybrid-retrieval',
+  }).pipe(Effect.either)
+  const queryFailure = yield* productionExecution(researchPlan, {
+    failTool: 'dataset-query',
+  }).pipe(Effect.either)
+  const schedulerFailure = yield* productionExecution(researchPlan, {
+    initial: {
+      ...initialResearchGraphState({
+        runId: researchPlan.runId,
+        planId: researchPlan.id,
+        workspaceId: researchPlan.workspaceId,
+        projectId: researchPlan.projectId,
+      }, 1_000),
+      completedNodeIds: [ResearchPlanNodeId.make(
+        'a70e8400-e29b-41d4-a716-446655440099',
+      )],
+    },
+  }).pipe(Effect.either)
+
+  const recoveryPlan: ResearchPlan = {
+    ...researchPlan,
+    nodes: researchPlan.nodes.map((node) =>
+      node.id === planIds.dataset
+        ? { ...node, dependencies: [planIds.document] }
+        : node.id === planIds.synthesis
+          ? { ...node, dependencies: [planIds.dataset] }
+          : node
+    ),
+  }
+  const recoveryController = new AbortController()
+  const checkpoint = yield* Ref.make<
+    ReturnType<typeof initialResearchGraphState> | null
+  >(null)
+  const interrupted = yield* productionExecution(recoveryPlan, {
+    signal: recoveryController.signal,
+    onStateCommitted: (state) => Ref.set(checkpoint, state).pipe(
+      Effect.tap(() => Effect.sync(() => recoveryController.abort())),
+    ),
+  }).pipe(Effect.either)
+  const interruptedCheckpoint = yield* Ref.get(checkpoint)
+  if (interruptedCheckpoint === null) {
+    return yield* Effect.dieMessage(
+      'Deterministic interruption did not produce a checkpoint',
+    )
+  }
+  const resumed = yield* productionExecution(recoveryPlan, {
+    initial: interruptedCheckpoint,
+  })
+  const cancelled = yield* productionExecution(researchPlan, {
+    cancellationRequested: () => Effect.succeed(true),
+  }).pipe(Effect.either)
+  const retrievalFailedAtProvider = retrievalFailure._tag === 'Left'
+    && retrievalFailure.left._tag === 'ResearchExecutionStopped'
+    && retrievalFailure.left.reason.kind === 'provider-failure'
+  const queryFailedAtProvider = queryFailure._tag === 'Left'
+    && queryFailure.left._tag === 'ResearchExecutionStopped'
+    && queryFailure.left.reason.kind === 'provider-failure'
+  const schedulerRejectedCheckpoint = schedulerFailure._tag === 'Left'
+    && schedulerFailure.left._tag === 'HybridBranchSchedulingFailure'
+  const interruptedAtBoundary = interrupted._tag === 'Left'
+    && interrupted.left._tag === 'ResearchExecutionStopped'
+    && interrupted.left.reason.kind === 'interrupted'
+  const cancelledAtBoundary = cancelled._tag === 'Left'
+    && cancelled.left._tag === 'ResearchExecutionStopped'
+    && cancelled.left.reason.kind === 'interrupted'
 
   const evidenceKinds = new Set(
     aligned.evidence.map((item) => item.payload.kind),
@@ -652,31 +988,22 @@ const evaluate = Effect.fn('HybridResearchEvaluation.run')(function* () {
       ? dataset.payload.evidence.snapshot.resultHash
       : null,
   }
-  const routedBranches = routed.filter((item) => item.branch !== 'synthesis')
-  const observedModelCalls = synthesis.claims.length
-  const observedToolCalls = routedBranches.length
-  const observedConcurrency = routedBranches.filter(
-    (item) => item.dependencies.length === 0,
-  ).length
-  const observedElapsedMilliseconds = routed.length + caseStatuses.length
-  const observedTokens = synthesis.answer.split(/\s+/u).filter(Boolean).length
-  const observedEstimatedCostMicros = observedModelCalls + observedToolCalls
-  const observedArtifactBytes = new TextEncoder().encode(
-    canonicalJson({
-      answer: synthesis.answer,
-      claims: synthesis.claims,
-      reconciliationId: synthesis.reconciliationId,
-      querySummaryHashes: synthesis.querySummaries.map(
-        (summary) => summary.summaryHash,
-      ),
-    }),
-  ).byteLength
+  const observedModelCalls = production.state.modelCalls
+  const observedToolCalls = production.state.toolCalls
+  const observedConcurrency = production.maximumConcurrency
+  const observedElapsedMilliseconds = production.state.elapsedMilliseconds
+  const observedTokens = production.state.tokens
+  const observedEstimatedCostMicros = production.state.estimatedCostMicros
+  const observedArtifactBytes = production.state.artifacts.reduce(
+    (total, artifact) => total + artifact.byteLength,
+    0,
+  )
   const injectionContained = document?.payload.kind === 'document'
     && document.payload.excerpt.includes(injection)
     && prompt.querySummaries[0]?.rows[0]?.[1] === injection
     && !synthesis.answer.includes(injection)
     && injectedInstruction._tag === 'Left'
-    && injectedInstruction.left.reason === 'citation-drift'
+    && injectedInstruction.left.reason === 'untrusted-instruction'
     && exactClaim?.evidenceIds.length === 2
     && researchPlan.toolPolicy.grants.every((grant) =>
       grant.maximumCalls === 1
@@ -718,6 +1045,12 @@ const evaluate = Effect.fn('HybridResearchEvaluation.run')(function* () {
       'typed-source-routing',
       routed.map((item) => item.branch).join(',')
           === 'document,dataset,synthesis'
+        && production.state.status === 'completed'
+        && production.documentInputs.length === 1
+        && production.datasetInputs.length === 1
+        && retrievalFailedAtProvider
+        && queryFailedAtProvider
+        && schedulerRejectedCheckpoint
         && evidenceKinds.has('document')
         && evidenceKinds.has('dataset')
         && documentOnlyStatus === 'aligned'
@@ -726,6 +1059,19 @@ const evaluate = Effect.fn('HybridResearchEvaluation.run')(function* () {
       {
         sourceKinds: fixture.sourceKinds,
         routedBranches: routed.map((item) => item.branch),
+        productionStatus: production.state.status,
+        providerExecutions: production.providerExecutions,
+        negativeFailures: {
+          retrieval: retrievalFailedAtProvider
+            ? 'provider-failure'
+            : 'unexpected-outcome',
+          query: queryFailedAtProvider
+            ? 'provider-failure'
+            : 'unexpected-outcome',
+          scheduler: schedulerRejectedCheckpoint
+            ? 'invalid-checkpoint'
+            : 'unexpected-outcome',
+        },
         executedKinds: [...evidenceKinds],
         singleSourceStatuses: {
           document: documentOnlyStatus,
@@ -850,12 +1196,20 @@ const evaluate = Effect.fn('HybridResearchEvaluation.run')(function* () {
     ),
     criterion(
       'deterministic-replay',
-      aligned.id === draft.reconciliationId
-        && synthesis.reconciliationId === aligned.id
-        && synthesis.claimSignature === claimSignature,
+      interruptedAtBoundary
+        && interruptedCheckpoint.completedNodeIds.length === 1
+        && interruptedCheckpoint.completedNodeIds[0] === planIds.document
+        && resumed.state.status === 'completed'
+        && resumed.providerExecutions[planIds.document] === undefined
+        && resumed.providerExecutions[planIds.dataset] === 1
+        && resumed.providerExecutions[planIds.synthesis] === 1
+        && cancelledAtBoundary,
       {
-        reconciliationId: synthesis.reconciliationId,
-        claimSignature: synthesis.claimSignature,
+        interruption: interruptedAtBoundary ? 'interrupted' : 'unexpected',
+        checkpointCompletedNodeIds: interruptedCheckpoint.completedNodeIds,
+        resumedStatus: resumed.state.status,
+        resumedProviderExecutions: resumed.providerExecutions,
+        cancellation: cancelledAtBoundary ? 'cancelled' : 'unexpected',
       },
     ),
     criterion(
