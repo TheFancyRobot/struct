@@ -9,8 +9,8 @@ are the evidence sources.
 ## Signal and privacy contract
 
 Every instrumented boundary uses the same `@struct/observability` path. The
-finite `boundary` allowlist is request, workspace, run, job, tool, database,
-sidecar, SSE, and report; `outcome` is success or failure; and `classification`
+finite `boundary` allowlist is request, readiness, workspace, run, job, tool,
+database, sidecar, sse, and report; `outcome` is success or failure; and `classification`
 is completed, cancelled, invalid-request, not-found, unauthorized,
 dependency-unavailable, timeout, stalled, capacity-exceeded, or
 internal-failure. Unknown classifications normalize to internal-failure.
@@ -52,8 +52,10 @@ Use four panels with a five-minute window:
 
 1. Availability: API/worker `/readyz`, PostgreSQL Compose health, and
    authenticated data-engine health.
-2. Lifecycle: fixed success/failure counters for request, workspace, run, job,
-   tool, database, sidecar, SSE, and report boundaries.
+2. Lifecycle: fixed success/failure counters for request, readiness, workspace,
+   run, job, tool, database, sidecar, SSE, and report boundaries. Readiness
+   probes use the readiness boundary; database counters are reserved for
+   instrumented workload operations and never include probe cadence.
 3. Durable work: ready/running job counts, oldest heartbeat age, terminal run
    classifications, cancellation age, and retry exhaustion from persisted
    job/run events.

@@ -57,6 +57,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 2026-07-20: Found and fixed an existing uncancelled live-gate deadline timer; the real v1 gate now completes and exits in 26.37 seconds.
 - 2026-07-20: Completed all repository, live integration, documentation, and vault handoff checks.
 - Root pre-publication review fixed three inconsistencies: the runbook referenced a nonexistent dependency command, API DB readiness telemetry ignored its typed classification, and support diagnostics emitted a type-inconsistent identity shape. Root also strengthened game-day checks to prove every named recovery command exists.
+- 2026-07-20 PR review remediation: validated four CodeRabbit documentation findings and three Codex implementation findings. Clarified finite telemetry vocabulary, final UTF-8 diagnostic bounding, authenticated dependency alerts, and credential verification. Added cancellable two-second API/worker database readiness deadlines, separated readiness probes from database workload metrics, and moved API request observation to the shared HTTP boundary with 5xx-aware outcome classification. Full unit suite: 781 passed, 171 skipped, 0 failed; typecheck, lint, build, import boundaries, docs, and secret scan passed.
 
 ## Findings
 

@@ -56,6 +56,7 @@ import {
   readinessResponse,
   renderWalkingSliceMetrics,
   tracingOtlpEndpointConfig,
+  withReadinessDeadline,
   withWalkingSliceSpan,
 } from '@struct/observability'
 import {
@@ -195,6 +196,24 @@ function researchFailureResponse(cause: Cause.Cause<unknown>): Response {
   return jsonResponse({ error: 'ResearchServiceUnavailable' }, 503)
 }
 
+const databaseReadinessCheck = (
+  sql: import('postgres').Sql,
+): Effect.Effect<void, unknown> => withReadinessDeadline(
+  'database',
+  Effect.async<void, DependencyReadinessError>((resume) => {
+    const query = sql.unsafe('SELECT 1')
+    void query.then(
+      () => resume(Effect.void),
+      () => resume(Effect.fail(new DependencyReadinessError({
+        dependency: 'database',
+        classification: 'dependency-unavailable',
+        message: 'API database readiness failed',
+      }))),
+    )
+    return Effect.sync(() => query.cancel())
+  }),
+)
+
 const server = Effect.gen(function* () {
   const port = yield* apiPortConfig
   const databaseUrl = yield* databaseUrlConfig
@@ -265,11 +284,7 @@ const server = Effect.gen(function* () {
     },
   )
 
-  yield* Effect.acquireRelease(
-    Effect.sync(() =>
-      Bun.serve({
-        port,
-        async fetch(req: Request) {
+  const handleRequest = async (req: Request): Promise<Response> => {
       const url = new URL(req.url)
 
       if (isPublicApiRequest(req)) {
@@ -277,17 +292,10 @@ const server = Effect.gen(function* () {
         return Runtime.runPromise(effectRuntime)(readinessResponse([{
           dependency: 'database',
           check: observeBoundary({
-            boundary: 'database',
+            boundary: 'readiness',
             event: 'api.database.readiness',
             identity: {},
-            effect: Effect.tryPromise({
-              try: () => sql.unsafe('SELECT 1').then(() => undefined),
-              catch: () => new DependencyReadinessError({
-                dependency: 'database',
-                classification: 'dependency-unavailable',
-                message: 'API database readiness failed',
-              }),
-            }),
+            effect: databaseReadinessCheck(sql),
           }),
         }]))
       }
@@ -608,13 +616,7 @@ const server = Effect.gen(function* () {
           if (parsed.projectId !== sourceRoute[1]) {
             return yield* Effect.fail(new Error('Project scope mismatch'))
           }
-          const registered = yield* withWalkingSliceSpan(
-            'api-request',
-            {
-              workspaceId: parsed.workspaceId,
-              projectId: parsed.projectId,
-            },
-            Effect.gen(function* () {
+          const registered = yield* Effect.gen(function* () {
               const registered = yield* withWalkingSliceSpan(
                 'command',
                 {
@@ -665,8 +667,7 @@ const server = Effect.gen(function* () {
                 },
               })
               return registered
-            }),
-          )
+            })
           return registered
         })
 
@@ -705,13 +706,7 @@ const server = Effect.gen(function* () {
               message: 'Project scope does not match the request path',
             })
           }
-          const started = yield* withWalkingSliceSpan(
-            'api-request',
-            {
-              workspaceId: parsed.workspaceId,
-              projectId: parsed.projectId,
-            },
-            Effect.gen(function* () {
+          const started = yield* Effect.gen(function* () {
               const started = yield* withWalkingSliceSpan(
                 'command',
                 {
@@ -755,8 +750,7 @@ const server = Effect.gen(function* () {
               })
               yield* incrementWalkingSliceMetric('runs.started')
               return started
-            }),
-          )
+            })
           return started
         })
 
@@ -1243,10 +1237,26 @@ const server = Effect.gen(function* () {
         return jsonResponse(exit.value)
       }
 
-          return new Response('Not Found', { status: 404 })
-        },
-      }),
-    ),
+      return new Response('Not Found', { status: 404 })
+  }
+
+  yield* Effect.acquireRelease(
+    Effect.sync(() => Bun.serve({
+      port,
+      fetch(req: Request) {
+        return Runtime.runPromise(effectRuntime)(observeBoundary({
+          boundary: 'request',
+          event: 'api.request',
+          identity: {
+            requestId: req.headers.get('x-request-id') ?? crypto.randomUUID(),
+          },
+          effect: Effect.promise(() => handleRequest(req)),
+          resultClassification: (response) => response.status >= 500
+            ? 'internal-failure'
+            : undefined,
+        }))
+      },
+    })),
     (httpServer) =>
       Effect.promise(() => httpServer.stop(true)).pipe(Effect.orDie),
   )

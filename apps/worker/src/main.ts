@@ -58,6 +58,7 @@ import {
   readinessResponse,
   renderWalkingSliceMetrics,
   tracingOtlpEndpointConfig,
+  withReadinessDeadline,
   withWalkingSliceSpan,
 } from '@struct/observability'
 import {
@@ -77,6 +78,24 @@ import { makeProductionResearchPlanningPolicy } from './jobs/research-planning'
 import { processOneSourceTextReindex } from './jobs/reindex-source-text'
 import { processOneDatasetMaterialization } from './jobs/materialize-dataset'
 import { runWorkerPollLoops } from './polling'
+
+const databaseReadinessCheck = (
+  sql: import('postgres').Sql,
+): Effect.Effect<void, unknown> => withReadinessDeadline(
+  'database',
+  Effect.async<void, DependencyReadinessError>((resume) => {
+    const query = sql.unsafe('SELECT 1')
+    void query.then(
+      () => resume(Effect.void),
+      () => resume(Effect.fail(new DependencyReadinessError({
+        dependency: 'database',
+        classification: 'dependency-unavailable',
+        message: 'Worker database readiness failed',
+      }))),
+    )
+    return Effect.sync(() => query.cancel())
+  }),
+)
 
 const program = Effect.gen(function* () {
   const metricsPort = yield* workerMetricsPortConfig
@@ -217,17 +236,10 @@ const program = Effect.gen(function* () {
               {
                 dependency: 'database',
                 check: observeBoundary({
-                  boundary: 'database',
+                  boundary: 'readiness',
                   event: 'worker.database.readiness',
                   identity: {},
-                  effect: Effect.tryPromise({
-                    try: () => sql.unsafe('SELECT 1').then(() => undefined),
-                    catch: () => new DependencyReadinessError({
-                      dependency: 'database',
-                      classification: 'dependency-unavailable',
-                      message: 'Worker database readiness failed',
-                    }),
-                  }),
+                  effect: databaseReadinessCheck(sql),
                 }),
               },
             ]))

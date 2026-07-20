@@ -1,4 +1,4 @@
-import { Effect } from 'effect'
+import { Duration, Effect } from 'effect'
 import { DependencyReadinessError } from './tracing.js'
 
 export interface ReadinessCheck {
@@ -13,6 +13,21 @@ export interface ReadinessReport {
     readonly classification: DependencyReadinessError['classification']
   }>
 }
+
+export const withReadinessDeadline = <R>(
+  dependency: DependencyReadinessError['dependency'],
+  check: Effect.Effect<void, unknown, R>,
+  duration: Duration.DurationInput = Duration.seconds(2),
+): Effect.Effect<void, unknown, R> => check.pipe(
+  Effect.timeoutFail({
+    duration,
+    onTimeout: () => new DependencyReadinessError({
+      dependency,
+      classification: 'timeout',
+      message: `${dependency} readiness timed out`,
+    }),
+  }),
+)
 
 export const checkReadiness = (
   checks: ReadonlyArray<ReadinessCheck>,

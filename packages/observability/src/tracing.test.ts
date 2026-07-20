@@ -115,6 +115,28 @@ describe('walking-slice observability', () => {
     }))).toBe('dependency-unavailable')
   })
 
+  it('classifies failed HTTP responses without changing the response value', async () => {
+    const before = await Effect.runPromise(renderWalkingSliceMetrics)
+    const beforeFailures = Number(
+      /^struct_request_failure_total (\d+)$/m.exec(before)?.[1] ?? '-1',
+    )
+    const response = new Response('unavailable', { status: 503 })
+    const result = await Effect.runPromise(observeBoundary({
+      boundary: 'request',
+      event: 'api.request',
+      identity: { requestId: 'request-503' },
+      effect: Effect.succeed(response),
+      resultClassification: (value) => value.status >= 500
+        ? 'internal-failure'
+        : undefined,
+    }))
+    expect(result).toBe(response)
+    const after = await Effect.runPromise(renderWalkingSliceMetrics)
+    expect(Number(
+      /^struct_request_failure_total (\d+)$/m.exec(after)?.[1] ?? '-1',
+    )).toBe(beforeFailures + 1)
+  })
+
   it('preserves every Exit while exporting only sanitized failure telemetry', async () => {
     const exporter = new InMemorySpanExporter()
     const secretFailure = {

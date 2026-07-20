@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'bun:test'
-import { Effect } from 'effect'
+import { Duration, Effect, Exit } from 'effect'
 import {
   checkReadiness,
   healthResponse,
   readinessResponse,
+  withReadinessDeadline,
 } from './health'
 import { DependencyReadinessError, classifyTerminalFailure } from './tracing'
 
@@ -41,5 +42,23 @@ describe('health and readiness', () => {
       message: 'Database readiness failed',
     })
     expect(classifyTerminalFailure(failure)).toBe('dependency-unavailable')
+  })
+
+  it('returns a typed timeout when a dependency check stalls', async () => {
+    const exit = await Effect.runPromiseExit(withReadinessDeadline(
+      'database',
+      Effect.never,
+      Duration.millis(5),
+    ))
+    expect(Exit.isFailure(exit)).toBe(true)
+    if (Exit.isSuccess(exit)) return
+    const failure = exit.cause.pipe(
+      (cause) => cause._tag === 'Fail' ? cause.error : undefined,
+    )
+    expect(failure).toBeInstanceOf(DependencyReadinessError)
+    expect(failure).toMatchObject({
+      dependency: 'database',
+      classification: 'timeout',
+    })
   })
 })

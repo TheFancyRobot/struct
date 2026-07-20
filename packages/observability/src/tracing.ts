@@ -34,6 +34,7 @@ export type WalkingSliceStage =
 
 export const operationalBoundaries = [
   'request',
+  'readiness',
   'workspace',
   'run',
   'job',
@@ -335,6 +336,9 @@ export const observeBoundary = <A, E, R>(input: {
   readonly event: string
   readonly identity: TraceIdentity
   readonly effect: Effect.Effect<A, E, R>
+  readonly resultClassification?: (
+    value: A,
+  ) => Exclude<TerminalClassification, 'completed'> | undefined
 }): Effect.Effect<A, E, R> => Effect.gen(function* () {
   const startedAt = yield* Effect.clockWith((clock) => clock.currentTimeMillis)
   const exit = yield* Effect.exit(input.effect).pipe(
@@ -344,16 +348,22 @@ export const observeBoundary = <A, E, R>(input: {
         (yield* Effect.clockWith((clock) => clock.currentTimeMillis)) - startedAt,
       )
       if (Exit.isSuccess(exit)) {
-        yield* incrementOperationalMetric(input.boundary, 'success')
+        const resultClassification = input.resultClassification?.(exit.value)
+        const outcome = resultClassification === undefined ? 'success' : 'failure'
+        const classification = resultClassification ?? 'completed'
+        yield* incrementOperationalMetric(input.boundary, outcome)
         yield* Effect.annotateCurrentSpan({
-          'struct.outcome': 'success',
-          'struct.classification': 'completed',
+          'struct.outcome': outcome,
+          'struct.classification': classification,
         })
-        yield* Effect.logInfo(boundedString(input.event)).pipe(Effect.annotateLogs({
+        const log = resultClassification === undefined
+          ? Effect.logInfo(boundedString(input.event))
+          : Effect.logWarning(boundedString(input.event))
+        yield* log.pipe(Effect.annotateLogs({
           ...traceAttributes(input.identity),
           'struct.boundary': input.boundary,
-          'struct.outcome': 'success',
-          'struct.classification': 'completed',
+          'struct.outcome': outcome,
+          'struct.classification': classification,
           'duration.ms': durationMs,
         }))
         return
