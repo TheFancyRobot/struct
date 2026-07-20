@@ -1,6 +1,11 @@
 # Outcome
 
-- Record the final result, validation performed, and explicit follow-up here.
+- Completed deterministic bounded corpus partitioning and scheduling with stable identities across reordered equivalent manifests and changed identities for relevant content, plan, and policy changes.
+- Added typed excluded, unreadable, and oversized entry metadata; exact boundary handling; mixed-schema grouping; bounded concurrency; cancellation; attempt-fenced lease recovery; retry exhaustion; and idempotent checkpoint resume.
+- Added the worker journal path for enqueue, monitor, bounded claim, and resume while reusing Phase 05 product checkpoint conventions and avoiding per-file agent runs.
+- Root review strengthened persisted-state validation, immutable terminal reasons, and mixed-outcome convergence before publication.
+- Validation: 561 repository tests passed, 164 opt-in integration tests skipped, 108 live integrations passed, and 5 browser regressions passed with 0 failures; root typecheck, lint, import boundaries, production build, docs lint, secrets scan, Compose config, and deterministic two-run 250-file corpus hash comparison passed.
+- STEP-06-03 can consume the stable partition batches and status metadata after this step is reviewed and merged.
 
 ## Related Notes
 

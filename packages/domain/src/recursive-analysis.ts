@@ -74,6 +74,12 @@ export type RecursiveTerminalStateId =
 export const RecursiveAnalysisPolicy = Schema.Struct({
   maximumDepth: PositiveInteger.pipe(Schema.lessThanOrEqualTo(16)),
   maximumFanOut: PositiveInteger.pipe(Schema.lessThanOrEqualTo(64)),
+  maximumPartitionItems: PositiveInteger.pipe(
+    Schema.lessThanOrEqualTo(25_000),
+  ),
+  maximumPartitionAttempts: PositiveInteger.pipe(
+    Schema.lessThanOrEqualTo(16),
+  ),
   maximumConcurrency: PositiveInteger.pipe(Schema.lessThanOrEqualTo(64)),
   maximumElapsedMilliseconds: PositiveInteger.pipe(
     Schema.lessThanOrEqualTo(86_400_000),
@@ -135,6 +141,7 @@ export type RecursiveAnalysisRequest =
 
 export const RecursiveDecompositionNode = Schema.Struct({
   id: RecursiveDecompositionNodeId,
+  groupKey: StableIdentity,
   requestId: RecursiveAnalysisRequestId,
   parentId: Schema.NullOr(RecursiveDecompositionNodeId),
   depth: Counter.pipe(Schema.lessThanOrEqualTo(16)),
@@ -168,9 +175,15 @@ export const RecursivePartition = Schema.Struct({
   nodeId: RecursiveDecompositionNodeId,
   ordinal: Counter,
   schemaFamily: NonBlankString,
+  pathGroup: NonBlankString,
+  sizeBand: Schema.Literal('empty', 'tiny', 'small', 'medium', 'large'),
+  planId: ResearchPlanId,
   sourceVersionIds: Schema.Array(SourceVersionId).pipe(Schema.minItems(1)),
   entryKeys: Schema.Array(NonBlankString).pipe(Schema.minItems(1)),
   byteLength: Counter,
+  estimatedTokens: Counter,
+  estimatedCostMicros: Counter,
+  estimatedArtifactBytes: Counter,
 }).pipe(
   Schema.filter((partition) => [
     new Set(partition.sourceVersionIds).size === partition.sourceVersionIds.length
@@ -237,6 +250,10 @@ export const RecursiveTerminalReason = Schema.Union(
   Schema.Struct({ kind: Schema.Literal('cost-limit'), limit: Counter }),
   Schema.Struct({ kind: Schema.Literal('byte-limit'), limit: PositiveInteger }),
   Schema.Struct({ kind: Schema.Literal('artifact-limit'), limit: PositiveInteger }),
+  Schema.Struct({
+    kind: Schema.Literal('partition-attempts-exhausted'),
+    limit: PositiveInteger,
+  }),
   Schema.Struct({ kind: Schema.Literal('cancelled') }),
   Schema.Struct({ kind: Schema.Literal('source-version-stale') }),
   Schema.Struct({ kind: Schema.Literal('checkpoint-incompatible') }),

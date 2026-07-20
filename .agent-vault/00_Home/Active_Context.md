@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-20._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_02_implement-bounded-corpus-partitioning-and-scheduling|STEP-06-02 Implement Bounded Corpus Partitioning and Scheduling]] - status: planned - phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive corpus analysis]]
+- Current step: [[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_02_implement-bounded-corpus-partitioning-and-scheduling|STEP-06-02 Implement Bounded Corpus Partitioning and Scheduling]] - status: completed locally; publication, automated review, and merge pending
 - Active phase: [[02_Phases/Phase_06_recursive_corpus_analysis/Phase|PHASE-06 Recursive Corpus Analysis]] - status: active - owner: Codex - updated: 2026-07-20
-- Also active: 40 more additional steps.
+- Also active: 39 more additional steps.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -39,7 +39,7 @@ _Last refreshed: 2026-07-20._
 - Phase 03 and STEP-03-01 through STEP-03-06 are completed and merged.
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
-- Phase 06 is refined and active. STEP-06-01 and its BUG-0011 remediation are completed, reviewed, and merged; STEP-06-02 is the current target.
+- Phase 06 is refined and active. STEP-06-01 and its BUG-0011 remediation are completed, reviewed, and merged; STEP-06-02 is implemented and root-validated pending publication, automated review, and merge.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 
 ## Out Of Scope Right Now
@@ -61,7 +61,7 @@ _Last refreshed: 2026-07-20._
 
 ## Open Questions
 
-- No unresolved design question or confirmed defect blocks STEP-06-02.
+- No unresolved design question or confirmed defect blocks STEP-06-02 publication.
 
 ## Critical Bugs
 
@@ -71,5 +71,5 @@ _Last refreshed: 2026-07-20._
 
 ## Next Actions
 
-- Activate STEP-06-02 in a fresh session and dedicated branch, then execute its refined brief and validation plan.
+- Publish STEP-06-02, address validated automated feedback, and merge; activate STEP-06-03 only afterward.
 - Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.
