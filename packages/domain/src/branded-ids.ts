@@ -52,6 +52,22 @@ export type ResearchThreadId = Schema.Schema.Type<typeof ResearchThreadId>
 export const ResearchRunId = BrandedUUID.pipe(Schema.brand('ResearchRunId'))
 export type ResearchRunId = Schema.Schema.Type<typeof ResearchRunId>
 
+/** ResearchPlanId — identity of one immutable version of a research plan. */
+export const ResearchPlanId = BrandedUUID.pipe(Schema.brand('ResearchPlanId'))
+export type ResearchPlanId = Schema.Schema.Type<typeof ResearchPlanId>
+
+/** ResearchPlanNodeId — identity of one node within a research plan. */
+export const ResearchPlanNodeId = BrandedUUID.pipe(Schema.brand('ResearchPlanNodeId'))
+export type ResearchPlanNodeId = Schema.Schema.Type<typeof ResearchPlanNodeId>
+
+/** EvidenceRequirementId — identity of one plan-level evidence requirement. */
+export const EvidenceRequirementId = BrandedUUID.pipe(Schema.brand('EvidenceRequirementId'))
+export type EvidenceRequirementId = Schema.Schema.Type<typeof EvidenceRequirementId>
+
+/** ResearchCheckpointId — identity of one product-owned execution checkpoint. */
+export const ResearchCheckpointId = BrandedUUID.pipe(Schema.brand('ResearchCheckpointId'))
+export type ResearchCheckpointId = Schema.Schema.Type<typeof ResearchCheckpointId>
+
 /** CitationId — identity of a citation. */
 export const CitationId = BrandedUUID.pipe(Schema.brand('CitationId'))
 export type CitationId = Schema.Schema.Type<typeof CitationId>

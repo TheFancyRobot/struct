@@ -41,6 +41,12 @@ Use `.agent-vault/` as durable project memory. Prefer MCP tools over direct edit
 - A genuinely external blocker must be recorded as an open bug and blocks roadmap advancement until resolved; it is not an exception to the gate.
 - Review approval and step completion require zero known confirmed defects across code, tests, builds, security, documentation, and vault state.
 
+## Greenfield Compatibility Policy
+
+- Do not preserve backward compatibility or accommodate legacy code or libraries.
+- The database is not in production and contains no data that must be migrated.
+- When a breaking database change is needed, prefer drop-and-recreate over compatibility layers or data-preservation scripts.
+
 ## Phase Refinement Gate
 
 - After the final step of a phase is reviewed and merged, refine the next planned phase before creating or implementing its first step branch.
