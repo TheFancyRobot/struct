@@ -192,7 +192,7 @@ function report(mode: ClaimEvidenceMode): Report {
     projectId,
     runId,
     sourceVersionIds: [sourceVersionId, secondSourceVersionId],
-    findingIds: [],
+    findingIds: [uuid('19')],
     titleRevisions: [{
       id: uuid('20'),
       revision: 0,
@@ -239,6 +239,7 @@ function report(mode: ClaimEvidenceMode): Report {
         createdAt: 1n,
       }],
       currentRevision: 0,
+      findingIds: [uuid('19')],
       claimIds: [uuid('21')],
       lastRegenerationKey: null,
     }],

@@ -15,6 +15,7 @@ import {
   ProjectRepo,
   DirectoryControlRepo,
   DatasetQueryEvidenceRepo,
+  DurableArtifactsRepo,
   EntityNotFoundError,
   ResearchExecutionRepo,
   ResearchProjectionRepo,
@@ -81,6 +82,7 @@ import {
   listDatasetQueryHistory,
   reopenDatasetCitation,
 } from './routes/dataset-queries'
+import { durableArtifactRoute } from './routes/durable-artifacts'
 
 interface RegisterRequestBody {
   readonly workspaceId?: unknown
@@ -211,6 +213,10 @@ const server = Effect.gen(function* () {
   )
   const datasetQueryEvidenceLayer = Layer.provide(
     DatasetQueryEvidenceRepo.Default,
+    sqlLayer,
+  )
+  const durableArtifactLayer = Layer.provide(
+    DurableArtifactsRepo.Default,
     sqlLayer,
   )
   const effectRuntime = yield* Effect.runtime<never>()
@@ -901,6 +907,71 @@ const server = Effect.gen(function* () {
         }),
       )
       if (datasetQueryResponse !== undefined) return datasetQueryResponse
+
+      const durableArtifactResponse = await Runtime.runPromise(effectRuntime)(
+        durableArtifactRoute(req, {
+          authorize: (credential, workspaceId, projectId) =>
+            Effect.gen(function* () {
+              if (!credentialMatches(apiAuthToken, credential)) {
+                return yield* new DatasetQueryAuthenticationError({
+                  message: 'API bearer credential is invalid',
+                })
+              }
+              const project = yield* ProjectRepo.findById(projectId).pipe(
+                Effect.provide(projectLayer),
+                Effect.mapError(() =>
+                  new DatasetQueryAuthorizationError({
+                    message: 'Artifact scope is not authorized',
+                  })),
+              )
+              if (project.workspaceId !== workspaceId) {
+                return yield* new DatasetQueryAuthorizationError({
+                  message: 'Artifact scope is not authorized',
+                })
+              }
+            }),
+          saveFinding: (finding, key) =>
+            DurableArtifactsRepo.saveFinding(finding, key).pipe(
+              Effect.provide(durableArtifactLayer),
+            ),
+          listFindings: (workspaceId, projectId) =>
+            DurableArtifactsRepo.listFindings(workspaceId, projectId).pipe(
+              Effect.provide(durableArtifactLayer),
+            ),
+          findFinding: (workspaceId, projectId, findingId) =>
+            DurableArtifactsRepo.findFinding(
+              workspaceId,
+              projectId,
+              findingId,
+            ).pipe(Effect.provide(durableArtifactLayer)),
+          saveReport: (report, expectedRevision, key) =>
+            DurableArtifactsRepo.saveReport(
+              report,
+              expectedRevision,
+              key,
+            ).pipe(Effect.provide(durableArtifactLayer)),
+          findReport: (workspaceId, projectId, reportId) =>
+            DurableArtifactsRepo.findReport(
+              workspaceId,
+              projectId,
+              reportId,
+            ).pipe(Effect.provide(durableArtifactLayer)),
+          findReportRevisionByKey: (
+            workspaceId,
+            projectId,
+            reportId,
+            key,
+          ) => DurableArtifactsRepo.findReportRevisionByKey(
+            workspaceId,
+            projectId,
+            reportId,
+            key,
+          ).pipe(Effect.provide(durableArtifactLayer)),
+        }),
+      )
+      if (durableArtifactResponse !== undefined) {
+        return durableArtifactResponse
+      }
 
       if (citationRoute !== null && req.method === 'GET') {
         const identifiers = Effect.try({

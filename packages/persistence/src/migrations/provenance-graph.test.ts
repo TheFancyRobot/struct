@@ -29,7 +29,9 @@ describe('provenance graph migration', () => {
     expect(up).toMatch(/UNIQUE \(report_id, report_revision, revalidation_key\)/i)
     expect(up).toMatch(/CREATE TABLE provenance_edges/i)
     expect(up).toMatch(/edge_kind IN \(/i)
-    expect(up).toMatch(/FOREIGN KEY \(report_id, claim_id\)/i)
+    expect(up).toMatch(
+      /FOREIGN KEY \(report_id, report_revision, claim_id\)/i,
+    )
     expect(up).toMatch(
       /FOREIGN KEY \(claim_id, claim_revision_id, claim_revision\)/i,
     )

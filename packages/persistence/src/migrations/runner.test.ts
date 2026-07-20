@@ -111,7 +111,7 @@ describe('Migration Runner', () => {
         /CREATE TABLE dataset_assets[\s\S]*CREATE TABLE dataset_snapshot_sources/i,
       )
       expect(fakeSql.queries.join('\n')).toMatch(
-        /CREATE TABLE durable_claims[\s\S]*CREATE TABLE reports[\s\S]*CREATE TABLE report_claims/i,
+        /CREATE TABLE durable_claims[\s\S]*CREATE TABLE reports[\s\S]*CREATE TABLE report_revision_claims/i,
       )
       expect(fakeSql.queries.join('\n')).toMatch(
         /CREATE TRIGGER claim_evidence_append_only/i,
@@ -157,7 +157,7 @@ describe('Migration Runner', () => {
       )
       expect(deleteQuery).toBeDefined()
       expect(fakeSql.queries.join('\n')).toMatch(
-        /DROP TABLE IF EXISTS citation_validation_facts[\s\S]*DROP TABLE IF EXISTS provenance_graphs/i,
+        /DROP TABLE IF EXISTS finding_snapshots[\s\S]*DROP FUNCTION IF EXISTS reject_durable_artifact_snapshot_mutation/i,
       )
     })
 

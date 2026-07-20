@@ -232,9 +232,10 @@ export class ProvenanceGraphRepo
             const loaded = yield* Effect.tryPromise({
               try: () => sql.transaction(async (transaction) => {
                 const scoped = await transaction.unsafe(
-                  `SELECT id
-                   FROM reports
-                   WHERE id = $1 AND workspace_id = $2 AND project_id = $3
+                  `SELECT report_id AS id
+                   FROM report_revision_snapshots
+                   WHERE report_id = $1
+                     AND workspace_id = $2 AND project_id = $3
                      AND revision = $4
                    FOR SHARE`,
                   [

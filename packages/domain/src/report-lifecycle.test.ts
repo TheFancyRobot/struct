@@ -233,6 +233,7 @@ function reportInput() {
       heading: 'Summary',
       revisions: [revision(ids.revision3)],
       currentRevision: 0,
+      findingIds: [ids.finding],
       claimIds: [ids.claim],
       lastRegenerationKey: null,
     }],

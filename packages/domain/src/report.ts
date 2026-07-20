@@ -39,6 +39,7 @@ export const ReportSection = Schema.Struct({
   heading: NonBlank,
   revisions: Schema.Array(ContentRevision).pipe(Schema.minItems(1)),
   currentRevision: Revision,
+  findingIds: Schema.Array(FindingId).pipe(Schema.minItems(1)),
   claimIds: Schema.Array(ClaimId),
   lastRegenerationKey: Schema.NullOr(NonBlank),
 }).pipe(
@@ -56,6 +57,9 @@ export const ReportSection = Schema.Struct({
     new Set(section.claimIds).size === section.claimIds.length
       ? undefined
       : 'section claim links must be unique',
+    new Set(section.findingIds).size === section.findingIds.length
+      ? undefined
+      : 'section finding links must be unique',
   ]),
 )
 export type ReportSection = Schema.Schema.Type<typeof ReportSection>
@@ -81,6 +85,9 @@ export const Report = Schema.Struct({
   Schema.filter((report) => {
     const claimIds = new Set(report.claims.map((claim) => claim.id))
     const linkedClaims = report.sections.flatMap((section) => section.claimIds)
+    const linkedFindings = report.sections.flatMap(
+      (section) => section.findingIds,
+    )
     const revisionIds = [
       ...report.titleRevisions.map((revision) => revision.id),
       ...report.claims.flatMap((claim) =>
@@ -95,6 +102,12 @@ export const Report = Schema.Struct({
       new Set(report.findingIds).size === report.findingIds.length
         ? undefined
         : 'report finding links must be unique',
+      new Set(linkedFindings).size === linkedFindings.length
+        && linkedFindings.length === report.findingIds.length
+        && linkedFindings.every((findingId) =>
+          report.findingIds.includes(findingId))
+        ? undefined
+        : 'every report finding must belong to exactly one section',
       claimIds.size === report.claims.length
         ? undefined
         : 'report claim identities must be unique',

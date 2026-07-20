@@ -5,6 +5,7 @@ import {
   ProjectId,
   ResearchRunId,
   ResearchThreadId,
+  WorkspaceId,
 } from '@struct/domain'
 import { ResearchStream } from '../components/ResearchStream'
 import {
@@ -49,6 +50,13 @@ export const ResearchPage: Component = () => {
         projectId={ProjectId.make(params.projectId ?? '')}
         threadId={ResearchThreadId.make(params.threadId ?? '')}
         runId={ResearchRunId.make(params.runId ?? '')}
+        workspaceId={
+          typeof searchParams.workspaceId === 'string'
+            && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+              .test(searchParams.workspaceId)
+            ? WorkspaceId.make(searchParams.workspaceId)
+            : undefined
+        }
         demoReport={demoReport()}
       />
     </section>
