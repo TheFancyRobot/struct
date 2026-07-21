@@ -1,6 +1,10 @@
 # Local Development and Local Stack
 
-This document is the Phase 0 **local-stack contract** for [`architecture.md`](./architecture.md). It fixes local service ownership, ports, volumes, health checks, startup/shutdown/reset behavior, environment/secrets policy, and platform fallbacks so a first-day developer can bootstrap without guessing.
+This document is the implemented v1 **local-stack contract** for
+[`architecture.md`](./architecture.md). It fixes local service ownership,
+ports, volumes, health checks, startup/shutdown/reset behavior,
+environment/secrets policy, and platform fallbacks so a first-day developer can
+bootstrap without guessing.
 
 > **Current status:** Phase 04 adds the DuckDB data-plane sidecar to
 > `docker-compose.yml`. PostgreSQL remains the durable application database;
@@ -166,8 +170,12 @@ Without Docker, deterministic DuckDB materialization is unavailable:
 
 ### 4.4 Reproduction blockers (explicit)
 
-- **Performance numbers are machine-specific.** Re-run `bun run src/benchmarks/run.ts` on the target host for that host's evidence (STEP-00-03). Do not cite spike timings as universal claims.
-- **Full evaluation requires the ~25,000-file corpus.** Corpus generation and the quality gates are owned by STEP-00-06 / Phase 04; a local dev box without the corpus cannot run the pre-release evaluation gate.
+- **Performance numbers are machine-specific.** Re-run `bun run v1:performance`
+  on the target host for that host's evidence. Do not cite recorded timings as
+  universal claims.
+- **Full evaluation uses the reproducible ~25,000-file corpus.** Run
+  `bun run v1:evaluate`; any missing corpus input, stale evidence, timeout, or
+  failed criterion fails the release gate closed.
 - **Model-dependent paths require provider API keys.** Any research/ingestion path that calls a model needs `FRED_*` provider keys; absence is a reproduction blocker, not a bug.
 - **Schema development is greenfield.** Breaking changes use guarded
   drop/recreate. There is no legacy database, compatibility layer, upgrade

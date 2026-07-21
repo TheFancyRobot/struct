@@ -751,6 +751,114 @@ describe('report workspace browser workflow', () => {
     await failedExport.close()
   }, 15_000)
 
+  it('meets the release accessibility contract', async () => {
+    for (const theme of ['light', 'dark'] as const) {
+      const page = await browser.newPage({
+        viewport: { width: 320, height: 844 },
+        reducedMotion: 'reduce',
+      })
+      await page.addInitScript((selectedTheme) => {
+        localStorage.setItem(
+          'struct-theme',
+          selectedTheme === 'dark' ? 'struct-dark' : 'struct-light',
+        )
+      }, theme)
+      await installApi(page)
+      await page.goto(notebookUrl)
+      await page.getByRole('heading', {
+        name: 'Enterprise renewal risk brief',
+      }).waitFor()
+      await waitForThemeStyles(page, theme)
+
+      expect(await page.getByRole('main').count()).toBe(1)
+      expect(await page.getByRole('region', { name: 'Report sections' }).count())
+        .toBe(1)
+      expect(await page.getByRole('textbox', { name: 'Edit Customer narrative' }).count())
+        .toBe(1)
+      expect(await page.getByRole('button', { name: 'Switch to dark theme' }).count())
+        .toBe(theme === 'light' ? 1 : 0)
+      expect(await page.getByRole('button', { name: 'Switch to light theme' }).count())
+        .toBe(theme === 'dark' ? 1 : 0)
+
+      const unnamedControls = await page.locator(
+        'button, a[href], input, textarea, select, summary',
+      ).evaluateAll((elements) => elements.flatMap((element) => {
+        const html = element as HTMLElement
+        const style = getComputedStyle(html)
+        if (
+          style.display === 'none'
+          || style.visibility === 'hidden'
+          || html.getClientRects().length === 0
+        ) return []
+        const label = [
+          html.getAttribute('aria-label'),
+          html.getAttribute('title'),
+          html.innerText,
+          html.id === ''
+            ? ''
+            : document.querySelector(`label[for="${CSS.escape(html.id)}"]`)?.textContent,
+          html.closest('label')?.textContent,
+        ].find((candidate) => typeof candidate === 'string' && candidate.trim() !== '') ?? ''
+        return label.trim() === '' ? [html.outerHTML.slice(0, 160)] : []
+      }))
+      expect(unnamedControls).toEqual([])
+
+      const contrast = await page.locator('.report-workspace').evaluate((root) => {
+        const channel = (value: number) => {
+          const normalized = value / 255
+          return normalized <= 0.04045
+            ? normalized / 12.92
+            : ((normalized + 0.055) / 1.055) ** 2.4
+        }
+        const luminance = (value: string) => {
+          const channels = value.match(/[\d.]+/g)?.slice(0, 3).map(Number) ?? []
+          if (channels.length !== 3) throw new Error(`Unsupported color: ${value}`)
+          return 0.2126 * channel(channels[0]!)
+            + 0.7152 * channel(channels[1]!)
+            + 0.0722 * channel(channels[2]!)
+        }
+        const ratio = (foreground: string, background: string) => {
+          const lighter = Math.max(luminance(foreground), luminance(background))
+          const darker = Math.min(luminance(foreground), luminance(background))
+          return (lighter + 0.05) / (darker + 0.05)
+        }
+        const rootStyle = getComputedStyle(root)
+        const titleStyle = getComputedStyle(root.querySelector('h1')!)
+        return {
+          text: ratio(rootStyle.color, rootStyle.backgroundColor),
+          title: ratio(titleStyle.color, rootStyle.backgroundColor),
+          scrollBehavior: getComputedStyle(document.documentElement).scrollBehavior,
+        }
+      })
+      expect(contrast.text).toBeGreaterThanOrEqual(4.5)
+      expect(contrast.title).toBeGreaterThanOrEqual(4.5)
+      expect(contrast.scrollBehavior).toBe('auto')
+
+      const repairButton = page.getByRole('button', { name: 'Repair', exact: true })
+      await repairButton.focus()
+      await repairButton.press('Enter')
+      const dialog = page.getByRole('dialog', { name: 'Resolve this claim' })
+      await dialog.waitFor()
+      const dialogButtons = dialog.getByRole('button')
+      const firstButton = dialogButtons.first()
+      const lastButton = dialogButtons.last()
+      expect(await firstButton.evaluate((element) => element === document.activeElement))
+        .toBe(true)
+      await firstButton.press('Shift+Tab')
+      expect(await lastButton.evaluate((element) => element === document.activeElement))
+        .toBe(true)
+      await lastButton.press('Tab')
+      expect(await firstButton.evaluate((element) => element === document.activeElement))
+        .toBe(true)
+      await page.keyboard.press('Escape')
+      expect(await repairButton.evaluate((element) => element === document.activeElement))
+        .toBe(true)
+
+      await noOverflow(page)
+      await page.close()
+    }
+  })
+
   it('retains exactly six reviewed responsive light/dark screenshots', async () => {
     const viewports = [
       { width: 1440, height: 900 },

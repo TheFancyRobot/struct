@@ -2,7 +2,7 @@
 
 A trustworthy, source-grounded research workspace for documents, datasets, and directories. Documents are retrieved, datasets are queried, directories are navigated, and large corpora are recursively analyzed — with deterministic computation, verifiable citations, and durable, resumable work.
 
-> **Current state: Phase 05 typed research execution is implemented and evaluated through STEP-05-06.** The monorepo includes versioned document and dataset ingestion, PostgreSQL hybrid retrieval, an isolated DuckDB data plane, schema-validated research plans, bounded core-Fred orchestration, durable checkpoints and budgets, authenticated cursor-replayable progress, idempotent cancellation, exact citations, and SolidJS research states. All gates pass when validated locally (typecheck, lint, lint:imports, build, native Bun tests, database integration tests, migration up/down/up, Compose config, and app smokes).
+> **Current state: the complete v1 product is implemented and has passed the 23-gate release campaign.** The monorepo includes versioned document and dataset ingestion, directory and recursive analysis, PostgreSQL hybrid retrieval, an isolated DuckDB data plane, schema-validated bounded core-Fred orchestration, durable checkpoints, authenticated cursor-replayable progress, exact citations, durable findings and reports, and a responsive SolidJS research workspace. The final release action is intentionally not performed; see the release checklist.
 
 ## Canonical documents
 
@@ -18,6 +18,8 @@ A trustworthy, source-grounded research workspace for documents, datasets, and d
 | [docs/domain-model.md](./docs/domain-model.md) | Domain model. |
 | [docs/research-execution-model.md](./docs/research-execution-model.md) | Research execution model. |
 | [docs/security-model.md](./docs/security-model.md) | Security model and trust boundaries. |
+| [docs/accessibility.md](./docs/accessibility.md) | Keyboard, focus, semantics, contrast, reduced-motion, reflow, and screenshot evidence. |
+| [docs/release-checklist.md](./docs/release-checklist.md) | Final evidenced v1 go/no-go checklist; release action remains unchecked. |
 | [docs/evaluation-strategy.md](./docs/evaluation-strategy.md) | Evaluation strategy. |
 | [docs/evaluation-corpus-generator.md](./docs/evaluation-corpus-generator.md) | Reproducible 25,000-file JSON corpus generation and verification. |
 | [docs/retrieval-evaluation.md](./docs/retrieval-evaluation.md) | Phase 02 deterministic retrieval and injection-resistance gate. |
@@ -50,7 +52,7 @@ Package dependency flows downward only; no app imports another app; `domain` is 
 ```bash
 bun install --frozen-lockfile   # pinned dependencies (Bun 1.3.13, TS 7.0.2)
 cp .env.example .env           # then fill in real values (DATABASE_URL, FRED_* provider keys)
-docker compose up -d --wait    # PostgreSQL, data engine, and loopback gateway
+bun run ops stack:up           # prepare storage and verify PostgreSQL/data-engine readiness
 bun run dev                     # starts web (3000), api (3001), worker (3002) in parallel
 ```
 
@@ -69,13 +71,15 @@ bun run lint:imports  # dependency-cruiser + Bun-aware boundary checker
 bun run test        # native Bun unit, integration, and entrypoint tests (serial)
 bun run build       # build all apps (web Vite, api/worker tsc)
 bun run test:integration   # PostgreSQL-backed integration tests
-bun run test:e2e           # Bun-native web navigation test
+bun run test:e2e           # production-bundle Playwright journeys and responsive screenshots
 bun run migrations:up      # apply implemented PostgreSQL/pgvector migrations through apps/api
 bun run ops database:reset # guarded greenfield drop/recreate + current schema
 bun run corpus:smoke        # deterministic Phase 02 retrieval/provenance/injection gate
 bun run corpus:generate --profile full --out /absolute/path/corpus
 bun run corpus:compare-hashes /path/a/manifest.json /path/b/manifest.json
 bun run corpus:eval         # full corpus quality gates (STEP-04-06)
+bun run v1:performance      # live performance, capacity, and resilience gate
+bun run v1:evaluate         # bounded 23-gate v1 release campaign
 ```
 
 The walking-slice research command accepts `workspaceId`, `projectId`, a non-empty

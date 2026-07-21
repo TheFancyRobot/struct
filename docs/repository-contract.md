@@ -1,21 +1,28 @@
 # Repository Contract
 
-This document is the Phase 0 **repository-level delivery contract** for [`architecture.md`](./architecture.md). It fixes the planned root command inventory, the CI gate matrix, and the Phase 1 handoff so later implementation does not re-litigate layout, gates, or bootstrap order.
+This document began as the Phase 0 **repository-level delivery contract** for
+[`architecture.md`](./architecture.md). Its command inventory and gate matrix
+now describe the implemented v1 repository; the later Phase 1 handoff sections
+remain as historical ownership context.
 
-> **Phase 0 status:** this is a documentation contract only. The root `package.json` workspace scripts, CI workflow files, and app manifests named here are **created by STEP-01-01**, not by this step. Every command below is *planned*; none are described as already implemented. A command that would invoke a nonexistent package is explicitly marked as future.
+> **v1 status:** every unqualified command below exists in the root
+> `package.json`. Operations subcommands are dispatched by
+> `scripts/production-operations.ts`; commands explicitly described as post-v1
+> remain non-executable design context.
 
-## 1. Planned root command inventory
+## 1. Root command inventory
 
-All commands run from the repository root via the Bun workspace scripts that STEP-01-01 will define. They are grouped by purpose; each names its owner and intent.
+All commands run from the repository root via the implemented Bun workspace
+scripts. They are grouped by purpose; each names its owner and intent.
 
-| Command (planned) | Intent | Owner | Phase introduced |
+| Command | Intent | Owner | Phase introduced |
 | --- | --- | --- | --- |
 | `bun install --frozen-lockfile` | Install pinned dependencies from the committed lockfile | root `package.json` | STEP-01-01 |
 | `bun run dev` | Start worker, API, and web in parallel with Bun for local development | root scripts | STEP-01-01 |
-| `bun run dev:stop` | Stop local web/api/worker | root scripts | STEP-01-01 |
+| `bun run dev:stop` | Stop local web/API/worker processes and Compose dependencies | root scripts | STEP-01-01 |
 | `bun run build` | Build all apps and packages | root scripts | STEP-01-01 |
 | `bun run typecheck` | `tsc --noEmit` across the workspace via `tsconfig.base.json` | root scripts | STEP-01-01 |
-| `bun run lint` | ESLint + import-boundary check (`dependency-cruiser`/`eslint-plugin-import`) | root scripts | STEP-01-01 |
+| `bun run lint` | ESLint across maintained source and tests | root scripts | STEP-01-01 |
 | `bun run lint:imports` | Enforce package dependency directions and forbid cross-app/deep-path imports | root scripts | STEP-01-01 |
 | `bun run test` | Serial unit and integration tests across the maintained `apps/*` and `packages/*` workspaces | root script (scoped to `./apps ./packages`) | STEP-01-01 |
 | `bun run test:integration` | Integration tests (apps/api, apps/worker, persistence, data-engine) | root scripts | Phase 01+ |
@@ -30,6 +37,7 @@ All commands run from the repository root via the Bun workspace scripts that STE
 | `bun run ops stack:restart` | Restart Compose dependencies and wait for authenticated readiness | root operations | STEP-09-02 |
 | `bun run ops:recovery-proof` | Prove isolated backup/restore, integrity, immutability, and restart recovery | root operations | STEP-09-02 |
 | `bun run v1:performance` | Verify versioned v1 workload budgets and resilience evidence | root evaluation | v1 release gate |
+| `bun run v1:evaluate` | Run the bounded 23-gate v1 campaign and write hash-qualified evidence | root evaluation | v1 release gate |
 | `bun run ops application:verify` | Fail closed unless web, API, and worker are ready after deployment/rollback | root operations | STEP-09-02 |
 | `bun run corpus:smoke` | Run a small synthetic subset of the evaluation corpus | `packages/evaluation` | Phase 04 |
 | `bun run corpus:generate` | Generate a deterministic smoke or full 25,000-record corpus | `packages/evaluation` | STEP-04-05 |
@@ -43,13 +51,17 @@ Notes:
 
 - `migrations:*` commands route through `apps/api` only (see [`architecture.md` §6.5](./architecture.md)). A static check verifies no other app imports the migration runner.
 - `lint:imports` enforces the dependency directions in [`architecture.md` §4.2](./architecture.md).
-- `corpus:*` and `bench` are owned by later phases; their absence in Phase 1 is a deferral, not a gap.
+- `corpus:*`, `bench`, `v1:performance`, and `v1:evaluate` are implemented by
+  `packages/evaluation` and the root release scripts.
 
-## 2. CI gate matrix
+## 2. Gate matrix
 
-Three gate tiers. Each check names its owner. Gate-tier *thresholds* (pass/fail numbers) are finalized by STEP-00-06; this matrix fixes *which checks run in which tier and who owns them*.
+The repository intentionally has no checked-in `.github` workflow. These are
+root-orchestrated local/PR/release gates, and GitHub review bots provide review
+feedback rather than executing an undisclosed CI pipeline. The numeric
+thresholds are executable in their owning tests and evaluation scripts.
 
-### 2.1 PR gate (every pull request, required to merge)
+### 2.1 PR gate (run by the root orchestrator before merge)
 
 | Check | Owner | Notes |
 | --- | --- | --- |
@@ -58,13 +70,13 @@ Three gate tiers. Each check names its owner. Gate-tier *thresholds* (pass/fail 
 | `bun run lint` + `lint:imports` | root | ESLint + dependency-direction enforcement |
 | `bun run test` (unit) | packages | all package unit tests |
 | `bun run build` | root | all apps + packages build |
-| `bun run secrets:scan` | CI | reject committed secrets / `.env` leakage |
+| `bun run secrets:scan` | root | reject committed secrets / `.env` leakage |
 | `bun run docs:lint` | docs | link-check canonical docs |
 | greenfield schema recreation | `apps/api` + root operations | guarded drop/recreate + `migrations:up` on isolated PG; deterministic and clean |
-| executor-uniqueness check | CI | migration-runner imports live only in `apps/api` |
-| release-lockfile check | CI | release lockfile resolves to published Fred pins, not a `file:` link (DEC-0001) |
+| executor-uniqueness check | root | migration-runner imports live only in `apps/api` |
+| release-lockfile check | root | release lockfile resolves to published Fred pins, not a `file:` link (DEC-0001) |
 
-### 2.2 Nightly gate (scheduled, full integration + recovery + evaluation smoke)
+### 2.2 Extended local gate (integration + recovery + evaluation smoke)
 
 | Check | Owner | Notes |
 | --- | --- | --- |
@@ -74,24 +86,26 @@ Three gate tiers. Each check names its owner. Gate-tier *thresholds* (pass/fail 
 | `bun run corpus:smoke` | `packages/evaluation` | fast Phase 02 quality gates plus the reproducible 250-record structured subset; never scale evidence |
 | `bun run corpus:generate --profile full` | `packages/evaluation` | exactly 25,000 JSON record files with deterministic ground truth and hashes |
 | injection-resistance smoke | `packages/data-engine` + security | DuckDB `read_json_auto('/etc/passwd')` DENIED; `ATTACH`/`INSTALL` DENIED (STEP-00-03) |
-| docs build | docs | full docs site builds |
+| `bun run docs:lint` | docs | every local Markdown path and heading link resolves |
 
 ### 2.3 Pre-release gate (before any v1 release tag)
 
 | Check | Owner | Notes |
 | --- | --- | --- |
-| `bun run corpus:eval` | `packages/evaluation` | full ~25,000-file corpus; exactness, semantic coverage, provenance, injection resistance, recovery (DEC-0011) |
-| security review | STEP-00-05 owner | threat-model and trust-boundary verification matrix sign-off |
-| `bun run bench` | owning package | performance benchmarks on the release hardware; results recorded with machine metadata |
-| deployment recovery on production-like | root operations + `apps/api` | backup/restore and known-good app rollback verified without cross-version compatibility |
-| release notes + docs | docs | architecture, roadmap, implementation-plan, and ADRs consistent with the tag |
-| release lockfile pinned | CI | published Fred pins only; no dev-only local link |
+| `bun run v1:evaluate` | root evaluation | 23 bounded gates: phase evidence, two 25,000-file evaluators, resilience, unit/integration/browser suites, recovery, build, static checks, docs, and secrets |
+| security review | root | threat-model and trust-boundary verification against implemented controls |
+| deployment recovery proof | root operations + `apps/api` | paired backup/restore, integrity, restart, and known-good same-schema app rollback |
+| release checklist | docs + root | documentation, accessibility, review, known limits, clean-main preflight, and the explicit release procedure |
+| release lockfile pinned | root | published Fred pins only; no dev-only local link |
 
-Gate-tier thresholds and the exact pass/fail numbers for the evaluation gate are finalized by **STEP-00-06** (downstream of STEP-00-05, downstream of this step). Until then, the matrix above fixes the check set and ownership.
+The canonical v1 campaign passed 23/23 with zero failed criteria. Current
+thresholds and evidence are recorded in
+[`benchmarks/v1-evaluation-campaign.md`](./benchmarks/v1-evaluation-campaign.md).
 
-## 3. Phase 1 handoff
+## 3. Historical Phase 1 handoff
 
-This section names the exact files STEP-01-01 creates and the intentional deferrals, so Phase 1 can start without re-litigating repository layout.
+This section preserves the Phase 1 ownership handoff. It is historical context,
+not a statement that these files remain unimplemented.
 
 ### 3.1 Exact initial files (created by STEP-01-01)
 
@@ -121,18 +135,23 @@ Packages (only the minimal set the walking skeleton needs):
 - `packages/source-storage/package.json` — local content-addressed artifact store and staged-upload refs for STEP-01-03.
 - `packages/ingestion/package.json` — walking-slice text classification, normalization, manifest creation, and typed ingestion failures.
 
-### 3.2 Implemented STEP-01-04 boundaries and intentional deferrals
+### 3.2 Current disposition of the original deferrals
 
 - `packages/retrieval`, `research-engine`, and `workflows` were scaffolded by STEP-01-04 and now own the deterministic text-search, walking-slice research, and Fred orchestration boundaries.
-- `packages/document-processing`, `data-engine`, `evaluation`, and `shared-ui` — scaffolded when their owning phase needs them; not empty stubs.
+- `packages/document-processing`, `data-engine`, and `evaluation` are
+  implemented. Shared UI remains app-local; no separate `shared-ui` package was
+  needed for v1.
 - `packages/data-engine` typed DuckDB sidecar client/policy plus the isolated
   sidecar service — Phase 04 owns production data-plane code and the Compose
-  addition. The current `docker-compose.yml` still provisions PostgreSQL only.
-  STEP-00-03 remains historical spike evidence, not the production topology.
-- `packages/evaluation` corpus generator + CI gate implementation — Phase 04 / Phase 09; STEP-00-06 owns the spec.
-- Production S3 artifact adapter — Phase 09; the dev FS adapter is sufficient until then.
-- Gate-tier thresholds and adversarial fixture matrix — STEP-00-06 (downstream).
-- Security enforcement code (auth, filesystem walker, SQL policy executor) — STEP-00-05 finalizes ownership; Phase 09 hardens; Phase 0 is spec-only.
+  addition. The current `docker-compose.yml` provisions PostgreSQL, the private
+  data engine, and its authenticated loopback gateway. STEP-00-03 remains
+  historical spike evidence, not the production topology.
+- `packages/evaluation` implements the corpus generator, phase gates, and v1
+  campaign; their thresholds are executable and evidence-backed.
+- Local content-addressed filesystem storage is the accepted v1 artifact
+  adapter. S3/object storage is post-v1 and not required by this topology.
+- Authentication, filesystem confinement, SQL policy, bounded execution, and
+  release hardening are implemented and covered by the current gate matrix.
 
 ### 3.3 Explicitly excluded infrastructure (rejected, not deferred)
 
@@ -143,7 +162,7 @@ The following are **rejected for v1** and must not be added without a new ADR. T
 - **A dedicated vector database** — initial retrieval uses PostgreSQL full-text search + pgvector (DEC-0004); no separate vector store.
 - **A distributed workflow engine** — Fred orchestrates within the worker process (DEC-0012); no separate distributed engine.
 
-### 3.4 STEP-00-05 / STEP-00-06 reconciliation
+### 3.4 Historical STEP-00-05 / STEP-00-06 reconciliation
 
 STEP-00-05 (security threat model) depends on this step and finalizes enforcement ownership for the trust boundaries in [`architecture.md` §3.2](./architecture.md). STEP-00-06 (evaluation corpus + gates) depends on STEP-00-05 and finalizes gate-tier thresholds. This contract names those steps as the owners and keeps the security/evaluation *constraints* consistent with the existing `docs/security-model.md` and `docs/evaluation-strategy.md` (DEC-0009, DEC-0011). No boundary in this contract contradicts those documents; finalization is an explicit deferral with a named owner.
 
