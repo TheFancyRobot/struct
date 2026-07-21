@@ -21,7 +21,7 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-21._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_10_v1_1_research_usability/Steps/Step_01_improve-research-search-navigation-and-command-ux|STEP-10-01 Improve Research Search Navigation and Command UX]] - status: planned - phase: [[02_Phases/Phase_10_v1_1_research_usability/Phase|Phase 10 v1 1 research usability]]
+- Current step: [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist|STEP-09-06 Publish v1 Documentation Accessibility and Release Checklist]] - status: completed - phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]]
 - Active phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]] - status: in_progress - owner: Codex - updated: 2026-07-20
 - Also active: 17 more additional steps.
 <!-- AGENT-END:current-focus -->

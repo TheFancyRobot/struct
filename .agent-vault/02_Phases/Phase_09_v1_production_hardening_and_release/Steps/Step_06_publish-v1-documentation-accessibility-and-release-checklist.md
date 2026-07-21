@@ -59,10 +59,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: completed
+- Current owner: Codex STEP-09-06 worker
+- Last touched: 2026-07-21
+- Next action: Root orchestrator merges the reviewed PR, closes Phase 09, and stops before the documented v1.0 release action.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
