@@ -8,23 +8,24 @@ export interface DirectoryBrowserProps {
 }
 
 export const DirectoryBrowser: Component<DirectoryBrowserProps> = (props) => (
-  <section aria-labelledby="directory-browser-title" class="space-y-3">
+  <section aria-labelledby="directory-browser-title" class="card border border-base-300 bg-base-100">
+    <div class="card-body gap-4 p-4 sm:p-5">
     <h2 id="directory-browser-title" class="text-xl font-semibold">
       {props.status.name}
     </h2>
-    <dl class="grid grid-cols-2 gap-2 sm:grid-cols-3">
-      <div><dt>Total</dt><dd>{props.status.counts.total}</dd></div>
-      <div><dt>Processed</dt><dd>{props.status.counts.processed}</dd></div>
-      <div><dt>Succeeded</dt><dd>{props.status.counts.succeeded}</dd></div>
-      <div><dt>Failed</dt><dd>{props.status.counts.failed}</dd></div>
-      <div><dt>Unsupported</dt><dd>{props.status.counts.unsupported}</dd></div>
-      <div><dt>Pending</dt><dd>{props.status.counts.pending}</dd></div>
+    <dl class="stats stats-horizontal w-full overflow-x-auto border border-base-300">
+      <div class="stat min-w-28 p-3"><dt class="stat-title text-xs">Total</dt><dd class="stat-value text-xl">{props.status.counts.total}</dd></div>
+      <div class="stat min-w-28 p-3"><dt class="stat-title text-xs">Processed</dt><dd class="stat-value text-xl">{props.status.counts.processed}</dd></div>
+      <div class="stat min-w-28 p-3"><dt class="stat-title text-xs">Succeeded</dt><dd class="stat-value text-xl">{props.status.counts.succeeded}</dd></div>
+      <div class="stat min-w-28 p-3"><dt class="stat-title text-xs">Failed</dt><dd class="stat-value text-xl">{props.status.counts.failed}</dd></div>
+      <div class="stat min-w-28 p-3"><dt class="stat-title text-xs">Unsupported</dt><dd class="stat-value text-xl">{props.status.counts.unsupported}</dd></div>
+      <div class="stat min-w-28 p-3"><dt class="stat-title text-xs">Pending</dt><dd class="stat-value text-xl">{props.status.counts.pending}</dd></div>
     </dl>
     <Show when={props.status.failures.length > 0}>
       <div role="alert" class="alert alert-warning">
         <div>
           <h3 class="font-semibold">Entry failures</h3>
-          <ul>
+          <ul class="mt-1 list-disc pl-5 text-sm">
             <For each={props.status.failures}>
               {(failure) => (
                 <li>
@@ -36,5 +37,6 @@ export const DirectoryBrowser: Component<DirectoryBrowserProps> = (props) => (
         </div>
       </div>
     </Show>
+    </div>
   </section>
 )

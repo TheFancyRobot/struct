@@ -38,7 +38,10 @@ export const CitationViewer: Component<CitationViewerProps> = (props) => {
           </div>
         </Match>
         <Match when={citation.loading}>
-          <p role="status">Loading citation…</p>
+          <div class="flex min-h-48 items-center justify-center gap-3" role="status">
+            <span class="loading loading-spinner loading-md" aria-hidden="true" />
+            <span>Loading citation…</span>
+          </div>
         </Match>
         <Match when={citation()}>
           {(detail) => (
@@ -50,7 +53,7 @@ export const CitationViewer: Component<CitationViewerProps> = (props) => {
               >
                 ← {props.returnTo === undefined ? 'Back to research' : 'Back to report'}
               </A>
-              <article class="card border border-base-300 bg-base-200">
+              <article class="card border border-base-300 bg-base-100">
                 <div class="card-body">
                   <h2 id="citation-title" class="card-title">{detail().sourceName}</h2>
                   <p class="text-sm text-base-content/60">
@@ -59,7 +62,7 @@ export const CitationViewer: Component<CitationViewerProps> = (props) => {
                   <h3 class="font-semibold">Source preview</h3>
                   <pre
                     aria-label={`Exact cited evidence from ${detail().sourceName}`}
-                    class="whitespace-pre-wrap overflow-x-auto rounded bg-base-300 p-4"
+                    class="whitespace-pre-wrap overflow-x-auto rounded-field bg-neutral p-4 text-sm text-neutral-content"
                   >
                     <code>
                       <For each={detail().contextLines}>

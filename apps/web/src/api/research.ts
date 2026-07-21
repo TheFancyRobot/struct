@@ -5,6 +5,9 @@ import {
   RecursiveRunProgress,
 } from '@struct/domain'
 import type * as typeDomain from '@struct/domain'
+import { apiPath, basePathFromPublicBaseUrl } from '../base-path'
+
+const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
 
 export async function fetchCitation(
   projectId: typeDomain.ProjectId,
@@ -14,7 +17,7 @@ export async function fetchCitation(
   let response: Response
   try {
     response = await fetch(
-      `/api/projects/${projectId}/research/${threadId}/citation/${citationId}`,
+      apiPath(`/projects/${projectId}/research/${threadId}/citation/${citationId}`, appBasePath),
       { signal: AbortSignal.timeout(10_000) },
     )
   } catch (error) {
@@ -44,7 +47,7 @@ export async function fetchRecursiveAnalysis(
   let response: Response
   try {
     response = await fetch(
-      `/api/projects/${projectId}/runs/${runId}/recursive-analysis`,
+      apiPath(`/projects/${projectId}/runs/${runId}/recursive-analysis`, appBasePath),
       { signal: AbortSignal.timeout(10_000) },
     )
   } catch (error) {
@@ -76,7 +79,7 @@ export async function cancelResearchRun(
   let response: Response
   try {
     response = await fetch(
-      `/api/projects/${projectId}/runs/${runId}/cancel?workspaceId=${workspaceId}`,
+      `${apiPath(`/projects/${projectId}/runs/${runId}/cancel`, appBasePath)}?workspaceId=${workspaceId}`,
       {
         method: 'POST',
         headers: { 'Idempotency-Key': `web-cancel-${runId}` },

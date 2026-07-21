@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import {
+  createWebRequestHandler,
   loadWebServerConfig,
   proxyApiRequest,
 } from './server'
@@ -45,5 +46,41 @@ describe('production web server', () => {
     } finally {
       upstream.stop(true)
     }
+  })
+
+  it('serves and proxies through a configured base path', async () => {
+    const upstream = Bun.serve({
+      port: 0,
+      fetch() {
+        return new Response('ok', { status: 200 })
+      },
+    })
+    try {
+      const handler = createWebRequestHandler({
+        apiOrigin: new URL(`http://127.0.0.1:${upstream.port}`),
+        apiAuthToken: 'server-only-token',
+        basePath: '/struct',
+        distRoot: `${import.meta.dir}/../dist`,
+        port: 3000,
+      })
+      const response = await handler(new Request('http://web.local/struct/api/healthz'))
+      expect(response.status).toBe(200)
+      expect(await response.text()).toBe('ok')
+    } finally {
+      upstream.stop(true)
+    }
+  })
+
+  it('redirects local root to the configured base path', async () => {
+    const handler = createWebRequestHandler({
+      apiOrigin: new URL('http://127.0.0.1:3001'),
+      apiAuthToken: 'server-only-token',
+      basePath: '/struct',
+      distRoot: `${import.meta.dir}/../dist`,
+      port: 3000,
+    })
+    const response = await handler(new Request('http://web.local/'))
+    expect(response.status).toBe(302)
+    expect(response.headers.get('location')).toBe('http://web.local/struct/')
   })
 })

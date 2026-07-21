@@ -31,7 +31,7 @@ export const NotebookPage: Component = () => {
     || !uuid.test(rawWorkspaceId)
   ) {
     return (
-      <section class="notebook-state notebook-error" role="alert">
+      <section class="notebook-state alert alert-error" role="alert">
         This project notebook link is invalid.
       </section>
     )
@@ -74,15 +74,16 @@ export const NotebookPage: Component = () => {
         || existingReport() !== undefined
         || existingReport.error !== undefined}
       fallback={
-        <section class="notebook-state" role="status">
-          Opening report workspace…
+        <section class="notebook-state flex min-h-48 items-center justify-center rounded-box border border-base-300 bg-base-100" role="status">
+          <span class="loading loading-spinner loading-md" aria-hidden="true" />
+          <span>Opening report workspace…</span>
         </section>
       }
     >
       <Show
         when={!existingReport.error}
         fallback={
-          <section class="notebook-state notebook-error" role="alert">
+          <section class="notebook-state alert alert-error" role="alert">
             This report could not be opened. Check your connection and try again.
           </section>
         }

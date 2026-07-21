@@ -3,6 +3,9 @@ import {
   DirectoryStatusProjection,
 } from '@struct/domain'
 import type * as type from '@struct/domain'
+import { apiPath, basePathFromPublicBaseUrl } from '../base-path'
+
+const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
 
 async function responseJson(response: Response): Promise<unknown> {
   if (!response.ok) {
@@ -16,7 +19,7 @@ export async function registerDirectory(input: {
   readonly projectId: type.ProjectId
   readonly name: string
 }): Promise<DirectoryStatusProjection> {
-  const response = await fetch(`/api/projects/${input.projectId}/directories`, {
+  const response = await fetch(apiPath(`/projects/${input.projectId}/directories`, appBasePath), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
@@ -33,7 +36,7 @@ export async function fetchDirectoryStatus(input: {
 }): Promise<DirectoryStatusProjection> {
   const query = new URLSearchParams({ workspaceId: input.workspaceId })
   const response = await fetch(
-    `/api/projects/${input.projectId}/directory-jobs/${input.jobId}?${query}`,
+    `${apiPath(`/projects/${input.projectId}/directory-jobs/${input.jobId}`, appBasePath)}?${query}`,
   )
   return Schema.decodeUnknownPromise(DirectoryStatusProjection)(
     await responseJson(response),
@@ -48,7 +51,7 @@ export async function commandDirectory(input: {
   readonly idempotencyKey: string
 }): Promise<DirectoryStatusProjection> {
   const response = await fetch(
-    `/api/projects/${input.projectId}/directory-jobs/${input.jobId}/${input.command}`,
+    apiPath(`/projects/${input.projectId}/directory-jobs/${input.jobId}/${input.command}`, appBasePath),
     {
       method: 'POST',
       headers: {

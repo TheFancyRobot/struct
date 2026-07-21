@@ -24,7 +24,12 @@ related_architecture:
 related_decisions:
   - '[[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009 Sandbox Filesystem Roots and Allowlist Read-Only SQL]]'
   - '[[04_Decisions/DEC-0011_gate-releases-on-a-reproducible-25000-file-evaluation-corpus|DEC-0011 Gate Releases on a Reproducible 25000-File Evaluation Corpus]]'
-related_bugs: []
+related_bugs:
+  - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
+  - '[[03_Bugs/BUG-0014_documentation-roadmap-links-point-to-removed-phase-paths|BUG-0014 Documentation roadmap links point to removed phase paths]]'
+  - '[[03_Bugs/BUG-0015_citation-navigation-bypasses-configured-web-base-path|BUG-0015 Citation navigation bypasses configured web base path]]'
+  - '[[03_Bugs/BUG-0016_base-path-citation-regression-test-is-not-isolated-in-the-full-test-suite|BUG-0016 Base-path citation regression test is not isolated in the full test suite]]'
+  - '[[03_Bugs/BUG-0017_staged-planning-documents-fail-whitespace-validation|BUG-0017 Staged planning documents fail whitespace validation]]'
 tags:
   - agent-vault
   - phase
@@ -119,7 +124,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|PHASE-08 Citation-Backed Reports and Durable Findings]]
 - Current phase status: completed
-- Next phase: [[02_Phases/Phase_10_v1_1_research_usability/Phase|PHASE-10 v1.1 Research Usability]]
+- Next phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]]
 <!-- AGENT-END:phase-linear-context -->
 
 ## Related Architecture
@@ -141,7 +146,11 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Related Bugs
 
 <!-- AGENT-START:phase-related-bugs -->
-- None yet.
+- [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]
+- [[03_Bugs/BUG-0014_documentation-roadmap-links-point-to-removed-phase-paths|BUG-0014 Documentation roadmap links point to removed phase paths]]
+- [[03_Bugs/BUG-0015_citation-navigation-bypasses-configured-web-base-path|BUG-0015 Citation navigation bypasses configured web base path]]
+- [[03_Bugs/BUG-0016_base-path-citation-regression-test-is-not-isolated-in-the-full-test-suite|BUG-0016 Base-path citation regression test is not isolated in the full test suite]]
+- [[03_Bugs/BUG-0017_staged-planning-documents-fail-whitespace-validation|BUG-0017 Staged planning documents fail whitespace validation]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps
@@ -160,7 +169,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - All six sequential steps were independently validated, bot-reviewed, and merged through PRs #53–#58.
 - The canonical v1 campaign passed 23/23 gates with zero failed criteria (`c616237f6a434ab6b0c0ff27776aea3ba359180ce97e0a4df646f82e59727aa2`), followed by a 22/22 production-bundle Playwright accessibility/responsive closure.
 - The repository has no open Vault bugs or pull requests. `docs/release-checklist.md` has exactly one unchecked item: the intentionally unperformed v1.0 tag and GitHub release action.
-- Phase 10 remains unrefined and inactive. Do not begin it unless post-v1 work is explicitly resumed after the v1.0 release boundary.
+- Phase 11 remains unrefined and inactive. Do not begin it unless post-v1 work is explicitly resumed after the v1.0 release boundary.
 
 ## Notes
 

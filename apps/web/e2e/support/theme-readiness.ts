@@ -13,7 +13,7 @@ export async function waitForThemeStyles(
     },
     {
       expectedTheme: `struct-${theme}`,
-      expectedBackground: theme === 'light' ? 'rgb(247, 249, 253)' : 'rgb(16, 23, 37)',
+      expectedBackground: theme === 'light' ? 'rgb(243, 243, 239)' : 'rgb(25, 31, 42)',
     },
     { timeout: 5_000 },
   )

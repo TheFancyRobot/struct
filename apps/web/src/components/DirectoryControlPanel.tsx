@@ -18,6 +18,9 @@ import {
 } from '@struct/domain'
 import { commandDirectory } from '../api/directories'
 import { useSSE } from '../hooks/useSSE'
+import { apiPath, basePathFromPublicBaseUrl } from '../base-path'
+
+const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
 import { DirectoryBrowser } from './DirectoryBrowser'
 import { IngestionJobStatus } from './IngestionJobStatus'
 import { SourceControls } from './SourceControls'
@@ -77,7 +80,7 @@ export const DirectoryControlPanel: Component<DirectoryControlPanelProps> = (
   }).toString()
   const connection = useSSE(
     () =>
-      `/api/projects/${props.projectId}/directory-jobs/${props.jobId}/events?${query()}`,
+      `${apiPath(`/projects/${props.projectId}/directory-jobs/${props.jobId}/events`, appBasePath)}?${query()}`,
     Schema.decodeUnknownSync(DirectoryProgressEvent),
     progress.apply,
     eventTypes,

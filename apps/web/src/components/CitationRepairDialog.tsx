@@ -83,70 +83,75 @@ export const CitationRepairDialog: Component<CitationRepairDialogProps> = (props
 
   return (
     <Show when={props.open}>
-      <div class="repair-backdrop" onClick={close}>
+      <div class="repair-backdrop modal modal-open" onClick={close}>
         <section
           ref={dialog}
-          class="repair-dialog"
+          class="repair-dialog modal-box max-w-2xl border border-base-300 p-0"
           role="dialog"
           aria-modal="true"
           aria-labelledby="repair-title"
           onClick={(event) => event.stopPropagation()}
           onKeyDown={trapFocus}
         >
-          <header>
+          <header class="flex items-start justify-between gap-4 border-b border-base-300 p-5">
             <div>
-              <p class="eyebrow">Explicit repair</p>
-              <h2 id="repair-title">Resolve this claim</h2>
+              <p class="text-sm font-semibold text-primary">Explicit repair</p>
+              <h2 id="repair-title" class="mt-1 text-2xl font-semibold">Resolve this claim</h2>
             </div>
-            <button autofocus type="button" onClick={close} aria-label="Close repair dialog">
+            <button autofocus class="btn btn-circle btn-ghost btn-sm" type="button" onClick={close} aria-label="Close repair dialog">
               ×
             </button>
           </header>
-          <p>
+          <p class="px-5 pt-5 text-sm text-base-content/65">
             Repairs create a new report revision. Prior text, claims, and citations
             remain immutable and available in history.
           </p>
-          <div class="repair-actions">
+          <div class="repair-actions grid gap-3 p-5 sm:grid-cols-2">
             <button
               type="button"
+              class="btn h-auto min-h-20 flex-col items-start border-base-300 bg-base-100 p-4 text-left"
               disabled={props.disabled}
               onClick={() => choose({ kind: 'remove-claim' })}
             >
               <strong>Remove claim</strong>
-              <span>Leave its prior revision intact.</span>
+              <span class="text-xs font-normal text-base-content/55">Leave its prior revision intact.</span>
             </button>
             <button
               type="button"
+              class="btn h-auto min-h-20 flex-col items-start border-base-300 bg-base-100 p-4 text-left"
               disabled={props.disabled}
               onClick={() => choose({ kind: 'regenerate-section' })}
             >
               <strong>Regenerate this section</strong>
-              <span>Rebuild only from its immutable claims.</span>
+              <span class="text-xs font-normal text-base-content/55">Rebuild only from its immutable claims.</span>
             </button>
           </div>
-          <div class="replacement-list">
-            <h3>Newly validated evidence</h3>
+          <div class="replacement-list border-t border-base-300 p-5">
+            <h3 class="text-sm font-semibold">Newly validated evidence</h3>
             <Show
               when={replacements().length > 0}
-              fallback={<p>No newly validated replacement is available.</p>}
+              fallback={<p class="mt-2 text-sm text-base-content/55">No newly validated replacement is available.</p>}
             >
+              <div class="mt-3 space-y-2">
               <For each={replacements()}>
                 {(replacement) => (
                   <button
                     type="button"
+                    class="btn h-auto w-full justify-start whitespace-normal border-base-300 bg-base-100 p-3 text-left"
                     disabled={props.disabled}
                     onClick={() => choose({
                       kind: 'replace-claim',
                       ...replacement,
                     })}
                   >
-                    <span>{replacement.claim.revisions[replacement.claim.currentRevision]?.content}</span>
-                    <small>Validated · {replacement.claim.support.kind === 'supported'
+                    <span class="flex-1">{replacement.claim.revisions[replacement.claim.currentRevision]?.content}</span>
+                    <small class="badge badge-success badge-sm">Validated · {replacement.claim.support.kind === 'supported'
                       ? replacement.claim.support.mode
                       : ''}</small>
                   </button>
                 )}
               </For>
+              </div>
             </Show>
           </div>
         </section>

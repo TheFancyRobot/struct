@@ -21,6 +21,9 @@ import type {
 } from '@struct/domain'
 import { ResearchEvent } from '@struct/domain'
 import { useSSE } from '../hooks/useSSE'
+import { apiPath, basePathFromPublicBaseUrl } from '../base-path'
+
+const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
 import {
   cancelResearchRun,
   fetchRecursiveAnalysis,
@@ -28,6 +31,7 @@ import {
 import { saveCompletedResearchFinding } from '../api/artifacts'
 import { RecursiveRunTimeline } from './RecursiveRunTimeline'
 import { PartialFindingsPanel } from './PartialFindingsPanel'
+import { researchCitationPath } from './citation-paths'
 import { mergeRecursiveRead } from './recursive-progress-state'
 interface ResearchStreamProps {
   readonly projectId: ProjectId
@@ -172,7 +176,7 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
   }
 
   const connection = useSSE<ResearchEvent>(
-    () => `/api/projects/${props.projectId}/runs/${props.runId}/events`,
+    () => apiPath(`/projects/${props.projectId}/runs/${props.runId}/events`, appBasePath),
     Schema.decodeUnknownSync(ResearchEvent),
     (event) => {
       if (state.events.some((existing) => existing.cursor === event.cursor)) return
@@ -247,7 +251,7 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
     <ErrorBoundary fallback={<div role="alert" class="alert alert-error">Progress could not be rendered.</div>}>
       <section aria-label="Research progress" class="space-y-5">
         <Show when={recursiveRead.error && legacyEvents().length === 0}>
-          <div role="alert" class="inline-notice danger">
+          <div role="alert" class="inline-notice danger alert alert-error">
             <span>
               {recursiveRead.error instanceof Error
                 ? recursiveRead.error.message
@@ -259,7 +263,7 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
           </div>
         </Show>
         <Show when={recursiveRead.loading && recursive() === null}>
-          <div class="research-panel loading-panel" role="status" aria-label="Loading recursive analysis">
+          <div class="research-panel loading-panel flex flex-col gap-4 rounded-box border border-base-300 bg-base-100 p-5" role="status" aria-label="Loading recursive analysis">
             <span class="skeleton h-4 w-32" />
             <span class="skeleton h-10 w-2/3" />
             <span class="skeleton h-24 w-full" />
@@ -267,7 +271,7 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
         </Show>
         <Show when={recursive()}>
           {(progress) => (
-            <div class="research-workbench">
+            <div class="research-workbench grid gap-4 xl:grid-cols-[minmax(20rem,.8fr)_minmax(0,1.2fr)]">
               <RecursiveRunTimeline
                 progress={progress()}
                 connected={connection.connected()}
@@ -290,10 +294,11 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
         </Show>
 
         <Show when={recursive() === null || legacyEvents().length > 0}>
-        <div class="legacy-progress">
-        <div class="flex items-center justify-between">
-          <h2 id="research-progress-title" class="text-xl font-semibold">Research progress</h2>
-          <span class="badge badge-outline">
+        <div class="legacy-progress card border border-base-300 bg-base-100">
+        <div class="card-body gap-4 p-4 sm:p-5">
+        <div class="flex items-center justify-between gap-4">
+          <h2 id="research-progress-title" class="card-title text-xl">Research progress</h2>
+          <span class={`badge ${connection.connected() ? 'badge-success' : connection.reconnecting() ? 'badge-warning' : 'badge-ghost'}`}>
             {connection.connected() ? 'Live' : connection.reconnecting() ? 'Reconnecting' : 'Connecting'}
           </span>
         </div>
@@ -302,12 +307,19 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
         </Show>
         <Show
           when={legacyEvents().length > 0}
-          fallback={<p role="status" class="text-base-content/60">Waiting for persisted progress…</p>}
+          fallback={(
+            <div class="flex items-center gap-3 py-6 text-base-content/60" role="status">
+              <span class="loading loading-dots loading-md" aria-hidden="true" />
+              <span>Waiting for persisted progress…</span>
+            </div>
+          )}
         >
-          <ol aria-live="polite" class="timeline timeline-vertical">
+          <ol aria-live="polite" class="timeline timeline-vertical timeline-compact">
             <For each={legacyEvents()}>
               {(event) => (
-                <li class="timeline-box">
+                <li>
+                  <div class="timeline-middle size-3 rounded-full bg-primary" aria-hidden="true" />
+                  <div class="timeline-end timeline-box mb-4 w-full border-base-300 bg-base-100">
                   <p class="font-medium">{eventLabel(event)}</p>
                   <Show when={event.type === 'retrieval-completed' && event.data.evidenceCount === 0}>
                     <p class="mt-2 text-sm text-base-content/70">
@@ -329,7 +341,7 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
                           {(citation, index) => (
                             <A
                               class="link link-primary"
-                              href={`/projects/${props.projectId}/research/${props.threadId}/citation/${citation.id}`}
+                              href={researchCitationPath(props.projectId, props.threadId, citation.id)}
                               aria-label={`Open citation ${index() + 1} in source version`}
                             >
                               Open citation {index() + 1}
@@ -364,16 +376,18 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
                           </A>
                         </Show>
                         <Show when={findingSaveError()}>
-                          {(message) => <div role="alert">{message()}</div>}
+                          {(message) => <div class="alert alert-error" role="alert">{message()}</div>}
                         </Show>
                       </div>
                     )}
                   </Show>
+                  </div>
                 </li>
               )}
             </For>
           </ol>
         </Show>
+        </div>
         </div>
         </Show>
       </section>

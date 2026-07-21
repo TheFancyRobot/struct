@@ -13,14 +13,22 @@ depends_on:
   - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_05_run-full-evaluation-campaign-and-remediate-gates|STEP-09-05 Run Full Evaluation Campaign and Remediate Gates]]'
 related_sessions:
   - '[[05_Sessions/2026-07-21-004116-publish-v1-documentation-accessibility-and-release-checklist-codex-step-09-06-worker|SESSION-2026-07-21-004116 Codex STEP-09-06 worker session for Publish v1 Documentation Accessibility and Release Checklist]]'
-related_bugs: []
+  - '[[05_Sessions/2026-07-21-045505-publish-v1-documentation-accessibility-and-release-checklist-bug-0012-daisyui-worker|SESSION-2026-07-21-045505 bug-0012-daisyui-worker session for Publish v1 Documentation Accessibility and Release Checklist]]'
+  - '[[05_Sessions/2026-07-21-194610-publish-v1-documentation-accessibility-and-release-checklist-codex-bug-0013-orchestrator|SESSION-2026-07-21-194610 Codex BUG-0013 orchestrator session for Publish v1 Documentation Accessibility and Release Checklist]]'
+related_bugs:
+  - '[[03_Bugs/BUG-0012_frontend-loads-daisyui-but-bypasses-its-component-framework|BUG-0012 Frontend loads DaisyUI but bypasses its component framework]]'
+  - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
+  - '[[03_Bugs/BUG-0014_documentation-roadmap-links-point-to-removed-phase-paths|BUG-0014 Documentation roadmap links point to removed phase paths]]'
+  - '[[03_Bugs/BUG-0015_citation-navigation-bypasses-configured-web-base-path|BUG-0015 Citation navigation bypasses configured web base path]]'
+  - '[[03_Bugs/BUG-0016_base-path-citation-regression-test-is-not-isolated-in-the-full-test-suite|BUG-0016 Base-path citation regression test is not isolated in the full test suite]]'
+  - '[[03_Bugs/BUG-0017_staged-planning-documents-fail-whitespace-validation|BUG-0017 Staged planning documents fail whitespace validation]]'
 tags:
   - agent-vault
   - step
-context_id: SESSION-2026-07-21-004116
-active_session_id: SESSION-2026-07-21-004116
-context_status: completed
-context_summary: Completed v1 documentation, accessibility, responsive evidence, and the fully evidenced release checklist; only the explicit release action remains.
+context_id: SESSION-2026-07-21-194610
+active_session_id: 05_Sessions/2026-07-21-194610-publish-v1-documentation-accessibility-and-release-checklist-codex-bug-0013-orchestrator
+context_status: active
+context_summary: Advance [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist|STEP-09-06 Publish v1 Documentation Accessibility and Release Checklist]].
 ---
 
 # Step 06 - Publish v1 Documentation Accessibility and Release Checklist
@@ -73,6 +81,8 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 <!-- AGENT-START:step-session-history -->
 - 2026-07-21 - [[05_Sessions/2026-07-21-004116-publish-v1-documentation-accessibility-and-release-checklist-codex-step-09-06-worker|SESSION-2026-07-21-004116 Codex STEP-09-06 worker session for Publish v1 Documentation Accessibility and Release Checklist]] - Session created.
+- 2026-07-21 - [[05_Sessions/2026-07-21-045505-publish-v1-documentation-accessibility-and-release-checklist-bug-0012-daisyui-worker|SESSION-2026-07-21-045505 bug-0012-daisyui-worker session for Publish v1 Documentation Accessibility and Release Checklist]] - Session created.
+- 2026-07-21 - [[05_Sessions/2026-07-21-194610-publish-v1-documentation-accessibility-and-release-checklist-codex-bug-0013-orchestrator|SESSION-2026-07-21-194610 Codex BUG-0013 orchestrator session for Publish v1 Documentation Accessibility and Release Checklist]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

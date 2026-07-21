@@ -1,19 +1,14 @@
-/**
- * App.tsx — Root shell component with project-owned DaisyUI theme.
- *
- * Custom theme: 'struct' — a focused research workspace aesthetic.
- * No generic purple-on-white defaults; deliberate palette for reading,
- * evidence, and synthesis work.
- */
-
 import {
   type ParentComponent,
   createEffect,
   createSignal,
   onMount,
 } from 'solid-js'
+import { basePathFromPublicBaseUrl, withBasePath } from './base-path'
 
 type Theme = 'struct-light' | 'struct-dark'
+
+const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
 
 const App: ParentComponent = (props) => {
   const [theme, setTheme] = createSignal<Theme>('struct-light')
@@ -41,90 +36,83 @@ const App: ParentComponent = (props) => {
 
   return (
     <div
-      class="app-shell min-h-screen bg-base-100 text-base-content"
+      class="app-shell drawer min-h-screen bg-base-200 text-base-content lg:drawer-open"
       data-theme={theme()}
     >
-      <header class="site-header">
-        <div class="site-header-inner">
-          <a href="/" class="brand" aria-label="Struct research workspace home">
-            <span class="brand-mark" aria-hidden="true">S</span>
-            <span>
-              <strong>Struct</strong>
-              <small>research workspace</small>
-            </span>
-          </a>
-          <div class="flex items-center gap-3">
+      <input id="workspace-navigation" type="checkbox" class="drawer-toggle" />
+      <div class="drawer-content min-w-0">
+        <header class="navbar sticky top-0 z-30 min-h-16 border-b border-base-300 bg-base-100/95 px-3 backdrop-blur lg:px-6">
+          <div class="navbar-start">
+            <label
+              for="workspace-navigation"
+              class="btn btn-square btn-ghost lg:hidden"
+              aria-label="Open workspace navigation"
+            >
+              <span aria-hidden="true">☰</span>
+            </label>
+            <div class="breadcrumbs hidden text-sm sm:block">
+              <ul>
+                <li><a href={withBasePath('/', appBasePath)}>Workspace</a></li>
+                <li>Research</li>
+              </ul>
+            </div>
+          </div>
+          <div class="navbar-end">
             <button
               type="button"
-              class="theme-toggle"
+              class="theme-toggle btn btn-ghost btn-sm gap-2"
               aria-label={`Switch to ${theme() === 'struct-light' ? 'dark' : 'light'} theme`}
               onClick={toggleTheme}
             >
               <span aria-hidden="true">{theme() === 'struct-light' ? '◐' : '◑'}</span>
-              <span>{theme() === 'struct-light' ? 'Dark' : 'Light'}</span>
+              <span class="hidden sm:inline">{theme() === 'struct-light' ? 'Dark' : 'Light'}</span>
             </button>
           </div>
-        </div>
-      </header>
+        </header>
+        <main class="site-main mx-auto w-full max-w-[96rem] p-3 sm:p-5 lg:p-6">
+          {props.children}
+        </main>
+      </div>
 
-      <main class="site-main">
-        {props.children ?? (
-          <div class="max-w-3xl mx-auto">
-          <div class="hero min-h-[40vh] bg-base-200/30 rounded-2xl border border-base-300">
-            <div class="hero-content text-center">
-              <h2 class="text-3xl font-bold mb-2">
-                Welcome to Struct
-              </h2>
-              <p class="text-base-content/70 text-lg">
-                A source-grounded research workspace.
-              </p>
-              <p class="text-base-content/50 mt-4 text-sm">
-                Documents are retrieved. Datasets are queried. Directories are navigated.
-              </p>
-            </div>
+      <aside class="drawer-side z-40">
+        <label
+          for="workspace-navigation"
+          aria-label="Close workspace navigation"
+          class="drawer-overlay"
+        />
+        <nav class="flex min-h-full w-64 flex-col border-r border-base-300 bg-base-100 p-3">
+          <a
+            href={withBasePath('/', appBasePath)}
+            class="brand flex min-h-14 items-center gap-3 px-2 text-base-content no-underline"
+            aria-label="Struct research workspace home"
+          >
+            <span class="brand-mark grid size-9 place-items-center rounded-field bg-primary text-lg font-bold text-primary-content" aria-hidden="true">S</span>
+            <span class="leading-tight">
+              <strong class="block text-lg tracking-tight">Struct</strong>
+              <small class="block text-xs text-base-content/60">research workspace</small>
+            </span>
+          </a>
+          <div class="divider my-2" />
+          <ul class="menu w-full gap-1 p-0 text-sm">
+            <li class="menu-title text-xs">Workspace</li>
+            <li>
+              <a class="active" href={withBasePath('/', appBasePath)} aria-current="page">
+                <span aria-hidden="true">⌂</span>
+                Research workbench
+              </a>
+            </li>
+            <li>
+              <button type="button" disabled title="Open a project to view its notebook">
+                <span aria-hidden="true">□</span>
+                Project notebook
+              </button>
+            </li>
+          </ul>
+          <div class="mt-auto px-2 py-3 text-xs leading-relaxed text-base-content/55">
+            Source-grounded answers with inspectable evidence.
           </div>
-
-          <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="card bg-base-200 border border-base-300">
-              <div class="card-body p-5">
-                <h3 class="card-title text-sm font-semibold uppercase tracking-wider text-primary">
-                  Projects
-                </h3>
-                <p class="text-base-content/60 text-sm">
-                  Create research projects with sources, threads, and findings.
-                </p>
-              </div>
-            </div>
-            <div class="card bg-base-200 border border-base-300">
-              <div class="card-body p-5">
-                <h3 class="card-title text-sm font-semibold uppercase tracking-wider text-secondary">
-                  Sources
-                </h3>
-                <p class="text-base-content/60 text-sm">
-                  Ingest documents, datasets, and directories.
-                </p>
-              </div>
-            </div>
-            <div class="card bg-base-200 border border-base-300">
-              <div class="card-body p-5">
-                <h3 class="card-title text-sm font-semibold uppercase tracking-wider text-accent">
-                  Research
-                </h3>
-                <p class="text-base-content/60 text-sm">
-                  Ask questions. Get evidence-backed answers with navigable citations.
-                </p>
-              </div>
-            </div>
-          </div>
-          </div>
-        )}
-      </main>
-
-      <footer class="site-footer">
-        <div>
-          Struct · Source-grounded research
-        </div>
-      </footer>
+        </nav>
+      </aside>
     </div>
   )
 }

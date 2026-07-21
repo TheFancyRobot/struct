@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-21._
 - Session in progress: none.
-- Current step: none; roadmap execution is intentionally stopped immediately before the documented v1.0 release action.
-- Completed phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]] - status: completed - owner: Codex - updated: 2026-07-21
-- Next planned phase: [[02_Phases/Phase_10_v1_1_research_usability/Phase|PHASE-10 v1.1 Research Usability]] remains inactive and unrefined until post-v1 work is explicitly resumed.
+- Current step: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_02_build-unified-three-pane-workspace-shell|STEP-10-02 Build Unified Three Pane Workspace Shell]] - status: planned - phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]
+- Active phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: planned - updated: 2026-07-21
+- Also active: 25 more additional steps, 1 open critical bug.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -67,7 +67,7 @@ _Last refreshed: 2026-07-21._
 ## Critical Bugs
 
 <!-- AGENT-START:critical-bugs -->
-- No open sev-1 or sev-2 bugs are currently recorded.
+- [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]] - status: confirmed - severity: sev-1 - reported: 2026-07-21
 <!-- AGENT-END:critical-bugs -->
 
 ## Next Actions

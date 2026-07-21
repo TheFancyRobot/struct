@@ -68,11 +68,11 @@ export const IngestionJobStatus: Component<IngestionJobStatusProps> = (props) =>
     lastEventType: props.lastEventType,
   })
   return (
-    <section aria-live="polite" aria-label="Directory ingestion status">
-      <span class="badge badge-outline" data-state={state()}>{labels[state()]}</span>
+    <section class="flex flex-wrap items-center gap-2" aria-live="polite" aria-label="Directory ingestion status">
+      <span class="badge badge-info" data-state={state()}>{labels[state()]}</span>
       <Show when={props.status}>
         {(status) => (
-          <p class="text-sm">
+          <p class="text-sm text-base-content/60">
             Attempt {status().attempts} of {status().maxAttempts}
           </p>
         )}

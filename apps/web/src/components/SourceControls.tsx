@@ -38,12 +38,12 @@ export interface SourceControlsProps {
 export const SourceControls: Component<SourceControlsProps> = (props) => {
   const enabled = () => availableDirectoryControls(props.status)
   return (
-    <div aria-label="Directory controls" class="flex flex-wrap gap-2">
+    <div aria-label="Directory controls" class="join flex flex-wrap">
       <For each={commands}>
         {(command) => (
           <button
             type="button"
-            class="btn btn-sm"
+            class="btn btn-sm join-item"
             disabled={props.busy === true || !enabled().has(command)}
             onClick={() => props.onCommand(command)}
           >
