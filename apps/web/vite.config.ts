@@ -2,7 +2,7 @@ import { defineConfig, loadEnv } from 'vite'
 import solid from 'vite-plugin-solid'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
-import { basePathFromEnv, withBasePath } from './src/base-path'
+import { basePathFromEnv, stripBasePath, withBasePath } from './src/base-path'
 import { apiProxyHeaders, appBase } from './vite-helpers'
 
 export default defineConfig(({ mode }) => {
@@ -29,6 +29,7 @@ export default defineConfig(({ mode }) => {
         [withBasePath('/api', basePath)]: {
           target: apiProxyTarget,
           headers: proxyHeaders,
+          rewrite: (requestPath) => stripBasePath(requestPath, basePath) ?? requestPath,
         },
       },
     },

@@ -23,6 +23,7 @@ related_decisions:
   - '[[04_Decisions/DEC-0014_use-solidjs-vite-8-and-solid-router-for-frontend-runtime|DEC-0014 Use SolidJS Vite 8 and Solid Router for Frontend Runtime]]'
 related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
+  - '[[03_Bugs/BUG-0018_vite-proxy-regression-test-does-not-typecheck|BUG-0018 Vite proxy regression test does not typecheck]]'
 tags:
   - agent-vault
   - phase
@@ -117,6 +118,7 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 
 <!-- AGENT-START:phase-related-bugs -->
 - [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]
+- [[03_Bugs/BUG-0018_vite-proxy-regression-test-does-not-typecheck|BUG-0018 Vite proxy regression test does not typecheck]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps

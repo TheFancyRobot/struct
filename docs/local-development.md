@@ -90,7 +90,7 @@ For Tailscale Serve, expose that same subpath instead of rewriting the app back
 to `/`:
 
 ```bash
-tailscale serve --bg /struct http://127.0.0.1:3000
+tailscale serve --bg --set-path /struct 3000
 ```
 
 ## 3. Environment, secrets, and safe volumes

@@ -97,6 +97,7 @@ Users can start and continue a conversation using selected ready sources, with d
 ### Work
 
 - Add `apps/web` API functions for creating research runs, reading thread history, and resuming event streams.
+- Define resumable streaming cursor semantics so reconnect requests resume from the last committed cursor, and only frames already reduced into durable thread state are acknowledged as committed.
 - Implement project-scoped thread list and active-thread state.
 - Implement the central message history and persistent composer.
 - Add source-scope selection using immutable ready source versions.
@@ -107,8 +108,8 @@ Users can start and continue a conversation using selected ready sources, with d
 ### Tests
 
 - API-client tests for research creation and failure mapping.
-- Component tests for draft preservation, source scope, reconnect, partial output, cancellation, and bounded retry.
-- Playwright: ask a question during background ingestion and receive a source-grounded answer from ready sources.
+- Component tests for draft preservation, source scope, reconnect, partial output, cancellation, bounded retry, and replay deduplication after reconnect from the last committed cursor.
+- Playwright: ask a question during background ingestion, force a transient stream reconnect, and receive one source-grounded answer from ready sources without duplicated committed output.
 
 ## Slice 5 — Evidence inspector
 
@@ -121,7 +122,8 @@ Selecting a citation opens exact document or dataset evidence in the right pane 
 - Refactor existing citation and report-evidence components into `EvidenceInspector` adapters.
 - Preserve document locators, source versions, hashes, query text, result hashes, units, windows, cohorts, and denominators.
 - Add explicit no-selection, loading, missing, stale, invalid, and repair-required states.
-- Make inline citations keyboard reachable and focus the selected evidence item without trapping focus.
+- Build citation and source-context links with the shared BASE_PATH-aware path helpers so opening exact evidence works from non-root deployments.
+- Make inline citations keyboard-reachable and focus the selected evidence item without trapping focus.
 - On tablet, render evidence as a right drawer; on mobile, render it as a sheet.
 
 ### Tests
@@ -192,7 +194,7 @@ BUG-0013 is resolved only when the application works from an empty browser sessi
   6. open a citation;
   7. save and edit a note;
   8. reload and reopen the project and note.
-- Run the journey at desktop and mobile breakpoints.
+- Run the journey at desktop and mobile breakpoints, including a non-root `BASE_PATH` route such as `/struct/projects/:projectId` so routing, citation links, and source-context links are verified away from `/`.
 - Remove the hard-coded home fixture and obsolete demo-only routing.
 - Update user and local-development documentation to describe the real workflow.
 - Update the release checklist so component demos cannot substitute for an end-to-end user journey.

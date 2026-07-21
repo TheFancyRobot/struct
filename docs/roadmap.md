@@ -30,12 +30,12 @@ This roadmap mirrors the current 16-phase vault plan and keeps delivery aligned 
 
 | Phase | Focus | Target outcome |
 | --- | --- | --- |
-| [PHASE-10](../.agent-vault/02_Phases/Phase_10_v1_usable_research_workspace/Phase.md) | v1.1 research usability | Improve navigation, saved queries, templates, accessibility feedback loops, and day-to-day analyst ergonomics. |
-| [PHASE-11](../.agent-vault/02_Phases/Phase_11_v1_1_research_usability/Phase.md) | v1.2 additional sources | Add a secure connector model for web snapshots, object storage, exports, and other bounded external source types. |
-| [PHASE-12](../.agent-vault/02_Phases/Phase_12_v1_2_additional_sources/Phase.md) | v1.3 continuous research | Schedule source change detection, rerun incremental research, and surface alerts and staleness policies. |
-| [PHASE-13](../.agent-vault/02_Phases/Phase_13_v1_3_continuous_research/Phase.md) | v1.4 collaboration and governance | Add shared workspaces, annotations, approvals, policy enforcement, and audit controls. |
-| [PHASE-14](../.agent-vault/02_Phases/Phase_14_v1_4_collaboration_and_governance/Phase.md) | v1.5 advanced research | Expand into reusable research templates, richer comparative workflows, and more advanced model/tool policies. |
-| [PHASE-15](../.agent-vault/02_Phases/Phase_15_v1_5_advanced_research/Phase.md) | v2 scaled research platform | Introduce distributed orchestration, multi-tenant control planes, and scale economics once the single-node product is proven. |
+| [PHASE-10](../.agent-vault/02_Phases/Phase_10_v1_usable_research_workspace/Phase.md) | v1 usable research workspace | Improve the shipped v1 workspace with stronger navigation, saved views, templates, and analyst ergonomics. |
+| [PHASE-11](../.agent-vault/02_Phases/Phase_11_v1_1_research_usability/Phase.md) | v1.1 research usability | Validate and extend day-to-day research UX with search, command, saved-query, and accessibility improvements. |
+| [PHASE-12](../.agent-vault/02_Phases/Phase_12_v1_2_additional_sources/Phase.md) | v1.2 additional sources | Add secure connector flows for web snapshots, object storage, exports, and other bounded external sources. |
+| [PHASE-13](../.agent-vault/02_Phases/Phase_13_v1_3_continuous_research/Phase.md) | v1.3 continuous research | Schedule source change detection, rerun incremental research, and surface alerts and staleness policies. |
+| [PHASE-14](../.agent-vault/02_Phases/Phase_14_v1_4_collaboration_and_governance/Phase.md) | v1.4 collaboration and governance | Add shared workspaces, annotations, approvals, policy enforcement, and audit controls. |
+| [PHASE-15](../.agent-vault/02_Phases/Phase_15_v1_5_advanced_research/Phase.md) | v1.5 advanced research | Expand into reusable research templates, richer comparative workflows, and more advanced model/tool policies. |
 
 ## Release checkpoints
 
