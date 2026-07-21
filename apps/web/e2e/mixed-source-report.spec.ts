@@ -7,6 +7,7 @@ import {
   startAppServer,
   stopAppServer,
 } from './support/app-server'
+import { waitForThemeStyles } from './support/theme-readiness'
 /* eslint-enable no-unused-vars */
 
 const projectId = 'f80e8400-e29b-41d4-a716-446655440001'
@@ -111,6 +112,7 @@ describe('mixed-source report browser workflow', () => {
         }, theme)
         await openDemo(page)
         await page.getByRole('heading', { name: 'Renewal risk synthesis' }).waitFor()
+        await waitForThemeStyles(page, theme)
         expect(await page.locator('.app-shell').getAttribute('data-theme'))
           .toBe(`struct-${theme}`)
         expect(await page.locator('html').getAttribute('data-theme'))

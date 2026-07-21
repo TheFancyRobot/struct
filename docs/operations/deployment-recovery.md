@@ -102,6 +102,11 @@ DATA_ENGINE_TOKEN="$DATA_ENGINE_TOKEN" \
   bun run ops:recovery-proof
 ```
 
+`stack:restart` prepares the active bind mounts and force-recreates the Compose
+services. Recovery needs recreation when it switches from the isolated artifact
+root back to the normal root; a container-only restart cannot apply a changed
+bind-mount source.
+
 An interrupted dump leaves only a `.partial-*` file. An invalid or partial
 archive fails validation before reset. Wrong hosts, unrelated database names,
 missing exact approval, failed health checks, and PostgreSQL tool errors all

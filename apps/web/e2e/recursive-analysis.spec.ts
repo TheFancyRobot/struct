@@ -6,6 +6,7 @@ import {
   startAppServer,
   stopAppServer,
 } from './support/app-server'
+import { waitForThemeStyles } from './support/theme-readiness'
 /* eslint-enable no-unused-vars */
 
 const projectId = 'e80e8400-e29b-41d4-a716-446655440001'
@@ -236,6 +237,7 @@ describe('recursive analysis browser workflow', () => {
         await routeProgress(page)
         await page.goto(runUrl)
         await page.getByRole('heading', { name: 'Partial findings' }).waitFor()
+        await waitForThemeStyles(page, theme)
         expect(await page.locator('.app-shell[data-theme]').getAttribute('data-theme'))
           .toBe(`struct-${theme}`)
         expect(await page.locator('html').getAttribute('data-theme'))

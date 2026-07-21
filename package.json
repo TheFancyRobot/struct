@@ -33,6 +33,7 @@
     "recursive:eval": "bun run --filter @struct/evaluation phase-06:eval",
     "bench": "bun run --filter @struct/evaluation bench",
     "v1:performance": "bun run scripts/v1-performance-gate.ts",
+    "v1:evaluate": "bun run scripts/v1-evaluation-campaign.ts",
     "secrets:scan": "bun run scripts/secrets-scan.ts",
     "docs:lint": "bun run scripts/docs-lint.ts"
   },
