@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { basePathFromEnv, stripBasePath } from './base-path'
 
 const DEFAULT_API_ORIGIN = 'http://127.0.0.1:3001'
 const DEFAULT_WEB_PORT = 3000
@@ -6,6 +7,7 @@ const DEFAULT_WEB_PORT = 3000
 export interface WebServerConfig {
   readonly apiOrigin: URL
   readonly apiAuthToken: string
+  readonly basePath: string
   readonly distRoot: string
   readonly port: number
 }
@@ -29,6 +31,7 @@ export function loadWebServerConfig(
   return {
     apiOrigin,
     apiAuthToken,
+    basePath: basePathFromEnv(environment),
     distRoot: path.resolve(currentDirectory, 'dist'),
     port,
   }
@@ -70,13 +73,18 @@ export function createWebRequestHandler(
 ): (request: Request) => Promise<Response> {
   return async (request) => {
     const url = new URL(request.url)
-    if (url.pathname.startsWith('/api/')) {
-      return proxyApiRequest(request, config)
+    if (config.basePath !== '' && (url.pathname === '' || url.pathname === '/')) {
+      return Response.redirect(new URL(`${config.basePath}/`, url.origin), 302)
+    }
+    const pathname = stripBasePath(url.pathname, config.basePath)
+    if (pathname === null) return new Response('Not Found', { status: 404 })
+    if (pathname.startsWith('/api/')) {
+      return proxyApiRequest(new Request(new URL(`${pathname}${url.search}`, url.origin), request), config)
     }
     if (!['GET', 'HEAD'].includes(request.method)) {
       return new Response('Method Not Allowed', { status: 405 })
     }
-    const relativePath = safeAssetPath(url.pathname)
+    const relativePath = safeAssetPath(pathname)
     if (relativePath === undefined) return new Response('Not Found', { status: 404 })
     const asset = Bun.file(path.join(config.distRoot, relativePath || 'index.html'))
     if (await asset.exists()) return new Response(request.method === 'HEAD' ? null : asset)

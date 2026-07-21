@@ -22,6 +22,10 @@ import {
   type CitationRepairChoice,
 } from './CitationRepairDialog'
 import { ReportCitationPanel } from './ReportCitationPanel'
+import { reportCitationPath } from './citation-paths'
+import { apiPath, basePathFromPublicBaseUrl } from '../base-path'
+
+const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
 
 interface ReportEditorProps {
   readonly initialReport: Report
@@ -209,7 +213,7 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
           download: '1',
         })
         const anchor = document.createElement('a')
-        anchor.href = `/api/projects/${report().projectId}/reports/${report().id}`
+        anchor.href = apiPath(`/projects/${report().projectId}/reports/${report().id}`, appBasePath)
           + `/exports/${encodeURIComponent(exported.digest)}?${query}`
         anchor.download = `report-${report().id}.struct-export.json`
         anchor.click()
@@ -245,21 +249,22 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
   }
 
   return (
-    <section class="report-workspace" aria-labelledby="report-workspace-title">
-      <header class="report-workspace-header">
+    <section class="report-workspace overflow-hidden rounded-box border border-base-300 bg-base-100" aria-labelledby="report-workspace-title">
+      <header class="report-workspace-header flex flex-col gap-4 border-b border-base-300 p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
         <div>
-          <p class="eyebrow">Report workspace</p>
-          <h1 id="report-workspace-title">
+          <p class="text-sm font-semibold text-primary">Report workspace</p>
+          <h1 id="report-workspace-title" class="mt-1 text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">
             {visibleReport().titleRevisions[visibleReport().currentTitleRevision]?.content}
           </h1>
-          <p>
+          <p class="mt-1 text-sm text-base-content/55">
             Revision {visibleReport().revision} · {visibleReport().publicationState}
             <Show when={historyView() !== null}> · read-only history</Show>
           </p>
         </div>
-        <div class="report-primary-actions">
+        <div class="report-primary-actions join self-stretch sm:self-auto">
           <button
             type="button"
+            class="btn join-item flex-1 sm:flex-none"
             onClick={exportBundle}
             disabled={busy() !== ''
               || offline()
@@ -270,7 +275,7 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
           </button>
           <button
             type="button"
-            class="report-publish"
+            class="report-publish btn btn-primary join-item flex-1 sm:flex-none"
             onClick={publish}
             disabled={busy() !== ''
               || offline()
@@ -284,60 +289,67 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
       </header>
 
       <Show when={offline()}>
-        <div class="report-banner error" role="alert">
+        <div class="report-banner error alert alert-error rounded-none" role="alert">
           Offline. Editing, repair, publish, and export are paused.
         </div>
       </Show>
       <Show when={busy() !== ''}>
-        <div class="report-banner" role="status" aria-live="polite">
+        <div class="report-banner alert alert-info rounded-none" role="status" aria-live="polite">
+          <span class="loading loading-spinner loading-sm" aria-hidden="true" />
           <span>{busy()}</span>
         </div>
       </Show>
       <Show when={message() !== ''}>
         <div
           ref={statusMessage}
-          class="report-banner success"
+          class="report-banner success alert alert-success rounded-none"
           role="status"
           tabindex="-1"
         >{message()}</div>
       </Show>
       <Show when={error() !== ''}>
-        <div class="report-banner error" role="alert">
+        <div class="report-banner error alert alert-error rounded-none" role="alert">
           <span>{error()}</span>
-          <button type="button" onClick={() => setError('')}>Dismiss</button>
+          <button class="btn btn-sm" type="button" onClick={() => setError('')}>Dismiss</button>
         </div>
       </Show>
 
-      <div class="report-workspace-layout">
-        <aside class="report-outline" aria-labelledby="report-outline-title">
-          <header>
-            <h2 id="report-outline-title">Outline</h2>
-            <span>{visibleReport().sections.length} sections</span>
+      <div class="report-workspace-layout grid lg:grid-cols-[14rem_minmax(0,1fr)] xl:grid-cols-[14rem_minmax(0,1fr)_16rem]">
+        <aside class="report-outline min-w-0 border-b border-base-300 p-4 lg:border-b-0 lg:border-r" aria-labelledby="report-outline-title">
+          <header class="flex items-center justify-between gap-3">
+            <h2 id="report-outline-title" class="font-semibold">Outline</h2>
+            <span class="badge badge-ghost badge-sm">{visibleReport().sections.length} sections</span>
           </header>
-          <ol>
+          <ol class="menu menu-horizontal mt-3 w-full flex-nowrap gap-2 overflow-x-auto p-0 lg:menu-vertical lg:overflow-visible">
             <For each={visibleReport().sections}>
               {(section) => (
-                <li classList={{ active: selectedSection() === section.id }}>
+                <li
+                  class="min-w-44 lg:min-w-0"
+                  classList={{ active: selectedSection() === section.id }}
+                >
                   <button
                     type="button"
+                    classList={{ 'menu-active': selectedSection() === section.id }}
                     onClick={() => {
                       setSelectedSection(section.id)
                       setDraft(sectionContent(section))
                     }}
                   >
-                    <span>{String(section.ordinal + 1).padStart(2, '0')}</span>
+                    <span class="text-xs opacity-50">{String(section.ordinal + 1).padStart(2, '0')}</span>
                     <strong>{section.heading}</strong>
                   </button>
                   <Show when={historyView() === null}>
-                    <div class="outline-reorder" aria-label={`Reorder ${section.heading}`}>
+                    <div class="outline-reorder join mt-1 px-1" aria-label={`Reorder ${section.heading}`}>
                       <button
                         type="button"
+                        class="btn btn-square btn-ghost btn-xs join-item"
                         aria-label={`Move ${section.heading} up`}
                         disabled={busy() !== '' || offline() || section.ordinal === 0}
                         onClick={() => reorder(section, -1)}
                       >↑</button>
                       <button
                         type="button"
+                        class="btn btn-square btn-ghost btn-xs join-item"
                         aria-label={`Move ${section.heading} down`}
                         disabled={busy() !== ''
                           || offline()
@@ -350,19 +362,21 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
               )}
             </For>
           </ol>
-          <div class="revision-history">
-            <h3>Revision history</h3>
-            <div>
+          <div class="revision-history mt-5 border-t border-base-300 pt-4">
+            <h3 class="text-sm font-semibold">Revision history</h3>
+            <div class="mt-2 flex gap-2 overflow-x-auto lg:flex-col">
               <For each={Array.from({ length: report().revision + 1 }, (_, revision) => revision).reverse()}>
                 {(revision) => (
                   <button
                     type="button"
+                    class="btn h-auto min-w-36 flex-col items-start gap-0 border-base-300 bg-base-100 p-2 text-left lg:w-full"
+                    classList={{ 'btn-active': visibleReport().revision === revision }}
                     aria-current={visibleReport().revision === revision ? 'true' : undefined}
                     disabled={busy() !== ''}
                     onClick={() => void openRevision(revision)}
                   >
                     <span>Revision {revision}</span>
-                    <small>{revision === report().revision ? 'Current' : 'Immutable snapshot'}</small>
+                    <small class="text-xs font-normal opacity-55">{revision === report().revision ? 'Current' : 'Immutable snapshot'}</small>
                   </button>
                 )}
               </For>
@@ -370,24 +384,28 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
           </div>
         </aside>
 
-        <section class="report-editor-canvas" aria-label="Report sections">
+        <section class="report-editor-canvas min-w-0 space-y-4 bg-base-200 p-3 sm:p-5" aria-label="Report sections">
           <Show when={historyView() !== null}>
-            <button class="return-current" type="button" onClick={() => setHistoryView(null)}>
+            <button class="return-current btn btn-ghost btn-sm" type="button" onClick={() => setHistoryView(null)}>
               ← Return to current report
             </button>
           </Show>
           <For each={visibleReport().sections}>
             {(section) => (
               <article
-                class="editable-report-section"
-                classList={{ selected: selectedSection() === section.id }}
+                class="editable-report-section card border bg-base-100"
+                classList={{
+                  'border-primary ring-1 ring-primary/20': selectedSection() === section.id,
+                  'border-base-300': selectedSection() !== section.id,
+                }}
                 onClick={() => setSelectedSection(section.id)}
               >
-                <header>
-                  <span>{String(section.ordinal + 1).padStart(2, '0')}</span>
+                <div class="card-body gap-4 p-4 sm:p-5">
+                <header class="flex items-start gap-3">
+                  <span class="badge badge-ghost badge-sm mt-1">{String(section.ordinal + 1).padStart(2, '0')}</span>
                   <div>
-                    <h2>{section.heading}</h2>
-                    <small>
+                    <h2 class="text-xl font-semibold">{section.heading}</h2>
+                    <small class="text-xs text-base-content/50">
                       {section.revisions[section.currentRevision]?.authorship.kind}
                       {' '}revision {section.currentRevision}
                     </small>
@@ -395,18 +413,20 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
                 </header>
                 <Show
                   when={historyView() === null && selectedSection() === section.id}
-                  fallback={<p>{sectionContent(section)}</p>}
+                  fallback={<p class="synthesis-copy whitespace-pre-wrap text-lg leading-relaxed text-base-content/80">{sectionContent(section)}</p>}
                 >
-                  <label>
+                  <label class="form-control">
                     <span class="sr-only">Edit {section.heading}</span>
                     <textarea
+                      class="textarea textarea-bordered min-h-36 w-full bg-base-100 text-base leading-relaxed"
                       value={draft()}
                       onInput={(event) => setDraft(event.currentTarget.value)}
                     />
                   </label>
-                  <div class="section-edit-actions">
+                  <div class="section-edit-actions mt-3 flex justify-end">
                     <button
                       type="button"
+                      class="btn btn-primary btn-sm"
                       disabled={busy() !== ''
                         || offline()
                         || draft().trim() === ''
@@ -422,15 +442,15 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
                     </button>
                   </div>
                 </Show>
-                <div class="report-claims">
+                <div class="report-claims space-y-2 border-t border-base-300 pt-4">
                   <For each={sectionClaims(section)}>
                     {(claim) => {
                       const blocker = claimBlocker(claim)
                       return (
-                        <div class="report-claim" data-claim-state={claim.citation.state}>
-                          <p>{claimContent(claim)}</p>
-                          <div>
-                            <button type="button" onClick={() => setEvidenceClaim(claim)}>
+                        <div class="report-claim flex flex-col items-start gap-2 rounded-field bg-base-200 p-3" data-claim-state={claim.citation.state}>
+                          <p class="min-w-0 flex-1 text-sm">{claimContent(claim)}</p>
+                          <div class="flex w-full flex-wrap gap-2">
+                            <button class="btn btn-outline btn-sm" type="button" onClick={() => setEvidenceClaim(claim)}>
                               {claim.support.kind === 'supported'
                                 ? claim.support.mode
                                 : 'No evidence'}
@@ -438,7 +458,7 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
                             </button>
                             <Show when={blocker !== null && historyView() === null}>
                               <button
-                                class="repair-trigger"
+                                class="repair-trigger btn btn-warning btn-sm"
                                 type="button"
                                 disabled={busy() !== '' || offline()}
                                 onClick={() => setRepairClaim(claim)}
@@ -452,46 +472,50 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
                     }}
                   </For>
                 </div>
+                </div>
               </article>
             )}
           </For>
         </section>
 
-        <aside class="report-inspector" aria-labelledby="report-inspector-title">
-          <header>
-            <h2 id="report-inspector-title">Publish check</h2>
-            <span>{visibleBlockers().length === 0
+        <aside class="report-inspector min-w-0 border-t border-base-300 p-4 lg:col-span-2 xl:col-span-1 xl:border-l xl:border-t-0" aria-labelledby="report-inspector-title">
+          <header class="flex items-center justify-between gap-3">
+            <h2 id="report-inspector-title" class="font-semibold">Publish check</h2>
+            <span class={`badge badge-sm ${visibleBlockers().length === 0 ? 'badge-success' : 'badge-warning'}`}>{visibleBlockers().length === 0
               ? 'Ready'
               : `${visibleBlockers().length} blocked`}</span>
           </header>
           <Show
             when={visibleBlockers().length > 0}
             fallback={
-              <div class="publish-ready">
+              <div class="publish-ready alert alert-success mt-3 items-start">
+                <span aria-hidden="true">✓</span>
+                <div>
                 <strong>All claims are publishable</strong>
-                <p>Immutable evidence and citation states passed the report gate.</p>
+                <p class="text-sm">Immutable evidence and citation states passed the report gate.</p>
+                </div>
               </div>
             }
           >
-            <ul class="publish-blockers">
+            <ul class="publish-blockers mt-3 space-y-2">
               <For each={visibleBlockers()}>
                 {(blocker) => (
                   <li>
-                    <button type="button" onClick={() => setEvidenceClaim(blocker.claim)}>
-                      <strong>{blocker.reason}</strong>
-                      <span>{claimContent(blocker.claim)}</span>
+                    <button class="btn h-auto w-full flex-col items-start whitespace-normal border-warning/40 bg-warning/8 p-3 text-left" type="button" onClick={() => setEvidenceClaim(blocker.claim)}>
+                      <strong class="text-warning">{blocker.reason}</strong>
+                      <span class="text-sm font-normal text-base-content/65">{claimContent(blocker.claim)}</span>
                     </button>
                   </li>
                 )}
               </For>
             </ul>
           </Show>
-          <div class="report-metadata">
-            <dl>
-              <div><dt>Sources</dt><dd>{visibleReport().sourceVersionIds.length}</dd></div>
-              <div><dt>Findings</dt><dd>{visibleReport().findingIds.length}</dd></div>
-              <div><dt>Claims</dt><dd>{visibleReport().claims.length}</dd></div>
-              <div><dt>Revision</dt><dd>{visibleReport().revision}</dd></div>
+          <div class="report-metadata mt-5 border-t border-base-300 pt-4">
+            <dl class="grid grid-cols-2 gap-px overflow-hidden rounded-field border border-base-300 bg-base-300">
+              <div class="bg-base-100 p-3"><dt class="text-xs text-base-content/50">Sources</dt><dd class="text-lg font-semibold">{visibleReport().sourceVersionIds.length}</dd></div>
+              <div class="bg-base-100 p-3"><dt class="text-xs text-base-content/50">Findings</dt><dd class="text-lg font-semibold">{visibleReport().findingIds.length}</dd></div>
+              <div class="bg-base-100 p-3"><dt class="text-xs text-base-content/50">Claims</dt><dd class="text-lg font-semibold">{visibleReport().claims.length}</dd></div>
+              <div class="bg-base-100 p-3"><dt class="text-xs text-base-content/50">Revision</dt><dd class="text-lg font-semibold">{visibleReport().revision}</dd></div>
             </dl>
           </div>
         </aside>
@@ -503,9 +527,12 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
         citationHref={props.threadId === undefined
           ? undefined
           : (claim) =>
-            `/projects/${report().projectId}/research/${props.threadId}`
-            + `/citation/${claim.citation.citationId}`
-            + `?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`}
+            reportCitationPath(
+              report().projectId,
+              props.threadId!,
+              claim.citation.citationId,
+              window.location.pathname + window.location.search,
+            )}
       />
       <CitationRepairDialog
         open={repairClaim() !== null}

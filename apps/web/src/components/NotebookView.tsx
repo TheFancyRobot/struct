@@ -16,6 +16,9 @@ import {
 } from 'solid-js'
 import type { ReportMutation } from '../api/artifacts'
 import { ReportEditor } from './ReportEditor'
+import { basePathFromPublicBaseUrl, withBasePath } from '../base-path'
+
+const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
 
 export interface NotebookViewProps {
   readonly workspaceId: typeof WorkspaceId.Type
@@ -95,16 +98,16 @@ export const NotebookView: Component<NotebookViewProps> = (props) => {
   }
 
   return (
-    <section class="notebook-workspace" aria-labelledby="notebook-title">
-      <header class="notebook-hero">
+    <section class="notebook-workspace space-y-5" aria-labelledby="notebook-title">
+      <header class="notebook-hero flex flex-col gap-4 rounded-box border border-base-300 bg-base-100 p-4 sm:flex-row sm:items-end sm:justify-between sm:p-6">
         <div>
-          <p class="eyebrow">Project notebook</p>
-          <h1 id="notebook-title">Findings into reports</h1>
-          <p>Collect completed research, keep its evidence, and shape a durable brief.</p>
+          <p class="text-sm font-semibold text-primary">Project notebook</p>
+          <h1 id="notebook-title" class="mt-1 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Findings into reports</h1>
+          <p class="mt-2 max-w-2xl text-base text-base-content/65">Collect completed research, keep its evidence, and shape a durable brief.</p>
         </div>
         <button
           type="button"
-          class="notebook-compose"
+          class="notebook-compose btn btn-primary"
           disabled={selectedFindings().length === 0 || saving()}
           onClick={compose}
         >
@@ -113,51 +116,63 @@ export const NotebookView: Component<NotebookViewProps> = (props) => {
       </header>
 
       <Show when={props.initialFindings === undefined && findings.loading}>
-        <div class="notebook-state" role="status">Loading durable findings…</div>
+        <div class="notebook-state flex min-h-40 items-center justify-center gap-3 rounded-box border border-base-300 bg-base-100" role="status">
+          <span class="loading loading-spinner loading-md" aria-hidden="true" />
+          <span>Loading durable findings…</span>
+        </div>
       </Show>
       <Show when={props.initialFindings === undefined && findings.error}>
-        <div class="notebook-state notebook-error" role="alert">
+        <div class="notebook-state alert alert-error" role="alert">
           Project notebook unavailable. Try again.
         </div>
       </Show>
       <Show when={!findings.loading && !findings.error && visibleFindings().length === 0}>
-        <div class="notebook-state">
-          <strong>No saved findings yet</strong>
-          <span>Complete research and save its output to start this notebook.</span>
+        <div class="notebook-state hero min-h-48 rounded-box border border-base-300 bg-base-100">
+          <div class="hero-content text-center">
+            <div>
+              <strong class="text-lg">No saved findings yet</strong>
+              <span class="mt-1 block text-base-content/60">Complete research and save its output to start this notebook.</span>
+            </div>
+          </div>
         </div>
       </Show>
       <Show when={saveError().length > 0}>
-        <div class="notebook-state notebook-error" role="alert">{saveError()}</div>
+        <div class="notebook-state alert alert-error" role="alert">{saveError()}</div>
       </Show>
 
-      <div class="notebook-grid">
-        <div class="notebook-finding-list" aria-label="Durable findings">
+      <div class="notebook-grid grid gap-4 lg:grid-cols-[minmax(16rem,.75fr)_minmax(0,1.75fr)]">
+        <div class="notebook-finding-list space-y-3" aria-label="Durable findings">
           <For each={visibleFindings()}>
             {(finding) => (
               <article
-                class="notebook-finding-card"
-                classList={{ selected: selected().has(finding.id) }}
+                class="notebook-finding-card card border bg-base-100 transition-colors"
+                classList={{
+                  'border-primary ring-1 ring-primary/20': selected().has(finding.id),
+                  'border-base-300': !selected().has(finding.id),
+                }}
               >
-                <label>
+                <div class="card-body gap-3 p-4">
+                <label class="flex cursor-pointer items-center gap-2 text-sm font-medium">
                   <input
                     type="checkbox"
+                    class="checkbox checkbox-primary checkbox-sm"
                     aria-label={`Select ${currentTitle(finding)}`}
                     checked={selected().has(finding.id)}
                     onChange={() => toggle(finding.id)}
                   />
-                  <span class="finding-index">Finding</span>
+                  <span class="finding-index text-xs text-base-content/55">Finding</span>
                 </label>
-                <h2>{currentTitle(finding)}</h2>
-                <p>
+                <h2 class="card-title text-lg">{currentTitle(finding)}</h2>
+                <p class="text-sm text-base-content/60">
                   {finding.claims.length} claim{finding.claims.length === 1 ? '' : 's'}
                   {' · '}
                   {finding.sourceVersionIds.length} immutable source version
                   {finding.sourceVersionIds.length === 1 ? '' : 's'}
                 </p>
                 <Show when={hasInvalidCitation(finding)}>
-                  <span class="citation-warning">Citation needs validation</span>
+                  <span class="citation-warning badge badge-warning badge-sm">Citation needs validation</span>
                 </Show>
-                <div class="finding-citations">
+                <div class="finding-citations flex flex-wrap gap-2">
                   <For each={finding.claims}>
                     {(claim) => (
                       <Show
@@ -165,11 +180,12 @@ export const NotebookView: Component<NotebookViewProps> = (props) => {
                           props.threadId !== undefined
                           && props.runId === finding.runId
                         }
-                        fallback={<span>{claim.citation.state}</span>}
+                        fallback={<span class="badge badge-ghost badge-sm">{claim.citation.state}</span>}
                       >
-                        <a href={
-                          `/projects/${props.projectId}/research/${props.threadId}`
+                        <a class="link link-primary text-sm" href={
+                          withBasePath(`/projects/${props.projectId}/research/${props.threadId}`
                           + `/citation/${claim.citation.citationId}`
+                          , appBasePath)
                         }>
                           Open citation · {claim.citation.state}
                         </a>
@@ -177,18 +193,23 @@ export const NotebookView: Component<NotebookViewProps> = (props) => {
                     )}
                   </For>
                 </div>
+                </div>
               </article>
             )}
           </For>
         </div>
 
-        <aside class="report-composer" aria-label="Report preview">
+        <aside class="report-composer min-w-0" aria-label="Report preview">
           <Show
             when={report()}
             fallback={
-              <div class="report-placeholder">
-                <span>Report canvas</span>
-                <strong>Select findings to compose a durable report.</strong>
+              <div class="report-placeholder hero min-h-72 rounded-box border border-base-300 bg-base-100">
+                <div class="hero-content text-center">
+                  <div>
+                    <span class="badge badge-ghost">Report canvas</span>
+                    <strong class="mt-3 block text-lg">Select findings to compose a durable report.</strong>
+                  </div>
+                </div>
               </div>
             }
           >

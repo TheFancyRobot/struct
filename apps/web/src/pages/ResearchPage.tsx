@@ -40,12 +40,12 @@ export const ResearchPage: Component = () => {
   return (
     <section
       aria-labelledby="document-research-title"
-      class="research-page mx-auto max-w-[96rem] space-y-6"
+      class="research-page space-y-5"
     >
-      <header class="research-title-block">
-        <p class="eyebrow">Research workbench</p>
-        <h1 id="document-research-title">Grounded analysis</h1>
-        <p>Follow committed progress from corpus partition to exact evidence.</p>
+      <header class="research-title-block px-1 py-2 sm:py-3">
+        <p class="text-sm font-semibold text-primary">Research workbench</p>
+        <h1 id="document-research-title" class="mt-1 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Grounded analysis</h1>
+        <p class="mt-1 text-base text-base-content/65">Follow committed progress from corpus partition to exact evidence.</p>
       </header>
       <Show
         when={demoReport()}

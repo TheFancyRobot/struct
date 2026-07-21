@@ -83,13 +83,13 @@ const statusLabel = (
 
 const statusClass = (status: MixedSourceReportStatus): string => {
   switch (status) {
-    case 'complete': return 'status-good'
-    case 'live': return 'status-live'
+    case 'complete': return 'badge-success'
+    case 'live': return 'badge-info'
     case 'loading':
-    case 'reconnecting': return 'status-warn'
+    case 'reconnecting': return 'badge-warning'
     case 'cancelled':
     case 'empty':
-    case 'error': return 'status-bad'
+    case 'error': return 'badge-error'
   }
 }
 
@@ -179,25 +179,25 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
   return (
     <section
       aria-labelledby="mixed-source-title"
-      class="mixed-report"
+      class="mixed-report overflow-hidden rounded-box border border-base-300 bg-base-100"
       data-report-status={props.report.status}
       data-mobile-pane={mobilePane()}
     >
-      <header class="mixed-report-header">
+      <header class="mixed-report-header flex flex-col gap-4 border-b border-base-300 p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
         <div>
-          <p class="eyebrow">Cross-source notebook</p>
-          <h2 id="mixed-source-title">{props.report.title}</h2>
-          <p>{props.report.question}</p>
+          <p class="text-sm font-semibold text-primary">Cross-source notebook</p>
+          <h2 id="mixed-source-title" class="mt-1 text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">{props.report.title}</h2>
+          <p class="mt-1 max-w-3xl text-base text-base-content/65">{props.report.question}</p>
         </div>
-        <div class="mixed-status">
-          <span class={`state-chip ${statusClass(props.report.status)}`}>
+        <div class="mixed-status flex shrink-0 items-center gap-2 sm:flex-col sm:items-end">
+          <span class={`badge ${statusClass(props.report.status)}`}>
             {statusLabel(props.report.status)}
           </span>
-          <span>{sourceCount()} immutable sources</span>
+          <span class="text-xs text-base-content/60">{sourceCount()} immutable sources</span>
         </div>
       </header>
 
-      <nav class="mixed-mobile-tabs" aria-label="Mixed-source report sections">
+      <nav class="mixed-mobile-tabs tabs tabs-box m-2 grid grid-cols-3 sm:hidden" aria-label="Mixed-source report sections">
         <For each={[
           ['sources', 'Sources'],
           ['report', 'Synthesis'],
@@ -206,6 +206,8 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
           {([pane, label]) => (
             <button
               type="button"
+              class="tab h-10"
+              classList={{ 'tab-active': mobilePane() === pane }}
               aria-pressed={mobilePane() === pane}
               onClick={() => setMobilePane(pane)}
             >
@@ -217,62 +219,77 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
 
       <Switch>
         <Match when={props.report.status === 'loading'}>
-          <div class="mixed-state" role="status" aria-label="Loading mixed-source research">
+          <div class="mixed-state flex min-h-72 flex-col gap-4 p-6" role="status" aria-label="Loading mixed-source research">
             <span class="skeleton h-3 w-28" />
             <span class="skeleton h-9 w-2/3" />
             <span class="skeleton h-28 w-full" />
-            <p>Loading committed evidence…</p>
+            <p class="text-sm text-base-content/60">Loading committed evidence…</p>
           </div>
         </Match>
         <Match when={props.report.status === 'error'}>
-          <div class="mixed-state" role="alert">
+          <div class="mixed-state alert alert-error m-4" role="alert">
+            <span aria-hidden="true">!</span>
+            <div>
             <strong>Research result unavailable</strong>
             <p>{props.report.errorMessage}</p>
-            <a href="?demo=mixed-source&state=complete">Retry the read</a>
+            </div>
+            <a class="btn btn-sm" href="?demo=mixed-source&state=complete">Retry the read</a>
           </div>
         </Match>
         <Match when={props.report.status === 'empty'}>
-          <div class="mixed-state" role="status">
-            <span class="empty-orbit" aria-hidden="true" />
-            <strong>No evidence matched this question</strong>
-            <p>Choose another source or narrow the question before running again.</p>
+          <div class="mixed-state hero min-h-72" role="status">
+            <div class="hero-content text-center">
+              <div class="max-w-md">
+                <span class="mb-3 inline-grid size-10 place-items-center rounded-full bg-base-200 text-lg" aria-hidden="true">○</span>
+                <strong class="block text-lg">No evidence matched this question</strong>
+                <p class="mt-2 text-base-content/65">Choose another source or narrow the question before running again.</p>
+              </div>
+            </div>
           </div>
         </Match>
         <Match when={true}>
-          <div class="mixed-layout">
-            <aside class="source-rail mixed-pane" aria-labelledby="source-rail-title">
-              <div class="mixed-pane-heading">
-                <span>01</span>
-                <h3 id="source-rail-title">Sources</h3>
+          <div class="mixed-layout block sm:grid sm:grid-cols-[minmax(12rem,.7fr)_minmax(22rem,1.3fr)] lg:grid-cols-[minmax(12rem,.7fr)_minmax(22rem,1.3fr)_minmax(18rem,1fr)]">
+            <aside
+              class="source-rail mixed-pane hidden min-w-0 p-4 sm:block sm:border-r sm:border-base-300"
+              classList={{ 'max-sm:block': mobilePane() === 'sources' }}
+              aria-labelledby="source-rail-title"
+            >
+              <div class="mixed-pane-heading flex items-center gap-2">
+                <span class="badge badge-ghost badge-sm">01</span>
+                <h3 id="source-rail-title" class="text-lg font-semibold">Sources</h3>
               </div>
-              <p class="pane-intro">Immutable inputs retained for this answer.</p>
-              <div class="source-group">
-                <h4>Documents · {props.report.documentEvidence.length}</h4>
+              <p class="pane-intro mt-2 text-sm text-base-content/60">Immutable inputs retained for this answer.</p>
+              <div class="source-group mt-5">
+                <h4 class="mb-2 text-xs font-semibold text-base-content/55">Documents · {props.report.documentEvidence.length}</h4>
                 <For each={props.report.documentEvidence}>
                   {(evidence) => (
-                    <details class="source-item">
-                      <summary>
-                        <span class={`source-glyph ${evidence.stance}`}>D</span>
-                        <span>
-                          <strong>{evidence.sourceName}</strong>
-                          <small>{evidence.locator}</small>
+                    <details class="source-item collapse collapse-arrow mb-2 border border-base-300 bg-base-100">
+                      <summary class="collapse-title min-h-0 p-3 pr-9 text-sm">
+                        <span class="flex min-w-0 items-center gap-2">
+                          <span class={`badge badge-sm ${evidence.stance === 'supports' ? 'badge-success' : 'badge-warning'}`}>D</span>
+                          <span class="min-w-0">
+                            <strong class="block truncate">{evidence.sourceName}</strong>
+                            <small class="block text-xs text-base-content/55">{evidence.locator}</small>
+                          </span>
                         </span>
                       </summary>
-                      <blockquote>“{evidence.excerpt}”</blockquote>
-                      <code>{evidence.sourceVersion}</code>
+                      <div class="collapse-content text-sm">
+                        <blockquote class="border-l-2 border-primary/30 pl-3 text-base-content/75">“{evidence.excerpt}”</blockquote>
+                        <code class="mt-3 block break-anywhere text-xs text-base-content/55">{evidence.sourceVersion}</code>
+                      </div>
                     </details>
                   )}
                 </For>
               </div>
-              <div class="source-group">
-                <h4>Datasets · {props.report.datasetEvidence.length}</h4>
+              <div class="source-group mt-5">
+                <h4 class="mb-2 text-xs font-semibold text-base-content/55">Datasets · {props.report.datasetEvidence.length}</h4>
                 <For each={props.report.datasetEvidence}>
                   {(evidence) => (
-                    <div class="source-item dataset-source">
-                      <span class="source-glyph dataset">Σ</span>
-                      <span>
-                        <strong>{evidence.sourceName}</strong>
-                        <small>{evidence.snapshot}</small>
+                    <div class="source-item dataset-source flex items-center gap-2 rounded-field border border-base-300 p-3">
+                      <span class="badge badge-accent badge-sm">Σ</span>
+                      <span class="min-w-0">
+                        <strong class="block truncate text-sm">{evidence.sourceName}</strong>
+                        <small class="block text-xs text-base-content/55">{evidence.snapshot}</small>
                       </span>
                     </div>
                   )}
@@ -280,52 +297,58 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
               </div>
             </aside>
 
-            <article class="synthesis-pane mixed-pane" aria-labelledby="synthesis-title">
-              <div class="mixed-pane-heading">
-                <span>02</span>
-                <h3 id="synthesis-title">Synthesis</h3>
+            <article
+              class="synthesis-pane mixed-pane hidden min-w-0 p-4 sm:block sm:p-5 lg:p-6"
+              classList={{ 'max-sm:block': mobilePane() === 'report' }}
+              aria-labelledby="synthesis-title"
+            >
+              <div class="mixed-pane-heading flex items-center gap-2">
+                <span class="badge badge-ghost badge-sm">02</span>
+                <h3 id="synthesis-title" class="text-lg font-semibold">Synthesis</h3>
               </div>
-              <div class="run-progress" aria-live="polite">
-                <div>
-                  <span>{props.report.progressLabel}</span>
+              <div class="run-progress mt-4" aria-live="polite">
+                <div class="mb-2 flex items-center justify-between gap-4 text-sm">
+                  <span class="text-base-content/65">{props.report.progressLabel}</span>
                   <strong>{props.report.progress}%</strong>
                 </div>
-                <progress max="100" value={props.report.progress}>
+                <progress class="progress progress-primary h-1.5 w-full" max="100" value={props.report.progress}>
                   {props.report.progress}%
                 </progress>
               </div>
               <Show when={props.report.status === 'reconnecting'}>
-                <p class="mixed-callout warning" role="status">
+                <div class="mixed-callout alert alert-warning mt-4 text-sm" role="status">
                   Reconnecting to live progress. The report below shows the last committed checkpoint.
-                </p>
+                </div>
               </Show>
               <Show when={props.report.status === 'cancelled'}>
-                <p class="mixed-callout warning" role="status">
+                <div class="mixed-callout alert alert-warning mt-4 text-sm" role="status">
                   This run was cancelled. Committed evidence remains available for inspection.
-                </p>
+                </div>
               </Show>
-              <div class="answer-copy">
-                <p>{props.report.answer}</p>
-                <div class="inline-citations" aria-label="Answer citations">
+              <div class="answer-copy py-8 sm:py-10">
+                <p class="synthesis-copy text-xl leading-relaxed sm:text-2xl">{props.report.answer}</p>
+                <div class="inline-citations mt-4 flex gap-2" aria-label="Answer citations">
                   <a
+                    class="badge badge-outline badge-primary"
                     href="#document-evidence"
                     onClick={() => setMobilePane('evidence')}
                   >
                     [D1]
                   </a>
                   <a
+                    class="badge badge-outline badge-primary"
                     href={firstDatasetEvidenceId()}
                     onClick={() => setMobilePane('evidence')}
                   >
                     [Q1]
                   </a>
-                  <a href="#mismatch-note">[M1]</a>
+                  <a class="badge badge-outline badge-warning" href="#mismatch-note">[M1]</a>
                 </div>
               </div>
-              <aside id="mismatch-note" class="mismatch-note" aria-labelledby="mismatch-title">
-                <span aria-hidden="true">≠</span>
+              <aside id="mismatch-note" class="mismatch-note alert alert-warning items-start" aria-labelledby="mismatch-title">
+                <span class="text-xl" aria-hidden="true">≠</span>
                 <div>
-                  <h4 id="mismatch-title">Comparison disclosed</h4>
+                  <h4 id="mismatch-title" class="font-semibold">Comparison disclosed</h4>
                   <For each={props.report.mismatches}>
                     {(mismatch) => (
                       <p>
@@ -336,9 +359,9 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
                   </For>
                 </div>
               </aside>
-              <details class="report-limitations">
-                <summary>Limitations · {props.report.limitations.length}</summary>
-                <ul>
+              <details class="report-limitations collapse collapse-arrow mt-4 border border-base-300 bg-base-200">
+                <summary class="collapse-title font-medium">Limitations · {props.report.limitations.length}</summary>
+                <ul class="collapse-content list-disc space-y-2 pl-9 text-sm text-base-content/70">
                   <For each={props.report.limitations}>
                     {(limitation) => <li>{limitation}</li>}
                   </For>
@@ -346,41 +369,45 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
               </details>
             </article>
 
-            <aside class="evidence-explorer mixed-pane" aria-labelledby="evidence-title">
-              <div class="mixed-pane-heading">
-                <span>03</span>
-                <h3 id="evidence-title">Evidence</h3>
+            <aside
+              class="evidence-explorer mixed-pane hidden min-w-0 border-t border-base-300 p-4 sm:col-span-2 sm:grid sm:grid-cols-2 sm:gap-4 lg:col-span-1 lg:block lg:border-l lg:border-t-0"
+              classList={{ 'max-sm:block': mobilePane() === 'evidence' }}
+              aria-labelledby="evidence-title"
+            >
+              <div class="mixed-pane-heading col-span-full flex items-center gap-2">
+                <span class="badge badge-ghost badge-sm">03</span>
+                <h3 id="evidence-title" class="text-lg font-semibold">Evidence</h3>
               </div>
-              <section id="document-evidence" class="evidence-block">
-                <p class="evidence-kicker">Exact document span · D1</p>
+              <section id="document-evidence" class="evidence-block card mt-4 border border-base-300 bg-base-100 p-4 sm:mt-0 lg:mt-4">
+                <p class="evidence-kicker text-xs font-semibold text-primary">Exact document span · D1</p>
                 <For each={props.report.documentEvidence.slice(0, 1)}>
                   {(evidence) => (
                     <>
-                      <h4>{evidence.sourceName}</h4>
-                      <p class="evidence-meta">{evidence.locator} · {evidence.sourceVersion}</p>
-                      <blockquote>“{evidence.excerpt}”</blockquote>
+                      <h4 class="mt-2 font-semibold">{evidence.sourceName}</h4>
+                      <p class="evidence-meta mt-1 text-xs text-base-content/55">{evidence.locator} · {evidence.sourceVersion}</p>
+                      <blockquote class="mt-3 border-l-2 border-primary/30 pl-3 text-sm text-base-content/75">“{evidence.excerpt}”</blockquote>
                     </>
                   )}
                 </For>
               </section>
               <For each={props.report.datasetEvidence}>
                 {(evidence) => (
-                  <section id={`dataset-evidence-${evidence.id}`} class="evidence-block">
-                    <p class="evidence-kicker">Exact query result · Q1</p>
-                    <h4>{evidence.sourceName}</h4>
-                    <details>
-                      <summary>View canonical SQL</summary>
-                      <pre><code>{evidence.canonicalSql}</code></pre>
+                  <section id={`dataset-evidence-${evidence.id}`} class="evidence-block card mt-4 border border-base-300 bg-base-100 p-4 sm:mt-0 lg:mt-4">
+                    <p class="evidence-kicker text-xs font-semibold text-primary">Exact query result · Q1</p>
+                    <h4 class="mt-2 font-semibold">{evidence.sourceName}</h4>
+                    <details class="collapse collapse-arrow mt-3 bg-base-200">
+                      <summary class="collapse-title min-h-0 py-3 text-sm font-medium">View canonical SQL</summary>
+                      <pre class="collapse-content overflow-x-auto text-xs"><code>{evidence.canonicalSql}</code></pre>
                     </details>
-                    <div class="result-table-wrap" tabindex="0" aria-label="Scrollable query results">
-                      <table>
-                        <caption>{evidence.rowRange}</caption>
+                    <div class="result-table-wrap mt-3 overflow-x-auto" tabindex="0" aria-label="Scrollable query results">
+                      <table class="table table-sm">
+                        <caption class="pb-2 text-left text-xs text-base-content/55">{evidence.rowRange}</caption>
                         <thead>
                           <tr>
                             <For each={evidence.columns}>
                               {(column) => (
                                 <th scope="col">
-                                  {column.name}<small>{column.type}</small>
+                                  {column.name}<small class="block font-normal text-base-content/45">{column.type}</small>
                                 </th>
                               )}
                             </For>
@@ -399,12 +426,12 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
                         </tbody>
                       </table>
                     </div>
-                    <dl class="semantics-list">
+                    <dl class="semantics-list mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-field border border-base-300 bg-base-300">
                       <For each={evidence.semantics}>
                         {(semantic) => (
-                          <div>
-                            <dt>{semantic.label}</dt>
-                            <dd>{semantic.value}</dd>
+                          <div class="bg-base-100 p-2">
+                            <dt class="text-xs text-base-content/50">{semantic.label}</dt>
+                            <dd class="mt-0.5 text-sm font-medium">{semantic.value}</dd>
                           </div>
                         )}
                       </For>

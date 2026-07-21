@@ -36,12 +36,12 @@ These contracts are decision-oriented Phase 0 outputs; STEP-01-01 owns canonical
 | PHASE-07 | Combine document, dataset, directory, and code evidence into one mixed-source research workflow. | PHASE-05, PHASE-06 | [`../.agent-vault/02_Phases/Phase_07_hybrid_cross_source_research/Phase.md`](../.agent-vault/02_Phases/Phase_07_hybrid_cross_source_research/Phase.md) |
 | PHASE-08 | Add durable findings, citation validation, report authoring, and export. | PHASE-07 | [`../.agent-vault/02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase.md`](../.agent-vault/02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase.md) |
 | PHASE-09 | Harden security, migrations, operations, benchmarks, accessibility, and release gates for v1. | PHASE-02 through PHASE-08 | [`../.agent-vault/02_Phases/Phase_09_v1_production_hardening_and_release/Phase.md`](../.agent-vault/02_Phases/Phase_09_v1_production_hardening_and_release/Phase.md) |
-| PHASE-10 | Improve research usability with saved views, templates, and stronger navigation. | PHASE-09 | [`../.agent-vault/02_Phases/Phase_10_v1_1_research_usability/Phase.md`](../.agent-vault/02_Phases/Phase_10_v1_1_research_usability/Phase.md) |
-| PHASE-11 | Add secure external source connectors and bounded import/export flows. | PHASE-10 | [`../.agent-vault/02_Phases/Phase_11_v1_2_additional_sources/Phase.md`](../.agent-vault/02_Phases/Phase_11_v1_2_additional_sources/Phase.md) |
-| PHASE-12 | Add scheduled refresh, change-triggered reruns, and alerting. | PHASE-11 | [`../.agent-vault/02_Phases/Phase_12_v1_3_continuous_research/Phase.md`](../.agent-vault/02_Phases/Phase_12_v1_3_continuous_research/Phase.md) |
-| PHASE-13 | Add collaboration, review, policy, and audit workflows. | PHASE-12 | [`../.agent-vault/02_Phases/Phase_13_v1_4_collaboration_and_governance/Phase.md`](../.agent-vault/02_Phases/Phase_13_v1_4_collaboration_and_governance/Phase.md) |
-| PHASE-14 | Extend into advanced comparative and policy-driven research modes. | PHASE-13 | [`../.agent-vault/02_Phases/Phase_14_v1_5_advanced_research/Phase.md`](../.agent-vault/02_Phases/Phase_14_v1_5_advanced_research/Phase.md) |
-| PHASE-15 | Scale the platform with distribution, tenancy controls, and upstreamed generic improvements where justified. | PHASE-14 | [`../.agent-vault/02_Phases/Phase_15_v2_scaled_research_platform/Phase.md`](../.agent-vault/02_Phases/Phase_15_v2_scaled_research_platform/Phase.md) |
+| PHASE-10 | Improve the shipped v1 workspace with stronger navigation, saved views, templates, and analyst ergonomics. | PHASE-09 | [`../.agent-vault/02_Phases/Phase_10_v1_usable_research_workspace/Phase.md`](../.agent-vault/02_Phases/Phase_10_v1_usable_research_workspace/Phase.md) |
+| PHASE-11 | Validate and extend day-to-day research UX with search, command, saved-query, and accessibility improvements. | PHASE-10 | [`../.agent-vault/02_Phases/Phase_11_v1_1_research_usability/Phase.md`](../.agent-vault/02_Phases/Phase_11_v1_1_research_usability/Phase.md) |
+| PHASE-12 | Add secure external source connectors and bounded import/export flows. | PHASE-11 | [`../.agent-vault/02_Phases/Phase_12_v1_2_additional_sources/Phase.md`](../.agent-vault/02_Phases/Phase_12_v1_2_additional_sources/Phase.md) |
+| PHASE-13 | Add scheduled refresh, change-triggered reruns, and alerting. | PHASE-12 | [`../.agent-vault/02_Phases/Phase_13_v1_3_continuous_research/Phase.md`](../.agent-vault/02_Phases/Phase_13_v1_3_continuous_research/Phase.md) |
+| PHASE-14 | Add collaboration, review, policy, and audit workflows. | PHASE-13 | [`../.agent-vault/02_Phases/Phase_14_v1_4_collaboration_and_governance/Phase.md`](../.agent-vault/02_Phases/Phase_14_v1_4_collaboration_and_governance/Phase.md) |
+| PHASE-15 | Extend into advanced comparative and policy-driven research modes. | PHASE-14 | [`../.agent-vault/02_Phases/Phase_15_v1_5_advanced_research/Phase.md`](../.agent-vault/02_Phases/Phase_15_v1_5_advanced_research/Phase.md) |
 
 ## v1 versus post-v1
 
@@ -51,7 +51,7 @@ These contracts are decision-oriented Phase 0 outputs; STEP-01-01 owns canonical
 
 ### Post-v1
 
-- **PHASE-10 to PHASE-15** improve usability, connectors, continuous refresh, collaboration, advanced research modes, and multi-tenant scale after the evidence-first core is stable.
+- **PHASE-10 to PHASE-15** improve the shipped v1 workspace, expand usability, add new source connectors, enable continuous research, and introduce collaboration plus advanced research modes after the evidence-first core is stable.
 
 ## Cross-phase acceptance expectations
 

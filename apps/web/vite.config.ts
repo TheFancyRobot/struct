@@ -2,17 +2,17 @@ import { defineConfig, loadEnv } from 'vite'
 import solid from 'vite-plugin-solid'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
-
-export function apiProxyHeaders(
-  token: string | undefined,
-): Readonly<Record<string, string>> {
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
+import { basePathFromEnv, stripBasePath, withBasePath } from './src/base-path'
+import { apiProxyHeaders, appBase } from './vite-helpers'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, path.resolve(__dirname, '../..'), '')
   const proxyHeaders = apiProxyHeaders(env['API_AUTH_TOKEN'])
+  const basePath = basePathFromEnv(env)
+  const base = appBase(basePath)
+  const apiProxyTarget = `http://localhost:${Number(env['API_PORT']) || 3001}`
   return {
+    base,
     plugins: [solid(), tailwindcss()],
     resolve: {
       alias: {
@@ -23,8 +23,13 @@ export default defineConfig(({ mode }) => {
       port: Number(env['WEB_PORT']) || 3000,
       proxy: {
         '/api': {
-          target: `http://localhost:${Number(env['API_PORT']) || 3001}`,
+          target: apiProxyTarget,
           headers: proxyHeaders,
+        },
+        [withBasePath('/api', basePath)]: {
+          target: apiProxyTarget,
+          headers: proxyHeaders,
+          rewrite: (requestPath) => stripBasePath(requestPath, basePath) ?? requestPath,
         },
       },
     },

@@ -18,6 +18,9 @@ import type {
 } from '@struct/domain'
 /* eslint-enable no-unused-vars */
 import { Effect, Schema } from 'effect'
+import { apiPath, basePathFromPublicBaseUrl } from '../base-path'
+
+const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
 
 async function artifactRequest(
   input: RequestInfo | URL,
@@ -69,7 +72,7 @@ export async function fetchFindings(
   projectId: typeof ProjectId.Type,
 ): Promise<ReadonlyArray<Finding>> {
   const body = await artifactRequest(
-    `/api/projects/${projectId}/findings?workspaceId=${workspaceId}`,
+    `${apiPath(`/projects/${projectId}/findings`, appBasePath)}?workspaceId=${workspaceId}`,
   )
   try {
     return await Effect.runPromise(
@@ -180,7 +183,7 @@ export async function saveCompletedResearchFinding(input: {
     updatedAt: now,
   }))
   const response = await artifactRequest(
-    `/api/projects/${input.projectId}/findings`,
+    apiPath(`/projects/${input.projectId}/findings`, appBasePath),
     {
       method: 'POST',
       headers: {
@@ -228,7 +231,7 @@ export async function createReportFromFindings(
       occurredAt: now,
     },
   }
-  const response = await artifactRequest(`/api/projects/${projectId}/reports`, {
+  const response = await artifactRequest(apiPath(`/projects/${projectId}/reports`, appBasePath), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -261,7 +264,7 @@ export async function fetchReport(
   if (revision !== undefined) query.set('revision', String(revision))
   return decodeReport(
     await artifactRequest(
-      `/api/projects/${projectId}/reports/${reportId}?${query}`,
+      `${apiPath(`/projects/${projectId}/reports/${reportId}`, appBasePath)}?${query}`,
     ),
     'The report returned an invalid revision.',
   )
@@ -343,7 +346,7 @@ export async function mutateReport(
         }
   return decodeReport(
     await artifactRequest(
-      `/api/projects/${report.projectId}/reports/${report.id}`,
+      apiPath(`/projects/${report.projectId}/reports/${report.id}`, appBasePath),
       {
         method: 'PATCH',
         headers: {
@@ -360,7 +363,7 @@ export async function mutateReport(
 export async function exportReport(report: Report): Promise<ExportBundleStatus> {
   const key = `export:${report.id}:${report.revision}:0.0.1`
   const body = await artifactRequest(
-    `/api/projects/${report.projectId}/reports/${report.id}/exports`,
+    apiPath(`/projects/${report.projectId}/reports/${report.id}/exports`, appBasePath),
     {
       method: 'POST',
       headers: {

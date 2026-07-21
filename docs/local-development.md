@@ -76,6 +76,23 @@ For a built web process, run `bun run --filter @struct/web build` followed by
 `dist/` SPA and proxies same-origin `/api` requests to `API_ORIGIN`, adding the
 server-only `API_AUTH_TOKEN` without placing it in the browser bundle.
 
+To serve the browser app from a subpath such as `/struct`, set
+`BASE_PATH=/struct` before building and starting the web app. The same
+value controls asset URLs, Solid Router navigation, browser fetches, SSE, and
+the Bun production server's API proxy.
+
+```bash
+BASE_PATH=/struct bun run --filter @struct/web build
+BASE_PATH=/struct bun run --filter @struct/web start
+```
+
+For Tailscale Serve, expose that same subpath instead of rewriting the app back
+to `/`:
+
+```bash
+tailscale serve --bg --set-path /struct 3000
+```
+
 ## 3. Environment, secrets, and safe volumes
 
 ### 3.1 Example-file and secrets policy
@@ -99,6 +116,7 @@ server-only `API_AUTH_TOKEN` without placing it in the browser bundle.
 | `DATA_ENGINE_TOKEN` | `packages/data-engine`, DuckDB sidecar | shared bearer credential (minimum 16 characters) | local secret |
 | `API_PORT` | `apps/api` | HTTP port | `3001` |
 | `WEB_PORT` | `apps/web` | Vite 8 development or Bun production server port | `3000` |
+| `BASE_PATH` | `apps/web` | optional reverse-proxy path prefix for browser access | `/struct` |
 | `WORKER_METRICS_PORT` | `apps/worker` | optional metrics/health port | `3002` |
 | `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` | `apps/api`, `apps/worker`, `packages/workflows` | optional OTLP HTTP trace collector; stdout tracing is the local fallback | `http://localhost:4318/v1/traces` |
 | `WORKER_POLL_INTERVAL_MS` | `apps/worker` | ingestion job polling interval | `1000` |

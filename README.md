@@ -15,6 +15,7 @@ A trustworthy, source-grounded research workspace for documents, datasets, and d
 | [docs/local-development.md](./docs/local-development.md) | Local service table, environment/secrets, platform fallbacks. |
 | [docs/implementation-plan.md](./docs/implementation-plan.md) | Phase sequence, dependencies, risks. |
 | [docs/roadmap.md](./docs/roadmap.md) | Horizons and release checkpoints. |
+| [docs/release-policy.md](./docs/release-policy.md) | Pre-1.0, `v1.0.0-rc.N`, and v1.0 versioning policy. |
 | [docs/domain-model.md](./docs/domain-model.md) | Domain model. |
 | [docs/research-execution-model.md](./docs/research-execution-model.md) | Research execution model. |
 | [docs/security-model.md](./docs/security-model.md) | Security model and trust boundaries. |

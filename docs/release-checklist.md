@@ -81,6 +81,11 @@ tagging, publishing, deploying, or otherwise performing the release.
 - [x] Every documented root command was reconciled against the executable
   `package.json` scripts and `scripts/production-operations.ts` command switch.
 - [x] Local Markdown links pass `bun run docs:lint`.
+- [x] Release naming is explicit: internal iteration may use `v0.x.y`,
+  `v0.x.y-alpha.N`, and only `v1.0.0-rc.N` for the first stable-release
+  candidate; `v1.0.0` remains reserved for the first intentionally stable
+  release after owner validation. Evidence:
+  [`Release Policy`](./release-policy.md).
 - [x] The final closure change received a worker self-review across affected
   Solid components, routes, browser assertions, commands, and documentation.
 - [x] The root orchestrator owns the final clean-tree assertion and automated
