@@ -4,10 +4,10 @@ template_version: 2
 contract_version: 1
 title: v1 Production Hardening and Release
 phase_id: PHASE-09
-status: in_progress
+status: completed
 owner: Codex
 created: '2026-07-17'
-updated: '2026-07-20'
+updated: '2026-07-21'
 depends_on:
   - '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]]'
   - '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|PHASE-03 Durable Directory Ingestion and Source Refresh]]'
@@ -88,21 +88,21 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 ## Acceptance Criteria
 
-- [ ] All Phase 01–08 acceptance criteria remain green in an integrated production-like environment.
-- [ ] Workspace isolation, authorization, filesystem/SQL/tool boundaries, prompt-injection defenses, secrets, and supply-chain controls pass review and adversarial tests.
-- [ ] Drop-recreate, backup/restore, rollback, checkpoint recovery, and dependency-restart procedures meet documented objectives.
-- [ ] Capacity, latency, availability, cost, event-stream, and artifact-storage SLOs pass at the v1 reference workload including the 25,000-file corpus.
-- [ ] Every required evaluation class passes its versioned release threshold with reproducible artifacts and no unexplained regressions.
-- [ ] Traces, logs, metrics, alert specifications, runbooks, and bounded support diagnostics are exercised through local game days.
-- [ ] Critical user journeys meet accessibility and browser support targets; user and operator documentation is complete.
-- [ ] The release checklist records owners, evidence, known limitations, migration/rollback readiness, and explicit go/no-go approval.
+- [x] All Phase 01–08 acceptance criteria remain green in an integrated production-like environment.
+- [x] Workspace isolation, authorization, filesystem/SQL/tool boundaries, prompt-injection defenses, secrets, and supply-chain controls pass review and adversarial tests.
+- [x] Drop-recreate, backup/restore, rollback, checkpoint recovery, and dependency-restart procedures meet documented objectives.
+- [x] Capacity, latency, availability, cost, event-stream, and artifact-storage SLOs pass at the v1 reference workload including the 25,000-file corpus.
+- [x] Every required evaluation class passes its versioned release threshold with reproducible artifacts and no unexplained regressions.
+- [x] Traces, logs, metrics, alert specifications, runbooks, and bounded support diagnostics are exercised through local game days.
+- [x] Critical user journeys meet accessibility and browser support targets; user and operator documentation is complete.
+- [x] The release checklist records owners, evidence, known limitations, migration/rollback readiness, and explicit go/no-go approval.
 ### 2026-07-20 authoritative refinement
 
-- [ ] Every step has focused evidence plus applicable repository-wide typecheck, lint, import-boundary, unit, PostgreSQL/data-engine integration, build, docs, secret-scan, and Vault-doctor proof.
-- [ ] Any SolidJS or Effect changes explicitly follow the available SolidJS and Effect skills.
-- [ ] UI-affecting work is exercised with Playwright across representative desktop/tablet/mobile resolutions in light and dark mode, with screenshots visually reviewed for responsive layout, focus, contrast, and overflow.
-- [ ] Root self-review occurs before each PR; review feedback is validated as a real defect before repair, affected call sites are checked in the same round, and no confirmed defect remains.
-- [ ] The release checklist is fully evidenced but the workflow stops immediately before tagging, publishing, deploying, or otherwise performing the actual v1.0 release action.
+- [x] Every step has focused evidence plus applicable repository-wide typecheck, lint, import-boundary, unit, PostgreSQL/data-engine integration, build, docs, secret-scan, and Vault-doctor proof.
+- [x] Any SolidJS or Effect changes explicitly follow the available SolidJS and Effect skills.
+- [x] UI-affecting work is exercised with Playwright across representative desktop/tablet/mobile resolutions in light and dark mode, with screenshots visually reviewed for responsive layout, focus, contrast, and overflow.
+- [x] Root self-review occurs before each PR; review feedback is validated as a real defect before repair, affected call sites are checked in the same round, and no confirmed defect remains.
+- [x] The release checklist is fully evidenced but the workflow stops immediately before tagging, publishing, deploying, or otherwise performing the actual v1.0 release action.
 
 ## Delivery Strategy
 
@@ -118,7 +118,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|PHASE-08 Citation-Backed Reports and Durable Findings]]
-- Current phase status: planned
+- Current phase status: completed
 - Next phase: [[02_Phases/Phase_10_v1_1_research_usability/Phase|PHASE-10 v1.1 Research Usability]]
 <!-- AGENT-END:phase-linear-context -->
 
@@ -147,13 +147,20 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Steps
 
 <!-- AGENT-START:phase-steps -->
-- [ ] [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_01_harden-authentication-workspace-isolation-and-secrets|STEP-09-01 Harden Authentication Workspace Isolation and Secrets]]
-- [ ] [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_02_harden-deployments-migrations-backups-and-rollback|STEP-09-02 Harden Deployments Migrations Backups and Rollback]]
-- [ ] [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_03_complete-performance-capacity-and-resilience-testing|STEP-09-03 Complete Performance Capacity and Resilience Testing]]
-- [ ] [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_04_complete-observability-operations-and-incident-runbooks|STEP-09-04 Complete Observability Operations and Incident Runbooks]]
-- [ ] [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_05_run-full-evaluation-campaign-and-remediate-gates|STEP-09-05 Run Full Evaluation Campaign and Remediate Gates]]
-- [ ] [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist|STEP-09-06 Publish v1 Documentation Accessibility and Release Checklist]]
+- [x] [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_01_harden-authentication-workspace-isolation-and-secrets|STEP-09-01 Harden Authentication Workspace Isolation and Secrets]]
+- [x] [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_02_harden-deployments-migrations-backups-and-rollback|STEP-09-02 Harden Deployments Migrations Backups and Rollback]]
+- [x] [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_03_complete-performance-capacity-and-resilience-testing|STEP-09-03 Complete Performance Capacity and Resilience Testing]]
+- [x] [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_04_complete-observability-operations-and-incident-runbooks|STEP-09-04 Complete Observability Operations and Incident Runbooks]]
+- [x] [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_05_run-full-evaluation-campaign-and-remediate-gates|STEP-09-05 Run Full Evaluation Campaign and Remediate Gates]]
+- [x] [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist|STEP-09-06 Publish v1 Documentation Accessibility and Release Checklist]]
 <!-- AGENT-END:phase-steps -->
+
+## Completion Summary
+
+- All six sequential steps were independently validated, bot-reviewed, and merged through PRs #53–#58.
+- The canonical v1 campaign passed 23/23 gates with zero failed criteria (`c616237f6a434ab6b0c0ff27776aea3ba359180ce97e0a4df646f82e59727aa2`), followed by a 22/22 production-bundle Playwright accessibility/responsive closure.
+- The repository has no open Vault bugs or pull requests. `docs/release-checklist.md` has exactly one unchecked item: the intentionally unperformed v1.0 tag and GitHub release action.
+- Phase 10 remains unrefined and inactive. Do not begin it unless post-v1 work is explicitly resumed after the v1.0 release boundary.
 
 ## Notes
 

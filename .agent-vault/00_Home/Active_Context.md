@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-21._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist|STEP-09-06 Publish v1 Documentation Accessibility and Release Checklist]] - status: completed - phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]]
-- Active phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]] - status: in_progress - owner: Codex - updated: 2026-07-20
-- Also active: 17 more additional steps.
+- Current step: none; roadmap execution is intentionally stopped immediately before the documented v1.0 release action.
+- Completed phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]] - status: completed - owner: Codex - updated: 2026-07-21
+- Next planned phase: [[02_Phases/Phase_10_v1_1_research_usability/Phase|PHASE-10 v1.1 Research Usability]] remains inactive and unrefined until post-v1 work is explicitly resumed.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -40,7 +40,7 @@ _Last refreshed: 2026-07-21._
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
 - Phase 06 is completed, reviewed, and merged through STEP-06-06.
-- Phase 07 and Phase 08 are complete and merged. Phase 09 is refined; authentication and deployment recovery are complete and awaiting the normal merge handoff before resilience work begins.
+- Phases 07–09 are complete and merged. The v1 release checklist is fully evidenced except for the intentionally unperformed tag and GitHub release action.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 
 ## Out Of Scope Right Now
