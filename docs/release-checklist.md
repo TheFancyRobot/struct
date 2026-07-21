@@ -119,6 +119,7 @@ test -z "$(git status --porcelain)"
 bun --version                         # must print 1.3.13
 bun install --frozen-lockfile
 bun run v1:evaluate                  # must finish 23/23 with zero failures
+test -z "$(git status --porcelain)"  # campaign evidence must match the committed tree
 git tag -a v1.0.0 -m "Struct v1.0.0"
 git push origin v1.0.0
 gh release create v1.0.0 --verify-tag --generate-notes --title "Struct v1.0.0"

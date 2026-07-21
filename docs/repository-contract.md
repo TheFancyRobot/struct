@@ -114,7 +114,10 @@ Repository root:
 - `package.json` — Bun workspace manifest, pinned engines, root scripts from §1.
 - `bunfig.toml` — Bun configuration.
 - `tsconfig.base.json` — shared TS 7.0.2 base config; per-package `tsconfig.json` extend it.
-- `docker-compose.yml` — PostgreSQL + pgvector service only (see [`docs/local-development.md`](./local-development.md)).
+- `docker-compose.yml` — originally PostgreSQL + pgvector only; this historical
+  Phase 1 topology is superseded by the current PostgreSQL, private data-engine,
+  and authenticated loopback-gateway topology described in §3.2 below and
+  [`docs/local-development.md`](./local-development.md).
 - `.env.example` — checked-in env contract (no secrets).
 - `.gitignore` — ignores `.local/`, `.env`, `.env.local`, `node_modules/`, build output.
 - `README.md` — bootstrap quick-start (already authored in Phase 0).
