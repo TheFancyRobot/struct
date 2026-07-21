@@ -21,7 +21,7 @@ The last command starts the web, API, and worker applications together.
 
 ## Backend walking-skeleton diagnostic
 
-> This direct SQL/API procedure verifies backend foundations only. It is not the v1 user journey and does not satisfy the reopened release gate. BUG-0013 remains open until Phase 10 provides project creation, source import, conversation, evidence, and Notes through the browser.
+> This direct SQL/API procedure verifies backend foundations only. It is not the v1 user journey and does not satisfy the reopened release gate. BUG-0013 remains open until Phase 10 provides project creation, source import, conversation, evidence, and Notes through the browser. The required v1 release evidence is `bun run v1:evaluate`; follow the [release procedure](./release-checklist.md#release-procedure--intentionally-not-executed) after the real browser journey is implemented.
 
 Set a real provider key in `.env`, then seed the Phase 01 project fixture:
 
