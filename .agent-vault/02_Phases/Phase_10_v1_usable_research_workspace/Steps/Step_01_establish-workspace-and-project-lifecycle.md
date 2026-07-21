@@ -21,8 +21,8 @@ tags:
   - step
 context_id: SESSION-2026-07-21-230129
 active_session_id: ''
-context_status: ready
-context_summary: Phase 10 refinement complete; STEP-10-01 is execution-ready after the refinement commit.
+context_status: blocked
+context_summary: Phase 10 refinement is complete, but BUG-0013 is confirmed; this roadmap step is technical reference only and cannot start until the defect is fixed through a bug-remediation unit.
 ---
 
 # Step 01 - Establish Workspace and Project Lifecycle
@@ -60,7 +60,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - Status: planned
 - Current owner:
 - Last touched: 2026-07-21
-- Next action: Read [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle/Validation_Plan|Validation Plan]].
+- Next action: Do not start this roadmap step while BUG-0013 remains confirmed; use its brief and validation plan only as technical reference for a tracked bug-remediation unit.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

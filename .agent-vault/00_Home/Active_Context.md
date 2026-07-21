@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-21._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle|STEP-10-01 Establish Workspace and Project Lifecycle]] - status: planned - phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]
-- Active phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: planned - updated: 2026-07-21
-- Also active: 25 more additional steps, 1 open critical bug.
+- Current remediation target: [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]] - status: confirmed.
+- [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] and all `STEP-10-*` roadmap steps are planned technical reference only; the zero-defect gate blocks their activation until BUG-0013 is fixed through independently tracked bug-remediation units.
+- Also active: 1 open critical bug.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -40,9 +40,9 @@ _Last refreshed: 2026-07-21._
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
 - Phase 06 is completed, reviewed, and merged through STEP-06-06.
-- Phases 07–09 are complete and merged. The v1 release checklist is fully evidenced except for the intentionally unperformed tag and GitHub release action.
+- Phases 07–09 are complete and merged. The v1 release checklist remains reopened by BUG-0013; the tag and GitHub release action are intentionally unperformed.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
-- Current correction: the v1 release gate is reopened by BUG-0013. PHASE-10 is refined and ready for sequential execution; historical 23-gate/backend/fixture evidence is not sufficient for v1 release.
+- Current correction: the v1 release gate is reopened by BUG-0013. PHASE-10 is refined only as technical reference and cannot begin until the confirmed bug is fixed; historical 23-gate/backend/fixture evidence is not sufficient for v1 release.
 
 ## Out Of Scope Right Now
 
@@ -58,13 +58,13 @@ _Last refreshed: 2026-07-21._
 ## Blockers
 
 <!-- AGENT-START:blockers -->
-- No phase, step, or session notes are currently marked blocked.
+- BUG-0013 is confirmed. PHASE-10 and STEP-10-01 are blocked as roadmap work until the defect is resolved through independently tracked bug-remediation units.
 <!-- AGENT-END:blockers -->
 
 ## Open Questions
 
 - No unresolved design question or confirmed defect remains in the completed Phase 09 work.
-- PHASE-10 refinement has no unresolved design question or external blocker. BUG-0013 remains the intentional remediation target.
+- PHASE-10 refinement has no unresolved design question. BUG-0013 is the confirmed blocker and intentional remediation target.
 
 ## Critical Bugs
 
@@ -74,6 +74,6 @@ _Last refreshed: 2026-07-21._
 
 ## Next Actions
 
-- Publish and merge deployment recovery, then execute performance, capacity, and resilience hardening on its own branch.
-- Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.
-- Superseding next action: commit the PHASE-10 refinement packet, then execute STEP-10-01 in one fresh `openai-codex/gpt-5.4` worker on its own branch/PR. Keep BUG-0013 and the release checklist open through STEP-10-08, and stop before the v1.0 release action.
+- Publish and merge the corrected Phase 10 refinement packet, then run independently tracked BUG-0013 remediation units in the approved technical order.
+- Keep every remediation unit sequential: self-review, PR, bot remediation, merge to `main`, then advance.
+- Keep BUG-0013 and the release checklist open until the complete real browser journey passes; only then activate Phase 10 or perform the v1.0 release action.
