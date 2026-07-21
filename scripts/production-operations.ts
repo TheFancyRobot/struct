@@ -15,6 +15,12 @@ export interface LocalDatabaseTarget {
   readonly username: string
 }
 
+export const STACK_RESTART_COMMANDS: readonly (readonly string[])[] = [
+  ['bun', 'run', 'local:prepare'],
+  ['docker', 'compose', 'config', '--quiet'],
+  ['docker', 'compose', 'up', '-d', '--wait', '--force-recreate'],
+]
+
 function requiredEnvironment(name: string): string {
   const value = process.env[name]?.trim()
   if (!value) throw new OperationsError(`${name} is required`)
@@ -385,9 +391,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
       await verifyDependencies(databaseUrl, target)
       return
     case 'stack:restart':
-      await run(['docker', 'compose', 'config', '--quiet'])
-      await run(['docker', 'compose', 'restart', 'postgres', 'data-engine', 'data-engine-gateway'])
-      await run(['docker', 'compose', 'up', '-d', '--wait'])
+      for (const restartCommand of STACK_RESTART_COMMANDS) await run(restartCommand)
       await verifyDependencies(databaseUrl, target)
       return
     case 'database:reset':

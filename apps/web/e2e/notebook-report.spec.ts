@@ -14,6 +14,7 @@ import {
   startAppServer,
   stopAppServer,
 } from './support/app-server'
+import { waitForThemeStyles } from './support/theme-readiness'
 /* eslint-enable no-unused-vars */
 
 const uuid = (suffix: string) =>
@@ -770,6 +771,7 @@ describe('report workspace browser workflow', () => {
         await page.getByRole('heading', {
           name: 'Enterprise renewal risk brief',
         }).waitFor()
+        await waitForThemeStyles(page, theme)
         await page.evaluate(() => {
           document.documentElement.style.setProperty('scroll-behavior', 'auto')
         })

@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   OperationsError,
+  STACK_RESTART_COMMANDS,
   assertSafeBackupPath,
   parseLocalDatabaseTarget,
   requireDestructiveApproval,
@@ -22,6 +23,15 @@ afterEach(() => {
 })
 
 describe('production operation safety boundaries', () => {
+  it('recreates the Compose stack so changed bind mounts take effect', () => {
+    expect(STACK_RESTART_COMMANDS).toEqual([
+      ['bun', 'run', 'local:prepare'],
+      ['docker', 'compose', 'config', '--quiet'],
+      ['docker', 'compose', 'up', '-d', '--wait', '--force-recreate'],
+    ])
+    expect(STACK_RESTART_COMMANDS.flat()).not.toContain('restart')
+  })
+
   it('accepts only loopback struct PostgreSQL targets', () => {
     expect(parseLocalDatabaseTarget('postgres://struct:secret@127.0.0.1:5432/struct')).toEqual({
       database: 'struct',
