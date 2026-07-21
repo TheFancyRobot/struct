@@ -42,6 +42,7 @@ _Last refreshed: 2026-07-21._
 - Phase 06 is completed, reviewed, and merged through STEP-06-06.
 - Phases 07–09 are complete and merged. The v1 release checklist is fully evidenced except for the intentionally unperformed tag and GitHub release action.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
+- Current correction: the v1 release gate is reopened by BUG-0013. PHASE-10 is refined and ready for sequential execution; historical 23-gate/backend/fixture evidence is not sufficient for v1 release.
 
 ## Out Of Scope Right Now
 
@@ -63,6 +64,7 @@ _Last refreshed: 2026-07-21._
 ## Open Questions
 
 - No unresolved design question or confirmed defect remains in the completed Phase 09 work.
+- PHASE-10 refinement has no unresolved design question or external blocker. BUG-0013 remains the intentional remediation target.
 
 ## Critical Bugs
 
@@ -74,3 +76,4 @@ _Last refreshed: 2026-07-21._
 
 - Publish and merge deployment recovery, then execute performance, capacity, and resilience hardening on its own branch.
 - Keep every later step sequential: self-review, PR, bot remediation, merge to `main`, then advance.
+- Superseding next action: commit the PHASE-10 refinement packet, then execute STEP-10-01 in one fresh `openai-codex/gpt-5.4` worker on its own branch/PR. Keep BUG-0013 and the release checklist open through STEP-10-08, and stop before the v1.0 release action.

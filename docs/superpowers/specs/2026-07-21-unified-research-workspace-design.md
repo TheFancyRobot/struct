@@ -1,7 +1,7 @@
 # Unified Research Workspace Design
 
 **Date:** 2026-07-21\
-**Status:** Approved visual design; pending written-spec review\
+**Status:** Approved\
 **Related defect:** BUG-0013 — v1 UI lacks core research workflows
 
 ## Purpose

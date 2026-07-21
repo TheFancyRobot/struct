@@ -141,3 +141,34 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - Ordering is intentionally sequential: project scope precedes shell routing; shell precedes import UX; import precedes source-scoped conversation; conversation precedes evidence and note capture; cross-cutting responsive/accessibility work follows functional integration; release validation is last.
 - Greenfield policy permits direct schema replacement for the new Note model; no compatibility migration layer is required.
 - Rollback boundary: each step must be independently reviewable and leave existing backend research guarantees green before the next step begins.
+### Refinement Contract — 2026-07-21
+
+- Authority order for this phase is the approved workspace design, the matching implementation plan, accepted ADRs, then the current repository baseline. The design status was corrected to `Approved`; no product-design approval remains open.
+- The eight-step order remains sequential. Each step owns one independently reviewable vertical slice and must leave the full repository green before the next begins.
+- The current single-user web server keeps the bearer credential server-side. Every new Phase 10 API handler derives `workspaceId` from the authenticated identity; the browser must not send or persist a workspace identifier. Existing browser calls that still accept `workspaceId` are replaced as their owning slice is integrated and are gone from the release journey by STEP-10-08.
+- The canonical SPA route is `/projects/:projectId`, composed with the configured `BASE_PATH`. The URL is authoritative for the active project; only a validated last-project identifier may be cached for root-route convenience. Foreign, deleted, and guessed identifiers use the same not-found response shape.
+- Reuse `ProjectRepo`, `SourceRepo`, `ResearchExecutionRepo`, `ResearchProjectionRepo`, the event journal, immutable `SourceVersion` contracts, source storage, ingestion, and data-engine materialization. Do not create a second repository stack, event bus, state framework, database, runtime, or fixture compatibility layer.
+- Route handlers belong in bounded `apps/api/src/routes/*.ts` modules and are only wired in `apps/api/src/main.ts`; UI state uses Solid signals/stores behind a project-scoped workspace provider.
+- Browser folder import means uploading a bounded set of selected files plus validated relative paths. It never means accepting a browser-supplied host path or weakening registered-root, symlink, traversal, or workspace controls.
+- Large browser uploads must use bounded streaming/multipart staging rather than base64 JSON or whole-request buffering. Per-file, batch-file-count, and aggregate-byte limits are configuration-backed, documented, rejected before durable enqueue where possible, and enforced again while streaming.
+- Project/thread/note server records and journal cursors are authoritative. Project-scoped draft, pane, and source-selection continuity may use bounded `sessionStorage`; no imported content, answer text, note body, credential, or evidence excerpt is placed in long-lived browser storage.
+- Accessibility is implemented in every functional slice; STEP-10-07 is the cross-cutting audit and remediation pass, not the first accessibility pass. All panes and sheets require semantic labels, keyboard operation, visible focus, and deterministic focus restoration as they are introduced.
+- The later approved workspace typography supersedes the prior editorial baseline: STEP-10-02 locally bundles Manrope for interface/conversation text, retains IBM Plex Mono for identifiers/query metadata, and removes the Newsreader editorial role from workspace routes. No remote font request is allowed.
+- The release journey uses the real web proxy, API, worker, PostgreSQL, artifact storage, ingestion, retrieval, citations, and note persistence. A deterministic test provider is allowed at the model-provider boundary, but page-level network stubs, fixture routes, direct database shortcuts, and direct API calls are not release evidence.
+- BUG-0013 is the one confirmed repository defect and is the reason this remediation phase may proceed. It remains open through STEP-10-08; no unrelated phase or step may advance, and any new confirmed defect stops the sequence until fixed.
+- The root orchestrator owns all git operations. Each implementation step uses one fresh `openai-codex/gpt-5.4` worker, one branch, one reviewed pull request, and independent root verification.
+
+### Refinement Readiness Matrix
+
+| Step | Readiness | Durable clarification |
+| --- | --- | --- |
+| STEP-10-01 | Pass | Auth-derived workspace scope, project-name/idempotency policy, canonical routing, exact files and tests are specified. |
+| STEP-10-02 | Pass | Shell-only boundaries, typography authority, interim citation behavior, responsive/focus checks, and non-goals are specified. |
+| STEP-10-03 | Pass | Browser import semantics, streaming limits, durable activity projection, source-kind routing, and recovery are specified. |
+| STEP-10-04 | Pass | Thread continuation, committed-cursor reduction, source scope, draft continuity, pagination, and retry/cancel behavior are specified. |
+| STEP-10-05 | Pass | Evidence union, exact provenance, base-path-aware pane state, authorization parity, and failure states are specified. |
+| STEP-10-06 | Pass | Distinct note/revision/provenance model, optimistic autosave, conflict recovery, safety limits, and archive behavior are specified. |
+| STEP-10-07 | Pass | Exact viewport/theme/input/accessibility matrix, `/struct` regression, artifacts, and manual checks are specified. |
+| STEP-10-08 | Pass | Real-stack deterministic journey, demo removal, full gate ladder, documentation refresh, and defect closure are specified. |
+
+No unresolved question or external blocker remains for refinement. Implementation remains blocked on the per-step branch/review gates and on resolving BUG-0013 through this phase.

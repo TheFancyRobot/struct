@@ -11,13 +11,18 @@ created: '2026-07-21'
 updated: '2026-07-21'
 depends_on:
   - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist|STEP-09-06 Publish v1 Documentation Accessibility and Release Checklist]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-21-230129-establish-workspace-and-project-lifecycle-codex|SESSION-2026-07-21-230129 Codex session for Establish Workspace and Project Lifecycle]]'
 related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
   - '[[03_Bugs/BUG-0018_vite-proxy-regression-test-does-not-typecheck|BUG-0018 Vite proxy regression test does not typecheck]]'
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-21-230129
+active_session_id: ''
+context_status: ready
+context_summary: Phase 10 refinement complete; STEP-10-01 is execution-ready after the refinement commit.
 ---
 
 # Step 01 - Establish Workspace and Project Lifecycle
@@ -60,12 +65,12 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 ## Human Notes
 
-- Put judgment calls or cautions here.
+- Refinement passed on 2026-07-21. Follow the companion execution/validation contracts; do not reintroduce browser-supplied workspace identifiers.
 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-21 - [[05_Sessions/2026-07-21-230129-establish-workspace-and-project-lifecycle-codex|SESSION-2026-07-21-230129 Codex session for Establish Workspace and Project Lifecycle]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

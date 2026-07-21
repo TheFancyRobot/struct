@@ -19,7 +19,9 @@ The last command starts the web, API, and worker applications together.
 
 - See [local-development.md §3](./local-development.md#3-environment-secrets-and-safe-volumes) for variable descriptions and secret-handling rules.
 
-## Walking-skeleton demo
+## Backend walking-skeleton diagnostic
+
+> This direct SQL/API procedure verifies backend foundations only. It is not the v1 user journey and does not satisfy the reopened release gate. BUG-0013 remains open until Phase 10 provides project creation, source import, conversation, evidence, and Notes through the browser.
 
 Set a real provider key in `.env`, then seed the Phase 01 project fixture:
 
@@ -93,8 +95,5 @@ include provider keys, raw source text, or host paths.
 - URL ingestion, archive expansion, OCR for scanned PDFs, Office formats, and
   SQLite import are unsupported. Supported document paths fail explicitly when
   their type, media type, or configured byte limits are invalid.
-- Project/source creation and research initiation are API/operator driven. The
-  browser covers research progress, exact citations, mixed-source evidence,
-  notebooks, and report workflows.
-- See [release-checklist.md](./release-checklist.md) for the complete accepted
-  v1 boundary and release evidence.
+- The current browser is incomplete: project/source creation and research initiation still require API/operator steps. This is a release-blocking defect, not an accepted v1 limit; follow BUG-0013 and Phase 10 for remediation.
+- See [release-checklist.md](./release-checklist.md) for the reopened v1 gate and historical backend evidence.

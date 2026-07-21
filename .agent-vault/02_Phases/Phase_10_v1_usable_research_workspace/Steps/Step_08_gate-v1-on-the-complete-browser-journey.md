@@ -59,7 +59,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 ## Human Notes
 
-- Put judgment calls or cautions here.
+- Refinement passed on 2026-07-21. Page-level stubs and fixture routes are not release evidence; stop before the v1.0 release action.
 
 ## Session History
 

@@ -58,7 +58,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 ## Human Notes
 
-- Put judgment calls or cautions here.
+- Refinement passed on 2026-07-21. Browser folder import uploads bounded bytes and relative paths only; never accept a client host path.
 
 ## Session History
 
