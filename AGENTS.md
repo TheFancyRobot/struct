@@ -56,6 +56,7 @@ Use `.agent-vault/` as durable project memory. Prefer MCP tools over direct edit
 
 ## Roadmap Orchestration Gate
 
+- Spawn every subagent with `model: "openai-codex/gpt-5.4"`; do not use an unqualified model name or a team default that can override it.
 - Execute each roadmap step or bug in one fresh subagent. Do not reuse a failed worker for a retry.
 - Worker subagents must not run any git command. The root orchestrator exclusively owns branches, staging, commits, pushes, pull requests, review remediation, and merges.
 - The root orchestrator must independently verify step status, mirrored `context_status`, repository validation, and vault integrity before publishing a step.
