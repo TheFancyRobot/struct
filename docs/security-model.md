@@ -1,6 +1,19 @@
 # Security Model
 
-This document defines the security posture for the research workspace. It focuses on the threats created by local directory ingestion, source-grounded agent workflows, deterministic SQL execution, persistent provenance, and multi-source research across potentially untrusted content.
+This document defines the security posture for the research workspace. It
+focuses on the threats created by local directory ingestion, source-grounded
+agent workflows, deterministic SQL execution, persistent provenance, and
+multi-source research across potentially untrusted content. Historical phase
+ownership and provisional tables remain as decision history; current release
+evidence and accepted limits are reconciled in
+[release-checklist.md](./release-checklist.md).
+
+For v1, authentication is one operator-managed bearer token bound to one
+configured workspace. It is not an internet-facing multi-tenant identity or
+rate-limiting system. The accepted deployment is single-node local-artifact
+storage with paired PostgreSQL/artifact backup. URL ingestion, archive
+expansion, OCR-heavy scanned PDFs, Office documents, and SQLite import fail as
+unsupported. These are explicit product limits, not silent security controls.
 
 Related documents:
 

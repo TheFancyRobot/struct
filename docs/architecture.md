@@ -1,6 +1,11 @@
 # Architecture
 
-This document defines the Phase 0 architecture contract for the Fred-native research workspace described in [product-brief.md](./product-brief.md). It is intentionally implementation-oriented: it fixes the boundaries that must stay stable while leaving room to iterate on internals during the walking skeleton and later phases.
+This document began as the Phase 0 architecture contract and now records the
+implemented v1 boundaries for the Fred-native research workspace described in
+[product-brief.md](./product-brief.md). Phase-oriented language below preserves
+decision history; the current executable topology is Bun-hosted web/API/worker,
+PostgreSQL persistence, local content-addressed artifacts, and an authenticated
+no-egress DuckDB data-engine sidecar owned by Docker Compose.
 
 ## 1. Product thesis
 

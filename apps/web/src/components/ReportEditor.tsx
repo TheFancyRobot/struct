@@ -370,7 +370,7 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
           </div>
         </aside>
 
-        <main class="report-editor-canvas">
+        <section class="report-editor-canvas" aria-label="Report sections">
           <Show when={historyView() !== null}>
             <button class="return-current" type="button" onClick={() => setHistoryView(null)}>
               ← Return to current report
@@ -455,7 +455,7 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
               </article>
             )}
           </For>
-        </main>
+        </section>
 
         <aside class="report-inspector" aria-labelledby="report-inspector-title">
           <header>

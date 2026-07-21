@@ -5,17 +5,22 @@ contract_version: 1
 title: Publish v1 Documentation Accessibility and Release Checklist
 step_id: STEP-09-06
 phase: '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 v1 production hardening and release]]'
-status: planned
-owner: ''
+status: completed
+owner: Codex STEP-09-06 worker
 created: '2026-07-17'
-updated: '2026-07-20'
+updated: '2026-07-21'
 depends_on:
   - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_05_run-full-evaluation-campaign-and-remediate-gates|STEP-09-05 Run Full Evaluation Campaign and Remediate Gates]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-21-004116-publish-v1-documentation-accessibility-and-release-checklist-codex-step-09-06-worker|SESSION-2026-07-21-004116 Codex STEP-09-06 worker session for Publish v1 Documentation Accessibility and Release Checklist]]'
 related_bugs: []
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-21-004116
+active_session_id: SESSION-2026-07-21-004116
+context_status: completed
+context_summary: Completed v1 documentation, accessibility, responsive evidence, and the fully evidenced release checklist; only the explicit release action remains.
 ---
 
 # Step 06 - Publish v1 Documentation Accessibility and Release Checklist
@@ -54,10 +59,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Status: completed
+- Current owner: Codex STEP-09-06 worker
+- Last touched: 2026-07-21
+- Next action: Root orchestrator merges the reviewed PR, closes Phase 09, and stops before the documented v1.0 release action.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -67,7 +72,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-21 - [[05_Sessions/2026-07-21-004116-publish-v1-documentation-accessibility-and-release-checklist-codex-step-09-06-worker|SESSION-2026-07-21-004116 Codex STEP-09-06 worker session for Publish v1 Documentation Accessibility and Release Checklist]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

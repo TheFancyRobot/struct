@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Bun 1.3.13 and Docker (for PostgreSQL)
+- Bun 1.3.13 and Docker with Compose (for PostgreSQL and the isolated data engine)
 - See [local-development.md §4](./local-development.md#4-platform-notes-and-fallbacks) for platform notes.
 
 ## Setup
@@ -77,15 +77,24 @@ include provider keys, raw source text, or host paths.
 
 - `bun run test` — complete maintained workspace test suite
 - `bun run test:integration` — PostgreSQL-backed integration tests
-- `bun run test:e2e` — installs pinned Chromium when needed, then runs the
-  Bun-native browser test
-- See [repository-contract.md §2](./repository-contract.md#2-ci-gate-matrix) for the full gate matrix.
+- `bun run test:e2e` — installs pinned Chromium when needed, builds the web
+  app, then runs the maintained Playwright browser journeys
+- See [repository-contract.md §2](./repository-contract.md#2-gate-matrix) for the full gate matrix.
 
-## Known gaps
+## Known limits
 
-- PDF and Office parsing begin in Phase 02.
-- Structured datasets and vector search arrive in later phases.
-- Directory recursion begins in Phase 03.
-- The browser test currently covers the completed research-to-citation path; the
-  full project/source authoring UI follows the roadmap.
-- See [roadmap.md](./roadmap.md) for the full phase plan.
+- v1 is a single-node deployment. Bun hosts web/API/worker; Compose hosts
+  PostgreSQL and the authenticated, no-egress DuckDB data engine.
+- Authentication is one operator-managed bearer credential bound to the
+  configured workspace, not a self-service multi-user identity system.
+- Local content-addressed disk is the artifact store. Back it up and restore it
+  with the paired PostgreSQL archive described in
+  [deployment-recovery.md](./operations/deployment-recovery.md).
+- URL ingestion, archive expansion, OCR for scanned PDFs, Office formats, and
+  SQLite import are unsupported. Supported document paths fail explicitly when
+  their type, media type, or configured byte limits are invalid.
+- Project/source creation and research initiation are API/operator driven. The
+  browser covers research progress, exact citations, mixed-source evidence,
+  notebooks, and report workflows.
+- See [release-checklist.md](./release-checklist.md) for the complete accepted
+  v1 boundary and release evidence.

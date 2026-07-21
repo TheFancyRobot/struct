@@ -426,7 +426,11 @@ Every STEP-00-05 abuse category (ABUSE-01 … ABUSE-15) has at least one **inert
 
 ## 11. Quality gate matrix
 
-Three tiers, aligned with [repository-contract.md §2](./repository-contract.md#2-ci-gate-matrix). This section finalizes the **gate-tier thresholds** (DEF-05) that repository-contract §2 left to STEP-00-06. Thresholds are named, owned, and frozen at a phase; baseline-tracked metrics may be calibrated later but are tracked from the first run.
+Three gate categories, aligned with
+[repository-contract.md §2](./repository-contract.md#2-gate-matrix). This
+section finalized the gate thresholds inherited by the executable v1 campaign.
+Thresholds are named, owned, and frozen at a phase; baseline-tracked metrics may
+be calibrated later but are tracked from the first run.
 
 ### 11.1 Non-negotiable release gates
 
@@ -662,7 +666,10 @@ in `packages/evaluation`; the historical specification remains authoritative.
 - **[DEC-0011](../.agent-vault/04_Decisions/DEC-0011_gate-releases-on-a-reproducible-25000-file-evaluation-corpus.md)** — reproducible ~25,000-file corpus, committed seed, versioned ground truth, tiered smoke/nightly/release suites, every artifact records corpus version/seed/code/models/prompts/providers/deps → §2, §3, §13, §16. Phase 00 specifies; Phase 04 implements.
 - **[DEC-0009](../.agent-vault/04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql.md)** — sandbox roots, allowlist read-only SQL, imported content as untrusted evidence → §10 (ABUSE-01/02/08), §15. Fail-closed typed errors.
 - **[architecture.md](./architecture.md)** — §7 journal/SSE, §8 ingestion (no model call per file), §9 agent-vs-tool split, §10 bounded execution + terminal states, §14 non-negotiable contracts (immutable source versions; exact answers from deterministic tools; untrusted content; durable/cancellable work; citations validated before finalization) → §3.2, §4.1, §5, §9, §11.
-- **[repository-contract.md §2](./repository-contract.md#2-ci-gate-matrix)** — three gate tiers and check ownership; STEP-00-06 finalized thresholds → §11. Phase 04 now owns the executable generator and evaluator in `packages/evaluation`; Phase 09 still owns final pre-release CI hardening.
+- **[repository-contract.md §2](./repository-contract.md#2-gate-matrix)** —
+  root-orchestrated gate categories and ownership; STEP-00-06 finalized
+  thresholds → §11. `packages/evaluation` owns the executable generator and
+  evaluator, and the root v1 campaign owns final pre-release hardening.
 - **[product-brief.md](./product-brief.md)** — §13 research execution model, §21 security model, §24 corpus contents/questions, §25 performance principles, §27 v1 acceptance, §30 demonstration scenario (the mixed-source flagship), §31 final direction → §4, §6.3, §10, §11, §14.
 
 ## Change log
