@@ -116,3 +116,4 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - State what finished, what remains, and whether handoff is clean.
 - STEP-09-05 completed with one reproducible v1 evaluation entry point, deterministic release-gate evidence, a complete remediation record, and zero known confirmed defects.
 - Handoff is clean. STEP-09-06 is the next planned target.
+- PR #57 merged into `main` as `5d9eada` after CodeRabbit completed with no actionable comments and zero unresolved review threads.
