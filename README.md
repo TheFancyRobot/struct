@@ -2,7 +2,7 @@
 
 A trustworthy, source-grounded research workspace for documents, datasets, and directories. Documents are retrieved, datasets are queried, directories are navigated, and large corpora are recursively analyzed — with deterministic computation, verifiable citations, and durable, resumable work.
 
-> **Current state: the complete v1 product is implemented and has passed the 23-gate release campaign.** The monorepo includes versioned document and dataset ingestion, directory and recursive analysis, PostgreSQL hybrid retrieval, an isolated DuckDB data plane, schema-validated bounded core-Fred orchestration, durable checkpoints, authenticated cursor-replayable progress, exact citations, durable findings and reports, and a responsive SolidJS research workspace. The final release action is intentionally not performed; see the release checklist.
+> **Current state: v1 release is reopened and blocked by [BUG-0013](./.agent-vault/03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows.md).** The backend research, ingestion, evidence, durability, security, and operations foundations passed the prior 23-gate campaign, but the browser still lacks the complete self-service project → sources → conversation → evidence → note journey. [Phase 10](./.agent-vault/02_Phases/Phase_10_v1_usable_research_workspace/Phase.md) is the approved remediation plan. No v1.0 release action may occur until its real API-backed browser gate passes and the release checklist is re-closed.
 
 ## Canonical documents
 
@@ -80,7 +80,7 @@ bun run corpus:generate --profile full --out /absolute/path/corpus
 bun run corpus:compare-hashes /path/a/manifest.json /path/b/manifest.json
 bun run corpus:eval         # full corpus quality gates (STEP-04-06)
 bun run v1:performance      # live performance, capacity, and resilience gate
-bun run v1:evaluate         # bounded 23-gate v1 release campaign
+bun run v1:evaluate         # historical 23-gate campaign; not a release gate until Phase 10 adds the real-browser journey
 ```
 
 The walking-slice research command accepts `workspaceId`, `projectId`, a non-empty

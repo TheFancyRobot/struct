@@ -81,7 +81,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 - Reopen the v1 release gate and implement one coherent workspace shell covering project selection/creation, source import and ingestion status, document-grounded chat, citation navigation, and saved notes/findings.
 - Replace the root demo fixture with persisted API-backed state and make all primary workflows discoverable without hand-constructed URLs or IDs.
-- Execute [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] in the explicit STEP-10-01 through STEP-10-08 order. The approved design and implementation plan under `docs/superpowers/` remain the product and delivery source of truth.
+- Use the approved Phase 10 packets in explicit STEP-10-01 through STEP-10-08 technical order as independently tracked BUG-0013 remediation units; do not activate PHASE-10 or any `STEP-10-*` roadmap step while this confirmed defect is open. The approved design and implementation plan under `docs/superpowers/` remain the product and delivery source of truth.
 
 ## Regression Coverage Needed
 

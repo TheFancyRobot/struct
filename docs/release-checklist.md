@@ -3,6 +3,8 @@
 This is the final go/no-go record for Struct v1. It deliberately stops before
 tagging, publishing, deploying, or otherwise performing the release.
 
+> **Status: REOPENED / NO-GO.** BUG-0013 proved that the prior campaign validated backend and fixture-driven browser surfaces without validating the complete self-service browser journey. The checked campaign items below remain historical evidence, but they are not sufficient for release. The reopened workflow and documentation items must pass against the Phase 10 real API-backed workspace before this checklist can close again.
+
 ## Canonical campaign
 
 - [x] The bounded release campaign passed 23/23 gates with zero failed
@@ -65,16 +67,9 @@ tagging, publishing, deploying, or otherwise performing the release.
 
 ## User workflows and accessibility
 
-- [x] Document research, structured queries, directory/recursive analysis,
-  mixed-source synthesis, exact citation navigation, durable findings, report
-  editing/history/repair, publication gating, and export are covered by unit,
-  integration, evaluation, and browser evidence.
-- [x] Keyboard, focus, dialog, structure, labels, live status, contrast,
-  reduced motion, error recovery, 320-pixel reflow, and the six required
-  viewport/theme screenshots pass the focused release contract. Evidence:
-  [`Accessibility and responsive UI evidence`](./accessibility.md).
-- [x] The 1440×900, 1024×768, and 390×844 light/dark screenshots were visually
-  reviewed for overflow, clipping, contrast, hierarchy, and usable density.
+- [ ] A real API-backed empty-browser journey creates/selects a project, imports supported document/paste/folder/dataset sources, navigates during durable ingestion, asks with ready sources, reconnects without duplicate output, opens exact document and dataset evidence, saves/edits a Note, and reloads/reopens persisted work without manual identifiers.
+- [ ] Keyboard, focus, dialogs/sheets, structure, labels, live status, contrast, reduced motion, error recovery, 200% zoom/large text, and the approved 375/768/1024/1440 viewport/theme matrix pass on the real Phase 10 workspace. Historical fixture/report evidence remains reference-only.
+- [ ] The desktop, tablet, and mobile real-workspace screenshots and accessibility artifact manifest are visually reviewed for overflow, clipping, contrast, hierarchy, focus, and usable density at root and non-root `/struct` deployments.
 
 ## Documentation and review
 
@@ -86,9 +81,8 @@ tagging, publishing, deploying, or otherwise performing the release.
   candidate; `v1.0.0` remains reserved for the first intentionally stable
   release after owner validation. Evidence:
   [`Release Policy`](./release-policy.md).
-- [x] The final closure change received a worker self-review across affected
-  Solid components, routes, browser assertions, commands, and documentation.
-- [x] The root orchestrator owns the final clean-tree assertion and automated
+- [ ] The Phase 10 closure change receives worker self-review and independent root review across affected contracts, persistence, APIs, Solid components, routes, real-stack browser assertions, commands, security, accessibility, and documentation.
+- [ ] The root orchestrator owns the final clean-tree assertion and automated
   PR review before merge. Immediately before release it must run
   `test -z "$(git status --porcelain)"`; this ephemeral proof cannot be cached
   in a committed document.
@@ -103,9 +97,7 @@ tagging, publishing, deploying, or otherwise performing the release.
   multi-tenant identity system.
 - Artifact persistence is local content-addressed disk storage and must be
   backed up/restored with its paired PostgreSQL archive.
-- Project/source creation and research initiation remain API/operator driven;
-  the maintained browser surfaces focus on research progress, citations,
-  mixed-source evidence, notebooks, and reports.
+- API/operator-driven project/source/research setup is not an accepted v1 limit. The release requires the Phase 10 self-service browser workflow and first-class Notes with provenance.
 - URL ingestion, archive expansion, OCR for scanned PDFs, Office formats, and
   SQLite import are unsupported rather than partially or unsafely accepted.
 - Performance ceilings are release gates measured on the recorded host, not
@@ -123,7 +115,7 @@ git pull --ff-only origin main
 test -z "$(git status --porcelain)"
 bun --version                         # must print 1.3.13
 bun install --frozen-lockfile
-bun run v1:evaluate                  # must finish 23/23 with zero failures
+bun run v1:evaluate                  # must include and pass the Phase 10 real-browser release gate
 test -z "$(git status --porcelain)"  # campaign evidence must match the committed tree
 git tag -a v1.0.0 -m "Struct v1.0.0"
 git push origin v1.0.0

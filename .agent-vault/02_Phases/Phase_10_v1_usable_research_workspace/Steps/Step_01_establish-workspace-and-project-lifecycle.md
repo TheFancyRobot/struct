@@ -11,13 +11,18 @@ created: '2026-07-21'
 updated: '2026-07-21'
 depends_on:
   - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist|STEP-09-06 Publish v1 Documentation Accessibility and Release Checklist]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-21-230129-establish-workspace-and-project-lifecycle-codex|SESSION-2026-07-21-230129 Codex session for Establish Workspace and Project Lifecycle]]'
 related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
   - '[[03_Bugs/BUG-0018_vite-proxy-regression-test-does-not-typecheck|BUG-0018 Vite proxy regression test does not typecheck]]'
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-21-230129
+active_session_id: ''
+context_status: blocked
+context_summary: Phase 10 refinement is complete, but BUG-0013 is confirmed; this roadmap step is technical reference only and cannot start until the defect is fixed through a bug-remediation unit.
 ---
 
 # Step 01 - Establish Workspace and Project Lifecycle
@@ -55,17 +60,17 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - Status: planned
 - Current owner:
 - Last touched: 2026-07-21
-- Next action: Read [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle/Validation_Plan|Validation Plan]].
+- Next action: Do not start this roadmap step while BUG-0013 remains confirmed; use its brief and validation plan only as technical reference for a tracked bug-remediation unit.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
 
-- Put judgment calls or cautions here.
+- Refinement passed on 2026-07-21. Follow the companion execution/validation contracts; do not reintroduce browser-supplied workspace identifiers.
 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-21 - [[05_Sessions/2026-07-21-230129-establish-workspace-and-project-lifecycle-codex|SESSION-2026-07-21-230129 Codex session for Establish Workspace and Project Lifecycle]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

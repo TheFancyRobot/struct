@@ -58,7 +58,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 ## Human Notes
 
-- Put judgment calls or cautions here.
+- Refinement passed on 2026-07-21. Continue-thread and post-reduction cursor semantics are mandatory; receipt alone is not acknowledgement.
 
 ## Session History
 
