@@ -15,7 +15,7 @@ const runId = 'e80e8400-e29b-41d4-a716-446655440003'
 const workspaceId = 'e80e8400-e29b-41d4-a716-446655440004'
 const citationId = 'e80e8400-e29b-41d4-a716-446655440005'
 const sourceVersionId = 'e80e8400-e29b-41d4-a716-446655440006'
-const origin = 'http://127.0.0.1:4174'
+const origin = 'http://127.0.0.1:4178'
 const runUrl = `${origin}/projects/${projectId}/research/${threadId}/runs/${runId}`
 const sha = (digit: string) => `sha256:${digit.repeat(64)}`
 const screenshotRoot = '/tmp/struct-step-06-05'
@@ -204,7 +204,7 @@ async function assertNoOverflow(page: typePage): Promise<void> {
 
 beforeAll(async () => {
   await mkdir(screenshotRoot, { recursive: true })
-  web = await startAppServer(4174)
+  web = await startAppServer(4178)
   browser = await chromium.launch({ headless: true })
 })
 

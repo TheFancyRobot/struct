@@ -6,8 +6,8 @@
  * Real implementations are provided via Layer from apps/api.
  */
 
-import { Effect, Option } from 'effect'
-import type * as Domain from '@struct/domain'
+import { Effect, Option, Schema } from 'effect'
+import * as Domain from '@struct/domain'
 import type { PersistenceError } from '../errors.js'
 import { SqlClient } from '../sql-client.js'
 import {
@@ -126,10 +126,29 @@ function makeWorkspaceRepositoryImpl(sql: import('../sql-client.js').SqlClientSh
 // Project Repository
 // =============================================================================
 
+export class ProjectConflictError
+  extends Schema.TaggedError<ProjectConflictError>()('ProjectConflictError', {
+    workspaceId: Domain.WorkspaceId,
+    projectName: Schema.String,
+    message: Schema.String,
+  }) {}
+
+export interface ProjectListOptions {
+  readonly limit: number
+  readonly cursor?: typeof Domain.ProjectListCursor.Type | null
+}
+
+export interface ProjectListPageResult {
+  readonly items: ReadonlyArray<typeof Domain.Project.Type>
+  readonly nextCursor: typeof Domain.ProjectListCursor.Type | null
+}
+
 export interface ProjectRepository {
   readonly create: (project: typeof Domain.Project.Type) => Effect.Effect<typeof Domain.Project.Type, PersistenceError, never>
+  readonly createWithIdempotency: (input: { readonly project: typeof Domain.Project.Type, readonly idempotencyKey: string }) => Effect.Effect<typeof Domain.Project.Type, PersistenceError | ProjectConflictError, never>
   readonly findById: (id: typeof Domain.ProjectId.Type) => Effect.Effect<typeof Domain.Project.Type, PersistenceError, never>
   readonly findByWorkspaceId: (workspaceId: typeof Domain.WorkspaceId.Type) => Effect.Effect<ReadonlyArray<typeof Domain.Project.Type>, PersistenceError, never>
+  readonly listByWorkspaceId: (workspaceId: typeof Domain.WorkspaceId.Type, options: ProjectListOptions) => Effect.Effect<ProjectListPageResult, PersistenceError, never>
 }
 
 export class ProjectRepo extends Effect.Service<ProjectRepo>()('ProjectRepo', {
@@ -139,6 +158,70 @@ export class ProjectRepo extends Effect.Service<ProjectRepo>()('ProjectRepo', {
     return makeProjectRepositoryImpl(sql)
   }),
 }) {}
+
+const PROJECT_NAME_UNIQUE_INDEX = 'projects_workspace_name_ci_idx'
+
+interface ProjectCursorEnvelope {
+  readonly updatedAt: number
+  readonly nameFolded: string
+  readonly id: string
+}
+
+function foldProjectName(value: string): string {
+  return value.toLocaleLowerCase('en-US')
+}
+
+function encodeProjectCursor(project: typeof Domain.Project.Type): typeof Domain.ProjectListCursor.Type {
+  return Buffer.from(JSON.stringify({
+    updatedAt: Number(project.updatedAt),
+    nameFolded: foldProjectName(project.name),
+    id: project.id,
+  } satisfies ProjectCursorEnvelope)).toString('base64url') as typeof Domain.ProjectListCursor.Type
+}
+
+function decodeProjectCursor(cursor: typeof Domain.ProjectListCursor.Type): ProjectCursorEnvelope {
+  const decoded = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'))
+  if (
+    typeof decoded !== 'object'
+    || decoded === null
+    || typeof decoded['updatedAt'] !== 'number'
+    || !Number.isFinite(decoded['updatedAt'])
+    || typeof decoded['nameFolded'] !== 'string'
+    || typeof decoded['id'] !== 'string'
+  ) {
+    throw new Error('Invalid project cursor')
+  }
+  return {
+    updatedAt: decoded['updatedAt'],
+    nameFolded: decoded['nameFolded'],
+    id: decoded['id'],
+  }
+}
+
+function uniqueViolationConstraint(error: unknown): string | null {
+  if (typeof error !== 'object' || error === null) return null
+  const candidate = error as Record<string, unknown>
+  for (const field of ['constraint', 'constraint_name']) {
+    if (typeof candidate[field] === 'string' && candidate[field].length > 0) {
+      return candidate[field] as string
+    }
+  }
+  return null
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false
+  const candidate = error as Record<string, unknown>
+  return String(candidate['code']) === '23505'
+}
+
+function isUniqueViolationOn(error: unknown, constraintName: string): boolean {
+  if (!isUniqueViolation(error)) return false
+  const matchedConstraint = uniqueViolationConstraint(error)
+  if (matchedConstraint !== null) return matchedConstraint === constraintName
+  const message = error instanceof Error ? error.message : String(error)
+  return message.includes(constraintName)
+}
 
 function makeProjectRepositoryImpl(sql: import('../sql-client.js').SqlClientShape): ProjectRepository {
   type ProjectType = typeof Domain.Project.Type
@@ -164,6 +247,76 @@ function makeProjectRepositoryImpl(sql: import('../sql-client.js').SqlClientShap
                 : err,
             ),
           ) as Effect.Effect<ProjectType, RepoError, never>,
+        ),
+      ),
+
+    createWithIdempotency: ({ project, idempotencyKey }: { readonly project: ProjectType, readonly idempotencyKey: string }) =>
+      Effect.tryPromise({
+        try: async () => {
+          try {
+            return await sql.transaction(async (transaction) => {
+              const existingRows = await transaction.unsafe(
+                `SELECT project_id
+                 FROM project_idempotency_keys
+                 WHERE workspace_id = $1 AND idempotency_key = $2
+                 FOR UPDATE`,
+                [project.workspaceId, idempotencyKey],
+              )
+              const existingProjectId = existingRows[0]?.['project_id']
+              if (typeof existingProjectId === 'string') {
+                const rows = await transaction.unsafe(
+                  'SELECT * FROM projects WHERE id = $1 FOR SHARE',
+                  [existingProjectId],
+                )
+                return rows[0]
+              }
+
+              const createdRows = await transaction.unsafe(
+                `INSERT INTO projects (id, workspace_id, name, created_at, updated_at)
+                 VALUES ($1, $2, $3, to_timestamp($4 / 1000.0), to_timestamp($5 / 1000.0))
+                 RETURNING *`,
+                [project.id, project.workspaceId, project.name, Number(project.createdAt), Number(project.updatedAt)],
+              )
+              await transaction.unsafe(
+                `INSERT INTO project_idempotency_keys (workspace_id, idempotency_key, project_id, created_at)
+                 VALUES ($1, $2, $3, to_timestamp($4 / 1000.0))`,
+                [project.workspaceId, idempotencyKey, project.id, Number(project.createdAt)],
+              )
+              return createdRows[0]
+            })
+          } catch (error) {
+            if (isUniqueViolation(error)) {
+              const rows = await sql.unsafe(
+                `SELECT p.*
+                 FROM project_idempotency_keys AS k
+                 JOIN projects AS p ON p.id = k.project_id
+                 WHERE k.workspace_id = $1 AND k.idempotency_key = $2`,
+                [project.workspaceId, idempotencyKey],
+              )
+              if (rows[0] !== undefined) return rows[0]
+            }
+            if (isUniqueViolationOn(error, PROJECT_NAME_UNIQUE_INDEX)) {
+              throw new ProjectConflictError({
+                workspaceId: project.workspaceId,
+                projectName: project.name,
+                message: 'Project name already exists in this workspace',
+              })
+            }
+            throw error
+          }
+        },
+        catch: (err) => err instanceof ProjectConflictError
+          ? err
+          : new QueryError({ operation: 'createWithIdempotency', entity: 'Project', message: String(err) }),
+      }).pipe(
+        Effect.flatMap((rows) =>
+          decodeProjectRow(rows as unknown as ProjectRow).pipe(
+            Effect.mapError((err) =>
+              err instanceof DecodeError
+                ? new QueryError({ operation: 'createWithIdempotency', entity: 'Project', message: err.message })
+                : err,
+            ),
+          ) as Effect.Effect<ProjectType, PersistenceError | ProjectConflictError, never>,
         ),
       ),
 
@@ -202,6 +355,56 @@ function makeProjectRepositoryImpl(sql: import('../sql-client.js').SqlClientShap
             ) as Effect.Effect<ProjectType, RepoError, never>,
           ),
         ),
+      ),
+
+    listByWorkspaceId: (workspaceId: typeof Domain.WorkspaceId.Type, options: ProjectListOptions) =>
+      Effect.tryPromise({
+        try: async () => {
+          const limit = Math.max(1, Math.min(options.limit, Domain.MAX_PROJECT_PAGE_SIZE))
+          const cursor = options.cursor == null ? null : decodeProjectCursor(options.cursor)
+          const params: Array<string | number> = [workspaceId]
+          let where = 'workspace_id = $1'
+          if (cursor !== null) {
+            where += ` AND (
+              updated_at < to_timestamp($2 / 1000.0)
+              OR (
+                updated_at = to_timestamp($2 / 1000.0)
+                AND (
+                  lower(name) > $3
+                  OR (lower(name) = $3 AND id > $4)
+                )
+              )
+            )`
+            params.push(cursor.updatedAt, cursor.nameFolded, cursor.id)
+          }
+          params.push(limit + 1)
+          return sql.unsafe(
+            `SELECT * FROM projects
+             WHERE ${where}
+             ORDER BY updated_at DESC, lower(name) ASC, id ASC
+             LIMIT $${params.length}`,
+            params,
+          )
+        },
+        catch: (err) => new QueryError({ operation: 'listByWorkspaceId', entity: 'Project', message: String(err) }),
+      }).pipe(
+        Effect.flatMap((rows) =>
+          Effect.forEach(rows, (row) =>
+            decodeProjectRow(row as unknown as ProjectRow).pipe(
+              Effect.mapError((err) =>
+                err instanceof DecodeError
+                  ? new QueryError({ operation: 'listByWorkspaceId', entity: 'Project', message: err.message })
+                  : err,
+              ),
+            ) as Effect.Effect<ProjectType, PersistenceError, never>,
+          ),
+        ),
+        Effect.map((projects) => ({
+          items: projects.slice(0, Math.max(1, Math.min(options.limit, Domain.MAX_PROJECT_PAGE_SIZE))),
+          nextCursor: projects.length > Math.max(1, Math.min(options.limit, Domain.MAX_PROJECT_PAGE_SIZE))
+            ? encodeProjectCursor(projects[Math.max(1, Math.min(options.limit, Domain.MAX_PROJECT_PAGE_SIZE)) - 1]!)
+            : null,
+        } satisfies ProjectListPageResult)),
       ),
   }
 }

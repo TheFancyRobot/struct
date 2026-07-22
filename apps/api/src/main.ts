@@ -74,6 +74,7 @@ import {
   authorizeWorkspace,
   isPublicApiRequest,
 } from './auth'
+import { projectRoute } from './routes/projects'
 import { registerTextSource } from './routes/sources'
 import {
   decodeDirectoryRegistrationScope,
@@ -307,6 +308,24 @@ const server = Effect.gen(function* () {
         return jsonResponse({ error: 'AuthenticationRequired' }, 401)
       }
       const identity = authenticated.value
+
+      const projectResponse = await Runtime.runPromise(effectRuntime)(projectRoute(req, identity, {
+        listByWorkspaceId: (workspaceId, options) =>
+          ProjectRepo.listByWorkspaceId(workspaceId, options).pipe(
+            Effect.provide(projectLayer),
+          ),
+        createWithIdempotency: (input) =>
+          ProjectRepo.createWithIdempotency(input).pipe(
+            Effect.provide(projectLayer),
+          ),
+        findById: (projectId) =>
+          ProjectRepo.findById(projectId).pipe(
+            Effect.provide(projectLayer),
+          ),
+        randomProjectId: () => ProjectId.make(crypto.randomUUID()),
+        now: () => BigInt(Date.now()),
+      }))
+      if (projectResponse !== undefined) return projectResponse
 
       const projectPath = /^\/api\/projects\/([^/]+)/.exec(url.pathname)
       if (projectPath !== null) {

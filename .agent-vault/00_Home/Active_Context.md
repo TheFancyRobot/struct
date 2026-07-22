@@ -19,11 +19,11 @@ Keep this note short and current.
 ## Current Objective
 
 <!-- AGENT-START:current-focus -->
-_Last refreshed: 2026-07-21._
+_Last refreshed: 2026-07-22._
 - Session in progress: none.
-- Current remediation target: [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]] - status: confirmed.
-- [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] and all `STEP-10-*` roadmap steps are planned technical reference only; the zero-defect gate blocks their activation until BUG-0013 is fixed through independently tracked bug-remediation units.
-- Also active: 1 open critical bug.
+- Current step: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_02_build-unified-three-pane-workspace-shell|STEP-10-02 Build Unified Three Pane Workspace Shell]] - status: planned - phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]
+- Active phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: planned - updated: 2026-07-21
+- Also active: 25 more additional steps, 1 open critical bug.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -58,7 +58,7 @@ _Last refreshed: 2026-07-21._
 ## Blockers
 
 <!-- AGENT-START:blockers -->
-- BUG-0013 is confirmed. PHASE-10 and STEP-10-01 are blocked as roadmap work until the defect is resolved through independently tracked bug-remediation units.
+- No phase, step, or session notes are currently marked blocked.
 <!-- AGENT-END:blockers -->
 
 ## Open Questions

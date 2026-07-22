@@ -18,24 +18,33 @@ describe('Vite API proxy authentication', () => {
   })
 
   it('rewrites base-prefixed API proxy requests back to /api', async () => {
+    const previousBasePath = process.env.BASE_PATH
     process.env.BASE_PATH = '/struct'
 
-    const resolved = await viteConfig({
-      command: 'serve',
-      mode: 'test',
-      isSsrBuild: false,
-      isPreview: false,
-    })
+    try {
+      const resolved = await viteConfig({
+        command: 'serve',
+        mode: 'test',
+        isSsrBuild: false,
+        isPreview: false,
+      })
 
-    const proxy = resolved.server?.proxy
-    const basePrefixedApiProxy = proxy && '/struct/api' in proxy ? proxy['/struct/api'] : undefined
-    const basePrefixedApiRewrite =
-      typeof basePrefixedApiProxy === 'object' && basePrefixedApiProxy !== null
-        ? (basePrefixedApiProxy as ProxyOptions).rewrite
-        : undefined
+      const proxy = resolved.server?.proxy
+      const basePrefixedApiProxy = proxy && '/struct/api' in proxy ? proxy['/struct/api'] : undefined
+      const basePrefixedApiRewrite =
+        typeof basePrefixedApiProxy === 'object' && basePrefixedApiProxy !== null
+          ? (basePrefixedApiProxy as ProxyOptions).rewrite
+          : undefined
 
-    expect(basePrefixedApiProxy).toBeDefined()
-    expect(typeof basePrefixedApiRewrite).toBe('function')
-    expect(basePrefixedApiRewrite?.('/struct/api/health')).toBe('/api/health')
+      expect(basePrefixedApiProxy).toBeDefined()
+      expect(typeof basePrefixedApiRewrite).toBe('function')
+      expect(basePrefixedApiRewrite?.('/struct/api/health')).toBe('/api/health')
+    } finally {
+      if (previousBasePath === undefined) {
+        delete process.env.BASE_PATH
+      } else {
+        process.env.BASE_PATH = previousBasePath
+      }
+    }
   })
 })

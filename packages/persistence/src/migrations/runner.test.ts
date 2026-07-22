@@ -161,17 +161,17 @@ describe('Migration Runner', () => {
       // Revert last
       await Effect.runPromise(runMigrationsDown(fakeSql))
 
-      // Should have deleted the last migration record
+      // Should have reverted the current manifest tail and removed its tracking row
       const latestMigration = migrations[migrations.length - 1]
+      expect(latestMigration).toBeDefined()
+      const latestDownSql = await Bun.file(latestMigration!.downPath).text()
       const deleteQuery = fakeSql.queries.find(
         (q) =>
           q.startsWith('DELETE FROM _migrations WHERE name') &&
           q.includes(latestMigration?.name ?? ''),
       )
+      expect(fakeSql.queries).toContain(latestDownSql)
       expect(deleteQuery).toBeDefined()
-      expect(fakeSql.queries.join('\n')).toMatch(
-        /DROP TABLE IF EXISTS finding_snapshots[\s\S]*DROP FUNCTION IF EXISTS reject_durable_artifact_snapshot_mutation/i,
-      )
     })
 
     it('does nothing when no migrations are applied', async () => {

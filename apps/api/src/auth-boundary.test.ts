@@ -60,6 +60,8 @@ afterAll(() => {
 describe('API HTTP authentication boundary', () => {
   const protectedRequests = [
     ['GET', '/metrics'],
+    ['GET', '/api/projects'],
+    ['POST', '/api/projects'],
     ['POST', `/api/projects/${guessedProjectId}/directories`],
     ['GET', `/api/projects/${guessedProjectId}/directory-jobs/job`],
     ['POST', `/api/projects/${guessedProjectId}/directory-jobs/job/pause`],

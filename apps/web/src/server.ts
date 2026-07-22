@@ -32,7 +32,7 @@ export function loadWebServerConfig(
     apiOrigin,
     apiAuthToken,
     basePath: basePathFromEnv(environment),
-    distRoot: path.resolve(currentDirectory, 'dist'),
+    distRoot: path.resolve(currentDirectory, environment['DIST_ROOT'] ?? 'dist'),
     port,
   }
 }
