@@ -1,4 +1,5 @@
 import {
+  DatasetQueryEvidencePersistenceError,
   DatasetQueryEvidenceScopeError,
 } from '@struct/persistence'
 import { DatasetQueryAuthorizationError } from '@struct/data-engine'
@@ -171,5 +172,53 @@ describe('dataset query HTTP read routes', () => {
     expect(forbidden?.status).toBe(404)
     expect(await forbidden?.json()).toEqual({ error: 'DatasetQueryNotFound' })
     expect(read).toBe(false)
+  })
+
+  it('returns a generic 503 for history persistence failures without leaking details', async () => {
+    const response = await Effect.runPromise(datasetQueryReadRoute(
+      new Request(
+        `http://localhost/api/projects/${projectId}/dataset-queries`
+        + `?workspaceId=${workspaceId}`,
+        { headers: authorization },
+      ),
+      {
+        authorize: () => Effect.void,
+        list: () => Effect.fail(new DatasetQueryEvidencePersistenceError({
+          operation: 'history',
+          message: "history failed: SELECT * FROM secrets WHERE password = 'top-secret' /Users/private/PATH_MARKER",
+        })),
+        reopen: () => Effect.die('citation route must not run'),
+      },
+    ))
+
+    expect(response?.status).toBe(503)
+    const body = await response?.json()
+    expect(body).toEqual({ error: 'DatasetQueryHistoryUnavailable' })
+    expect(JSON.stringify(body)).not.toContain('top-secret')
+    expect(JSON.stringify(body)).not.toContain('PATH_MARKER')
+  })
+
+  it('returns a generic 503 for citation persistence failures without leaking details', async () => {
+    const response = await Effect.runPromise(datasetQueryReadRoute(
+      new Request(
+        `http://localhost/api/projects/${projectId}`
+        + `/dataset-citations/${citationId}?workspaceId=${workspaceId}`,
+        { headers: authorization },
+      ),
+      {
+        authorize: () => Effect.void,
+        list: () => Effect.die('history route must not run'),
+        reopen: () => Effect.fail(new DatasetQueryEvidencePersistenceError({
+          operation: 'citation reopen',
+          message: 'citation failed: postgres://db-user:db-pass@db.internal/struct /Users/private/PATH_MARKER',
+        })),
+      },
+    ))
+
+    expect(response?.status).toBe(503)
+    const body = await response?.json()
+    expect(body).toEqual({ error: 'DatasetCitationUnavailable' })
+    expect(JSON.stringify(body)).not.toContain('db-pass')
+    expect(JSON.stringify(body)).not.toContain('PATH_MARKER')
   })
 })

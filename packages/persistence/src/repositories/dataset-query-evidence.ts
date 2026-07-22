@@ -9,6 +9,16 @@ import {
   WorkspaceId,
 } from '@struct/domain'
 import { Effect, ParseResult, Schema } from 'effect'
+import {
+  datasetCitationValidationErrorMessage,
+  datasetQueryEvidenceConflictErrorMessage,
+  datasetQueryEvidencePersistenceErrorMessage,
+  datasetQueryEvidenceScopeErrorMessage,
+  sanitizeDatasetCitationValidationReason,
+  sanitizeDatasetQueryEvidenceEntity,
+  sanitizeDatasetQueryEvidenceId,
+  sanitizeDatasetQueryEvidenceOperation,
+} from '../error-boundary.js'
 import { SqlClient } from '../sql-client.js'
 
 const DateToNumber = Schema.transformOrFail(Schema.DateFromSelf, Schema.Number, {
@@ -75,25 +85,85 @@ export class DatasetQueryEvidencePersistenceError
   extends Schema.TaggedError<DatasetQueryEvidencePersistenceError>()(
     'DatasetQueryEvidencePersistenceError',
     { operation: Schema.String, message: Schema.String },
-  ) {}
+  ) {
+  constructor(args: {
+    operation: string
+    message?: string
+    cause?: unknown
+  }) {
+    const operation = sanitizeDatasetQueryEvidenceOperation(args.operation)
+    super({
+      operation,
+      message: datasetQueryEvidencePersistenceErrorMessage(operation),
+    })
+  }
+}
 
 export class DatasetQueryEvidenceScopeError
   extends Schema.TaggedError<DatasetQueryEvidenceScopeError>()(
     'DatasetQueryEvidenceScopeError',
-    { entity: Schema.Literal('result', 'citation'), id: Schema.String, message: Schema.String },
-  ) {}
+    { entity: Schema.String, id: Schema.String, message: Schema.String },
+  ) {
+  constructor(args: {
+    entity: string
+    id: string
+    message?: string
+    cause?: unknown
+  }) {
+    const entity = sanitizeDatasetQueryEvidenceEntity(args.entity)
+    const id = sanitizeDatasetQueryEvidenceId(
+      args.id,
+      entity === 'citation' ? 'unknown-citation-id' : 'unknown-result-id',
+    )
+    super({
+      entity,
+      id,
+      message: datasetQueryEvidenceScopeErrorMessage(entity),
+    })
+  }
+}
 
 export class DatasetQueryEvidenceConflictError
   extends Schema.TaggedError<DatasetQueryEvidenceConflictError>()(
     'DatasetQueryEvidenceConflictError',
-    { entity: Schema.Literal('result', 'citation'), message: Schema.String },
-  ) {}
+    { entity: Schema.String, message: Schema.String },
+  ) {
+  constructor(args: {
+    entity: string
+    message?: string
+    cause?: unknown
+  }) {
+    const entity = sanitizeDatasetQueryEvidenceEntity(args.entity)
+    super({
+      entity,
+      message: datasetQueryEvidenceConflictErrorMessage(entity),
+    })
+  }
+}
 
 export class DatasetCitationValidationError
   extends Schema.TaggedError<DatasetCitationValidationError>()(
     'DatasetCitationValidationError',
-    { citationId: DatasetCitationId, reason: Schema.String, message: Schema.String },
-  ) {}
+    { citationId: Schema.String, reason: Schema.String, message: Schema.String },
+  ) {
+  constructor(args: {
+    citationId: string
+    reason: string
+    message?: string
+    cause?: unknown
+  }) {
+    const citationId = sanitizeDatasetQueryEvidenceId(
+      args.citationId,
+      'unknown-citation-id',
+    )
+    const reason = sanitizeDatasetCitationValidationReason(args.reason)
+    super({
+      citationId,
+      reason,
+      message: datasetCitationValidationErrorMessage(reason),
+    })
+  }
+}
 
 export type DatasetQueryEvidenceError =
   | DatasetQueryEvidencePersistenceError
@@ -102,10 +172,7 @@ export type DatasetQueryEvidenceError =
   | DatasetCitationValidationError
 
 const failure = (operation: string) =>
-  new DatasetQueryEvidencePersistenceError({
-    operation,
-    message: `Dataset query evidence ${operation} failed`,
-  })
+  new DatasetQueryEvidencePersistenceError({ operation })
 
 function jsonValue(value: unknown): unknown {
   if (typeof value !== 'string') return value

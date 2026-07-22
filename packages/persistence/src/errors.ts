@@ -6,6 +6,13 @@
  */
 
 import { Schema } from 'effect'
+import {
+  queryErrorMessage,
+  sanitizeEntity,
+  sanitizeField,
+  sanitizeOperation,
+  uniqueConstraintErrorMessage,
+} from './error-boundary.js'
 
 /**
  * Error when a database query fails.
@@ -14,8 +21,22 @@ export class QueryError extends Schema.TaggedError<QueryError>()('QueryError', {
   operation: Schema.String,
   entity: Schema.String,
   message: Schema.String,
-  cause: Schema.optional(Schema.String),
-}) {}
+}) {
+  constructor(args: {
+    operation: string
+    entity: string
+    message?: string
+    cause?: unknown
+  }) {
+    const operation = sanitizeOperation(args.operation)
+    const entity = sanitizeEntity(args.entity)
+    super({
+      operation,
+      entity,
+      message: queryErrorMessage(operation, entity),
+    })
+  }
+}
 
 /**
  * Error when a requested entity is not found.
@@ -33,7 +54,21 @@ export class UniqueConstraintError extends Schema.TaggedError<UniqueConstraintEr
   entity: Schema.String,
   field: Schema.String,
   message: Schema.String,
-}) {}
+}) {
+  constructor(args: {
+    entity: string
+    field: string
+    message?: string
+  }) {
+    const entity = sanitizeEntity(args.entity)
+    const field = sanitizeField(args.field)
+    super({
+      entity,
+      field,
+      message: uniqueConstraintErrorMessage(entity, field),
+    })
+  }
+}
 
 /**
  * Expected lease-loss outcome when a stale research worker no longer owns the

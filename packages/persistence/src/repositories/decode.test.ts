@@ -222,16 +222,16 @@ describe('Repository Row Decoders (typed decode)', () => {
   })
 
   describe('DecodeError', () => {
-    it('is a Schema.TaggedError with entity and cause fields', () => {
+    it('is a Schema.TaggedError with bounded entity and field data', () => {
       const err = new DecodeError({
         entity: 'Workspace',
         field: 'id',
-        reason: 'Invalid UUID',
-        message: 'Failed to decode Workspace: Invalid UUID',
+        reason: 'schema-mismatch',
       })
       expect(err._tag).toBe('DecodeError')
       expect(err.entity).toBe('Workspace')
       expect(err.field).toBe('id')
+      expect(err.reason).toBe('schema-mismatch')
     })
   })
 })
