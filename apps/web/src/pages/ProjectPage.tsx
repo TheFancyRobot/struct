@@ -13,7 +13,7 @@ import {
 } from 'solid-js'
 import { ProjectId, normalizeProjectName } from '@struct/domain'
 import { ProjectNameConflictError, createProject, fetchProject, fetchProjects } from '../api/projects'
-import { ProjectSwitcher } from '../components/ProjectSwitcher'
+import { ProjectSwitcher, type ProjectListState } from '../components/ProjectSwitcher'
 import {
   clearPendingProjectCreate,
   readPendingProjectCreateState,
@@ -85,6 +85,12 @@ export const HomePage: Component = () => {
   const [cachedProjectId, setCachedProjectId] = createSignal<string | null>(null)
   const [cachedProjectError, setCachedProjectError] = createSignal<string | null>(null)
   const [projects, { refetch: refetchProjects }] = createResource(fetchProjects)
+  const projectListState = createMemo<ProjectListState>(() =>
+    projects.error !== undefined
+      ? 'unavailable'
+      : projects() === undefined
+        ? 'loading'
+        : 'ready')
 
   const reopenCachedProject = async (candidate = cachedProjectId()) => {
     if (candidate === null) {
@@ -148,7 +154,7 @@ export const HomePage: Component = () => {
         <ProjectSwitcher
           mode="root"
           projects={projects()?.items ?? []}
-          projectsUnavailable={projects.error !== undefined}
+          projectListState={projectListState()}
           currentProjectId={null}
           currentProjectName={null}
           creating={creating()}
@@ -180,6 +186,12 @@ export const ProjectPage: Component = () => {
   const projectId = createMemo(() => ProjectId.make(params.projectId ?? ''))
   const [projects, { refetch: refetchProjects }] = createResource(fetchProjects)
   const [project, { refetch: refetchProject }] = createResource(projectId, fetchProject)
+  const projectListState = createMemo<ProjectListState>(() =>
+    projects.error !== undefined
+      ? 'unavailable'
+      : projects() === undefined
+        ? 'loading'
+        : 'ready')
 
   const activeProject = createMemo(() =>
     project.error === undefined
@@ -204,7 +216,10 @@ export const ProjectPage: Component = () => {
   const projectUnavailable = createMemo(() => project.error !== undefined)
 
   createEffect(() => {
-    if (notFound()) {
+    if (!notFound()) return
+
+    const current = params.projectId
+    if (current !== undefined && window.localStorage.getItem(LAST_PROJECT_ID_KEY) === current) {
       window.localStorage.removeItem(LAST_PROJECT_ID_KEY)
     }
   })
@@ -238,7 +253,7 @@ export const ProjectPage: Component = () => {
       <ProjectSwitcher
         mode="project"
         projects={projects()?.items ?? []}
-        projectsUnavailable={projects.error !== undefined}
+        projectListState={projectListState()}
         currentProjectId={activeProject()?.id ?? projectId()}
         currentProjectName={currentProjectName()}
         creating={creating()}

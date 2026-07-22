@@ -162,6 +162,7 @@ export default [
     ignores: [
       '**/node_modules/**',
       '**/dist/**',
+      '**/.e2e-dist/**',
       '**/.local/**',
       '**/bun.lock',
       '**/spikes/**',

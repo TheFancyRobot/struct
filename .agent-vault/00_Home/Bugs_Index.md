@@ -29,12 +29,13 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 <!-- AGENT-START:bugs-index -->
 _Last rebuilt: 2026-07-22._
 
-- Notes indexed: 18
-- Status summary: confirmed (1), fixed (17)
+- Notes indexed: 19
+- Status summary: confirmed (1), fixed (18)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
 | BUG-0013 | [v1 UI lacks core research workflows](../03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows.md) | confirmed | sev-1 | 2026-07-21 | - | - |
+| BUG-0014 | [E2E build artifacts break canonical lint gate](../03_Bugs/BUG-0014_e2e-build-artifacts-break-canonical-lint-gate.md) | fixed | sev-3 | 2026-07-22 | 2026-07-22 | - |
 | BUG-0012 | [Frontend loads DaisyUI but bypasses its component framework](../03_Bugs/BUG-0012_frontend-loads-daisyui-but-bypasses-its-component-framework.md) | fixed | sev-3 | 2026-07-21 | 2026-07-21 | - |
 | BUG-0014 | [Documentation roadmap links point to removed phase paths](../03_Bugs/BUG-0014_documentation-roadmap-links-point-to-removed-phase-paths.md) | fixed | sev-3 | 2026-07-21 | 2026-07-21 | - |
 | BUG-0015 | [Citation navigation bypasses configured web base path](../03_Bugs/BUG-0015_citation-navigation-bypasses-configured-web-base-path.md) | fixed | sev-3 | 2026-07-21 | 2026-07-21 | - |

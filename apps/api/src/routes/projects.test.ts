@@ -47,6 +47,28 @@ describe('project lifecycle route', () => {
     })
   })
 
+  it('rejects malformed list cursors before repository access', async () => {
+    let listCalled = false
+    const response = await Effect.runPromise(projectRoute(
+      new Request('http://localhost/api/projects?cursor=garbage'),
+      { workspaceId },
+      {
+        listByWorkspaceId: () => {
+          listCalled = true
+          return Effect.succeed({ items: [project], nextCursor: null })
+        },
+        createWithIdempotency: () => Effect.die('create should not run'),
+        findById: () => Effect.die('find should not run'),
+        randomProjectId: () => projectId,
+        now: () => 1n,
+      },
+    ))
+
+    expect(listCalled).toBe(false)
+    expect(response?.status).toBe(400)
+    expect(await response?.json()).toEqual({ error: 'InvalidProjectListRequest' })
+  })
+
   it('creates a project with an idempotency key and normalized input', async () => {
     let received: Record<string, unknown> | undefined
     const response = await Effect.runPromise(projectRoute(
@@ -80,6 +102,35 @@ describe('project lifecycle route', () => {
       },
     })
     expect(response?.status).toBe(201)
+  })
+
+  it('maps malformed create json to a bounded invalid-request response', async () => {
+    let createCalled = false
+    const response = await Effect.runPromise(projectRoute(
+      new Request('http://localhost/api/projects', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'idempotency-key': 'create:invalid-json',
+        },
+        body: '{"name":"Café roadmap"',
+      }),
+      { workspaceId },
+      {
+        listByWorkspaceId: () => Effect.die('list should not run'),
+        createWithIdempotency: () => {
+          createCalled = true
+          return Effect.succeed(project)
+        },
+        findById: () => Effect.die('find should not run'),
+        randomProjectId: () => projectId,
+        now: () => 2n,
+      },
+    ))
+
+    expect(createCalled).toBe(false)
+    expect(response?.status).toBe(400)
+    expect(await response?.json()).toEqual({ error: 'InvalidProjectCreateRequest' })
   })
 
   it('maps duplicate names to a bounded conflict response', async () => {

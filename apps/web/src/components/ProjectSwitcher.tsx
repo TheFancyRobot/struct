@@ -3,10 +3,12 @@ import { For, Show, type Component, type JSX } from 'solid-js'
 import type { ProjectId, ProjectSummary } from '@struct/domain'
 import { basePathFromPublicBaseUrl, withBasePath } from '../base-path'
 
+export type ProjectListState = 'loading' | 'ready' | 'unavailable'
+
 export interface ProjectSwitcherProps {
   readonly mode: 'root' | 'project'
   readonly projects: ReadonlyArray<ProjectSummary>
-  readonly projectsUnavailable?: boolean
+  readonly projectListState: ProjectListState
   readonly currentProjectId: ProjectId | null
   readonly currentProjectName?: string | null
   readonly creating: boolean
@@ -22,7 +24,10 @@ export const ProjectSwitcher: Component<ProjectSwitcherProps> = (props) => {
   const hasProjects = () => props.projects.length > 0
 
   return (
-    <section class="space-y-6 rounded-box border border-base-300 bg-base-100 p-4 shadow-sm sm:p-6">
+    <section
+      class="space-y-6 rounded-box border border-base-300 bg-base-100 p-4 shadow-sm sm:p-6"
+      aria-busy={props.projectListState === 'loading'}
+    >
       <header class="space-y-2">
         <h1 class="text-2xl font-semibold tracking-[-0.02em]">
           {props.mode === 'root'
@@ -32,15 +37,21 @@ export const ProjectSwitcher: Component<ProjectSwitcherProps> = (props) => {
               ?? 'Project'}
         </h1>
         <p class="text-sm text-base-content/70">
-          {props.projectsUnavailable
+          {props.projectListState === 'unavailable'
             ? 'Project list unavailable. Retry loading projects or create a new workspace foundation.'
-            : hasProjects()
-              ? 'Create a project or reopen an existing workspace foundation.'
-              : 'Create your first project to establish the workspace foundation.'}
+            : props.projectListState === 'loading'
+              ? 'Loading projects for this workspace.'
+              : hasProjects()
+                ? 'Create a project or reopen an existing workspace foundation.'
+                : 'Create your first project to establish the workspace foundation.'}
         </p>
       </header>
 
-      <Show when={!props.projectsUnavailable && hasProjects()}>
+      <Show when={props.projectListState === 'loading'}>
+        <p class="text-sm text-base-content/70" role="status" aria-live="polite">Loading projects…</p>
+      </Show>
+
+      <Show when={props.projectListState === 'ready' && hasProjects()}>
         <nav aria-label="Projects" class="space-y-2">
           <For each={props.projects}>
             {(project) => (

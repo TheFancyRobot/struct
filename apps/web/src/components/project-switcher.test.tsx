@@ -1,5 +1,4 @@
 /** @jsxImportSource solid-js */
-/* eslint-disable no-unused-vars -- Babel does not mark Solid JSX component imports as used. */
 import { describe, expect, it } from 'bun:test'
 import { renderToString } from 'solid-js/web'
 import { ProjectId } from '@struct/domain'
@@ -14,11 +13,28 @@ const projects = [
 ] as const
 
 describe('project switcher', () => {
+  it('renders a distinct loading state before the first project list settles', () => {
+    const html = renderToString(() => ProjectSwitcher({
+      mode: 'root',
+      projects: [],
+      currentProjectId: null,
+      creating: false,
+      createError: null,
+      enteredName: '',
+      projectListState: 'loading',
+    } as never))
+
+    expect(html).toContain('Loading projects')
+    expect(html).toContain('role="status"')
+    expect(html).not.toContain('Create your first project')
+  })
+
   it('renders the first-project empty state with one labelled create affordance', () => {
     const html = renderToString(() => (
       <ProjectSwitcher
         mode="root"
         projects={[]}
+        projectListState="ready"
         currentProjectId={null}
         creating={false}
         createError={null}
@@ -36,6 +52,7 @@ describe('project switcher', () => {
       <ProjectSwitcher
         mode="project"
         projects={projects}
+        projectListState="ready"
         currentProjectId={betaId}
         creating={false}
         createError="A project with this name already exists."
@@ -54,7 +71,7 @@ describe('project switcher', () => {
       <ProjectSwitcher
         mode="root"
         projects={[]}
-        projectsUnavailable
+        projectListState="unavailable"
         currentProjectId={null}
         creating={false}
         createError={null}

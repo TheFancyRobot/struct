@@ -141,7 +141,7 @@ export const projectRoute = Effect.fn('ProjectRoute.route')(function* (
       const key = yield* idempotencyKey(request)
       const body = yield* Effect.tryPromise({
         try: () => request.json() as Promise<unknown>,
-        catch: () => new Error('Invalid JSON body'),
+        catch: () => ({ _tag: 'ParseError' as const }),
       })
       const input = yield* Schema.decodeUnknown(CreateProjectRequest)(body)
       const now = deps.now()

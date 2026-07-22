@@ -5,7 +5,6 @@ import {
   ProjectListPage,
   ProjectSummary,
 } from '@struct/domain'
-import type * as typeDomain from '@struct/domain'
 import { apiPath, basePathFromPublicBaseUrl } from '../base-path'
 
 const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
@@ -23,7 +22,7 @@ async function decodeJson<A, I>(
   return Schema.decodeUnknownPromise(schema)(await response.json())
 }
 
-export async function fetchProjects(): Promise<typeDomain.ProjectListPage> {
+export async function fetchProjects(): Promise<typeof ProjectListPage.Type> {
   const response = await fetch(
     apiPath('/projects', appBasePath),
     { signal: AbortSignal.timeout(10_000) },
@@ -35,8 +34,8 @@ export async function fetchProjects(): Promise<typeDomain.ProjectListPage> {
 }
 
 export async function fetchProject(
-  projectId: typeDomain.ProjectId,
-): Promise<typeDomain.ProjectSummary | null> {
+  projectId: typeof ProjectId.Type,
+): Promise<typeof ProjectSummary.Type | null> {
   const response = await fetch(
     apiPath(`/projects/${projectId}`, appBasePath),
     { signal: AbortSignal.timeout(10_000) },
@@ -51,7 +50,7 @@ export async function fetchProject(
 export async function createProject(
   name: string,
   idempotencyKey: string,
-): Promise<typeDomain.ProjectSummary> {
+): Promise<typeof ProjectSummary.Type> {
   const request = await Schema.encodePromise(CreateProjectRequest)({ name })
   const response = await fetch(apiPath('/projects', appBasePath), {
     method: 'POST',
@@ -71,6 +70,6 @@ export async function createProject(
   return decodeJson(response, ProjectSummary)
 }
 
-export function makeProjectId(value: string): typeDomain.ProjectId {
+export function makeProjectId(value: string): typeof ProjectId.Type {
   return ProjectId.make(value)
 }

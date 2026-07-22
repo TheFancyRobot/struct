@@ -161,41 +161,20 @@ export class ProjectRepo extends Effect.Service<ProjectRepo>()('ProjectRepo', {
 
 const PROJECT_NAME_UNIQUE_INDEX = 'projects_workspace_name_ci_idx'
 
-interface ProjectCursorEnvelope {
-  readonly updatedAt: number
-  readonly nameFolded: string
-  readonly id: string
-}
-
 function foldProjectName(value: string): string {
   return value.toLocaleLowerCase('en-US')
 }
 
 function encodeProjectCursor(project: typeof Domain.Project.Type): typeof Domain.ProjectListCursor.Type {
-  return Buffer.from(JSON.stringify({
+  return Domain.encodeProjectListCursor({
     updatedAt: Number(project.updatedAt),
     nameFolded: foldProjectName(project.name),
     id: project.id,
-  } satisfies ProjectCursorEnvelope)).toString('base64url') as typeof Domain.ProjectListCursor.Type
+  })
 }
 
-function decodeProjectCursor(cursor: typeof Domain.ProjectListCursor.Type): ProjectCursorEnvelope {
-  const decoded = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'))
-  if (
-    typeof decoded !== 'object'
-    || decoded === null
-    || typeof decoded['updatedAt'] !== 'number'
-    || !Number.isFinite(decoded['updatedAt'])
-    || typeof decoded['nameFolded'] !== 'string'
-    || typeof decoded['id'] !== 'string'
-  ) {
-    throw new Error('Invalid project cursor')
-  }
-  return {
-    updatedAt: decoded['updatedAt'],
-    nameFolded: decoded['nameFolded'],
-    id: decoded['id'],
-  }
+function decodeProjectCursor(cursor: typeof Domain.ProjectListCursor.Type) {
+  return Domain.decodeProjectListCursor(cursor)
 }
 
 function uniqueViolationConstraint(error: unknown): string | null {

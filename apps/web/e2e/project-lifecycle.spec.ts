@@ -24,6 +24,88 @@ afterAll(async () => {
 })
 
 describe('project lifecycle browser path', () => {
+  it('keeps the home chooser in a loading state until the initial project list settles', async () => {
+    const page = await browser.newPage()
+    let releaseList!: () => void
+    const listGate = new Promise<void>((resolve) => {
+      releaseList = resolve
+    })
+
+    await page.route('**/api/projects', async (route) => {
+      if (!new URL(route.request().url()).pathname.endsWith('/api/projects')) {
+        await route.fallback()
+        return
+      }
+      if (route.request().method() !== 'GET') {
+        throw new Error('create should not run in initial loading test')
+      }
+      await listGate
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ items: [], nextCursor: null }),
+      })
+    })
+
+    await page.goto(origin)
+    await page.getByText('Loading projects…').waitFor()
+    expect(await page.getByRole('status').count()).toBeGreaterThan(0)
+    expect(await page.getByText('Create your first project').count()).toBe(0)
+
+    releaseList()
+    await page.getByText('Create your first project to establish the workspace foundation.').waitFor()
+    await page.close()
+  })
+
+  it('keeps the project switcher in a loading state until the initial project list settles', async () => {
+    const page = await browser.newPage()
+    let releaseList!: () => void
+    const listGate = new Promise<void>((resolve) => {
+      releaseList = resolve
+    })
+
+    await page.route('**/api/projects', async (route) => {
+      if (!new URL(route.request().url()).pathname.endsWith('/api/projects')) {
+        await route.fallback()
+        return
+      }
+      if (route.request().method() !== 'GET') {
+        throw new Error('create should not run in project-route loading test')
+      }
+      await listGate
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          items: [{ id: projectId, name: 'Café roadmap', createdAt: 1, updatedAt: 2 }],
+          nextCursor: null,
+        }),
+      })
+    })
+    await page.route(`**/api/projects/${projectId}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          id: projectId,
+          name: 'Café roadmap',
+          createdAt: 1,
+          updatedAt: 2,
+        }),
+      })
+    })
+
+    await page.goto(`${origin}/projects/${projectId}`)
+    await page.getByRole('heading', { level: 1, name: 'Café roadmap' }).waitFor()
+    await page.getByText('Loading projects…').waitFor()
+    expect(await page.getByRole('status').count()).toBeGreaterThan(0)
+    expect(await page.getByText('Create your first project').count()).toBe(0)
+
+    releaseList()
+    await page.getByRole('link', { name: 'Café roadmap' }).waitFor()
+    await page.close()
+  })
+
   it('creates a project, lands on the canonical route, reloads, and stores only the project id', async () => {
     const page = await browser.newPage()
     let listCalls = 0
@@ -346,6 +428,41 @@ describe('project lifecycle browser path', () => {
     alphaAvailable = true
     await page.getByRole('button', { name: 'Retry opening project' }).click()
     await page.getByRole('heading', { level: 2, name: alphaProject.name }).waitFor()
+    expect(await page.evaluate(() => window.localStorage.getItem('struct:last-project-id')))
+      .toBe(alphaProject.id)
+    await page.close()
+  })
+
+  it('preserves an unrelated cached last project when a direct project route is not found', async () => {
+    const page = await browser.newPage()
+    const alphaProject = { id: projectId, name: 'Alpha roadmap', createdAt: 1, updatedAt: 2 }
+
+    await page.addInitScript((cachedProjectId) => {
+      window.localStorage.setItem('struct:last-project-id', cachedProjectId)
+    }, alphaProject.id)
+
+    await page.route('**/api/projects', async (route) => {
+      if (!new URL(route.request().url()).pathname.endsWith('/api/projects')) {
+        await route.fallback()
+        return
+      }
+      if (route.request().method() !== 'GET') {
+        throw new Error('create should not run in not-found cache preservation test')
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ items: [alphaProject], nextCursor: null }),
+      })
+    })
+    await page.route(`**/api/projects/${betaProjectId}`, (route) => route.fulfill({
+      status: 404,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'ProjectNotFound' }),
+    }))
+
+    await page.goto(`${origin}/projects/${betaProjectId}`)
+    await page.getByText('This project is no longer available.').waitFor()
     expect(await page.evaluate(() => window.localStorage.getItem('struct:last-project-id')))
       .toBe(alphaProject.id)
     await page.close()
