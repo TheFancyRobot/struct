@@ -2,6 +2,7 @@
 import { Effect, Schema } from 'effect'
 import {
   CitationDetail,
+  DatasetCitationEvidence,
   JobQueueId,
   ResearchRunId,
   ResearchStatus,
@@ -26,6 +27,14 @@ const StartedResearch = Schema.Struct({
   jobId: JobQueueId,
   status: ResearchStatus,
 })
+const EvidenceDetail = Schema.Union(
+  Schema.Struct({ kind: Schema.Literal('document'), evidence: CitationDetail }),
+  Schema.Struct({
+    kind: Schema.Literal('dataset'),
+    evidence: DatasetCitationEvidence,
+  }),
+)
+export type EvidenceDetail = Schema.Schema.Type<typeof EvidenceDetail>
 
 async function researchJson(response: Response): Promise<unknown> {
   const body = await response.json()
@@ -108,6 +117,33 @@ export async function fetchCitation(
   }
   const body: unknown = await response.json()
   return Effect.runPromise(Schema.decodeUnknown(CitationDetail)(body))
+}
+
+export async function fetchEvidence(
+  projectId: typeDomain.ProjectId,
+  threadId: typeDomain.ResearchThreadId,
+  runId: typeDomain.ResearchRunId,
+  kind: 'document' | 'dataset',
+  evidenceId: string,
+): Promise<EvidenceDetail> {
+  const response = await fetch(
+    apiPath(
+      `/projects/${projectId}/research/${threadId}/runs/${runId}`
+      + `/evidence/${kind}/${evidenceId}`,
+      appBasePath,
+    ),
+    { signal: AbortSignal.timeout(10_000) },
+  )
+  if (!response.ok) {
+    throw new Error(
+      response.status === 404
+        ? 'This evidence is no longer available.'
+        : response.status === 409
+          ? 'This evidence no longer matches its immutable source.'
+          : 'Evidence could not be loaded. Try again.',
+    )
+  }
+  return Schema.decodeUnknownPromise(EvidenceDetail)(await response.json())
 }
 
 export async function fetchRecursiveAnalysis(

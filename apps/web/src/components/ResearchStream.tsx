@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars -- Babel's parser does not mark Solid JSX component imports as used. */
-import { A } from '@solidjs/router'
+import { A, useSearchParams } from '@solidjs/router'
 import {
   ErrorBoundary,
   For,
@@ -31,8 +31,9 @@ import {
 import { saveCompletedResearchFinding } from '../api/artifacts'
 import { RecursiveRunTimeline } from './RecursiveRunTimeline'
 import { PartialFindingsPanel } from './PartialFindingsPanel'
-import { researchCitationPath } from './citation-paths'
+import { evidenceSelection } from './evidence-selection'
 import { mergeRecursiveRead } from './recursive-progress-state'
+import { useWorkspaceState } from './workspace/workspace-state'
 interface ResearchStreamProps {
   readonly projectId: ProjectId
   readonly threadId: ResearchThreadId
@@ -81,6 +82,8 @@ const failureGuidance = (errorTag: string): string => {
 }
 
 export const ResearchStream: Component<ResearchStreamProps> = (props) => {
+  const workspace = useWorkspaceState()
+  const [, setSearchParams] = useSearchParams()
   const [state, setState] = createStore<{ events: ResearchEvent[] }>({ events: [] })
   const [recursiveRead, { refetch: refetchRecursive }] = createResource(
     () => [props.projectId, props.runId] as const,
@@ -247,6 +250,15 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
     }
   }
 
+  const openEvidence = (
+    kind: 'document' | 'dataset',
+    id: string,
+    trigger: HTMLButtonElement,
+  ) => {
+    workspace.setEvidenceTrigger(trigger)
+    setSearchParams({ evidence: evidenceSelection(kind, id) })
+  }
+
   return (
     <ErrorBoundary fallback={<div role="alert" class="alert alert-error">Progress could not be rendered.</div>}>
       <section aria-label="Research progress" class="space-y-5">
@@ -339,13 +351,28 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
                         <p>{completed().data.answer}</p>
                         <For each={completed().data.citations}>
                           {(citation, index) => (
-                            <A
+                            <button
+                              type="button"
                               class="link link-primary"
-                              href={researchCitationPath(props.projectId, props.threadId, citation.id)}
+                              onClick={(event) =>
+                                openEvidence('document', citation.id, event.currentTarget)}
                               aria-label={`Open citation ${index() + 1} in source version`}
                             >
                               Open citation {index() + 1}
-                            </A>
+                            </button>
+                          )}
+                        </For>
+                        <For each={completed().data.datasetCitations}>
+                          {(citation, index) => (
+                            <button
+                              type="button"
+                              class="link link-primary"
+                              onClick={(event) =>
+                                openEvidence('dataset', citation.id, event.currentTarget)}
+                              aria-label={`Open dataset citation ${index() + 1}`}
+                            >
+                              Open dataset citation {index() + 1}
+                            </button>
                           )}
                         </For>
                         <Show when={props.workspaceId}>

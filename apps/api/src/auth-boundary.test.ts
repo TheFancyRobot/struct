@@ -75,6 +75,7 @@ describe('API HTTP authentication boundary', () => {
     ['POST', `/api/projects/${guessedProjectId}/runs/run/cancel`],
     ['GET', `/api/projects/${guessedProjectId}/runs/run/recursive-analysis`],
     ['GET', `/api/projects/${guessedProjectId}/research/thread/citation/citation`],
+    ['GET', `/api/projects/${guessedProjectId}/research/thread/runs/run/evidence/document/citation`],
     ['GET', `/api/projects/${guessedProjectId}/dataset-queries`],
     ['GET', `/api/projects/${guessedProjectId}/findings`],
     ['GET', `/api/projects/${guessedProjectId}/reports/report/export`],

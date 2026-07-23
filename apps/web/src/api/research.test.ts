@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import {
   CitationId,
+  DatasetCitationId,
   JobQueueId,
   ProjectId,
   ResearchRunId,
@@ -11,6 +12,7 @@ import {
 import {
   cancelResearchRun,
   fetchCitation,
+  fetchEvidence,
   fetchRecursiveAnalysis,
   fetchResearchThread,
   submitResearch,
@@ -20,6 +22,9 @@ const originalFetch = globalThis.fetch
 const projectId = ProjectId.make('750e8400-e29b-41d4-a716-446655440001')
 const threadId = ResearchThreadId.make('750e8400-e29b-41d4-a716-446655440002')
 const citationId = CitationId.make('750e8400-e29b-41d4-a716-446655440003')
+const datasetCitationId = DatasetCitationId.make(
+  '750e8400-e29b-41d4-a716-446655440008',
+)
 const runId = ResearchRunId.make('750e8400-e29b-41d4-a716-446655440004')
 const workspaceId = WorkspaceId.make('750e8400-e29b-41d4-a716-446655440005')
 const sourceVersionId = SourceVersionId.make('750e8400-e29b-41d4-a716-446655440006')
@@ -62,6 +67,37 @@ describe('fetchCitation', () => {
     await expect(
       fetchCitation(projectId, threadId, citationId),
     ).rejects.toBe(networkFailure)
+  })
+})
+
+describe('fetchEvidence', () => {
+  it('uses the exact run-scoped document and dataset paths', async () => {
+    const urls: string[] = []
+    globalThis.fetch = Object.assign(
+      async (input: RequestInfo | URL) => {
+        urls.push(String(input))
+        return new Response('', { status: 404 })
+      },
+      { preconnect: originalFetch.preconnect },
+    )
+
+    await expect(
+      fetchEvidence(projectId, threadId, runId, 'document', citationId),
+    ).rejects.toThrow('no longer available')
+    await expect(
+      fetchEvidence(projectId, threadId, runId, 'dataset', datasetCitationId),
+    ).rejects.toThrow('no longer available')
+
+    expect(urls).toEqual([
+      expect.stringContaining(
+        `/projects/${projectId}/research/${threadId}/runs/${runId}`
+        + `/evidence/document/${citationId}`,
+      ),
+      expect.stringContaining(
+        `/projects/${projectId}/research/${threadId}/runs/${runId}`
+        + `/evidence/dataset/${datasetCitationId}`,
+      ),
+    ])
   })
 })
 
