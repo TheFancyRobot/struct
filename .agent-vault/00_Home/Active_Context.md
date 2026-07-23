@@ -5,7 +5,7 @@ contract_version: 1
 title: Active Context
 status: active
 created: '2026-07-17'
-updated: '2026-07-20'
+updated: '2026-07-23'
 tags:
   - agent-vault
   - home
@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-23._
 - Session in progress: [[05_Sessions/2026-07-23-044455-establish-workspace-and-project-lifecycle-codex|SESSION-2026-07-23-044455 Codex session for Establish Workspace and Project Lifecycle]] - owner: Codex - phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]] - updated: 2026-07-23
-- Current step: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_02_build-unified-three-pane-workspace-shell|STEP-10-02 Build Unified Three Pane Workspace Shell]] - status: planned - phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]
+- Current step: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle|STEP-10-01 Establish Workspace and Project Lifecycle]] - status: planned - phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]
 - Active phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: planned - updated: 2026-07-21
-- Also active: 25 more additional steps, 2 open release-blocking defects.
+- Also active: 25 more additional steps, 1 open release-blocking bug.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -40,9 +40,9 @@ _Last refreshed: 2026-07-23._
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
 - Phase 06 is completed, reviewed, and merged through STEP-06-06.
-- Phases 07–09 are complete and merged. BUG-0013's implementation remediation is complete, but release closure remains pending the real-stack journey evidence now tracked by BUG-0034 and BUG-0035; the tag and GitHub release action are intentionally unperformed.
+- Phases 07–09 are complete and merged. BUG-0013's implementation remediation is complete, but release closure remains pending the real-stack journey evidence now tracked by BUG-0035; the tag and GitHub release action are intentionally unperformed.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
-- Current correction: BUG-0013's implementation remediation is complete, but its release closure is not independently proven. PHASE-10 remains technical reference only while BUG-0034 and BUG-0035 keep the zero-defect release gate open; historical fixture-backed browser evidence is not sufficient for v1 release.
+- Current correction: BUG-0013's implementation remediation is complete, but its release closure is not independently proven. PHASE-10 remains technical reference only while BUG-0035 keeps the zero-defect release gate open; historical fixture-backed browser evidence is not sufficient for v1 release.
 
 ## Out Of Scope Right Now
 
@@ -58,24 +58,22 @@ _Last refreshed: 2026-07-23._
 ## Blockers
 
 <!-- AGENT-START:blockers -->
-- v1 release remains blocked by [[03_Bugs/BUG-0034_recursive-analysis-responsive-e2e-emits-unhandled-500-responses|BUG-0034 Recursive analysis responsive E2E emits unhandled 500 responses]] and [[03_Bugs/BUG-0035_v1-browser-journey-gate-stubs-every-api-route-instead-of-using-the-real-stack|BUG-0035 V1 browser journey gate stubs every API route instead of using the real stack]].
+- BUG-0035 remains an unresolved release blocker. PR #72 also requires resolution of its actionable review feedback before merge.
 <!-- AGENT-END:blockers -->
 
 ## Open Questions
 
 - No unresolved design question remains in the completed Phase 09 work.
-- PHASE-10 refinement has no unresolved design question. BUG-0013's implementation remediation is complete, while BUG-0034 and BUG-0035 are the confirmed release blockers.
+- PHASE-10 refinement has no unresolved design question. BUG-0013's implementation remediation is complete, while BUG-0035 is the confirmed release blocker.
 
 ## Critical Bugs
 
 <!-- AGENT-START:critical-bugs -->
-- No open severity-critical bugs. The following sev-3 defects are release-blocking under the zero-defect gate:
-- [[03_Bugs/BUG-0034_recursive-analysis-responsive-e2e-emits-unhandled-500-responses|BUG-0034 Recursive analysis responsive E2E emits unhandled 500 responses]] - status: confirmed - severity: sev-3 - reported: 2026-07-23
-- [[03_Bugs/BUG-0035_v1-browser-journey-gate-stubs-every-api-route-instead-of-using-the-real-stack|BUG-0035 V1 browser journey gate stubs every API route instead of using the real stack]] - status: confirmed - severity: sev-3 - reported: 2026-07-23
+- No open severity-critical bugs. BUG-0035 is release-blocking.
 <!-- AGENT-END:critical-bugs -->
 
 ## Next Actions
 
-- Remediate BUG-0034 so the recursive-analysis browser suite stops emitting unexpected 500 responses during responsive coverage.
-- Replace the fixture-backed `workspace-release.spec.ts` gate with a real-stack browser journey that satisfies the Phase 10 release contract.
-- Keep the release checklist open until BUG-0034 and BUG-0035 are fixed and the complete real browser journey passes; only then activate Phase 10 or perform the v1.0 release action.
+- Resolve all actionable feedback on PR #72, then merge the BUG-0034 remediation.
+- Replace the fixture-backed `workspace-release.spec.ts` gate with a real-stack browser journey for BUG-0035.
+- Keep the release checklist open until BUG-0035 is fixed and the complete real browser journey passes; only then activate Phase 10 or perform the v1.0 release action.
