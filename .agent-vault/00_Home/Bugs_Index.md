@@ -29,12 +29,15 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 <!-- AGENT-START:bugs-index -->
 _Last rebuilt: 2026-07-23._
 
-- Notes indexed: 19
-- Status summary: confirmed (1), fixed (18)
+- Notes indexed: 22
+- Status summary: new (2), fixed (20)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
-| BUG-0013 | [v1 UI lacks core research workflows](../03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows.md) | confirmed | sev-1 | 2026-07-21 | - | - |
+| BUG-0034 | [Recursive analysis responsive E2E emits unhandled 500 responses](../03_Bugs/BUG-0034_recursive-analysis-responsive-e2e-emits-unhandled-500-responses.md) | new | sev-3 | 2026-07-23 | - | - |
+| BUG-0035 | [V1 browser journey gate stubs every API route instead of using the real stack](../03_Bugs/BUG-0035_v1-browser-journey-gate-stubs-every-api-route-instead-of-using-the-real-stack.md) | new | sev-3 | 2026-07-23 | - | - |
+| BUG-0013 | [v1 UI lacks core research workflows](../03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows.md) | fixed | sev-1 | 2026-07-21 | 2026-07-23 | - |
+| BUG-0033 | [E2E project lifecycle cache test asserts a nonexistent level-two project heading](../03_Bugs/BUG-0033_e2e-project-lifecycle-cache-test-asserts-a-nonexistent-level-two-project-heading.md) | fixed | sev-3 | 2026-07-23 | 2026-07-23 | - |
 | BUG-0032 | [E2E build artifacts break canonical lint gate](../03_Bugs/BUG-0032_e2e-build-artifacts-break-canonical-lint-gate.md) | fixed | sev-3 | 2026-07-22 | 2026-07-22 | - |
 | BUG-0012 | [Frontend loads DaisyUI but bypasses its component framework](../03_Bugs/BUG-0012_frontend-loads-daisyui-but-bypasses-its-component-framework.md) | fixed | sev-3 | 2026-07-21 | 2026-07-21 | - |
 | BUG-0014 | [Documentation roadmap links point to removed phase paths](../03_Bugs/BUG-0014_documentation-roadmap-links-point-to-removed-phase-paths.md) | fixed | sev-3 | 2026-07-21 | 2026-07-21 | - |

@@ -395,25 +395,25 @@ describe('project lifecycle browser path', () => {
     }))
 
     await page.goto(`${origin}/projects/${projectId}`)
-    await page.getByRole('heading', { level: 2, name: alphaProject.name }).waitFor()
+    await page.getByRole('heading', { level: 1, name: alphaProject.name }).waitFor()
     expect(await page.evaluate(() => window.localStorage.getItem('struct:last-project-id')))
       .toBe(alphaProject.id)
 
     await page.getByRole('link', { name: betaProject.name }).click()
     await page.waitForURL(`**/projects/${betaProjectId}`)
-    await page.getByRole('heading', { level: 2, name: betaProject.name }).waitFor()
+    await page.getByRole('heading', { level: 1, name: betaProject.name }).waitFor()
     expect(await page.evaluate(() => window.localStorage.getItem('struct:last-project-id')))
       .toBe(betaProject.id)
 
     await page.goBack()
     await page.waitForURL(`**/projects/${projectId}`)
-    await page.getByRole('heading', { level: 2, name: alphaProject.name }).waitFor()
+    await page.getByRole('heading', { level: 1, name: alphaProject.name }).waitFor()
     expect(await page.evaluate(() => window.localStorage.getItem('struct:last-project-id')))
       .toBe(alphaProject.id)
 
     await page.goForward()
     await page.waitForURL(`**/projects/${betaProjectId}`)
-    await page.getByRole('heading', { level: 2, name: betaProject.name }).waitFor()
+    await page.getByRole('heading', { level: 1, name: betaProject.name }).waitFor()
     expect(await page.evaluate(() => window.localStorage.getItem('struct:last-project-id')))
       .toBe(betaProject.id)
 
@@ -427,7 +427,13 @@ describe('project lifecycle browser path', () => {
 
     alphaAvailable = true
     await page.getByRole('button', { name: 'Retry opening project' }).click()
-    await page.getByRole('heading', { level: 2, name: alphaProject.name }).waitFor()
+    await page.waitForFunction(
+      ([storageKey, expectedProjectId]) => window.localStorage.getItem(storageKey) === expectedProjectId,
+      [
+        'struct:last-project-id',
+        alphaProject.id,
+      ],
+    )
     expect(await page.evaluate(() => window.localStorage.getItem('struct:last-project-id')))
       .toBe(alphaProject.id)
     await page.close()
