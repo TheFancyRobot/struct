@@ -48,13 +48,20 @@ describe('workspace shell browser contract', () => {
         expect(await page.locator('html').getAttribute('data-theme')).toBe(theme)
         expect(await page.locator('.app-shell').getAttribute('data-theme')).toBe(theme)
 
-        const overflow = await page.evaluate(() => ({
+        const layout = await page.evaluate(() => ({
           viewport: window.innerWidth,
           html: document.documentElement.scrollWidth,
           body: document.body.scrollWidth,
+          undersizedControls: [...document.querySelectorAll<HTMLElement>(
+            '.app-shell button:not([disabled]), .app-shell a[href]',
+          )].filter((element) => {
+            const { width: controlWidth, height: controlHeight } = element.getBoundingClientRect()
+            return element.offsetParent !== null && (controlWidth < 44 || controlHeight < 44)
+          }).map((element) => element.getAttribute('aria-label') ?? element.textContent?.trim()),
         }))
-        expect(overflow.html).toBeLessThanOrEqual(overflow.viewport)
-        expect(overflow.body).toBeLessThanOrEqual(overflow.viewport)
+        expect(layout.html).toBeLessThanOrEqual(layout.viewport)
+        expect(layout.body).toBeLessThanOrEqual(layout.viewport)
+        expect(layout.undersizedControls).toEqual([])
         await page.close()
       }
     }
