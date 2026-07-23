@@ -48,7 +48,11 @@ const App: ParentComponent = (props) => {
 
   return (
     <WorkspaceStateProvider projectId={projectId()}>
-      <WorkspaceShell theme={theme()} onToggleTheme={toggleTheme}>
+      <WorkspaceShell
+        theme={theme()}
+        onToggleTheme={toggleTheme}
+        currentPathname={location.pathname}
+      >
         {props.children}
       </WorkspaceShell>
     </WorkspaceStateProvider>

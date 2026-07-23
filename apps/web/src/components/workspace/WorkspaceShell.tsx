@@ -12,6 +12,7 @@ function focus(element: HTMLElement | undefined): void {
 }
 
 export const WorkspaceNavigation: ParentComponent<{
+  readonly currentPathname?: string
   readonly headingRef: (element: HTMLHeadingElement) => void
   readonly onCloseSheet: () => void
   readonly onCollapse: () => void
@@ -20,6 +21,8 @@ export const WorkspaceNavigation: ParentComponent<{
   const projectPath = () => state.projectId() === null
     ? '/'
     : `/projects/${state.projectId()}`
+  const isCurrent = (path: string) =>
+    props.currentPathname === withBasePath(path, appBasePath)
 
   return (
     <nav
@@ -56,11 +59,15 @@ export const WorkspaceNavigation: ParentComponent<{
         <Show when={state.projectId() !== null}>
           <li class="menu-title mt-3 text-xs">Project</li>
           <li>
-            <a href={withBasePath(projectPath(), appBasePath)} aria-current="page">
+            <a href={withBasePath(projectPath(), appBasePath)} aria-current={isCurrent(projectPath()) ? 'page' : undefined}>
               Conversation
             </a>
           </li>
-          <li><button type="button" disabled>Sources</button></li>
+          <li>
+            <a href={withBasePath(`${projectPath()}/sources`, appBasePath)} aria-current={isCurrent(`${projectPath()}/sources`) ? 'page' : undefined}>
+              Sources
+            </a>
+          </li>
           <li><button type="button" disabled>Notes</button></li>
           <li><button type="button" disabled>Reports</button></li>
         </Show>
@@ -185,6 +192,7 @@ export const EvidenceInspector: ParentComponent<{
 )
 
 export const WorkspaceShell: ParentComponent<{
+  readonly currentPathname?: string
   readonly theme: Theme
   readonly onToggleTheme: () => void
 }> = (props) => {
@@ -258,7 +266,8 @@ export const WorkspaceShell: ParentComponent<{
           'md:hidden': state.navigationCollapsed(),
         }}
       >
-        <WorkspaceNavigation
+      <WorkspaceNavigation
+        currentPathname={props.currentPathname}
           headingRef={(element) => { navigationHeading = element }}
           onCloseSheet={closeNavigationSheet}
           onCollapse={() => {

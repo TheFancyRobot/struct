@@ -1,4 +1,5 @@
 import { Effect } from 'effect'
+import { posix } from 'node:path'
 import {
   JobQueueId,
   SourceId,
@@ -6,6 +7,7 @@ import {
   ValidationError,
   AuthorizationError,
   isSupportedSourceUpload,
+  normalizeBrowserRelativePath,
   type ProjectId,
   type WorkspaceId,
   type Source,
@@ -59,12 +61,7 @@ export interface RegisterTextSourceDeps {
 }
 
 function isSafeUploadName(name: string): boolean {
-  return name.length > 0
-    && !name.includes('\0')
-    && !name.includes('/')
-    && !name.includes('\\')
-    && name !== '.'
-    && name !== '..'
+  return normalizeBrowserRelativePath(name) !== null
 }
 
 const mapUnknown = (operation: string) => (cause: unknown): ValidationError => {
@@ -92,7 +89,7 @@ export const registerTextSource = (
       return yield* new AuthorizationError({ detail: 'workspace-project-mismatch', message: 'Project does not belong to the supplied workspace' })
     }
 
-    const staged = yield* deps.storage.stageObject(input.name, input.bytes, { mediaType: input.mediaType }).pipe(
+    const staged = yield* deps.storage.stageObject(posix.basename(input.name), input.bytes, { mediaType: input.mediaType }).pipe(
       Effect.mapError(mapUnknown('stage upload')),
     )
     const now = deps.now()

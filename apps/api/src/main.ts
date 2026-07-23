@@ -20,6 +20,7 @@ import {
   ResearchExecutionRepo,
   ResearchProjectionRepo,
   SourceRegistrationRepo,
+  SourceCatalogRepo,
   SqlClientLive,
 } from '@struct/persistence'
 import {
@@ -76,6 +77,11 @@ import {
 } from './auth'
 import { projectRoute } from './routes/projects'
 import { registerTextSource } from './routes/sources'
+import { decodeBrowserSourceImport } from './routes/browser-source-import'
+import {
+  loadSourceCatalog,
+  sourceActivityResponse,
+} from './routes/source-catalog'
 import {
   decodeDirectoryRegistrationScope,
   registerDirectory,
@@ -105,14 +111,6 @@ import {
 import { durableArtifactRoute } from './routes/durable-artifacts'
 import { reportExportRoute } from './routes/report-export'
 
-interface RegisterRequestBody {
-  readonly workspaceId?: unknown
-  readonly projectId?: unknown
-  readonly name?: unknown
-  readonly mediaType?: unknown
-  readonly contentBase64?: unknown
-}
-
 interface ResearchRequestBody {
   readonly workspaceId?: unknown
   readonly projectId?: unknown
@@ -124,30 +122,6 @@ function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { 'Content-Type': 'application/json' },
-  })
-}
-
-function parseBody(body: RegisterRequestBody): Effect.Effect<{
-  readonly workspaceId: typeof WorkspaceId.Type
-  readonly projectId: typeof ProjectId.Type
-  readonly name: string
-  readonly mediaType: string
-  readonly bytes: Uint8Array
-}, Error, never> {
-  return Effect.try({
-    try: () => {
-      if (typeof body.workspaceId !== 'string' || typeof body.projectId !== 'string') throw new Error('workspaceId and projectId are required')
-      if (typeof body.name !== 'string' || typeof body.mediaType !== 'string') throw new Error('name and mediaType are required')
-      if (typeof body.contentBase64 !== 'string') throw new Error('contentBase64 is required')
-      return {
-        workspaceId: Schema.decodeUnknownSync(WorkspaceId)(body.workspaceId),
-        projectId: Schema.decodeUnknownSync(ProjectId)(body.projectId),
-        name: body.name,
-        mediaType: body.mediaType,
-        bytes: Uint8Array.from(Buffer.from(body.contentBase64, 'base64')),
-      }
-    },
-    catch: () => new Error('Invalid source registration payload'),
   })
 }
 
@@ -234,6 +208,7 @@ const server = Effect.gen(function* () {
   const sqlLayer = SqlClientLive(sql)
   const projectLayer = Layer.provide(ProjectRepo.Default, sqlLayer)
   const registrationLayer = Layer.provide(SourceRegistrationRepo.Default, sqlLayer)
+  const sourceCatalogLayer = Layer.provide(SourceCatalogRepo.Default, sqlLayer)
   const researchLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
   const projectionLayer = Layer.provide(ResearchProjectionRepo.Default, sqlLayer)
   const directoryControlLayer = Layer.provide(
@@ -624,26 +599,112 @@ const server = Effect.gen(function* () {
       }
 
       const sourceRoute = /^\/api\/projects\/([^/]+)\/sources$/.exec(url.pathname)
+      if (sourceRoute !== null && req.method === 'GET') {
+        const projectId = Schema.decodeUnknownSync(ProjectId)(sourceRoute[1])
+        const exit = await Runtime.runPromiseExit(effectRuntime)(
+          loadSourceCatalog(identity.workspaceId, projectId, {
+            list: (workspaceId, scopedProjectId) =>
+              SourceCatalogRepo.list(workspaceId, scopedProjectId).pipe(
+                Effect.provide(sourceCatalogLayer),
+              ),
+          }),
+        )
+        return exit._tag === 'Failure'
+          ? jsonResponse({ error: 'SourceCatalogUnavailable' }, 503)
+          : jsonResponse(exit.value)
+      }
+
+      const sourceActivityRoute =
+        /^\/api\/projects\/([^/]+)\/source-activity$/.exec(url.pathname)
+      if (sourceActivityRoute !== null && req.method === 'GET') {
+        const cursor = parseEventCursor(url.searchParams.get('cursor'))
+        if (cursor === undefined) {
+          return jsonResponse({ error: 'InvalidSourceActivityCursor' }, 400)
+        }
+        const projectId = Schema.decodeUnknownSync(ProjectId)(
+          sourceActivityRoute[1],
+        )
+        return sourceActivityResponse(
+          identity.workspaceId,
+          projectId,
+          cursor,
+          {
+            listEventsAfter: (workspaceId, scopedProjectId, after, limit) =>
+              SourceCatalogRepo.listEventsAfter(
+                workspaceId,
+                scopedProjectId,
+                after,
+                limit,
+              ).pipe(Effect.provide(sourceCatalogLayer)),
+          },
+          req.signal,
+        )
+      }
+
+      const sourceJobCommandRoute =
+        /^\/api\/projects\/([^/]+)\/source-jobs\/([^/]+)\/(cancel|retry)$/
+          .exec(url.pathname)
+      if (sourceJobCommandRoute !== null && req.method === 'POST') {
+        const decoded = Effect.try({
+          try: () => ({
+            projectId: Schema.decodeUnknownSync(ProjectId)(
+              sourceJobCommandRoute[1],
+            ),
+            jobId: Schema.decodeUnknownSync(JobQueueId)(
+              sourceJobCommandRoute[2],
+            ),
+            command: sourceJobCommandRoute[3] as 'cancel' | 'retry',
+          }),
+          catch: () => new ValidationError({
+            field: 'sourceJob',
+            reason: 'invalid-scope',
+            message: 'Source job scope is invalid',
+          }),
+        })
+        const exit = await Runtime.runPromiseExit(effectRuntime)(
+          decoded.pipe(Effect.flatMap((scope) =>
+            SourceCatalogRepo.controlJob(
+              identity.workspaceId,
+              scope.projectId,
+              scope.jobId,
+              scope.command,
+              EventJournalId.make(crypto.randomUUID()),
+              BigInt(Date.now()),
+            ).pipe(Effect.provide(sourceCatalogLayer)))),
+        )
+        if (exit._tag === 'Failure') {
+          return jsonResponse({ error: 'SourceJobControlUnavailable' }, 503)
+        }
+        return exit.value
+          ? jsonResponse({ status: 'accepted' }, 202)
+          : jsonResponse({ error: 'SourceJobNotFound' }, 404)
+      }
+
       if (sourceRoute !== null && req.method === 'POST') {
         const program = Effect.gen(function* () {
-          const body = yield* Effect.tryPromise({
-            try: () => req.json() as Promise<RegisterRequestBody>,
-            catch: () => new Error('Invalid JSON body'),
+          const parsed = yield* Effect.tryPromise({
+            try: () => decodeBrowserSourceImport(req, maxBytes),
+            catch: () => new ValidationError({
+              field: 'sourceImport',
+              reason: 'invalid',
+              message: 'Invalid browser source import',
+            }),
           })
-          const parsed = yield* parseBody(body)
-          yield* authorizeWorkspace(identity, parsed.workspaceId)
-          if (parsed.projectId !== sourceRoute[1]) {
-            return yield* Effect.fail(new Error('Project scope mismatch'))
-          }
-          const registered = yield* Effect.gen(function* () {
+          const projectId = yield* Schema.decodeUnknown(ProjectId)(sourceRoute[1])
+          const results = yield* Effect.forEach(parsed.items, (item) =>
+            Effect.either(Effect.gen(function* () {
               const registered = yield* withWalkingSliceSpan(
                 'command',
                 {
-                  workspaceId: parsed.workspaceId,
-                  projectId: parsed.projectId,
+                  workspaceId: identity.workspaceId,
+                  projectId,
                 },
                 Effect.gen(function* () {
-                  const registered = yield* registerTextSource(parsed, {
+                  const registered = yield* registerTextSource({
+                    workspaceId: identity.workspaceId,
+                    projectId,
+                    ...item,
+                  }, {
                     now: () => BigInt(Date.now()),
                     randomUuid: () => SourceId.make(crypto.randomUUID()),
                     randomJobQueueId: () =>
@@ -679,29 +740,43 @@ const server = Effect.gen(function* () {
               yield* logWalkingSlice({
                 event: 'source.registration.accepted',
                 identity: {
-                  workspaceId: parsed.workspaceId,
-                  projectId: parsed.projectId,
+                  workspaceId: identity.workspaceId,
+                  projectId,
                   sourceId: registered.source.id,
                   jobId: registered.job.id,
                 },
               })
               return registered
-            })
-          return registered
+            })))
+          return {
+            accepted: results.flatMap((result, index) =>
+              result._tag === 'Right'
+                ? [{
+                    sourceId: result.right.source.id,
+                    jobId: result.right.job.id,
+                    name: parsed.items[index]!.name,
+                  }]
+                : []),
+            rejected: [
+              ...parsed.rejected,
+              ...results.flatMap((result, index) =>
+                result._tag === 'Left'
+                  ? [{
+                      name: parsed.items[index]!.name,
+                      reason: result.left instanceof ValidationError
+                        ? result.left.reason
+                        : 'registration-failed',
+                    }]
+                  : []),
+            ],
+          }
         })
 
         const exit = await Runtime.runPromiseExit(effectRuntime)(program)
         if (exit._tag === 'Failure') {
-          const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
-          return failure instanceof ApiAuthorizationError
-            ? jsonResponse({ error: 'ResourceNotFound' }, 404)
-            : jsonResponse({ error: 'SourceRegistrationFailed' }, 400)
+          return jsonResponse({ error: 'SourceRegistrationFailed' }, 400)
         }
-        return jsonResponse({
-          sourceId: exit.value.source.id,
-          jobId: exit.value.job.id,
-          eventType: exit.value.event.eventType,
-        }, 202)
+        return jsonResponse(exit.value, exit.value.accepted.length > 0 ? 202 : 200)
       }
 
       const researchRoute = /^\/api\/projects\/([^/]+)\/research$/.exec(url.pathname)

@@ -9,6 +9,7 @@ import {
   AuthorizationError,
   isCanonicalStagedArtifactRef,
   isSupportedSourceUpload,
+  normalizeBrowserRelativePath,
   ValidationError,
 } from '@struct/domain'
 import { QueryError, type PersistenceError } from '../errors.js'
@@ -146,14 +147,7 @@ function isSafeSourceName(value: unknown): value is string {
   return typeof value === 'string'
     && value.length > 0
     && value.length <= MAX_SOURCE_NAME_LENGTH
-    && !Array.from(value).some((character) => {
-      const codePoint = character.codePointAt(0)
-      return codePoint !== undefined && (codePoint <= 31 || codePoint === 127)
-    })
-    && !value.includes('/')
-    && !value.includes('\\')
-    && value !== '.'
-    && value !== '..'
+    && normalizeBrowserRelativePath(value) !== null
 }
 
 function validateRegistrationAggregate(
