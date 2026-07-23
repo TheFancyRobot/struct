@@ -4,7 +4,7 @@ template_version: 2
 contract_version: 1
 title: Recursive analysis responsive E2E emits unhandled 500 responses
 bug_id: BUG-0034
-status: new
+status: confirmed
 severity: sev-3
 category: logic
 reported_on: '2026-07-23'
@@ -31,41 +31,54 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- `bun run test:e2e` now fails in the recursive-analysis browser suite because the responsive coverage test records two unexpected browser-console 500s before it asserts `consoleErrors === []`.
+- Focused reproduction with `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts` fails the first case at `apps/web/e2e/recursive-analysis.spec.ts:253` with `Received  + 4` / two `Failed to load resource: the server responded with a status of 500 (Internal Server Error)` entries, while the other five specs still pass.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- The responsive recursive-analysis journey should complete at desktop, tablet, and mobile widths without unexpected console errors, page errors, failed requests, or HTTP 5xx responses.
+- `bun run test:e2e` and the focused recursive-analysis command should stay green without relying on tolerated console noise.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. From the repository root, run `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts`.
+2. Observe the first case, `renders responsive light and dark workbenches without overflow`, while the harness iterates width/theme pairs after `routeProgress(page)`.
+3. The run fails at line 253 because `consoleErrors` contains two `500 (Internal Server Error)` entries; Bun reports `5 pass, 1 fail` in 3.32s.
+4. Canonical confirmation: `bun run test:e2e` also fails on the same recursive-analysis responsive path, and the lead independently observed the failure twice.
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- Affects `apps/web/e2e/recursive-analysis.spec.ts`, especially the responsive regression that is part of the browser evidence for recursive research work.
+- Breaks the canonical `bun run test:e2e` gate, so PR validation and release-readiness evidence cannot pass cleanly.
+- Leaves the repository in a zero-defect-blocked state even though the other recursive-analysis specs continue to pass.
 
 ## Suspected Root Cause
 
-- Record current theories and assumptions.
+- The spec assumes its page-level route stubs fully isolate the recursive-analysis screen, but the live EventSource/proxy path still emits real 500 responses during the responsive journey.
+- Because the first test treats any console error as fatal, even recoverable SSE/proxy failures surface as a deterministic suite failure.
 
 ## Confirmed Root Cause
 
-- Record the proven cause and decisive evidence.
+- `apps/web/e2e/recursive-analysis.spec.ts` uses `routeProgress(page)` to fulfill `**/api/projects/${projectId}/runs/${runId}/events*` with a heartbeat stream, then asserts `consoleErrors` is empty in the responsive test (`apps/web/e2e/recursive-analysis.spec.ts:180-190,224-253`).
+- The same file separately encodes the product's reconnect/error path by fulfilling `/events` with HTTP 500 in `shows loading, reconnect, and recoverable read-error states` (`apps/web/e2e/recursive-analysis.spec.ts:353-377`), which matches the exact console symptom now appearing in the responsive run.
+- The built web server proxies `/api/.../events` requests upstream with a server-only bearer token (`apps/web/src/server.ts`, `proxyApiRequest`), but `startAppServer` only boots the built web app and no API backend (`apps/web/e2e/support/app-server.ts:54-88`). The decisive evidence is the focused failing command output: the responsive test receives two real `500 (Internal Server Error)` resource failures and stops at the zero-console-error assertion even though the other five specs pass.
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- There is no acceptable release workaround. Developers can reproduce or debug with the focused recursive-analysis command instead of the full E2E suite, but the canonical gate must stay red until the unexpected 500s are removed or the harness is corrected.
+- Ignoring the console errors would hide a real browser/network defect and violate the zero-defect release gate.
 
 ## Permanent Fix Plan
 
-- Describe the intended durable fix.
+- Trace the recursive-analysis responsive run end to end, identify which `/events` request bypasses or outlives the intended test stub, and make the harness deterministic for every viewport/theme iteration.
+- Either provide a real bounded backend for the recursive-analysis SSE path or switch the browser hook/test seam so the responsive spec does not depend on a half-live proxy route.
+- Keep the `consoleErrors === []`, `pageErrors === []`, and `failedRequests === []` assertions once the source of the 500s is fixed.
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
+- Red: `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts` must reproduce the two-console-500 failure until the fix lands.
+- Green: the same command must return `6 pass, 0 fail` with no unexpected console or request failures.
+- Green: `bun run test:e2e` must pass after the focused fix so the canonical browser gate is restored.
 
 ## Related Notes
 
@@ -78,4 +91,6 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-23 - Reported.
+- 2026-07-23 - Reproduced with `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts`: first case failed at `apps/web/e2e/recursive-analysis.spec.ts:253` because `consoleErrors` contained two `Failed to load resource: the server responded with a status of 500 (Internal Server Error)` entries; Bun summary: `5 pass, 1 fail`.
+- 2026-07-23 - Canonical evidence remained blocked: lead confirmed `bun run test:e2e` failed twice on the same recursive-analysis responsive path.
 <!-- AGENT-END:bug-timeline -->
