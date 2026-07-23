@@ -1,21 +1,25 @@
 import { describe, expect, it } from 'bun:test'
+import { execFileSync } from 'node:child_process'
 import { mkdir } from 'node:fs/promises'
-import { createConnection, type Socket } from 'node:net'
+import { createConnection } from 'node:net'
 import { dirname, join } from 'node:path'
 import { DatasetSnapshotId, Sha256Digest } from '@struct/domain'
 import {
   DATA_ENGINE_PROTOCOL_VERSION,
   type MaterializeRequest,
 } from '../src/protocol.js'
+import { canonicalExpectedEngineConfigHash } from '../src/runtime-identity.js'
 
-const run = process.env['DATA_ENGINE_INTEGRATION'] === '1'
+const run = Bun.env['DATA_ENGINE_INTEGRATION'] === '1'
 const suite = run ? describe : describe.skip
-const token = 'struct-local-data-engine-token'
+const token = Bun.env['DATA_ENGINE_TOKEN'] ?? 'struct-local-data-engine-token'
 const fixturePath = join(
   process.cwd(),
   'packages/data-engine/test/fixtures/records.json',
 )
 const snapshotId = DatasetSnapshotId.make('550e8400-e29b-41d4-a716-446655440003')
+const engineAdapterVersion = '@duckdb/node-api@1.5.4-r.1' as const
+const executionPolicyVersion = 1 as const
 
 async function fixtureInput() {
   const bytes = await Bun.file(fixturePath).bytes()
@@ -35,7 +39,7 @@ async function storeInput(bytes: Uint8Array) {
   return { digest, bytes }
 }
 
-async function openIncompleteMaterialization(): Promise<Socket> {
+async function openIncompleteMaterialization(): Promise<ReturnType<typeof createConnection>> {
   return new Promise((resolve, reject) => {
     const socket = createConnection({ host: '127.0.0.1', port: 4300 })
     socket.once('error', reject)
@@ -114,6 +118,65 @@ async function hostRequest(input: {
     status: response.status,
     json: JSON.parse(new TextDecoder().decode(bytes)) as unknown,
   }
+}
+
+function readParquetLineageInContainer(digest: string) {
+  const containerPath = `/artifacts/objects/sha256/${digest.slice(0, 2)}/${digest}`
+  return JSON.parse(execFileSync('docker', [
+    'exec',
+    'struct-data-engine',
+    'node',
+    '--input-type=module',
+    '-e',
+    `import { DuckDBInstance } from '@duckdb/node-api'
+const db = await DuckDBInstance.create(':memory:')
+const connection = await db.connect()
+const reader = await connection.runAndReadAll(\`SELECT id, __struct_source_ordinal, __struct_source_record_ordinal, __struct_source_pointer, __struct_record_id FROM read_parquet('${containerPath}') ORDER BY id\`)
+await reader.readAll()
+process.stdout.write(JSON.stringify(reader.getRowsJson()))
+connection.disconnectSync()
+db.closeSync()`], { encoding: 'utf8' })) as unknown[]
+}
+
+async function createLegacyMixedCaseReservedParquetArtifact() {
+  const temporaryParquetPath = join(
+    process.cwd(),
+    '.local/artifacts/tmp',
+    `mixed-case-reserved-${Date.now()}.parquet`,
+  )
+  const containerParquetPath = `/scratch/tmp/mixed-case-reserved-${Date.now()}.parquet`
+  await mkdir(dirname(temporaryParquetPath), { recursive: true })
+  execFileSync('docker', [
+    'exec',
+    'struct-data-engine',
+    'node',
+    '--input-type=module',
+    '-e',
+    `import { DuckDBInstance } from '@duckdb/node-api'
+const db = await DuckDBInstance.create(':memory:')
+const connection = await db.connect()
+await connection.run(\`COPY (
+  SELECT 1 AS id, 'legacy-record-id' AS "__STRUCT_RECORD_ID"
+) TO '${containerParquetPath}' (FORMAT PARQUET, COMPRESSION ZSTD)\`)
+connection.disconnectSync()
+db.closeSync()`,
+  ], { encoding: 'utf8' })
+  execFileSync('docker', [
+    'cp',
+    `struct-data-engine:${containerParquetPath}`,
+    temporaryParquetPath,
+  ], { encoding: 'utf8' })
+  const bytes = await Bun.file(temporaryParquetPath).bytes()
+  const digest = new Bun.CryptoHasher('sha256').update(bytes).digest('hex')
+  const artifactPath = join(
+    process.cwd(),
+    '.local/artifacts/objects/sha256',
+    digest.slice(0, 2),
+    digest,
+  )
+  await mkdir(dirname(artifactPath), { recursive: true })
+  await Bun.write(artifactPath, bytes)
+  return { digest }
 }
 
 suite('data-engine sidecar', () => {
@@ -332,8 +395,12 @@ suite('data-engine sidecar', () => {
     ])
     expect(firstQuery.result['truncated']).toBe(false)
     expect(firstQuery.result['engineVersion']).toBe('duckdb-1.5.4')
-    expect(firstQuery.result['engineConfigHash']).toMatch(
-      /^sha256:[a-f0-9]{64}$/,
+    expect(firstQuery.result['engineAdapterVersion']).toBe(engineAdapterVersion)
+    expect(firstQuery.result['executionPolicyVersion']).toBe(
+      executionPolicyVersion,
+    )
+    expect(firstQuery.result['engineConfigHash']).toBe(
+      canonicalExpectedEngineConfigHash(query.limits),
     )
     const expectedArtifactHash = new Bun.CryptoHasher('sha256')
       .update(`${JSON.stringify({
@@ -597,6 +664,223 @@ suite('data-engine sidecar', () => {
 
     const unauthenticatedHealth = await hostRequest({ path: '/healthz' })
     expect(unauthenticatedHealth.status).toBe(401)
+  }, 20_000)
+
+  it('keeps per-record lineage in parquet for json/jsonl/csv while hiding reserved columns from query views', async () => {
+    const cases = [
+      {
+        format: 'json' as const,
+        left: '[{"id":1,"name":"alpha"},{"id":2,"name":"beta"}]',
+        right: '[{"id":3,"name":"gamma"}]',
+        snapshotId: '550e8400-e29b-41d4-a716-44665544000e',
+      },
+      {
+        format: 'jsonl' as const,
+        left: '{"id":1,"name":"alpha"}\n{"id":2,"name":"beta"}\n',
+        right: '{"id":3,"name":"gamma"}\n',
+        snapshotId: '550e8400-e29b-41d4-a716-44665544000f',
+      },
+      {
+        format: 'csv' as const,
+        left: 'id,name\n1,alpha\n2,beta\n',
+        right: 'id,name\n3,gamma\n',
+        snapshotId: '550e8400-e29b-41d4-a716-446655440010',
+      },
+    ]
+
+    for (const testCase of cases) {
+      const [leftInput, rightInput] = await Promise.all([
+        storeInput(new TextEncoder().encode(testCase.left)),
+        storeInput(new TextEncoder().encode(testCase.right)),
+      ])
+      const response = await hostRequest({
+        path: '/v1/materialize',
+        method: 'POST',
+        credential: token,
+        body: {
+          protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
+          operation: 'materialize',
+          snapshotId: DatasetSnapshotId.make(testCase.snapshotId),
+          inputs: [
+            {
+              ordinal: 0,
+              format: testCase.format,
+              artifactDigest: leftInput.digest,
+              contentHash: Sha256Digest.make(`sha256:${leftInput.digest}`),
+            },
+            {
+              ordinal: 1,
+              format: testCase.format,
+              artifactDigest: rightInput.digest,
+              contentHash: Sha256Digest.make(`sha256:${rightInput.digest}`),
+            },
+          ],
+          fields: [
+            { ordinal: 0, name: 'id', sourceType: 'number', logicalType: 'integer', nullable: false },
+            { ordinal: 1, name: 'name', sourceType: 'string', logicalType: 'string', nullable: false },
+          ],
+          limits: {
+            maxInputBytes: 4_096,
+            maxRows: 100,
+            maxOutputBytes: 1_000_000,
+            timeoutMs: 5_000,
+          },
+        } satisfies MaterializeRequest,
+      })
+      expect(response.status).toBe(200)
+      const result = (response.json as { result: { artifactToken: string, parquetDigest: string } }).result
+      const artifact = await hostRequest({
+        path: `/v1/artifacts/${result.artifactToken}/${result.parquetDigest}`,
+        credential: token,
+      })
+      expect(artifact.status).toBe(200)
+      const parquetPath = join(
+        process.cwd(),
+        '.local/artifacts/objects/sha256',
+        result.parquetDigest.slice(0, 2),
+        result.parquetDigest,
+      )
+      await mkdir(dirname(parquetPath), { recursive: true })
+      await Bun.write(parquetPath, artifact.bytes!)
+
+      expect(readParquetLineageInContainer(result.parquetDigest)).toEqual([
+        ['1', 0, '0', '/0', `sha256:${leftInput.digest}/0`],
+        ['2', 0, '1', '/1', `sha256:${leftInput.digest}/1`],
+        ['3', 1, '0', '/0', `sha256:${rightInput.digest}/0`],
+      ])
+
+      const query = {
+        protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
+        operation: 'query',
+        workspaceId: '550e8400-e29b-41d4-a716-446655440001',
+        projectId: '550e8400-e29b-41d4-a716-446655440002',
+        sql: 'SELECT id, name FROM records ORDER BY ALL',
+        snapshots: [{
+          alias: 'records',
+          datasetId: '550e8400-e29b-41d4-a716-446655440004',
+          snapshotId: DatasetSnapshotId.make(testCase.snapshotId),
+          schemaHash: `sha256:${'b'.repeat(64)}`,
+          parquetDigest: result.parquetDigest,
+        }],
+        limits: {
+          maxRows: 100,
+          maxOutputBytes: 100_000,
+          maxMemoryMb: 64,
+          timeoutMs: 5_000,
+        },
+      }
+      const visible = await hostRequest({
+        path: '/v1/query',
+        method: 'POST',
+        credential: token,
+        body: query,
+      })
+      expect(visible.status).toBe(200)
+      expect(visible.json).toMatchObject({
+        ok: true,
+        result: { rows: [['1', 'alpha'], ['2', 'beta'], ['3', 'gamma']] },
+      })
+
+      const hidden = await hostRequest({
+        path: '/v1/query',
+        method: 'POST',
+        credential: token,
+        body: {
+          ...query,
+          sql: 'SELECT __struct_record_id FROM records ORDER BY ALL',
+        },
+      })
+      expect(hidden.status).toBe(400)
+      expect(hidden.json).toMatchObject({ ok: false, error: { code: 'engine' } })
+    }
+  }, 20_000)
+
+  it('rejects mixed-case reserved fields and hides legacy mixed-case reserved parquet columns', async () => {
+    const input = await storeInput(new TextEncoder().encode('[{"__STRUCT_RECORD_ID":"reserved"}]'))
+    const reservedFieldResponse = await hostRequest({
+      path: '/v1/materialize',
+      method: 'POST',
+      credential: token,
+      body: {
+        protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
+        operation: 'materialize',
+        snapshotId: DatasetSnapshotId.make('550e8400-e29b-41d4-a716-446655440011'),
+        inputs: [{
+          ordinal: 0,
+          format: 'json',
+          artifactDigest: input.digest,
+          contentHash: Sha256Digest.make(`sha256:${input.digest}`),
+        }],
+        fields: [{
+          ordinal: 0,
+          name: '__STRUCT_RECORD_ID',
+          sourceType: 'string',
+          logicalType: 'string',
+          nullable: false,
+        }],
+        limits: {
+          maxInputBytes: 1_024,
+          maxRows: 100,
+          maxOutputBytes: 1_000_000,
+          timeoutMs: 5_000,
+        },
+      } satisfies MaterializeRequest,
+    })
+    expect(reservedFieldResponse.status).toBe(400)
+    expect(reservedFieldResponse.json).toEqual({
+      ok: false,
+      error: {
+        code: 'invalid-input',
+        message: 'Field schema is invalid',
+      },
+    })
+
+    const legacy = await createLegacyMixedCaseReservedParquetArtifact()
+    const query = {
+      protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
+      operation: 'query',
+      workspaceId: '550e8400-e29b-41d4-a716-446655440001',
+      projectId: '550e8400-e29b-41d4-a716-446655440002',
+      snapshots: [{
+        alias: 'records',
+        datasetId: '550e8400-e29b-41d4-a716-446655440004',
+        snapshotId: DatasetSnapshotId.make('550e8400-e29b-41d4-a716-446655440012'),
+        schemaHash: `sha256:${'c'.repeat(64)}`,
+        parquetDigest: legacy.digest,
+      }],
+      limits: {
+        maxRows: 100,
+        maxOutputBytes: 100_000,
+        maxMemoryMb: 64,
+        timeoutMs: 5_000,
+      },
+    }
+    const visible = await hostRequest({
+      path: '/v1/query',
+      method: 'POST',
+      credential: token,
+      body: {
+        ...query,
+        sql: 'SELECT * FROM records ORDER BY ALL',
+      },
+    })
+    expect(visible.status).toBe(200)
+    expect(visible.json).toMatchObject({
+      ok: true,
+      result: { rows: [['1']] },
+    })
+
+    const hidden = await hostRequest({
+      path: '/v1/query',
+      method: 'POST',
+      credential: token,
+      body: {
+        ...query,
+        sql: 'SELECT __STRUCT_RECORD_ID FROM records ORDER BY ALL',
+      },
+    })
+    expect(hidden.status).toBe(400)
+    expect(hidden.json).toMatchObject({ ok: false, error: { code: 'engine' } })
   }, 20_000)
 
   it('preserves exact decimals and rejects deterministic schema conversion failures', async () => {

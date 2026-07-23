@@ -253,7 +253,9 @@ describe('production research workflow', () => {
         projectId: ids.project,
         requestHash: Sha256Digest.make(`sha256:${'b'.repeat(64)}`),
         protocolVersion: '1',
-        engineVersion: 'duckdb-test',
+        engineVersion: 'duckdb-1.5.4',
+        engineAdapterVersion: '@duckdb/node-api@1.5.4-r.1',
+        executionPolicyVersion: 1,
         engineConfigHash: Sha256Digest.make(`sha256:${'c'.repeat(64)}`),
         canonicalSql: 'SELECT "value" FROM "records" LIMIT 10',
         snapshots: [{

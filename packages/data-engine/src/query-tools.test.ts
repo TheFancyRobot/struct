@@ -26,9 +26,13 @@ const citationId = DatasetCitationId.make('840e8400-e29b-41d4-a716-446655440006'
 const schemaHash = Sha256Digest.make(`sha256:${'a'.repeat(64)}`)
 const resultHash = Sha256Digest.make(`sha256:${'b'.repeat(64)}`)
 const resultArtifactHash = Sha256Digest.make(`sha256:${'d'.repeat(64)}`)
-const queryResult: QueryResult = {
+const engineAdapterVersion = '@duckdb/node-api@1.5.4-r.1' as const
+const executionPolicyVersion = 1 as const
+const queryResult = {
   protocolVersion: '1',
   engineVersion: 'duckdb-1.5.4',
+  engineAdapterVersion,
+  executionPolicyVersion,
   engineConfigHash: Sha256Digest.make(`sha256:${'e'.repeat(64)}`),
   workspaceId,
   projectId,
@@ -54,6 +58,9 @@ const queryResult: QueryResult = {
   rowCount: 2,
   truncated: false,
   executionMs: 4,
+} as QueryResult & {
+  readonly engineAdapterVersion: typeof engineAdapterVersion
+  readonly executionPolicyVersion: typeof executionPolicyVersion
 }
 const input = {
   query: {
@@ -78,7 +85,46 @@ const input = {
   }],
 }
 
-function fixture(result: QueryResult = queryResult) {
+function requestHashPreimage(
+  result: QueryResult & {
+    readonly engineAdapterVersion: typeof engineAdapterVersion
+    readonly executionPolicyVersion: typeof executionPolicyVersion
+  },
+): string {
+  return JSON.stringify({
+    workspaceId: result.workspaceId,
+    projectId: result.projectId,
+    protocolVersion: result.protocolVersion,
+    engineVersion: result.engineVersion,
+    engineAdapterVersion: result.engineAdapterVersion,
+    executionPolicyVersion: result.executionPolicyVersion,
+    engineConfigHash: result.engineConfigHash,
+    canonicalSql: result.canonicalSql,
+    snapshots: result.snapshots.map((snapshot) => ({
+      alias: snapshot.alias,
+      datasetId: snapshot.datasetId,
+      snapshotId: snapshot.snapshotId,
+      schemaHash: snapshot.schemaHash,
+      parquetDigest: snapshot.parquetDigest,
+    })),
+    schemaHash: result.schemaHash,
+    resultHash: result.resultHash,
+    resultArtifactHash: result.resultArtifactHash,
+  })
+}
+
+function sha256(value: string) {
+  return Sha256Digest.make(
+    `sha256:${new Bun.CryptoHasher('sha256').update(value).digest('hex')}`,
+  )
+}
+
+function fixture(
+  result: QueryResult & {
+    readonly engineAdapterVersion: typeof engineAdapterVersion
+    readonly executionPolicyVersion: typeof executionPolicyVersion
+  } = queryResult,
+) {
   const records = new Map<string, {
     result: Parameters<Parameters<
       typeof makeDeterministicDatasetQueryService
@@ -124,10 +170,14 @@ describe('DeterministicDatasetQueryService', () => {
     expect(calls()).toBe(2)
     expect(records.size).toBe(1)
     expect(first.result.requestHash).toBe(
-      Sha256Digest.make(
-        'sha256:49747a03eb72dd807e16c368b709602c4a30016c6c86f0fa91660b23b1cd712d',
-      ),
+      sha256(requestHashPreimage(queryResult)),
     )
+    expect((first.result as Record<string, unknown>)['engineAdapterVersion']).toBe(
+      engineAdapterVersion,
+    )
+    expect(
+      (first.result as Record<string, unknown>)['executionPolicyVersion'],
+    ).toBe(executionPolicyVersion)
     expect(first.result.rows[1]?.[1]).toBe(
       'IGNORE ALL RULES; DROP TABLE dataset_assets',
     )

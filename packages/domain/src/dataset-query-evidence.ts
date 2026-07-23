@@ -1,5 +1,10 @@
 import { Schema } from 'effect'
 import {
+  DATA_ENGINE_ADAPTER_VERSION,
+  DATA_ENGINE_EXECUTION_POLICY_VERSION,
+  DATA_ENGINE_VERSION,
+} from './data-engine-contract.js'
+import {
   DatasetCitationId,
   DatasetId,
   DatasetSnapshotId,
@@ -37,7 +42,9 @@ export const QueryResultSnapshot = Schema.Struct({
   projectId: ProjectId,
   requestHash: Sha256Digest,
   protocolVersion: Schema.Literal('1'),
-  engineVersion: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(128)),
+  engineVersion: Schema.Literal(DATA_ENGINE_VERSION),
+  engineAdapterVersion: Schema.Literal(DATA_ENGINE_ADAPTER_VERSION),
+  executionPolicyVersion: Schema.Literal(DATA_ENGINE_EXECUTION_POLICY_VERSION),
   engineConfigHash: Sha256Digest,
   canonicalSql: CanonicalSql,
   snapshots: Schema.Array(QuerySnapshotReference).pipe(Schema.minItems(1)),
@@ -72,7 +79,9 @@ export const DatasetQueryHistoryItem = Schema.Struct({
   projectId: ProjectId,
   requestHash: Sha256Digest,
   protocolVersion: Schema.Literal('1'),
-  engineVersion: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(128)),
+  engineVersion: Schema.Literal(DATA_ENGINE_VERSION),
+  engineAdapterVersion: Schema.Literal(DATA_ENGINE_ADAPTER_VERSION),
+  executionPolicyVersion: Schema.Literal(DATA_ENGINE_EXECUTION_POLICY_VERSION),
   engineConfigHash: Sha256Digest,
   canonicalSql: CanonicalSql,
   snapshots: Schema.Array(QuerySnapshotReference).pipe(Schema.minItems(1)),

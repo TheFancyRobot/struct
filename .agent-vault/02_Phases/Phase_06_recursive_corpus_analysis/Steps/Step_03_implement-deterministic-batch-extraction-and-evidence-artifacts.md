@@ -8,19 +8,20 @@ phase: '[[02_Phases/Phase_06_recursive_corpus_analysis/Phase|Phase 06 recursive 
 status: completed
 owner: Codex
 created: '2026-07-17'
-updated: '2026-07-20'
+updated: '2026-07-22'
 depends_on:
   - '[[02_Phases/Phase_06_recursive_corpus_analysis/Steps/Step_02_implement-bounded-corpus-partitioning-and-scheduling|STEP-06-02 Implement Bounded Corpus Partitioning and Scheduling]]'
 related_sessions:
   - '[[05_Sessions/2026-07-20-084208-implement-deterministic-batch-extraction-and-evidence-artifacts-step-06-03-worker|SESSION-2026-07-20-084208 step-06-03-worker session for Implement Deterministic Batch Extraction and Evidence Artifacts]]'
-related_bugs: []
+related_bugs:
+  - '[[03_Bugs/BUG-0026_recursive-analysis-route-tests-assert-redacted-persistence-details|BUG-0026 Recursive Analysis Route Tests Assert Redacted Persistence Details]]'
 tags:
   - agent-vault
   - step
 context_id: SESSION-2026-07-20-084208
 active_session_id: 05_Sessions/2026-07-20-084208-implement-deterministic-batch-extraction-and-evidence-artifacts-step-06-03-worker
 context_status: completed
-context_summary: STEP-06-03 deterministic selection, exact numeric evidence, RFC 6901 provenance, bounded content-addressed artifacts, atomic publication, and restart-safe reuse are implemented, validated, reviewed, and merged in PR #36; STEP-06-04 may proceed.
+context_summary: STEP-06-03 deterministic selection, exact numeric evidence, RFC 6901 provenance, bounded content-addressed artifacts, atomic publication, and restart-safe reuse are implemented, validated, reviewed, and merged in PR
 ---
 
 # Step 03 - Implement Deterministic Batch Extraction and Evidence Artifacts

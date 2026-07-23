@@ -8,12 +8,13 @@ phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Pha
 status: completed
 owner: Codex
 created: '2026-07-17'
-updated: '2026-07-19'
+updated: '2026-07-22'
 depends_on:
   - '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_05_generate-reproducible-25000-json-corpus-and-ground-truth|STEP-04-05 Generate Reproducible 25000 JSON Corpus and Ground Truth]]'
 related_sessions:
   - '[[05_Sessions/2026-07-19-225211-evaluate-exact-computation-schema-security-and-recovery-codex-step-04-06-worker|SESSION-2026-07-19-225211 codex-step-04-06-worker session for Evaluate Exact Computation Schema Security and Recovery]]'
-related_bugs: []
+related_bugs:
+  - '[[03_Bugs/BUG-0022_v1-performance-resilience-artifact-is-stale-after-canonical-evidence-updates|BUG-0022 V1 Performance Resilience Artifact Is Stale After Canonical Evidence Updates]]'
 tags:
   - agent-vault
   - step

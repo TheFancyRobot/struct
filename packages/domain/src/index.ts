@@ -7,6 +7,7 @@
 
 export * from './branded-ids.js'
 export * from './directory-manifest.js'
+export * from './data-engine-contract.js'
 export * from './dataset-catalog.js'
 export * from './dataset-query-evidence.js'
 export * from './cross-source-evidence.js'

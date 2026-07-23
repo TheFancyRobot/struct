@@ -13,7 +13,12 @@ import {
   DatasetQueryCatalogError,
   makeReadOnlySqlService,
 } from './query-service.js'
-import type { QueryRequest } from './protocol.js'
+import {
+  DATA_ENGINE_ADAPTER_VERSION,
+  DATA_ENGINE_EXECUTION_POLICY_VERSION,
+  DATA_ENGINE_VERSION,
+  type QueryRequest,
+} from './protocol.js'
 
 const workspaceId = WorkspaceId.make('650e8400-e29b-41d4-a716-446655440001')
 const projectId = ProjectId.make('650e8400-e29b-41d4-a716-446655440002')
@@ -78,7 +83,9 @@ function dependencies(overrides?: {
         overrides?.onQuery?.()
         return Effect.succeed({
           protocolVersion: '1' as const,
-          engineVersion: 'duckdb-1.5.4',
+          engineVersion: DATA_ENGINE_VERSION,
+          engineAdapterVersion: DATA_ENGINE_ADAPTER_VERSION,
+          executionPolicyVersion: DATA_ENGINE_EXECUTION_POLICY_VERSION,
           engineConfigHash: Sha256Digest.make(`sha256:${'d'.repeat(64)}`),
           workspaceId,
           projectId,

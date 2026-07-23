@@ -1,4 +1,8 @@
 import {
+  DATA_ENGINE_ADAPTER_VERSION,
+  DATA_ENGINE_EXECUTION_POLICY_VERSION,
+  DATA_ENGINE_PROTOCOL_VERSION,
+  DATA_ENGINE_VERSION,
   DatasetId,
   DatasetFieldSchema,
   DatasetSnapshotId,
@@ -8,7 +12,12 @@ import {
 } from '@struct/domain'
 import { Schema } from 'effect'
 
-export const DATA_ENGINE_PROTOCOL_VERSION = '1' as const
+export {
+  DATA_ENGINE_ADAPTER_VERSION,
+  DATA_ENGINE_EXECUTION_POLICY_VERSION,
+  DATA_ENGINE_PROTOCOL_VERSION,
+  DATA_ENGINE_VERSION,
+}
 
 const PositiveInteger = Schema.Number.pipe(Schema.int(), Schema.positive())
 const NonNegativeInteger = Schema.Number.pipe(Schema.int(), Schema.nonNegative())
@@ -177,7 +186,9 @@ export type QueryValue = Schema.Schema.Type<typeof QueryValue>
 
 export const QueryResult = Schema.Struct({
   protocolVersion: Schema.Literal(DATA_ENGINE_PROTOCOL_VERSION),
-  engineVersion: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(128)),
+  engineVersion: Schema.Literal(DATA_ENGINE_VERSION),
+  engineAdapterVersion: Schema.Literal(DATA_ENGINE_ADAPTER_VERSION),
+  executionPolicyVersion: Schema.Literal(DATA_ENGINE_EXECUTION_POLICY_VERSION),
   engineConfigHash: Sha256Digest,
   workspaceId: WorkspaceId,
   projectId: ProjectId,

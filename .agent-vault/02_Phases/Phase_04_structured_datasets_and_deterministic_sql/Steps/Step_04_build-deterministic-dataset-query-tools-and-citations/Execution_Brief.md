@@ -2,7 +2,7 @@
 
 ## Exact Outcome
 
-- Add deterministic dataset query tools and immutable result snapshots whose citations reopen the exact dataset snapshot, query, columns, and row evidence used.
+- Add deterministic dataset query tools and immutable result snapshots whose citations and query history reopen the exact dataset snapshot, query, pinned engine, pinned adapter, protocol, execution-policy/config identity, columns, and row evidence used.
 
 ## Prerequisites
 
@@ -11,8 +11,8 @@
 
 ## Deliverables
 
-- Define `QueryResultSnapshot` and dataset citation schemas with branded IDs, canonical SQL, dataset snapshot/schema/result hashes, selected columns, row/range evidence, bounds, and timestamps.
-- Persist query history/result snapshots transactionally and workspace-scoped; immutable citations must never float to newer data.
+- Define `QueryResultSnapshot` and dataset citation schemas with branded IDs, canonical SQL, dataset snapshot/schema/result hashes, pinned engine identity, pinned adapter identity, protocol version, execution-policy/config identity, selected columns, row/range evidence, bounds, and timestamps.
+- Persist query history/result snapshots transactionally and workspace-scoped together with the pinned engine, adapter, protocol, and execution-policy/config identity; immutable citations must never float to newer data.
 - Add a narrow Fred tool adapter that calls the existing Effect query service; Fred may select/invoke the tool but cannot calculate or rewrite exact results.
 - Add deterministic citation creation, validation, serialization, reopen/query-history API behavior, and synthesis inputs that clearly separate exact values from narrative.
 - Use `Effect.Service`, `Effect.fn`, explicit layers, and specific serializable tagged failures consistent with existing project patterns.

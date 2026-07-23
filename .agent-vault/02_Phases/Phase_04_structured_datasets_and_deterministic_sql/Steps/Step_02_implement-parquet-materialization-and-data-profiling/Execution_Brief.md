@@ -2,7 +2,7 @@
 
 ## Exact Outcome
 
-- Materialize cataloged JSON/CSV snapshots to immutable Parquet artifacts and store deterministic profiles through one isolated DuckDB Docker Compose sidecar.
+- Materialize cataloged JSON, JSONL/NDJSON, and CSV snapshots to immutable Parquet artifacts, preserve stable per-record original-source lineage (source input/file identity, record ordinal/pointer, and stable record identity) suitable for citation reopening, and store deterministic profiles through one isolated DuckDB Docker Compose sidecar.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@
 - Isolate the service on an internal Compose network with no network egress, least privilege, bounded CPU/memory, read-only root filesystem, and only explicit artifact scratch mounts.
 - Add a versioned request/response protocol decoded with Effect `Schema`; authenticate every request with a configured service credential and reject missing/invalid credentials.
 - Add a typed Bun client as an `Effect.Service` with scoped transport, timeouts, interruption, explicit retries only for safe transient failures, and specific `Schema.TaggedError` failures.
-- Add deterministic JSON/CSV import, schema-family assignment, Parquet materialization, profile statistics, content hashes, artifact persistence, and resumable worker/job-journal integration.
+- Add deterministic JSON, JSONL/NDJSON, and CSV import, schema-family assignment, stable per-record original-source lineage columns (source input/file identity, record ordinal/pointer, and stable record identity), Parquet materialization, profile statistics, content hashes, artifact persistence, and resumable worker/job-journal integration.
 
 ## Constraints and Non-Goals
 

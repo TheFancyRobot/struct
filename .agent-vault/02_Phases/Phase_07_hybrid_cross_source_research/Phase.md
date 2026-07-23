@@ -7,7 +7,7 @@ phase_id: PHASE-07
 status: completed
 owner: Codex
 created: '2026-07-17'
-updated: '2026-07-20'
+updated: '2026-07-22'
 depends_on:
   - '[[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|PHASE-05 Typed Research Planning and Bounded Execution]]'
   - '[[02_Phases/Phase_06_recursive_corpus_analysis/Phase|PHASE-06 Recursive Corpus Analysis]]'
@@ -21,7 +21,8 @@ related_decisions:
   - '[[04_Decisions/DEC-0007_compose-a-product-job-journal-with-fred-checkpoints|DEC-0007 Compose a Product Job Journal with Fred Checkpoints]]'
   - '[[04_Decisions/DEC-0010_use-focused-fred-agents-with-deterministic-effect-tools|DEC-0010 Use Focused Fred Agents with Deterministic Effect Tools]]'
   - '[[04_Decisions/DEC-0011_gate-releases-on-a-reproducible-25000-file-evaluation-corpus|DEC-0011 Gate Releases on a Reproducible 25000-File Evaluation Corpus]]'
-related_bugs: []
+related_bugs:
+  - '[[03_Bugs/BUG-0021_phase-07-hybrid-evaluation-artifact-fails-its-canonical-evidence-check|BUG-0021 Phase 07 Hybrid Evaluation Artifact Fails Its Canonical Evidence Check]]'
 tags:
   - agent-vault
   - phase
@@ -105,7 +106,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Related Bugs
 
 <!-- AGENT-START:phase-related-bugs -->
-- None yet.
+- [[03_Bugs/BUG-0021_phase-07-hybrid-evaluation-artifact-fails-its-canonical-evidence-check|BUG-0021 Phase 07 Hybrid Evaluation Artifact Fails Its Canonical Evidence Check]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps

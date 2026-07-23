@@ -1,5 +1,6 @@
 import { resolve } from 'node:path'
 import { Schema } from 'effect'
+import { readEvaluationReport } from './phase-04-evaluation.js'
 
 const repositoryRoot = resolve(import.meta.dir, '../../..')
 export const V1_PERFORMANCE_REPORT = resolve(
@@ -34,6 +35,15 @@ async function verifiedSource<A, I>(
   return { path, sha256: sha256(bytes) }
 }
 
+async function verifiedPhase04Source(
+  path: string,
+): Promise<{ readonly path: string; readonly sha256: string }> {
+  const absolute = resolve(repositoryRoot, path)
+  const bytes = await Bun.file(absolute).text()
+  await readEvaluationReport(absolute)
+  return { path, sha256: sha256(bytes) }
+}
+
 async function sourceHash(path: string): Promise<string> {
   return sha256(await Bun.file(resolve(repositoryRoot, path)).text())
 }
@@ -42,7 +52,7 @@ export async function buildV1PerformanceResilienceReport() {
   const evidence = await Promise.all([
     verifiedSource('packages/evaluation/results/phase-02-document-evaluation.json', PassedReport),
     verifiedSource('packages/evaluation/results/phase-03-directory-refresh-evaluation.json', PassedReport),
-    verifiedSource('packages/evaluation/results/phase-04-evaluation-v1.json', StatusReport),
+    verifiedPhase04Source('packages/evaluation/results/phase-04-evaluation-v1.json'),
     verifiedSource('packages/evaluation/results/phase-05-evaluation-v1.json', StatusReport),
     verifiedSource('packages/evaluation/results/phase-06-recursive-analysis-v1.json', StatusReport),
     verifiedSource('packages/evaluation/results/phase-07-hybrid-research-v1.json', StatusReport),

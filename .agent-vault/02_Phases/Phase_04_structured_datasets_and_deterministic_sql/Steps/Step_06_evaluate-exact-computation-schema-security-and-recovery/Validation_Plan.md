@@ -21,8 +21,8 @@
 - Run: `bun run migrations:down && bun run migrations:up && bun run migrations:up`
 - Run: `bun run typecheck && bun run lint && bun run lint:imports && bun run build`
 - Run: `bun run docs:lint && bun run secrets:scan`
-- Re-run the machine-readable evaluation and assert byte-identical normalized output/hash.
+- Re-run the machine-readable evaluation and assert the hashed deterministic report fields remain byte-identical while the separate non-hashed machine-readable metadata envelope preserves volatile timings.
 
 ## Completion Gate
 
-- Record exact commands, versions, pins, hardware assumptions, case counts, timings, hashes, and zero unresolved defects in Outcome.md before Phase 04 can close.
+- Record exact commands, versions, pins, hardware assumptions, case counts, deterministic report hashes, preserved timing metadata, and zero unresolved defects in Outcome.md before Phase 04 can close.

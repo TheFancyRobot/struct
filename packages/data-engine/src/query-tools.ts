@@ -100,6 +100,11 @@ function stableRequestPayload(
   return JSON.stringify({
     workspaceId: result.workspaceId,
     projectId: result.projectId,
+    protocolVersion: result.protocolVersion,
+    engineVersion: result.engineVersion,
+    engineAdapterVersion: result.engineAdapterVersion,
+    executionPolicyVersion: result.executionPolicyVersion,
+    engineConfigHash: result.engineConfigHash,
     canonicalSql: result.canonicalSql,
     snapshots: result.snapshots.map((snapshot) => ({
       alias: snapshot.alias,
@@ -111,8 +116,6 @@ function stableRequestPayload(
     schemaHash: result.schemaHash,
     resultHash: result.resultHash,
     resultArtifactHash: result.resultArtifactHash,
-    engineVersion: result.engineVersion,
-    engineConfigHash: result.engineConfigHash,
   })
 }
 
@@ -202,6 +205,8 @@ export function makeDeterministicDatasetQueryService(dependencies: {
         requestHash,
         protocolVersion: result.protocolVersion,
         engineVersion: result.engineVersion,
+        engineAdapterVersion: result.engineAdapterVersion,
+        executionPolicyVersion: result.executionPolicyVersion,
         engineConfigHash: result.engineConfigHash,
         canonicalSql: result.canonicalSql,
         snapshots: result.snapshots.map((binding) => ({

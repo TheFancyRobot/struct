@@ -11,7 +11,8 @@
 
 - Reject foreign-workspace dataset, snapshot, schema-family, and source-version references.
 - Reject mutation of immutable snapshot identity, content hash, or lineage.
-- Decode failures and constraint failures surface as specific `Schema.TaggedError` values without raw SQL or credentials.
+- Decode failures and constraint failures surface as specific `Schema.TaggedError` values with only sanitized bounded fields, omit nested causes, and never include raw SQL, credentials, stored values, or parser internals.
+- Leakage tests prove stringification, serialization, and response mapping for persistence/decode failures cannot expose raw SQL, credentials, internal host paths, stored values, parser values, or nested causes.
 
 ## Deterministic Evidence
 

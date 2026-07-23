@@ -10,7 +10,8 @@
 
 - Table-driven rejection covers DDL/DML, comments/encoding tricks, multi-statements, attach/detach, copy/export, pragmas, extension loading, filesystem/network functions, URLs, absolute/traversal paths, unknown aliases, and cross-workspace snapshots.
 - Missing/invalid service and user authentication fail before execution.
-- Error responses contain no credentials, internal paths, raw engine stack, or unrestricted schema details.
+- Error responses and surfaced typed failures expose only sanitized bounded fields, omit nested causes, and contain no credentials, internal paths, raw engine stack, raw SQL text, unrestricted schema details, or parser values.
+- Leakage tests prove stringification, serialization, and HTTP mapping of persistence/decode/query failures preserve the same redaction contract.
 
 ## Deterministic Evidence
 

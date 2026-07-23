@@ -14,7 +14,7 @@
 - Evaluate import/materialization, profiling, safe SQL, result snapshots, and citations end to end against independent ground truth.
 - Exercise documented schema families/drift, exact aggregates/joins/filters, limits/timeouts/cancellation, injection data, auth failures, no-egress/path isolation, and SQL bypass attempts.
 - Inject process/sidecar interruption at meaningful persistence boundaries; restart through the real lease/job recovery path and prove no duplicate snapshots, artifacts, results, citations, or events.
-- Publish a deterministic machine-readable report plus concise operations/benchmark documentation with environment, pins, seed, manifest hash, commands, counts, timings, and pass/fail reasons.
+- Publish a deterministic machine-readable report whose hashed fields cover environment, pins, seed, manifest hash, commands, counts, and pass/fail reasons; preserve volatile timings in a separate non-hashed machine-readable metadata envelope and summarize both in concise operations/benchmark documentation.
 - Record every confirmed defect as a bug, fix and re-run it before completing the phase.
 
 ## Constraints and Non-Goals

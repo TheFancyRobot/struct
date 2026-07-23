@@ -26,6 +26,10 @@ function rehash(
 
 const verify = (input: string) =>
   Effect.runPromise(verifyHybridResearchEvaluationReport(input))
+const trackedArtifactUrl = new URL(
+  '../results/phase-07-hybrid-research-v1.json',
+  import.meta.url,
+)
 
 describe('Phase 07 deterministic hybrid research evaluation', () => {
   let reports: [HybridResearchEvaluationReport, HybridResearchEvaluationReport]
@@ -98,6 +102,12 @@ describe('Phase 07 deterministic hybrid research evaluation', () => {
     expect(first.endsWith('\n')).toBe(true)
     expect(first.endsWith('\n\n')).toBe(false)
     expect(await verify(first)).toEqual(reports[0])
+  })
+
+  it('matches the tracked phase 07 artifact exactly', async () => {
+    const tracked = await Bun.file(trackedArtifactUrl).text()
+    expect(tracked).toBe(serializeHybridResearchEvaluationReport(reports[0]))
+    expect(await verify(tracked)).toEqual(reports[0])
   })
 
   it('rejects independently tampered fields after outer-hash recomputation', async () => {

@@ -9,6 +9,7 @@ import {
   type MaterializeResult,
   type QueryResult,
 } from './protocol.js'
+import { canonicalExpectedEngineConfigHash } from './runtime-identity.js'
 
 export class DataEngineConfigurationError
   extends Schema.TaggedError<DataEngineConfigurationError>()(
@@ -429,6 +430,14 @@ export function makeDataEngineClient(
           message: 'Data-engine query response has inconsistent result shape',
         })
       }
+      const expectedEngineConfigHash = canonicalExpectedEngineConfigHash(
+        request.limits,
+      )
+      if (decoded.result.engineConfigHash !== expectedEngineConfigHash) {
+        return yield* new DataEngineProtocolError({
+          message: 'Data-engine query response engine config hash did not match the requested runtime identity',
+        })
+      }
       const artifactHash = sha256Json({
         columns: decoded.result.columns,
         rows: decoded.result.rows,
@@ -436,7 +445,10 @@ export function makeDataEngineClient(
         truncated: decoded.result.truncated,
       })
       const resultHash = sha256Json({
+        protocolVersion: decoded.result.protocolVersion,
         engineVersion: decoded.result.engineVersion,
+        engineAdapterVersion: decoded.result.engineAdapterVersion,
+        executionPolicyVersion: decoded.result.executionPolicyVersion,
         engineConfigHash: decoded.result.engineConfigHash,
         canonicalSql: decoded.result.canonicalSql,
         snapshots: decoded.result.snapshots,

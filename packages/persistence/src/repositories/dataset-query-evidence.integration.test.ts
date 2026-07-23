@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import {
+  DATA_ENGINE_VERSION,
   DatasetCitationId,
   DatasetId,
   DatasetSchemaFamilyId,
@@ -49,6 +50,8 @@ const schemaHash = Sha256Digest.make(`sha256:${'a'.repeat(64)}`)
 const resultHash = Sha256Digest.make(`sha256:${'b'.repeat(64)}`)
 const resultArtifactHash = Sha256Digest.make(`sha256:${'e'.repeat(64)}`)
 const requestHash = Sha256Digest.make(`sha256:${'c'.repeat(64)}`)
+const engineAdapterVersion = '@duckdb/node-api@1.5.4-r.1' as const
+const executionPolicyVersion = 1 as const
 
 describeIf('DatasetQueryEvidenceRepo (PostgreSQL)', () => {
   let sql: postgresTypes.Sql
@@ -198,7 +201,9 @@ describeIf('DatasetQueryEvidenceRepo (PostgreSQL)', () => {
     projectId,
     requestHash: hash,
     protocolVersion: '1' as const,
-    engineVersion: 'duckdb-1.5.4',
+    engineVersion: DATA_ENGINE_VERSION,
+    engineAdapterVersion,
+    executionPolicyVersion,
     engineConfigHash: Sha256Digest.make(`sha256:${'9'.repeat(64)}`),
     canonicalSql: 'SELECT id FROM records ORDER BY ALL',
     snapshots: [{
@@ -259,6 +264,12 @@ describeIf('DatasetQueryEvidenceRepo (PostgreSQL)', () => {
     expect(replay).toEqual(first)
     expect(replay.result.id).toBe(resultId)
     expect(replay.citations[0]?.id).toBe(citationId)
+    expect((replay.result as Record<string, unknown>)['engineAdapterVersion']).toBe(
+      engineAdapterVersion,
+    )
+    expect(
+      (replay.result as Record<string, unknown>)['executionPolicyVersion'],
+    ).toBe(executionPolicyVersion)
 
     const evidence = await Effect.runPromise(
       DatasetQueryEvidenceRepo.reopen(
@@ -270,6 +281,12 @@ describeIf('DatasetQueryEvidenceRepo (PostgreSQL)', () => {
     expect(evidence.rows).toEqual([['1'], ['2']])
     expect(evidence.columns.map((column) => column.name)).toEqual(['id'])
     expect(evidence.snapshot.resultHash).toBe(resultHash)
+    expect((evidence.snapshot as Record<string, unknown>)['engineAdapterVersion']).toBe(
+      engineAdapterVersion,
+    )
+    expect(
+      (evidence.snapshot as Record<string, unknown>)['executionPolicyVersion'],
+    ).toBe(executionPolicyVersion)
 
     const history = await Effect.runPromise(
       DatasetQueryEvidenceRepo.history(workspaceId, projectId, 25).pipe(
@@ -277,6 +294,12 @@ describeIf('DatasetQueryEvidenceRepo (PostgreSQL)', () => {
       ),
     )
     expect(history.map((entry) => entry.id)).toEqual([resultId])
+    expect((history[0] as Record<string, unknown> | undefined)?.['engineAdapterVersion']).toBe(
+      engineAdapterVersion,
+    )
+    expect(
+      (history[0] as Record<string, unknown> | undefined)?.['executionPolicyVersion'],
+    ).toBe(executionPolicyVersion)
   })
 
   it('hides foreign scopes and database triggers reject mutation', async () => {

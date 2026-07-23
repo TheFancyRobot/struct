@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test'
-import { Effect, Exit, Layer } from 'effect'
+import { Cause, Effect, Exit, Layer, Option } from 'effect'
 import postgres from 'postgres'
 import type postgresTypes from 'postgres'
 import {
@@ -172,10 +172,12 @@ describeIf('source-text reindex worker leases (PostgreSQL)', () => {
 
   it('leaves the claimed PostgreSQL row nonterminal when heartbeat infrastructure fails', async () => {
     let interrupted = false
+    const rawHeartbeatMarker = 'database unavailable HEARTBEAT_SECRET_MARKER__db-pass /Users/private/lease.json'
     const heartbeatFailure = new QueryError({
       operation: 'renewSourceTextReindexLease',
       entity: 'SourceTextReindexJob',
-      message: 'database unavailable',
+      message: rawHeartbeatMarker,
+      cause: rawHeartbeatMarker,
     })
     const exit = await Effect.runPromiseExit(processOneSourceTextReindex({
       staleAfterMs: 300_000,
@@ -207,7 +209,27 @@ describeIf('source-text reindex worker leases (PostgreSQL)', () => {
     }))
 
     expect(Exit.isFailure(exit)).toBe(true)
-    expect(String(exit)).toContain('database unavailable')
+    if (Exit.isFailure(exit)) {
+      const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
+      expect(failure).toBeInstanceOf(QueryError)
+      expect(failure).toMatchObject({
+        _tag: 'QueryError',
+        operation: 'renewSourceTextReindexLease',
+        entity: 'SourceTextReindexJob',
+        message:
+          'Persistence query failed during renewSourceTextReindexLease on SourceTextReindexJob',
+      })
+      for (const representation of [
+        String(exit),
+        JSON.stringify(exit),
+        String(exit.cause),
+      ]) {
+        expect(representation).not.toContain('database unavailable')
+        expect(representation).not.toContain('HEARTBEAT_SECRET_MARKER')
+        expect(representation).not.toContain('db-pass')
+        expect(representation).not.toContain('/Users/private/')
+      }
+    }
     expect(interrupted).toBe(true)
     const [row] = await sql.unsafe(
       `SELECT status, attempts, last_error_code

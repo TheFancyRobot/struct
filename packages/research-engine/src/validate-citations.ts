@@ -198,6 +198,8 @@ function evidenceEdge(
       requestHash: snapshot.requestHash,
       protocolVersion: snapshot.protocolVersion,
       engineVersion: snapshot.engineVersion,
+      engineAdapterVersion: snapshot.engineAdapterVersion,
+      executionPolicyVersion: snapshot.executionPolicyVersion,
       engineConfigHash: snapshot.engineConfigHash,
       querySnapshots: snapshot.snapshots,
       datasetId: citation.datasetId,
@@ -338,6 +340,8 @@ function mismatchReason(
       if (
         expected.protocolVersion !== actual.protocolVersion
         || expected.engineVersion !== actual.engineVersion
+        || expected.engineAdapterVersion !== actual.engineAdapterVersion
+        || expected.executionPolicyVersion !== actual.executionPolicyVersion
         || expected.engineConfigHash !== actual.engineConfigHash
         || canonicalJson(expected.selectedColumns)
           !== canonicalJson(actual.selectedColumns)
@@ -508,6 +512,10 @@ function compareDataset(
     opened.snapshot.requestHash !== expected.snapshot.requestHash
     || opened.snapshot.protocolVersion !== expected.snapshot.protocolVersion
     || opened.snapshot.engineVersion !== expected.snapshot.engineVersion
+    || opened.snapshot.engineAdapterVersion
+      !== expected.snapshot.engineAdapterVersion
+    || opened.snapshot.executionPolicyVersion
+      !== expected.snapshot.executionPolicyVersion
     || opened.snapshot.engineConfigHash !== expected.snapshot.engineConfigHash
     || opened.snapshot.canonicalSql !== expected.snapshot.canonicalSql
     || opened.snapshot.schemaHash !== expected.snapshot.schemaHash

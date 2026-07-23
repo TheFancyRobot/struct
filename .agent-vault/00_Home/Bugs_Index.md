@@ -27,14 +27,27 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 ## Status Buckets
 
 <!-- AGENT-START:bugs-index -->
-_Last rebuilt: 2026-07-21._
+_Last rebuilt: 2026-07-23._
 
-- Notes indexed: 18
-- Status summary: confirmed (1), fixed (17)
+- Notes indexed: 31
+- Status summary: confirmed (1), fixed (17), resolved (13)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
 | BUG-0013 | [v1 UI lacks core research workflows](../03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows.md) | confirmed | sev-1 | 2026-07-21 | - | - |
+| BUG-0019 | [Merged PR 17 Review Findings Remain Unresolved](../03_Bugs/BUG-0019_merged-pr-17-review-findings-remain-unresolved.md) | resolved | sev-2 | 2026-07-22 | 2026-07-23 | - |
+| BUG-0020 | [Completed Step Snapshots Contradict Canonical Status Across Vault](../03_Bugs/BUG-0020_completed-step-snapshots-contradict-canonical-status-across-vault.md) | resolved | sev-2 | 2026-07-22 | 2026-07-23 | - |
+| BUG-0021 | [Phase 07 Hybrid Evaluation Artifact Fails Its Canonical Evidence Check](../03_Bugs/BUG-0021_phase-07-hybrid-evaluation-artifact-fails-its-canonical-evidence-check.md) | resolved | sev-3 | 2026-07-22 | 2026-07-22 | - |
+| BUG-0022 | [V1 Performance Resilience Artifact Is Stale After Canonical Evidence Updates](../03_Bugs/BUG-0022_v1-performance-resilience-artifact-is-stale-after-canonical-evidence-updates.md) | resolved | sev-3 | 2026-07-22 | 2026-07-23 | - |
+| BUG-0023 | [Phase 08 Report Fidelity Artifact Is Stale After Canonical Engine Identity Updates](../03_Bugs/BUG-0023_phase-08-report-fidelity-artifact-is-stale-after-canonical-engine-identity-updates.md) | resolved | sev-3 | 2026-07-22 | 2026-07-22 | - |
+| BUG-0024 | [Source Text Reindex Heartbeat Failure Test Asserts Redacted Persistence Detail](../03_Bugs/BUG-0024_source-text-reindex-heartbeat-failure-test-asserts-redacted-persistence-detail.md) | resolved | sev-3 | 2026-07-22 | 2026-07-22 | - |
+| BUG-0025 | [Ingestion Heartbeat Failure Test Asserts Redacted Persistence Detail](../03_Bugs/BUG-0025_ingestion-heartbeat-failure-test-asserts-redacted-persistence-detail.md) | resolved | sev-3 | 2026-07-22 | 2026-07-22 | - |
+| BUG-0026 | [Recursive Analysis Route Tests Assert Redacted Persistence Details](../03_Bugs/BUG-0026_recursive-analysis-route-tests-assert-redacted-persistence-details.md) | resolved | sev-3 | 2026-07-22 | 2026-07-22 | - |
+| BUG-0027 | [E2E App Server Helper Adopts Stale Port Listeners and Leaves Orphans](../03_Bugs/BUG-0027_e2e-app-server-helper-adopts-stale-port-listeners-and-leaves-orphans.md) | resolved | sev-3 | 2026-07-22 | 2026-07-22 | - |
+| BUG-0028 | [Local Docker Daemon Is Unresponsive for Required Data-Engine Integration Validation](../03_Bugs/BUG-0028_local-docker-daemon-is-unresponsive-for-required-data-engine-integration-validation.md) | resolved | sev-3 | 2026-07-22 | 2026-07-22 | - |
+| BUG-0029 | [Stack-up operation can validate a stale data-engine image after sidecar source changes](../03_Bugs/BUG-0029_stack-up-operation-can-validate-a-stale-data-engine-image-after-sidecar-source-changes.md) | resolved | sev-3 | 2026-07-22 | 2026-07-22 | - |
+| BUG-0030 | [Mixed-case reserved sidecar lineage field names bypass namespace protection](../03_Bugs/BUG-0030_mixed-case-reserved-sidecar-lineage-field-names-bypass-namespace-protection.md) | resolved | sev-3 | 2026-07-22 | 2026-07-22 | - |
+| BUG-0031 | [Database-independent production operations require a valid database URL](../03_Bugs/BUG-0031_database-independent-production-operations-require-a-valid-database-url.md) | resolved | sev-3 | 2026-07-22 | 2026-07-22 | - |
 | BUG-0012 | [Frontend loads DaisyUI but bypasses its component framework](../03_Bugs/BUG-0012_frontend-loads-daisyui-but-bypasses-its-component-framework.md) | fixed | sev-3 | 2026-07-21 | 2026-07-21 | - |
 | BUG-0014 | [Documentation roadmap links point to removed phase paths](../03_Bugs/BUG-0014_documentation-roadmap-links-point-to-removed-phase-paths.md) | fixed | sev-3 | 2026-07-21 | 2026-07-21 | - |
 | BUG-0015 | [Citation navigation bypasses configured web base path](../03_Bugs/BUG-0015_citation-navigation-bypasses-configured-web-base-path.md) | fixed | sev-3 | 2026-07-21 | 2026-07-21 | - |

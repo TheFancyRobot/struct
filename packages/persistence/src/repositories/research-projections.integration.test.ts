@@ -145,12 +145,13 @@ describeIf('ResearchProjectionRepo integration', () => {
     await sql.unsafe(
       `INSERT INTO query_result_snapshots (
          id, workspace_id, project_id, request_hash, protocol_version,
-         engine_version, engine_config_hash, canonical_sql, dataset_snapshots,
-         schema_hash, result_hash, result_artifact_hash, columns, rows,
-         row_count, truncated, executed_at
+         engine_version, engine_adapter_version, execution_policy_version,
+         engine_config_hash, canonical_sql, dataset_snapshots, schema_hash,
+         result_hash, result_artifact_hash, columns, rows, row_count,
+         truncated, executed_at
        ) VALUES (
-         $1, $2, $3, $4, '1', 'duckdb-test', $5,
-         'SELECT "value" FROM "records" LIMIT 1', $6::jsonb, $7, $8, $9,
+         $1, $2, $3, $4, '1', 'duckdb-1.5.4', '@duckdb/node-api@1.5.4-r.1', 1,
+         $5, 'SELECT "value" FROM "records" LIMIT 1', $6::jsonb, $7, $8, $9,
          $10::jsonb, $11::jsonb, 1, false, NOW()
        )`,
       [

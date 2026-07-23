@@ -15,10 +15,14 @@ export interface LocalDatabaseTarget {
   readonly username: string
 }
 
+export const STACK_UP_COMMAND = [
+  'docker', 'compose', 'up', '-d', '--build', '--wait',
+] as const
+
 export const STACK_RESTART_COMMANDS: readonly (readonly string[])[] = [
   ['bun', 'run', 'local:prepare'],
   ['docker', 'compose', 'config', '--quiet'],
-  ['docker', 'compose', 'up', '-d', '--wait', '--force-recreate'],
+  [...STACK_UP_COMMAND, '--force-recreate'],
 ]
 
 function requiredEnvironment(name: string): string {
@@ -379,41 +383,57 @@ function option(args: readonly string[], name: string): string {
 }
 
 export async function main(args = process.argv.slice(2)): Promise<void> {
-  const databaseUrl = requiredEnvironment('DATABASE_URL')
-  const target = parseLocalDatabaseTarget(databaseUrl)
   const command = args[0]
+  const requireDatabase = () => {
+    const databaseUrl = requiredEnvironment('DATABASE_URL')
+    return { databaseUrl, target: parseLocalDatabaseTarget(databaseUrl) }
+  }
 
   switch (command) {
-    case 'stack:up':
+    case 'stack:up': {
+      const { databaseUrl, target } = requireDatabase()
       await run(['bun', 'run', 'local:prepare'])
       await run(['docker', 'compose', 'config', '--quiet'])
-      await run(['docker', 'compose', 'up', '-d', '--wait'])
+      await run(STACK_UP_COMMAND)
       await verifyDependencies(databaseUrl, target)
       return
-    case 'stack:restart':
+    }
+    case 'stack:restart': {
+      const { databaseUrl, target } = requireDatabase()
       for (const restartCommand of STACK_RESTART_COMMANDS) await run(restartCommand)
       await verifyDependencies(databaseUrl, target)
       return
-    case 'database:reset':
+    }
+    case 'database:reset': {
+      const { databaseUrl, target } = requireDatabase()
       await verifyDatabaseCredentials(databaseUrl, target)
       await resetDatabase(target)
       await migrate(databaseUrl)
       return
-    case 'database:backup':
+    }
+    case 'database:backup': {
+      const { databaseUrl, target } = requireDatabase()
       await backup(databaseUrl, target, resolveBackupPath(option(args, '--output')))
       return
-    case 'database:restore':
+    }
+    case 'database:restore': {
+      const { databaseUrl, target } = requireDatabase()
       await restore(databaseUrl, target, resolveBackupPath(option(args, '--input')))
       return
-    case 'database:verify':
+    }
+    case 'database:verify': {
+      const { databaseUrl, target } = requireDatabase()
       await verifyDependencies(databaseUrl, target)
       return
+    }
     case 'artifacts:backup':
       await backupArtifacts(resolveArtifactBackupPath(option(args, '--output')))
       return
-    case 'artifacts:restore':
+    case 'artifacts:restore': {
+      const { target } = requireDatabase()
       await restoreArtifacts(target, resolveArtifactBackupPath(option(args, '--input')))
       return
+    }
     case 'artifacts:verify':
       await verifyArtifactStore(artifactRoot())
       return

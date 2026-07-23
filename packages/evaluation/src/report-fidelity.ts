@@ -4,6 +4,7 @@ import {
   Claim,
   ClaimId,
   ContentRevisionId,
+  DATA_ENGINE_VERSION,
   DatasetCitationId,
   DatasetId,
   DatasetSnapshotId,
@@ -246,7 +247,9 @@ function evidenceInputs() {
           projectId,
           requestHash: digest('dataset-request'),
           protocolVersion: '1' as const,
-          engineVersion: 'duckdb-1.5.4',
+          engineVersion: DATA_ENGINE_VERSION,
+          engineAdapterVersion: '@duckdb/node-api@1.5.4-r.1' as const,
+          executionPolicyVersion: 1 as const,
           engineConfigHash: digest('dataset-config'),
           canonicalSql,
           snapshots: [{

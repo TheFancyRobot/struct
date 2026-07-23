@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { Effect, Option } from 'effect'
+import { Cause, Effect, Exit, Option } from 'effect'
 import {
   EventJournalId,
   JobQueueId,
@@ -7,6 +7,7 @@ import {
   ResearchRunId,
   WorkspaceId,
 } from '@struct/domain'
+import { QueryError } from '@struct/persistence'
 import { loadRecursiveAnalysis } from './recursive-analysis'
 
 const workspaceId = WorkspaceId.make('c70e8400-e29b-41d4-a716-446655440001')
@@ -15,6 +16,33 @@ const projectId = ProjectId.make('c70e8400-e29b-41d4-a716-446655440003')
 const runId = ResearchRunId.make('c70e8400-e29b-41d4-a716-446655440004')
 const jobId = JobQueueId.make('c70e8400-e29b-41d4-a716-446655440005')
 const sha = (digit: string) => `sha256:${digit.repeat(64)}`
+const RAW_SQL_MARKER = "RAW_SQL_MARKER__SELECT * FROM users WHERE password = 'db-secret-123'"
+const FS_PATH_MARKER = '/Users/private/PATH_MARKER__service-account.json'
+
+function expectSafeQueryError(
+  exit: Exit.Exit<unknown, unknown>,
+  redactedMarkers: ReadonlyArray<string>,
+  expectedReason?: string,
+): QueryError & { readonly reason?: string } {
+  expect(Exit.isFailure(exit)).toBe(true)
+  if (!Exit.isFailure(exit)) throw new Error('Expected query failure')
+  const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
+  if (!(failure instanceof QueryError)) throw new Error('Expected QueryError failure')
+  expect(failure.operation).toBe('findRecursiveAnalysis')
+  expect(failure.entity).toBe('ResearchProjection')
+  expect(failure.message).toBe(
+    'Persistence query failed during findRecursiveAnalysis on ResearchProjection',
+  )
+  if (expectedReason !== undefined) {
+    expect(failure).toMatchObject({ reason: expectedReason })
+  }
+  for (const value of [failure.message, String(exit.cause), JSON.stringify(failure)]) {
+    for (const marker of redactedMarkers) {
+      expect(value).not.toContain(marker)
+    }
+  }
+  return failure as QueryError & { readonly reason?: string }
+}
 
 function event(
   cursor: bigint,
@@ -128,13 +156,21 @@ describe('recursive analysis read projection', () => {
           event(1n, 'recursive-run-progress-committed', {
             ...runPayload,
             workspaceId: otherWorkspaceId,
+            leakPath: FS_PATH_MARKER,
+            leakSql: RAW_SQL_MARKER,
           }),
         ]),
       },
     ))
-    expect(exit._tag).toBe('Failure')
-    if (exit._tag === 'Success') throw new Error('Expected tampered payload rejection')
-    expect(String(exit.cause)).toContain('outside the authorized workspace')
+    expectSafeQueryError(
+      exit,
+      [
+        RAW_SQL_MARKER,
+        FS_PATH_MARKER,
+        'outside the authorized workspace',
+      ],
+      'workspace-scope-mismatch',
+    )
   })
 
   it('returns no recursive projection when a normal run has no recursive events', async () => {
@@ -185,13 +221,22 @@ describe('recursive analysis read projection', () => {
           const remaining = total - Number(cursor)
           return Effect.succeed(Array.from(
             { length: Math.min(limit, remaining) },
-            (_, index) => event(cursor + BigInt(index + 1), 'research-started', {}),
+            (_, index) => event(cursor + BigInt(index + 1), 'research-started', {
+              leakPath: FS_PATH_MARKER,
+              leakSql: RAW_SQL_MARKER,
+            }),
           ))
         },
       },
     ))
-    expect(exit._tag).toBe('Failure')
-    if (exit._tag === 'Success') throw new Error('Expected bounded read rejection')
-    expect(String(exit.cause)).toContain('exceeds the bounded event read limit')
+    expectSafeQueryError(
+      exit,
+      [
+        RAW_SQL_MARKER,
+        FS_PATH_MARKER,
+        'exceeds the bounded event read limit',
+      ],
+      'event-limit-exceeded',
+    )
   })
 })

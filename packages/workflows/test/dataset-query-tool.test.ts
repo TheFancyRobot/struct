@@ -1,4 +1,5 @@
 import {
+  DATA_ENGINE_VERSION,
   DatasetCitationId,
   DatasetId,
   DatasetSnapshotId,
@@ -23,6 +24,8 @@ const queryResultSnapshotId =
 const schemaHash = Sha256Digest.make(`sha256:${'a'.repeat(64)}`)
 const resultHash = Sha256Digest.make(`sha256:${'b'.repeat(64)}`)
 const resultArtifactHash = Sha256Digest.make(`sha256:${'c'.repeat(64)}`)
+const engineAdapterVersion = '@duckdb/node-api@1.5.4-r.1' as const
+const executionPolicyVersion = 1 as const
 const input = {
   query: {
     credential: 'session',
@@ -52,7 +55,9 @@ const output = {
     projectId,
     requestHash: Sha256Digest.make(`sha256:${'d'.repeat(64)}`),
     protocolVersion: '1' as const,
-    engineVersion: 'duckdb-1.5.4',
+    engineVersion: DATA_ENGINE_VERSION,
+    engineAdapterVersion,
+    executionPolicyVersion,
     engineConfigHash: Sha256Digest.make(`sha256:${'e'.repeat(64)}`),
     canonicalSql: input.query.sql,
     snapshots: [{

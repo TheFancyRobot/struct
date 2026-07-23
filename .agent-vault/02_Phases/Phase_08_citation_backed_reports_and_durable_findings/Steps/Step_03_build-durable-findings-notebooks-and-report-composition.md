@@ -8,12 +8,13 @@ phase: '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Phase|
 status: completed
 owner: durable-findings-report-composition
 created: '2026-07-17'
-updated: '2026-07-20'
+updated: '2026-07-22'
 depends_on:
   - '[[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_02_implement-citation-validation-and-provenance-graph|STEP-08-02 Implement Citation Validation and Provenance Graph]]'
 related_sessions:
   - '[[05_Sessions/2026-07-20-174907-build-durable-findings-notebooks-and-report-composition-durable-findings-report-composition|SESSION-2026-07-20-174907 durable-findings-report-composition session for Build Durable Findings Notebooks and Report Composition]]'
-related_bugs: []
+related_bugs:
+  - '[[03_Bugs/BUG-0023_phase-08-report-fidelity-artifact-is-stale-after-canonical-engine-identity-updates|BUG-0023 Phase 08 Report Fidelity Artifact Is Stale After Canonical Engine Identity Updates]]'
 tags:
   - agent-vault
   - step
@@ -51,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
+- Status: completed
 - Current owner:
 - Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_03_build-durable-findings-notebooks-and-report-composition/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_08_citation_backed_reports_and_durable_findings/Steps/Step_03_build-durable-findings-notebooks-and-report-composition/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Next action: None; step completed.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

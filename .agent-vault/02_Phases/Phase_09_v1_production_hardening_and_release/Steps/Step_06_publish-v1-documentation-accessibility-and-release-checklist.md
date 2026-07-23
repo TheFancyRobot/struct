@@ -8,7 +8,7 @@ phase: '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|Phase 09 
 status: completed
 owner: Codex STEP-09-06 worker
 created: '2026-07-17'
-updated: '2026-07-21'
+updated: '2026-07-22'
 depends_on:
   - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_05_run-full-evaluation-campaign-and-remediate-gates|STEP-09-05 Run Full Evaluation Campaign and Remediate Gates]]'
 related_sessions:
@@ -22,12 +22,13 @@ related_bugs:
   - '[[03_Bugs/BUG-0015_citation-navigation-bypasses-configured-web-base-path|BUG-0015 Citation navigation bypasses configured web base path]]'
   - '[[03_Bugs/BUG-0016_base-path-citation-regression-test-is-not-isolated-in-the-full-test-suite|BUG-0016 Base-path citation regression test is not isolated in the full test suite]]'
   - '[[03_Bugs/BUG-0017_staged-planning-documents-fail-whitespace-validation|BUG-0017 Staged planning documents fail whitespace validation]]'
+  - '[[03_Bugs/BUG-0027_e2e-app-server-helper-adopts-stale-port-listeners-and-leaves-orphans|BUG-0027 E2E App Server Helper Adopts Stale Port Listeners and Leaves Orphans]]'
 tags:
   - agent-vault
   - step
 context_id: SESSION-2026-07-21-194610
 active_session_id: 05_Sessions/2026-07-21-194610-publish-v1-documentation-accessibility-and-release-checklist-codex-bug-0013-orchestrator
-context_status: active
+context_status: completed
 context_summary: Advance [[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist|STEP-09-06 Publish v1 Documentation Accessibility and Release Checklist]].
 ---
 
