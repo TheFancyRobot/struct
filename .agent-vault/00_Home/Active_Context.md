@@ -58,7 +58,8 @@ _Last refreshed: 2026-07-23._
 ## Blockers
 
 <!-- AGENT-START:blockers -->
-- No phase, step, or session notes are currently marked blocked.
+- PR #72's independently validated BUG-0034 fix is blocked from merge by [[03_Bugs/BUG-0036_automated-code-review-capacity-is-rate-limited-for-pr-72|BUG-0036 automated code-review capacity is rate-limited]].
+- BUG-0035 remains an unresolved release blocker.
 <!-- AGENT-END:blockers -->
 
 ## Open Questions
@@ -69,10 +70,11 @@ _Last refreshed: 2026-07-23._
 ## Critical Bugs
 
 <!-- AGENT-START:critical-bugs -->
-- [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]] - status: fixed - severity: sev-1 - reported: 2026-07-21
+- No open severity-critical bugs. BUG-0035 is release-blocking; BUG-0036 blocks the required review of PR #72.
 <!-- AGENT-END:critical-bugs -->
 
 ## Next Actions
 
-- Replace the fixture-backed `workspace-release.spec.ts` gate with a real-stack browser journey that satisfies the Phase 10 release contract.
+- Resolve all actionable feedback on PR #72, then merge the BUG-0034 remediation.
+- Replace the fixture-backed `workspace-release.spec.ts` gate with a real-stack browser journey for BUG-0035.
 - Keep the release checklist open until BUG-0035 is fixed and the complete real browser journey passes; only then activate Phase 10 or perform the v1.0 release action.
