@@ -69,7 +69,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 - There is no acceptable release workaround. Developers can reproduce or debug with the focused recursive-analysis command instead of the full E2E suite, but the canonical gate must stay red until the unexpected 500s are removed or the harness is corrected.
 - Ignoring the console errors would hide a real browser/network defect and violate the zero-defect release gate.
-- **Fix landed 2026-07-23:** The workaround is no longer needed. The harness now stubs all API dependencies (sources, source-activity SSE, research thread history, recursive-analysis, events), and the canonical gate is green.
+- **Fix landed 2026-07-23:** The workaround is no longer needed for this spec. The harness now stubs all API dependencies (sources, source-activity SSE, research thread history, recursive-analysis, events).
 
 ## Permanent Fix Plan
 
@@ -82,8 +82,8 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 - Red: `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts` must reproduce the two-console-500 failure until the fix lands.
 - Green: the same command must return `6 pass, 0 fail` with no unexpected console or request failures.
-- Green: `bun run test:e2e` must pass after the focused fix so the canonical browser gate is restored.
-- **Green result achieved:** `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts` returned `6 pass, 0 fail` with no unexpected console or request failures, and `bun run test:e2e` passed.
+- The aggregate `bun run test:e2e` remains blocked independently by BUG-0035; it is not validation for this focused remediation.
+- **Green result achieved:** `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts` returned `6 pass, 0 fail` with no unexpected console or request failures.
 
 ## Related Notes
 
@@ -99,5 +99,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-07-23 - Reproduced with `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts`: first case failed at `apps/web/e2e/recursive-analysis.spec.ts:253` because `consoleErrors` contained two `Failed to load resource: the server responded with a status of 500 (Internal Server Error)` entries; Bun summary: `5 pass, 1 fail`.
 - 2026-07-23 - Canonical evidence remained blocked: lead confirmed `bun run test:e2e` failed twice on the same recursive-analysis responsive path.
 - 2026-07-23 - A pre-fix verification re-run hit `TimeoutError: reload: Timeout 30000ms exceeded` plus a follow-on timed-out hook before the harness fix landed.
-- 2026-07-23 - Fixed: recursive-analysis.spec.ts now stubs all API dependencies (sources, source-activity, research thread, recursive-analysis, events); `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts` returned 6 pass, 0 fail, and `bun run test:e2e` passed.
+- 2026-07-23 - Fixed: recursive-analysis.spec.ts now stubs all API dependencies (sources, source-activity, research thread, recursive-analysis, events); `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts` returned 6 pass, 0 fail. The aggregate E2E gate remains independently blocked by BUG-0035.
 <!-- AGENT-END:bug-timeline -->
