@@ -93,27 +93,30 @@ describe('walking-skeleton browser path', () => {
         ].join('\n'),
       }))
     await page.route(
-      `**/api/projects/${projectId}/research/${threadId}/citation/${citationId}`,
+      `**/api/projects/${projectId}/research/${threadId}/runs/${runId}/evidence/document/${citationId}`,
       (route) =>
         route.fulfill({
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({
-            id: citationId,
-            runId,
-            sourceVersionId,
-            sourceName: 'walking-skeleton.txt',
-            sourceVersion: 1,
-            locator: 'lines 1-1',
-            contextLines: [{
-              lineNumber: 1,
-              segments: [{
-                text: 'The source confirms the walking slice.',
-                cited: true,
+            kind: 'document',
+            evidence: {
+              id: citationId,
+              runId,
+              sourceVersionId,
+              sourceName: 'walking-skeleton.txt',
+              sourceVersion: 1,
+              locator: 'lines 1-1',
+              contextLines: [{
+                lineNumber: 1,
+                segments: [{
+                  text: 'The source confirms the walking slice.',
+                  cited: true,
+                }],
               }],
-            }],
-            startLine: 1,
-            endLine: 1,
+              startLine: 1,
+              endLine: 1,
+            },
           }),
         }),
     )
@@ -123,19 +126,15 @@ describe('walking-skeleton browser path', () => {
     )
     await page.getByText('The source confirms the walking slice.').waitFor()
 
-    const citationLink = page.getByRole('link', {
+    const citationLink = page.getByRole('button', {
       name: 'Open citation 1 in source version',
     })
     await citationLink.focus()
     expect(await citationLink.evaluate((element) => element === document.activeElement))
       .toBe(true)
     await page.keyboard.press('Enter')
-
-    await page.waitForURL(`**/citation/${citationId}`)
     expect(await page.getByRole('heading', { name: 'walking-skeleton.txt' }).textContent())
       .toBe('walking-skeleton.txt')
-    expect(await page.getByRole('heading', { name: 'Source preview' }).textContent())
-      .toBe('Source preview')
     expect(await page.locator('span.bg-warning\\/40').textContent())
       .toBe('The source confirms the walking slice.')
 

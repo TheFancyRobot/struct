@@ -175,7 +175,7 @@ describe('mixed-source report browser workflow', () => {
     expect(await page.locator('.synthesis-pane').evaluate(
       (element) => getComputedStyle(element).display,
     )).toBe('block')
-    const evidence = page.getByRole('button', { name: 'Evidence' })
+    const evidence = page.getByRole('button', { name: 'Evidence', exact: true })
     await page.getByRole('link', { name: '[D1]' }).focus()
     await page.keyboard.press('Enter')
     expect(await evidence.getAttribute('aria-pressed')).toBe('true')
