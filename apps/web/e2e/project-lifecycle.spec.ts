@@ -352,7 +352,7 @@ describe('project lifecycle browser path', () => {
 
     recover = true
     await page.getByRole('button', { name: 'Retry opening project' }).click()
-    await page.getByRole('heading', { level: 2, name: 'Café roadmap' }).waitFor()
+    await page.getByRole('heading', { level: 1, name: 'Café roadmap' }).waitFor()
     await page.close()
   })
 
