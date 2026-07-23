@@ -70,22 +70,19 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Changed Paths
 
 <!-- AGENT-START:session-changed-paths -->
-- None yet.
-<!-- AGENT-END:session-changed-paths -->
 - `apps/web/src/pages/ProjectPage.tsx` and `apps/web/e2e/project-lifecycle.spec.ts` for safe route/cache handling.
 - `packages/domain/src/project-lifecycle.{ts,test.ts}` for Unicode-aware project-name limits.
 - The renamed `BUG-0032` vault note and its index/reference links.
+<!-- AGENT-END:session-changed-paths -->
 
 ## Validation Run
 
 <!-- AGENT-START:session-validation-run -->
-- Command: not run yet
-- Result: not run
-- Notes: Superseded below by completed validation results.
-<!-- AGENT-END:session-validation-run -->
 - Targeted project lifecycle E2E: 11 passed, 0 failed.
 - Typecheck, lint, import boundaries, build, docs lint, secrets scan, and vault doctor: passed.
 - Full repository suite after branch-consistent PostgreSQL/sidecar reset: 933 passed, 3 skipped, 0 failed.
+- Scope: 933 is the final full-repository run, so it includes tests beyond the earlier targeted/PR validation totals.
+<!-- AGENT-END:session-validation-run -->
 
 ## Bugs Encountered
 
@@ -107,4 +104,4 @@ Use one note per meaningful work session. Record chronology, validation, and han
 
 ## Completion Summary
 
-- State what finished, what remains, and whether handoff is clean.
+- Project lifecycle review fixes and final validation completed. BUG-0013 remains open until the complete browser journey is delivered and verified. Handoff is clean; the release gate remains blocked by BUG-0013.

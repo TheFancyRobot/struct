@@ -23,7 +23,7 @@ _Last refreshed: 2026-07-23._
 - Session in progress: [[05_Sessions/2026-07-23-044455-establish-workspace-and-project-lifecycle-codex|SESSION-2026-07-23-044455 Codex session for Establish Workspace and Project Lifecycle]] - owner: Codex - phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]] - updated: 2026-07-23
 - Current step: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle|STEP-10-01 Establish Workspace and Project Lifecycle]] - status: planned - phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]
 - Active phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: planned - updated: 2026-07-21
-- Also active: 25 more additional steps, 1 open critical bug.
+- Also in scope: 25 more additional steps, 1 open critical bug.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -58,7 +58,7 @@ _Last refreshed: 2026-07-23._
 ## Blockers
 
 <!-- AGENT-START:blockers -->
-- No phase, step, or session notes are currently marked blocked.
+- No phase, step, or session notes are currently marked blocked; BUG-0013 is the active release/product blocker.
 <!-- AGENT-END:blockers -->
 
 ## Open Questions
