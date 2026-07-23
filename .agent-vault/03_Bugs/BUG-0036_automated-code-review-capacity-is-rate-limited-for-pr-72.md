@@ -4,11 +4,11 @@ template_version: 2
 contract_version: 1
 title: 'Automated code review capacity is rate-limited for PR #72'
 bug_id: BUG-0036
-status: new
+status: fixed
 severity: sev-3
 category: logic
 reported_on: '2026-07-23'
-fixed_on: ''
+fixed_on: '2026-07-23'
 owner: ''
 created: '2026-07-23'
 updated: '2026-07-23'
@@ -26,12 +26,12 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Summary
 
-- CodeRabbit could not review PR #72 because its per-user review limit is exhausted.
+- CodeRabbit's per-user review limit temporarily blocked PR #72; capacity returned and the review completed on 2026-07-23.
 - Related notes: [[03_Bugs/BUG-0034_recursive-analysis-responsive-e2e-emits-unhandled-500-responses|BUG-0034]], [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10]].
 
 ## Observed Behavior
 
-- CodeRabbit posted `Review limit reached` on PR #72 and reported the next review is available in approximately 29 minutes. Qodo is paused. No automated review has assessed the PR's latest commit.
+- During the 2026-07-23 review window, CodeRabbit posted `Review limit reached` and delayed review of PR #72. Qodo remains paused. CodeRabbit later completed review of the branch; the PR now awaits resolution of its actionable feedback rather than review capacity.
 
 ## Expected Behavior
 
@@ -45,7 +45,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Scope / Blast Radius
 
-- Blocks merging the independently verified BUG-0034 remediation PR and therefore blocks subsequent BUG-0035 work under the sequential remediation gate.
+- The rate-limit incident temporarily blocked merging the BUG-0034 remediation PR. It no longer blocks the merge; any remaining block is the PR's actionable review feedback.
 
 ## Suspected Root Cause
 
@@ -57,15 +57,15 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Workaround
 
-- Wait for review capacity. Merging without the required review would violate the roadmap gate.
+- Historical only: wait for review capacity. The required review has now completed.
 
 ## Permanent Fix Plan
 
-- Resume PR #72 review once capacity returns, address any actionable feedback, then merge it before starting BUG-0035.
+- Completed: CodeRabbit review capacity returned and the review completed. Resolve its actionable feedback before merging PR #72 and starting BUG-0035.
 
 ## Regression Coverage Needed
 
-- Recheck PR #72 review status after the quoted availability window; automated review must complete without unresolved actionable comments.
+- Capacity regression: a future rate-limit response must clear before merge. Current PR work remains separately gated on resolving the completed review's actionable comments.
 
 ## Related Notes
 
@@ -77,6 +77,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Timeline
 
 <!-- AGENT-START:bug-timeline -->
-- 2026-07-23 - Reported: CodeRabbit review capacity was rate-limited for PR #72; PR merge is blocked.
+- 2026-07-23 - Reported: CodeRabbit review capacity was rate-limited for PR #72; PR merge was temporarily blocked.
+- 2026-07-23 20:56 UTC - Retried `@coderabbitai review`; the prior rate-limit response still reported the next review window in approximately 26 minutes.
+- 2026-07-23 21:57 UTC - CodeRabbit completed review of PR #72. The rate-limit incident is fixed; outstanding actionable feedback remains a separate merge gate.
 <!-- AGENT-END:bug-timeline -->
-- 2026-07-23 20:56 UTC - Retried `@coderabbitai review`; the prior rate-limit response still reports the next review window in approximately 26 minutes. The command acknowledgment did not produce a substantive review of commit `9fccb53`, so PR #72 remains blocked.
