@@ -15,6 +15,8 @@ export interface WorkspaceState {
   readonly setDraft: Setter<string>
   readonly selectedEvidence: Accessor<string | null>
   readonly setSelectedEvidence: Setter<string | null>
+  readonly evidenceTrigger: Accessor<HTMLElement | null>
+  readonly setEvidenceTrigger: Setter<HTMLElement | null>
   readonly navigationCollapsed: Accessor<boolean>
   readonly setNavigationCollapsed: Setter<boolean>
   readonly navigationSheetOpen: Accessor<boolean>
@@ -30,6 +32,7 @@ export function createWorkspaceState(initialProjectId: string | null): Workspace
   const [projectId, setProjectId] = createSignal(initialProjectId)
   const [draft, setDraft] = createSignal('')
   const [selectedEvidence, setSelectedEvidence] = createSignal<string | null>(null)
+  const [evidenceTrigger, setEvidenceTrigger] = createSignal<HTMLElement | null>(null)
   const [navigationCollapsed, setNavigationCollapsed] = createSignal(false)
   const [navigationSheetOpen, setNavigationSheetOpen] = createSignal(false)
   const [evidenceCollapsed, setEvidenceCollapsed] = createSignal(false)
@@ -41,6 +44,8 @@ export function createWorkspaceState(initialProjectId: string | null): Workspace
     setDraft,
     selectedEvidence,
     setSelectedEvidence,
+    evidenceTrigger,
+    setEvidenceTrigger,
     navigationCollapsed,
     setNavigationCollapsed,
     navigationSheetOpen,
@@ -54,6 +59,7 @@ export function createWorkspaceState(initialProjectId: string | null): Workspace
       setProjectId(nextProjectId)
       setDraft('')
       setSelectedEvidence(null)
+      setEvidenceTrigger(null)
       setNavigationSheetOpen(false)
       setEvidenceSheetOpen(false)
     },

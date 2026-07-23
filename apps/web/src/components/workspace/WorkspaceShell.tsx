@@ -1,6 +1,21 @@
 /* eslint-disable no-unused-vars -- Babel does not mark Solid JSX imports as used. */
-import { Show, onCleanup, onMount, type ParentComponent } from 'solid-js'
+import { Schema } from 'effect'
+import {
+  ProjectId,
+  ResearchRunId,
+  ResearchThreadId,
+} from '@struct/domain'
+import {
+  Show,
+  createEffect,
+  createMemo,
+  onCleanup,
+  onMount,
+  type ParentComponent,
+} from 'solid-js'
 import { basePathFromPublicBaseUrl, withBasePath } from '../../base-path'
+import { EvidenceInspector as EvidenceDetailInspector } from '../EvidenceInspector'
+import { parseEvidenceSelection } from '../evidence-selection'
 import { useWorkspaceState } from './workspace-state'
 
 type Theme = 'struct-light' | 'struct-dark'
@@ -148,7 +163,7 @@ export const ConversationWorkspace: ParentComponent<{
   )
 }
 
-export const EvidenceInspector: ParentComponent<{
+const EmptyEvidenceInspector: ParentComponent<{
   readonly headingRef: (element: HTMLHeadingElement) => void
   readonly onCloseSheet: () => void
   readonly onCollapse: () => void
@@ -193,16 +208,35 @@ export const EvidenceInspector: ParentComponent<{
 
 export const WorkspaceShell: ParentComponent<{
   readonly currentPathname?: string
+  readonly evidence?: string
+  readonly onClearEvidence?: () => void
   readonly theme: Theme
   readonly onToggleTheme: () => void
 }> = (props) => {
   const state = useWorkspaceState()
+  const selection = createMemo(() => parseEvidenceSelection(props.evidence))
+  const evidenceScope = createMemo(() => {
+    const route = /^\/projects\/([^/]+)\/research\/([^/]+)\/runs\/([^/]+)$/.exec(
+      props.currentPathname ?? '',
+    )
+    return route !== null
+      && Schema.is(ProjectId)(route[1])
+      && Schema.is(ResearchThreadId)(route[2])
+      && Schema.is(ResearchRunId)(route[3])
+      ? {
+          projectId: route[1],
+          threadId: route[2],
+          runId: route[3],
+        }
+      : null
+  })
   let navigationHeading: HTMLHeadingElement | undefined
   let evidenceHeading: HTMLHeadingElement | undefined
   let navigationToggle: HTMLButtonElement | undefined
   let evidenceToggle: HTMLButtonElement | undefined
   let navigationOpener: HTMLButtonElement | undefined
   let evidenceOpener: HTMLButtonElement | undefined
+  let previousEvidence: string | null = null
 
   const closeNavigationSheet = () => {
     state.setNavigationSheetOpen(false)
@@ -211,6 +245,12 @@ export const WorkspaceShell: ParentComponent<{
   const closeEvidenceSheet = () => {
     state.setEvidenceSheetOpen(false)
     focus(evidenceOpener)
+  }
+  const closeEvidence = () => {
+    props.onClearEvidence?.()
+    state.setSelectedEvidence(null)
+    state.setEvidenceSheetOpen(false)
+    focus(state.evidenceTrigger() ?? evidenceOpener)
   }
   const openNavigation = (opener: HTMLButtonElement) => {
     navigationOpener = opener
@@ -233,11 +273,29 @@ export const WorkspaceShell: ParentComponent<{
     focus(evidenceHeading)
   }
 
+  createEffect(() => {
+    const current = selection()
+    const serialized = current === null ? null : `${current.kind}:${current.id}`
+    state.setSelectedEvidence(serialized)
+    if (current !== null && evidenceScope() !== null) {
+      state.setEvidenceCollapsed(false)
+      if (!window.matchMedia('(min-width: 1024px)').matches) {
+        state.setNavigationSheetOpen(false)
+        state.setEvidenceSheetOpen(true)
+      }
+      if (serialized !== previousEvidence) focus(evidenceHeading)
+    } else if (previousEvidence !== null) {
+      state.setEvidenceSheetOpen(false)
+      focus(state.evidenceTrigger() ?? evidenceOpener)
+    }
+    previousEvidence = serialized
+  })
+
   onMount(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
-      if (state.evidenceSheetOpen()) {
-        closeEvidenceSheet()
+      if (selection() !== null) {
+        closeEvidence()
       } else if (state.navigationSheetOpen()) {
         closeNavigationSheet()
       }
@@ -303,14 +361,28 @@ export const WorkspaceShell: ParentComponent<{
           'lg:hidden': state.evidenceCollapsed(),
         }}
       >
-        <EvidenceInspector
-          headingRef={(element) => { evidenceHeading = element }}
-          onCloseSheet={closeEvidenceSheet}
-          onCollapse={() => {
-            state.setEvidenceCollapsed(true)
-            focus(evidenceToggle)
-          }}
-        />
+        <Show
+          when={selection() !== null && evidenceScope() !== null}
+          fallback={(
+            <EmptyEvidenceInspector
+              headingRef={(element) => { evidenceHeading = element }}
+              onCloseSheet={closeEvidenceSheet}
+              onCollapse={() => {
+                state.setEvidenceCollapsed(true)
+                focus(evidenceToggle)
+              }}
+            />
+          )}
+        >
+          <EvidenceDetailInspector
+            projectId={evidenceScope()!.projectId}
+            threadId={evidenceScope()!.threadId}
+            runId={evidenceScope()!.runId}
+            selection={selection()!}
+            headingRef={(element) => { evidenceHeading = element }}
+            onClose={closeEvidence}
+          />
+        </Show>
       </section>
     </div>
   )

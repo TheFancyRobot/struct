@@ -14,6 +14,8 @@ import {
   ProjectRepo,
   DirectoryControlRepo,
   DatasetQueryEvidenceRepo,
+  DatasetCitationValidationError,
+  DatasetQueryEvidenceScopeError,
   DurableArtifactsRepo,
   EntityNotFoundError,
   ProvenanceGraphRepo,
@@ -33,6 +35,8 @@ import {
   JobQueueId,
   AuthorizationError,
   CitationId,
+  DatasetCitationEvidence,
+  DatasetCitationId,
   NotFoundError,
   SourceId,
   WorkspaceId,
@@ -1202,6 +1206,127 @@ const server = Effect.gen(function* () {
       const citationRoute =
         /^\/api\/projects\/([^/]+)\/research\/([^/]+)\/citation\/([^/]+)$/
           .exec(url.pathname)
+
+      const evidenceRoute =
+        /^\/api\/projects\/([^/]+)\/research\/([^/]+)\/runs\/([^/]+)\/evidence\/(document|dataset)\/([^/]+)$/
+          .exec(url.pathname)
+      if (evidenceRoute !== null && req.method === 'GET') {
+        const identifiers = Effect.try({
+          try: () => ({
+            projectId: Schema.decodeUnknownSync(ProjectId)(evidenceRoute[1]),
+            threadId: Schema.decodeUnknownSync(ResearchThreadId)(evidenceRoute[2]),
+            runId: Schema.decodeUnknownSync(ResearchRunId)(evidenceRoute[3]),
+            kind: evidenceRoute[4] as 'document' | 'dataset',
+            evidenceId: evidenceRoute[5] ?? '',
+          }),
+          catch: () => new NotFoundError({
+            entityType: 'Evidence',
+            entityId: evidenceRoute[5] ?? '',
+            message: 'Evidence not found',
+          }),
+        })
+        const program = identifiers.pipe(Effect.flatMap((ids) =>
+          Effect.gen(function* () {
+            const project = yield* ProjectRepo.findById(ids.projectId).pipe(
+              Effect.provide(projectLayer),
+            )
+            const thread = yield* ResearchThreadRepo.findById(ids.threadId).pipe(
+              Effect.provide(researchThreadLayer),
+            )
+            const run = yield* ResearchRunRepo.findById(ids.runId).pipe(
+              Effect.provide(researchRunLayer),
+            )
+            if (
+              project.workspaceId !== identity.workspaceId
+              || thread.projectId !== ids.projectId
+              || run.threadId !== ids.threadId
+            ) {
+              return yield* new NotFoundError({
+                entityType: 'Evidence',
+                entityId: ids.evidenceId,
+                message: 'Evidence not found',
+              })
+            }
+
+            const completed = yield* ResearchProjectionRepo.findCompleted(
+              identity.workspaceId,
+              ids.projectId,
+              ids.runId,
+            ).pipe(Effect.provide(projectionLayer))
+            if (ids.kind === 'document') {
+              const citationId = yield* Schema.decodeUnknown(CitationId)(ids.evidenceId)
+              if (!completed.citations.some((citation) => citation.id === citationId)) {
+                return yield* new NotFoundError({
+                  entityType: 'Evidence',
+                  entityId: citationId,
+                  message: 'Evidence not found',
+                })
+              }
+              const evidence = yield* getCitationDetail(
+                ids.projectId,
+                ids.threadId,
+                citationId,
+                (projectId, threadId, scopedCitationId) =>
+                  ResearchProjectionRepo.findCitation(
+                    projectId,
+                    threadId,
+                    scopedCitationId,
+                  ).pipe(Effect.provide(projectionLayer)),
+              )
+              if (evidence.runId !== ids.runId) {
+                return yield* new NotFoundError({
+                  entityType: 'Evidence',
+                  entityId: citationId,
+                  message: 'Evidence not found',
+                })
+              }
+              return { kind: 'document' as const, evidence }
+            }
+
+            const citationId = yield* Schema.decodeUnknown(DatasetCitationId)(
+              ids.evidenceId,
+            )
+            if (
+              !completed.datasetCitations.some((citation) =>
+                citation.id === citationId)
+            ) {
+              return yield* new NotFoundError({
+                entityType: 'Evidence',
+                entityId: citationId,
+                message: 'Evidence not found',
+              })
+            }
+            const evidence = yield* reopenDatasetCitation(
+              identity.workspaceId,
+              ids.projectId,
+              citationId,
+            ).pipe(
+              Effect.provide(datasetQueryEvidenceLayer),
+              Effect.flatMap(Schema.encode(DatasetCitationEvidence)),
+            )
+            return { kind: 'dataset' as const, evidence }
+          }),
+        ))
+        const result = await Runtime.runPromiseExit(effectRuntime)(program)
+        if (result._tag === 'Failure') {
+          const failure = Option.getOrUndefined(Cause.failureOption(result.cause))
+          if (failure instanceof DatasetCitationValidationError) {
+            return jsonResponse({ error: 'EvidenceInvalid' }, 409)
+          }
+          return failure instanceof EntityNotFoundError
+            || failure instanceof NotFoundError
+            || failure instanceof DatasetQueryEvidenceScopeError
+            || (
+              typeof failure === 'object'
+              && failure !== null
+              && '_tag' in failure
+              && failure._tag === 'ParseError'
+            )
+            ? jsonResponse({ error: 'EvidenceNotFound' }, 404)
+            : jsonResponse({ error: 'EvidenceUnavailable' }, 503)
+        }
+        return jsonResponse(result.value)
+      }
 
       const datasetQueryResponse = await Runtime.runPromise(effectRuntime)(
         datasetQueryReadRoute(req, {

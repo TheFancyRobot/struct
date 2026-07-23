@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars -- Babel does not mark Solid JSX imports as used. */
-import { useLocation } from '@solidjs/router'
+import { useLocation, useSearchParams } from '@solidjs/router'
 import {
   type ParentComponent,
   createEffect,
@@ -20,6 +20,7 @@ const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
 
 const App: ParentComponent = (props) => {
   const location = useLocation()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [theme, setTheme] = createSignal<Theme>('struct-light')
   const projectId = createMemo(() => workspaceProjectId(location.pathname, appBasePath))
 
@@ -52,6 +53,8 @@ const App: ParentComponent = (props) => {
         theme={theme()}
         onToggleTheme={toggleTheme}
         currentPathname={location.pathname}
+        evidence={typeof searchParams.evidence === 'string' ? searchParams.evidence : undefined}
+        onClearEvidence={() => setSearchParams({ evidence: undefined })}
       >
         {props.children}
       </WorkspaceShell>
