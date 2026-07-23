@@ -4,11 +4,11 @@ template_version: 2
 contract_version: 1
 title: Recursive analysis responsive E2E emits unhandled 500 responses
 bug_id: BUG-0034
-status: confirmed
+status: fixed
 severity: sev-3
 category: logic
 reported_on: '2026-07-23'
-fixed_on: ''
+fixed_on: '2026-07-23'
 owner: ''
 created: '2026-07-23'
 updated: '2026-07-23'
@@ -69,18 +69,21 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 - There is no acceptable release workaround. Developers can reproduce or debug with the focused recursive-analysis command instead of the full E2E suite, but the canonical gate must stay red until the unexpected 500s are removed or the harness is corrected.
 - Ignoring the console errors would hide a real browser/network defect and violate the zero-defect release gate.
+- **Fix landed 2026-07-23:** The workaround is no longer needed. The harness now stubs all API dependencies (sources, source-activity SSE, research thread history, recursive-analysis, events), and the canonical gate is green.
 
 ## Permanent Fix Plan
 
 - Trace the recursive-analysis responsive run end to end, identify which `/events` request bypasses or outlives the intended test stub, and make the harness deterministic for every viewport/theme iteration.
 - Either provide a real bounded backend for the recursive-analysis SSE path or switch the browser hook/test seam so the responsive spec does not depend on a half-live proxy route.
 - Keep the `consoleErrors === []`, `pageErrors === []`, and `failedRequests === []` assertions once the source of the 500s is fixed.
+- **Completed 2026-07-23:** The harness now stubs the source catalog (`/api/projects/${projectId}/sources`), source-activity SSE heartbeat (`/api/projects/${projectId}/source-activity?cursor=0`), and thread history (`/api/projects/${projectId}/research/${threadId}`) alongside the recursive-analysis routes. Assertions for `consoleErrors`, `pageErrors`, `failedRequests`, and `serverErrors` are all in place.
 
 ## Regression Coverage Needed
 
 - Red: `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts` must reproduce the two-console-500 failure until the fix lands.
 - Green: the same command must return `6 pass, 0 fail` with no unexpected console or request failures.
 - Green: `bun run test:e2e` must pass after the focused fix so the canonical browser gate is restored.
+- **Green result achieved:** `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts` returned `6 pass, 0 fail` with no unexpected console or request failures, and `bun run test:e2e` passed.
 
 ## Related Notes
 
@@ -95,5 +98,6 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-07-23 - Reported.
 - 2026-07-23 - Reproduced with `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts`: first case failed at `apps/web/e2e/recursive-analysis.spec.ts:253` because `consoleErrors` contained two `Failed to load resource: the server responded with a status of 500 (Internal Server Error)` entries; Bun summary: `5 pass, 1 fail`.
 - 2026-07-23 - Canonical evidence remained blocked: lead confirmed `bun run test:e2e` failed twice on the same recursive-analysis responsive path.
+- 2026-07-23 - A pre-fix verification re-run hit `TimeoutError: reload: Timeout 30000ms exceeded` plus a follow-on timed-out hook before the harness fix landed.
+- 2026-07-23 - Fixed: recursive-analysis.spec.ts now stubs all API dependencies (sources, source-activity, research thread, recursive-analysis, events); `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts` returned 6 pass, 0 fail, and `bun run test:e2e` passed.
 <!-- AGENT-END:bug-timeline -->
-ith `TimeoutError: reload: Timeout 30000ms exceeded` plus the follow-on timed-out hook.
