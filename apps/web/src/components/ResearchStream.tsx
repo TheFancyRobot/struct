@@ -17,7 +17,6 @@ import type {
   ResearchRunId,
   ResearchThreadId,
   RecursiveRunProgress,
-  WorkspaceId,
 } from '@struct/domain'
 import { ResearchEvent } from '@struct/domain'
 import { useSSE } from '../hooks/useSSE'
@@ -28,7 +27,7 @@ import {
   cancelResearchRun,
   fetchRecursiveAnalysis,
 } from '../api/research'
-import { saveCompletedResearchFinding } from '../api/artifacts'
+import { createNote } from '../api/notes'
 import { RecursiveRunTimeline } from './RecursiveRunTimeline'
 import { PartialFindingsPanel } from './PartialFindingsPanel'
 import { evidenceSelection } from './evidence-selection'
@@ -38,7 +37,6 @@ interface ResearchStreamProps {
   readonly projectId: ProjectId
   readonly threadId: ResearchThreadId
   readonly runId: ResearchRunId
-  readonly workspaceId?: WorkspaceId
 }
 
 const eventLabel = (event: ResearchEvent): string => {
@@ -92,9 +90,9 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
   const [recursive, setRecursive] = createSignal<RecursiveRunProgress | null>(null)
   const [cancelling, setCancelling] = createSignal(false)
   const [cancelError, setCancelError] = createSignal<string>()
-  const [savingFinding, setSavingFinding] = createSignal(false)
-  const [savedFindingId, setSavedFindingId] = createSignal<string>()
-  const [findingSaveError, setFindingSaveError] = createSignal<string>()
+  const [savingNote, setSavingNote] = createSignal(false)
+  const [savedNoteId, setSavedNoteId] = createSignal<string>()
+  const [noteSaveError, setNoteSaveError] = createSignal<string>()
   const legacyEvents = createMemo(() => state.events.filter(
     (event) => !event.type.startsWith('recursive-'),
   ))
@@ -225,28 +223,44 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
     }
   }
 
-  const saveFinding = async (
+  const saveNote = async (
     event: Extract<ResearchEvent, { readonly type: 'research-completed' }>,
   ) => {
-    if (props.workspaceId === undefined || savingFinding()) return
-    setSavingFinding(true)
-    setFindingSaveError(undefined)
+    if (savingNote()) return
+    setSavingNote(true)
+    setNoteSaveError(undefined)
     try {
-      const finding = await saveCompletedResearchFinding({
-        workspaceId: props.workspaceId,
+      const note = await createNote({
         projectId: props.projectId,
-        runId: props.runId,
-        answer: event.data.answer,
-        completedAt: event.createdAt,
-        citations: event.data.citations,
+        title: event.data.answer.slice(0, 200),
+        body: event.data.answer,
+        idempotencyKey: `save-note-run-${props.runId}`,
+        origin: {
+          threadId: props.threadId,
+          runId: props.runId,
+          citations: [
+            ...event.data.citations.map((citation) => ({
+              kind: 'document' as const,
+              id: citation.id,
+              sourceVersionId: citation.sourceVersionId,
+              locator: citation.locator,
+            })),
+            ...event.data.datasetCitations.map((citation) => ({
+              kind: 'dataset' as const,
+              id: citation.id,
+              queryResultSnapshotId: citation.queryResultSnapshotId,
+              datasetSnapshotId: citation.datasetSnapshotId,
+            })),
+          ],
+        },
       })
-      setSavedFindingId(finding.id)
+      setSavedNoteId(note.id)
     } catch (error) {
-      setFindingSaveError(error instanceof Error
+      setNoteSaveError(error instanceof Error
         ? error.message
         : 'The completed result could not be saved.')
     } finally {
-      setSavingFinding(false)
+      setSavingNote(false)
     }
   }
 
@@ -375,34 +389,32 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
                             </button>
                           )}
                         </For>
-                        <Show when={props.workspaceId}>
+                        <Show when={
+                          completed().data.citations.length
+                          + completed().data.datasetCitations.length > 0
+                        }>
                           <button
                             type="button"
                             class="btn btn-primary btn-sm"
-                            disabled={savingFinding() || savedFindingId() !== undefined}
-                            onClick={() => void saveFinding(completed())}
+                            disabled={savingNote() || savedNoteId() !== undefined}
+                            onClick={() => void saveNote(completed())}
                           >
-                            {savedFindingId() !== undefined
-                              ? 'Saved to notebook'
-                              : savingFinding()
-                                ? 'Saving finding…'
-                                : 'Save finding'}
+                            {savedNoteId() !== undefined
+                              ? 'Saved as note'
+                              : savingNote()
+                                ? 'Saving note…'
+                                : 'Save as note'}
                           </button>
                         </Show>
-                        <Show when={savedFindingId() && props.workspaceId}>
+                        <Show when={savedNoteId()}>
                           <A
                             class="link link-primary"
-                            href={
-                              `/projects/${props.projectId}/notebook`
-                              + `?workspaceId=${props.workspaceId}`
-                              + `&threadId=${props.threadId}`
-                              + `&runId=${props.runId}`
-                            }
+                            href={`/projects/${props.projectId}/notes/${savedNoteId()}`}
                           >
-                            Open project notebook
+                            Open note
                           </A>
                         </Show>
-                        <Show when={findingSaveError()}>
+                        <Show when={noteSaveError()}>
                           {(message) => <div class="alert alert-error" role="alert">{message()}</div>}
                         </Show>
                       </div>

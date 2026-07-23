@@ -76,6 +76,10 @@ export type CitationId = Schema.Schema.Type<typeof CitationId>
 export const FindingId = BrandedUUID.pipe(Schema.brand('FindingId'))
 export type FindingId = Schema.Schema.Type<typeof FindingId>
 
+/** NoteId — identity of one user-authored durable note. */
+export const NoteId = BrandedUUID.pipe(Schema.brand('NoteId'))
+export type NoteId = Schema.Schema.Type<typeof NoteId>
+
 /** ClaimId — identity of one durable claim shared by findings and reports. */
 export const ClaimId = BrandedUUID.pipe(Schema.brand('ClaimId'))
 export type ClaimId = Schema.Schema.Type<typeof ClaimId>
