@@ -121,6 +121,18 @@ kbd {
   overflow-wrap: anywhere;
 }
 
+.app-shell .btn {
+  min-height: 2.75rem;
+}
+
+.app-shell .menu a {
+  min-height: 2.75rem;
+}
+
+.app-shell .btn-sm {
+  min-width: 2.75rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

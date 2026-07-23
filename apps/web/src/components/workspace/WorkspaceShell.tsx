@@ -300,6 +300,8 @@ export const WorkspaceShell: ParentComponent<{
       if (event.key !== 'Escape') return
       if (selection() !== null) {
         closeEvidence()
+      } else if (state.evidenceSheetOpen()) {
+        closeEvidenceSheet()
       } else if (state.navigationSheetOpen()) {
         closeNavigationSheet()
       }
