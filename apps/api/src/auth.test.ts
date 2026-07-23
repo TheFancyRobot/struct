@@ -17,6 +17,8 @@ describe('API identity boundary', () => {
   it('keeps only liveness and dependency readiness probes public', () => {
     const protectedRequests = [
       ['GET', '/metrics'],
+      ['GET', '/api/projects'],
+      ['POST', '/api/projects'],
       ['POST', '/api/projects/project/directories'],
       ['GET', '/api/projects/project/directory-jobs/job'],
       ['POST', '/api/projects/project/directory-jobs/job/pause'],

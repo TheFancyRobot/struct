@@ -30,6 +30,7 @@ export {
   // Repository Effect.Services
   WorkspaceRepo,
   ProjectRepo,
+  ProjectConflictError,
   SourceRepo,
   SourceVersionRepo,
   ResearchThreadRepo,
@@ -106,6 +107,8 @@ export type {
 // Repository interface types (for consumers).
 export type {
   WorkspaceRepository,
+  ProjectListOptions,
+  ProjectListPageResult,
   ProjectRepository,
   SourceRepository,
   SourceVersionRepository,

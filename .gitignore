@@ -6,6 +6,7 @@ node_modules/
 .env.*
 !.env.example
 dist/
+.e2e-dist/
 *.tsbuildinfo
 bun.lockb
 

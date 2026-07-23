@@ -13,7 +13,7 @@ import { waitForThemeStyles } from './support/theme-readiness'
 const projectId = 'f80e8400-e29b-41d4-a716-446655440001'
 const threadId = 'f80e8400-e29b-41d4-a716-446655440002'
 const runId = 'f80e8400-e29b-41d4-a716-446655440003'
-const origin = 'http://127.0.0.1:4175'
+const origin = 'http://127.0.0.1:4176'
 const baseUrl = `${origin}/projects/${projectId}/research/${threadId}/runs/${runId}`
 const screenshotRoot = path.resolve(
   new URL('../../..', import.meta.url).pathname,
@@ -84,7 +84,7 @@ async function assertNoOverflow(page: typePage): Promise<void> {
 
 beforeAll(async () => {
   await mkdir(screenshotRoot, { recursive: true })
-  web = await startAppServer(4175)
+  web = await startAppServer(4176)
   browser = await chromium.launch({ headless: true })
 })
 
