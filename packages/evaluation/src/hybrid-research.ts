@@ -353,6 +353,8 @@ function datasetEvidence(): DatasetCitationEvidence {
       requestHash: Sha256Digest.make(`sha256:${'c'.repeat(64)}`),
       protocolVersion: '1',
       engineVersion: 'duckdb-1.5.4',
+      engineAdapterVersion: '@duckdb/node-api@1.5.4-r.1',
+      executionPolicyVersion: 1,
       engineConfigHash: Sha256Digest.make(`sha256:${'d'.repeat(64)}`),
       canonicalSql,
       snapshots: [{

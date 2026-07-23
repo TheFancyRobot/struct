@@ -52,10 +52,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
+- Status: completed
 - Current owner:
 - Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_04_build-deterministic-dataset-query-tools-and-citations/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_04_build-deterministic-dataset-query-tools-and-citations/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Next action: None; step completed.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

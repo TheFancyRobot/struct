@@ -17,15 +17,30 @@ import { pipeline } from 'node:stream/promises'
 import { DuckDBInstance } from '@duckdb/node-api'
 import Parser from 'stream-json/Parser.js'
 import Stringer from 'stream-json/Stringer.js'
+import {
+  canonicalEngineConfigHash,
+  DATA_ENGINE_ADAPTER_VERSION,
+  DATA_ENGINE_ALLOW_COMMUNITY_EXTENSIONS,
+  DATA_ENGINE_ALLOWED_DIRECTORIES,
+  DATA_ENGINE_ALLOW_UNSIGNED_EXTENSIONS,
+  DATA_ENGINE_ARTIFACT_ROOT,
+  DATA_ENGINE_ENABLE_EXTERNAL_ACCESS,
+  DATA_ENGINE_EXECUTION_POLICY_VERSION,
+  DATA_ENGINE_PROTOCOL_VERSION,
+  DATA_ENGINE_SCRATCH_ROOT,
+  DATA_ENGINE_TEMP_DIRECTORY,
+  DATA_ENGINE_THREADS,
+  DATA_ENGINE_VERSION,
+} from './runtime-identity.mjs'
 
-const PROTOCOL_VERSION = '1'
-const ENGINE_VERSION = 'duckdb-1.5.4'
-const ARTIFACT_ROOT = '/artifacts'
-const SCRATCH_ROOT = '/scratch'
+const PROTOCOL_VERSION = DATA_ENGINE_PROTOCOL_VERSION
+const ENGINE_VERSION = DATA_ENGINE_VERSION
+const ARTIFACT_ROOT = DATA_ENGINE_ARTIFACT_ROOT
+const SCRATCH_ROOT = DATA_ENGINE_SCRATCH_ROOT
 const OUTPUT_ROOT = join(SCRATCH_ROOT, 'output')
 const TOKEN = process.env.DATA_ENGINE_TOKEN ?? ''
 const MEMORY_LIMIT = '192MB'
-const THREADS = 1
+const THREADS = DATA_ENGINE_THREADS
 const MAX_REQUEST_BYTES = 256 * 1024
 const MAX_INPUT_BYTES = 64 * 1024 * 1024
 const MAX_ROWS = 1_000_000
@@ -36,6 +51,11 @@ const MAX_QUERY_OUTPUT_BYTES = 4 * 1024 * 1024
 const MAX_QUERY_MEMORY_MB = 192
 const HANDOFF_TTL_MS = 5 * 60_000
 const HANDOFF_SWEEP_MS = 60_000
+const TEMP_DIRECTORY = DATA_ENGINE_TEMP_DIRECTORY
+const ALLOWED_DIRECTORIES = DATA_ENGINE_ALLOWED_DIRECTORIES
+const ALLOW_COMMUNITY_EXTENSIONS = DATA_ENGINE_ALLOW_COMMUNITY_EXTENSIONS
+const ALLOW_UNSIGNED_EXTENSIONS = DATA_ENGINE_ALLOW_UNSIGNED_EXTENSIONS
+const ENABLE_EXTERNAL_ACCESS = DATA_ENGINE_ENABLE_EXTERNAL_ACCESS
 let busy = false
 
 async function sweepExpiredHandoffs() {
@@ -132,6 +152,7 @@ function validateRequest(value) {
       || typeof field.name !== 'string'
       || field.name.length === 0
       || field.name.length > 255
+      || isReservedColumnName(field.name)
       || names.has(field.name)
       || !['boolean', 'integer', 'decimal', 'string', 'date', 'timestamp', 'json'].includes(field.logicalType)
       || typeof field.nullable !== 'boolean'
@@ -433,6 +454,19 @@ function sourcePath(input) {
   )
 }
 
+const RESERVED_COLUMN_PREFIX = '__struct_'
+
+function isReservedColumnName(name) {
+  return name.toLowerCase().startsWith(RESERVED_COLUMN_PREFIX)
+}
+
+const RESERVED_COLUMNS = {
+  sourceOrdinal: '__struct_source_ordinal',
+  sourceRecordOrdinal: '__struct_source_record_ordinal',
+  sourcePointer: '__struct_source_pointer',
+  recordId: '__struct_record_id',
+}
+
 function sourceSql(input, fields) {
   const path = (input.preparedPath ?? sourcePath(input)).replaceAll("'", "''")
   if (input.format === 'csv') {
@@ -445,6 +479,22 @@ function sourceSql(input, fields) {
     return `read_json_auto('${path}', format='auto', union_by_name=true, columns={${columns}}, maximum_object_size=16777216)`
   }
   return `read_json_auto('${path}', format='auto', union_by_name=true, maximum_object_size=16777216)`
+}
+
+function materializedSourceSql(input, fields) {
+  const escapedContentHash = input.contentHash.replaceAll("'", "''")
+  const fieldProjection = fields
+    .map((field) => quoteIdentifier(field.name))
+    .join(', ')
+  return `SELECT ${fieldProjection},
+    ${input.ordinal} AS ${quoteIdentifier(RESERVED_COLUMNS.sourceOrdinal)},
+    ${quoteIdentifier(RESERVED_COLUMNS.sourceRecordOrdinal)},
+    '/' || CAST(${quoteIdentifier(RESERVED_COLUMNS.sourceRecordOrdinal)} AS VARCHAR) AS ${quoteIdentifier(RESERVED_COLUMNS.sourcePointer)},
+    '${escapedContentHash}' || '/' || CAST(${quoteIdentifier(RESERVED_COLUMNS.sourceRecordOrdinal)} AS VARCHAR) AS ${quoteIdentifier(RESERVED_COLUMNS.recordId)}
+  FROM (
+    SELECT *, row_number() OVER () - 1 AS ${quoteIdentifier(RESERVED_COLUMNS.sourceRecordOrdinal)}
+    FROM ${sourceSql(input, fields)}
+  )`
 }
 
 class PreserveExactNumbers extends Transform {
@@ -721,7 +771,7 @@ async function materialize(request, httpRequest, httpResponse) {
     }
     await connection.run('DROP TABLE scanned')
     const exactUnion = exactInputs
-      .map((input) => `SELECT * FROM ${sourceSql(input, request.fields)}`)
+      .map((input) => materializedSourceSql(input, request.fields))
       .join(' UNION ALL BY NAME ')
     await runStructuredImport(
       connection,
@@ -785,7 +835,12 @@ async function materialize(request, httpRequest, httpResponse) {
       const name = quoteIdentifier(field.name)
       return `CAST(${name} AS ${duckType(field.logicalType)}) AS ${name}`
     }).join(', ')
-    await connection.run(`CREATE TABLE materialized AS SELECT ${projection} FROM imported`)
+    await connection.run(`CREATE TABLE materialized AS SELECT ${projection},
+      ${quoteIdentifier(RESERVED_COLUMNS.sourceOrdinal)},
+      ${quoteIdentifier(RESERVED_COLUMNS.sourceRecordOrdinal)},
+      ${quoteIdentifier(RESERVED_COLUMNS.sourcePointer)},
+      ${quoteIdentifier(RESERVED_COLUMNS.recordId)}
+      FROM imported`)
     const profileColumns = []
     for (const field of request.fields) {
       const name = quoteIdentifier(field.name)
@@ -889,6 +944,12 @@ function queryValue(value) {
   return stableJson(value)
 }
 
+function sha256JsonLine(value) {
+  return `sha256:${createHash('sha256')
+    .update(`${JSON.stringify(value)}\n`)
+    .digest('hex')}`
+}
+
 async function querySnapshots(request, httpRequest, httpResponse) {
   let cancelled = httpResponse.destroyed
   let timedOut = false
@@ -917,13 +978,18 @@ async function querySnapshots(request, httpRequest, httpResponse) {
     instance = await DuckDBInstance.create(':memory:', {
       memory_limit: `${request.limits.maxMemoryMb}MB`,
       threads: THREADS,
-      temp_directory: join(SCRATCH_ROOT, 'tmp'),
-      allow_community_extensions: 'false',
-      allow_unsigned_extensions: 'false',
+      temp_directory: TEMP_DIRECTORY,
+      allow_community_extensions: String(ALLOW_COMMUNITY_EXTENSIONS),
+      allow_unsigned_extensions: String(ALLOW_UNSIGNED_EXTENSIONS),
     })
     connection = await instance.connect()
-    await connection.run(`SET allowed_directories=['${ARTIFACT_ROOT}','${SCRATCH_ROOT}']`)
-    await connection.run('SET enable_external_access=false')
+    await connection.run(
+      `SET allowed_directories=[${ALLOWED_DIRECTORIES.map((directory) =>
+        `'${directory}'`).join(',')}]`,
+    )
+    await connection.run(
+      `SET enable_external_access=${ENABLE_EXTERNAL_ACCESS ? 'true' : 'false'}`,
+    )
     ensureActive()
 
     const referencedTables = await connection.getTableNames(canonicalSql, false)
@@ -962,9 +1028,18 @@ async function querySnapshots(request, httpRequest, httpResponse) {
         throw new RequestFailure('lineage', 'Cataloged Parquet artifact failed lineage validation')
       }
       const escapedPath = path.replaceAll("'", "''")
+      const schemaReader = await connection.runAndReadAll(
+        `DESCRIBE SELECT * FROM read_parquet('${escapedPath}')`,
+      )
+      await schemaReader.readAll()
+      const projectedColumns = schemaReader.getRowObjectsJS()
+        .map((column) => String(column.column_name))
+        .filter((name) => !isReservedColumnName(name))
+        .map((name) => quoteIdentifier(name))
+        .join(', ')
       await connection.run(
         `CREATE VIEW ${quoteIdentifier(snapshot.alias)}
-         AS SELECT * FROM read_parquet('${escapedPath}')`,
+         AS SELECT ${projectedColumns} FROM read_parquet('${escapedPath}')`,
       )
       ensureActive()
     }
@@ -1003,26 +1078,18 @@ async function querySnapshots(request, httpRequest, httpResponse) {
     const schemaHash = `sha256:${createHash('sha256')
       .update(`${JSON.stringify(columns)}\n`)
       .digest('hex')}`
-    const resultArtifactHash = `sha256:${createHash('sha256')
-      .update(`${JSON.stringify({
-        columns,
-        rows,
-        rowCount: rows.length,
-        truncated,
-      })}\n`)
-      .digest('hex')}`
+    const resultArtifactHash = sha256JsonLine({
+      columns,
+      rows,
+      rowCount: rows.length,
+      truncated,
+    })
     const hashInput = {
+      protocolVersion: PROTOCOL_VERSION,
       engineVersion: ENGINE_VERSION,
-      engineConfigHash: `sha256:${createHash('sha256').update(`${JSON.stringify({
-        protocolVersion: PROTOCOL_VERSION,
-        engineVersion: ENGINE_VERSION,
-        threads: THREADS,
-        memoryMb: request.limits.maxMemoryMb,
-        maxRows: request.limits.maxRows,
-        maxOutputBytes: request.limits.maxOutputBytes,
-        timeoutMs: request.limits.timeoutMs,
-        externalAccess: false,
-      })}\n`).digest('hex')}`,
+      engineAdapterVersion: DATA_ENGINE_ADAPTER_VERSION,
+      executionPolicyVersion: DATA_ENGINE_EXECUTION_POLICY_VERSION,
+      engineConfigHash: canonicalEngineConfigHash(request.limits),
       canonicalSql,
       snapshots,
       schemaHash,
@@ -1032,11 +1099,8 @@ async function querySnapshots(request, httpRequest, httpResponse) {
       rowCount: rows.length,
       truncated,
     }
-    const resultHash = `sha256:${createHash('sha256')
-      .update(`${JSON.stringify(hashInput)}\n`)
-      .digest('hex')}`
+    const resultHash = sha256JsonLine(hashInput)
     const result = {
-      protocolVersion: PROTOCOL_VERSION,
       workspaceId: request.workspaceId,
       projectId: request.projectId,
       ...hashInput,

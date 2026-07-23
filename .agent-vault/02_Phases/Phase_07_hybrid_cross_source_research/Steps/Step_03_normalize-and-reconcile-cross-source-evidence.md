@@ -8,12 +8,13 @@ phase: '[[02_Phases/Phase_07_hybrid_cross_source_research/Phase|Phase 07 hybrid 
 status: completed
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-20'
+updated: '2026-07-22'
 depends_on:
   - '[[02_Phases/Phase_07_hybrid_cross_source_research/Steps/Step_02_implement-parallel-document-and-dataset-research-branches|STEP-07-02 Implement Parallel Document and Dataset Research Branches]]'
 related_sessions:
   - '[[05_Sessions/2026-07-20-144908-normalize-and-reconcile-cross-source-evidence-step-07-03-worker|SESSION-2026-07-20-144908 step-07-03-worker session for Normalize and Reconcile Cross-Source Evidence]]'
-related_bugs: []
+related_bugs:
+  - '[[03_Bugs/BUG-0021_phase-07-hybrid-evaluation-artifact-fails-its-canonical-evidence-check|BUG-0021 Phase 07 Hybrid Evaluation Artifact Fails Its Canonical Evidence Check]]'
 tags:
   - agent-vault
   - step

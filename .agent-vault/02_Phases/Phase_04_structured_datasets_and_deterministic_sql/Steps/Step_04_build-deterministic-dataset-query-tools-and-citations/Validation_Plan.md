@@ -3,8 +3,8 @@
 ## Acceptance Checks
 
 - Tool output equals the underlying deterministic service result; repeated calls persist/reuse the correct immutable result semantics.
-- Every citation validates workspace, dataset snapshot, schema hash, canonical SQL, result hash, column, and row/range evidence and reopens the same evidence.
-- Query history is ordered deterministically and cannot mutate prior result snapshots.
+- Every citation validates workspace, dataset snapshot, schema hash, canonical SQL, pinned engine identity, pinned adapter identity, protocol version, execution-policy/config identity, result hash, column, and row/range evidence and reopens the same evidence.
+- Query history is ordered deterministically, cannot mutate prior result snapshots, and reopens the persisted engine/adapter/protocol/execution-policy configuration identity alongside the exact result.
 
 ## Negative and Security Cases
 
@@ -14,7 +14,7 @@
 
 ## Deterministic Evidence
 
-- Golden fixtures assert exact serialized result snapshots/citations and round-trip reopen behavior.
+- Golden fixtures assert exact serialized result snapshots/citations plus query-history round-trip reopen behavior, including engine/adapter/protocol/execution-policy configuration identity.
 - Run: `bun test packages/domain packages/data-engine packages/workflows packages/research-engine apps/api`
 - Run: `bun run test:integration`
 - Run: `bun run typecheck && bun run lint && bun run lint:imports && bun run build`

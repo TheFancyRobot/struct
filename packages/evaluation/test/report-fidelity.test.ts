@@ -29,6 +29,11 @@ function rehash(
 const verify = (input: string) =>
   Effect.runPromise(verifyReportFidelityEvaluationReport(input))
 
+const TRACKED_REPORT_PATH = new URL(
+  '../results/phase-08-report-fidelity-v1.json',
+  import.meta.url,
+)
+
 describe('deterministic report fidelity evaluation', () => {
   let reports: [ReportFidelityEvaluationReport, ReportFidelityEvaluationReport]
 
@@ -109,13 +114,16 @@ describe('deterministic report fidelity evaluation', () => {
     }
   })
 
-  it('is byte-identical on replay and verifies its canonical tracked form', async () => {
+  it('is byte-identical on replay, matches the tracked artifact, and verifies its canonical form', async () => {
     const first = serializeReportFidelityEvaluationReport(reports[0])
     const second = serializeReportFidelityEvaluationReport(reports[1])
+    const tracked = await Bun.file(TRACKED_REPORT_PATH).text()
     expect(second).toBe(first)
+    expect(tracked).toBe(first)
     expect(first.endsWith('\n')).toBe(true)
     expect(first.endsWith('\n\n')).toBe(false)
     expect(await verify(first)).toEqual(reports[0])
+    expect(await verify(tracked)).toEqual(reports[0])
   })
 
   it('measures and enforces the real wall-clock limit outside the semantic hash', async () => {

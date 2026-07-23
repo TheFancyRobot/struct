@@ -85,7 +85,9 @@ const querySnapshot = {
   projectId: ids.project,
   requestHash: hash('2'),
   protocolVersion: '1',
-  engineVersion: 'duckdb-test',
+  engineVersion: 'duckdb-1.5.4',
+  engineAdapterVersion: '@duckdb/node-api@1.5.4-r.1',
+  executionPolicyVersion: 1,
   engineConfigHash: hash('3'),
   canonicalSql: 'SELECT total FROM evidence',
   snapshots: [{

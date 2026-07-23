@@ -14,6 +14,10 @@ import {
   summarizeQueryResult,
   type ResultSummaryLimits,
 } from './result-summary.js'
+import {
+  DATA_ENGINE_ADAPTER_VERSION,
+  DATA_ENGINE_EXECUTION_POLICY_VERSION,
+} from './protocol.js'
 
 const workspaceId = WorkspaceId.make('780e8400-e29b-41d4-a716-446655440001')
 const projectId = ProjectId.make('780e8400-e29b-41d4-a716-446655440002')
@@ -48,13 +52,15 @@ const canonicalSql =
 function evidence(
   patch: Partial<DatasetCitationEvidence['snapshot']> = {},
 ): DatasetCitationEvidence {
-  const snapshot = {
+  const snapshot: DatasetCitationEvidence['snapshot'] = {
     id: resultId,
     workspaceId,
     projectId,
     requestHash: Sha256Digest.make(`sha256:${'d'.repeat(64)}`),
     protocolVersion: '1' as const,
     engineVersion: 'duckdb-1.5.4',
+    engineAdapterVersion: DATA_ENGINE_ADAPTER_VERSION,
+    executionPolicyVersion: DATA_ENGINE_EXECUTION_POLICY_VERSION,
     engineConfigHash: Sha256Digest.make(`sha256:${'e'.repeat(64)}`),
     canonicalSql,
     snapshots: [{

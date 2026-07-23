@@ -2,7 +2,10 @@ import { mkdir, readFile } from 'node:fs/promises'
 import { createConnection } from 'node:net'
 import { dirname, resolve } from 'node:path'
 import {
+  DATA_ENGINE_ADAPTER_VERSION,
+  DATA_ENGINE_EXECUTION_POLICY_VERSION,
   DATA_ENGINE_PROTOCOL_VERSION,
+  DATA_ENGINE_VERSION,
   DatasetQueryAuthenticationError,
   DatasetQueryAuthorizationError,
   DatasetQueryCatalogError,
@@ -158,7 +161,9 @@ interface Phase04EvaluationReportBody {
     readonly host: 'bun'
     readonly hostVersion: string
     readonly protocolVersion: typeof DATA_ENGINE_PROTOCOL_VERSION
-    readonly engineVersion: string
+    readonly engineVersion: typeof DATA_ENGINE_VERSION
+    readonly engineAdapterVersion: typeof DATA_ENGINE_ADAPTER_VERSION
+    readonly executionPolicyVersion: typeof DATA_ENGINE_EXECUTION_POLICY_VERSION
     readonly engineConfigHash: string
     readonly modelProvider: 'not-applicable'
   }
@@ -219,6 +224,14 @@ function isGroundTruth(value: unknown): value is GroundTruth {
     && Array.isArray(value['recoveryCases'])
 }
 
+function isSha256Hex(value: unknown): value is string {
+  return typeof value === 'string' && /^[a-f0-9]{64}$/.test(value)
+}
+
+function isSha256Digest(value: unknown): value is string {
+  return typeof value === 'string' && /^sha256:[a-f0-9]{64}$/.test(value)
+}
+
 function isEvaluationCase(value: unknown): value is EvaluationCase {
   return isRecord(value)
     && typeof value['id'] === 'string'
@@ -248,7 +261,7 @@ function isEvaluationReport(value: unknown): value is Phase04EvaluationReport {
     || !isRecord(value['counts'])
     || !Array.isArray(value['cases'])
     || !value['cases'].every(isEvaluationCase)
-    || typeof value['reportSha256'] !== 'string'
+    || !isSha256Hex(value['reportSha256'])
   ) {
     return false
   }
@@ -270,8 +283,10 @@ function isEvaluationReport(value: unknown): value is Phase04EvaluationReport {
     && runtime['host'] === 'bun'
     && typeof runtime['hostVersion'] === 'string'
     && runtime['protocolVersion'] === DATA_ENGINE_PROTOCOL_VERSION
-    && typeof runtime['engineVersion'] === 'string'
-    && typeof runtime['engineConfigHash'] === 'string'
+    && runtime['engineVersion'] === DATA_ENGINE_VERSION
+    && runtime['engineAdapterVersion'] === DATA_ENGINE_ADAPTER_VERSION
+    && runtime['executionPolicyVersion'] === DATA_ENGINE_EXECUTION_POLICY_VERSION
+    && isSha256Digest(runtime['engineConfigHash'])
     && runtime['modelProvider'] === 'not-applicable'
     && Object.keys(expectedCaseCounts).every((category) =>
       Number.isSafeInteger(counts[category]))
@@ -932,7 +947,9 @@ async function runExactQueries(
   token: string,
 ): Promise<{
   readonly cases: ReadonlyArray<EvaluationCase>
-  readonly engineVersion: string
+  readonly engineVersion: typeof DATA_ENGINE_VERSION
+  readonly engineAdapterVersion: typeof DATA_ENGINE_ADAPTER_VERSION
+  readonly executionPolicyVersion: typeof DATA_ENGINE_EXECUTION_POLICY_VERSION
   readonly engineConfigHash: string
 }> {
   const client = makeDataEngineClient({ baseUrl, credential: token })
@@ -976,7 +993,10 @@ async function runExactQueries(
     client,
   })
   const cases: EvaluationCase[] = []
-  let engineVersion = ''
+  let engineVersion: typeof DATA_ENGINE_VERSION = DATA_ENGINE_VERSION
+  let engineAdapterVersion: typeof DATA_ENGINE_ADAPTER_VERSION = DATA_ENGINE_ADAPTER_VERSION
+  let executionPolicyVersion: typeof DATA_ENGINE_EXECUTION_POLICY_VERSION =
+    DATA_ENGINE_EXECUTION_POLICY_VERSION
   let engineConfigHash = ''
   let identity = 100
   for (const query of exactQueries) {
@@ -1093,6 +1113,8 @@ async function runExactQueries(
       )
     }
     engineVersion = output.result.engineVersion
+    engineAdapterVersion = output.result.engineAdapterVersion
+    executionPolicyVersion = output.result.executionPolicyVersion
     engineConfigHash = output.result.engineConfigHash
     cases.push({
       id: query.id,
@@ -1135,7 +1157,13 @@ async function runExactQueries(
       })
     }
   }
-  return { cases, engineVersion, engineConfigHash }
+  return {
+    cases,
+    engineVersion,
+    engineAdapterVersion,
+    executionPolicyVersion,
+    engineConfigHash,
+  }
 }
 
 async function runSecurityCases(
@@ -1954,6 +1982,8 @@ export const runPhase04Evaluation = Effect.fn('runPhase04Evaluation')(
         hostVersion: Bun.version,
         protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
         engineVersion: exact.engineVersion,
+        engineAdapterVersion: exact.engineAdapterVersion,
+        executionPolicyVersion: exact.executionPolicyVersion,
         engineConfigHash: exact.engineConfigHash,
         modelProvider: 'not-applicable',
       },

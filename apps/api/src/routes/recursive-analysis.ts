@@ -10,6 +10,20 @@ import { QueryError } from '@struct/persistence'
 const EVENT_PAGE_SIZE = 100
 const MAX_RECURSIVE_EVENTS = 65_536
 
+type RecursiveAnalysisFailureReason =
+  | 'workspace-scope-mismatch'
+  | 'event-limit-exceeded'
+
+function recursiveAnalysisQueryError(reason: RecursiveAnalysisFailureReason) {
+  return Object.assign(
+    new QueryError({
+      operation: 'findRecursiveAnalysis',
+      entity: 'ResearchProjection',
+    }),
+    { reason },
+  )
+}
+
 export interface RecursiveAnalysisReadDeps {
   readonly listEventsAfter: (
     workspaceId: typeDomain.WorkspaceId,
@@ -168,11 +182,7 @@ export const loadRecursiveAnalysis = Effect.fn(
       const decoded = yield* decodeRecursiveEvent(event, runId)
       if (Option.isSome(decoded)) {
         if (decoded.value.data.workspaceId !== workspaceId) {
-          return yield* new QueryError({
-            operation: 'findRecursiveAnalysis',
-            entity: 'ResearchProjection',
-            message: 'Recursive progress payload is outside the authorized workspace',
-          })
+          return yield* recursiveAnalysisQueryError('workspace-scope-mismatch')
         }
         current = yield* applyEvent(current, decoded.value)
       }
@@ -182,11 +192,7 @@ export const loadRecursiveAnalysis = Effect.fn(
     if (events.length < limit) break
   }
   if (loaded > MAX_RECURSIVE_EVENTS) {
-    return yield* new QueryError({
-      operation: 'findRecursiveAnalysis',
-      entity: 'ResearchProjection',
-      message: 'Recursive progress exceeds the bounded event read limit',
-    })
+    return yield* recursiveAnalysisQueryError('event-limit-exceeded')
   }
   if (current === undefined) return Option.none<RecursiveRunProgress>()
   return Option.some(

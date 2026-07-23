@@ -1,5 +1,10 @@
 import { Schema } from 'effect'
 import {
+  DATA_ENGINE_ADAPTER_VERSION,
+  DATA_ENGINE_EXECUTION_POLICY_VERSION,
+  DATA_ENGINE_VERSION,
+} from './data-engine-contract.js'
+import {
   ActorId,
   ClaimId,
   ContentRevisionId,
@@ -101,7 +106,9 @@ export const DatasetProvenanceEdge = Schema.Struct({
   queryResultSnapshotId: QueryResultSnapshotId,
   requestHash: Sha256Digest,
   protocolVersion: Schema.Literal('1'),
-  engineVersion: NonBlank,
+  engineVersion: Schema.Literal(DATA_ENGINE_VERSION),
+  engineAdapterVersion: Schema.Literal(DATA_ENGINE_ADAPTER_VERSION),
+  executionPolicyVersion: Schema.Literal(DATA_ENGINE_EXECUTION_POLICY_VERSION),
   engineConfigHash: Sha256Digest,
   querySnapshots: Schema.Array(QuerySnapshotReference).pipe(Schema.minItems(1)),
   datasetId: DatasetId,

@@ -84,6 +84,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `vault_validate(doctor)`: clean; 177 frontmatter notes, 177 structures, 148 required-link notes, 494 orphan checks, and schema drift all passed with 0 errors/warnings.
 - `vault_validate(all)`: clean with 0 errors/warnings.
 - `bun run docs:lint`: passed; 40 Markdown files validated.
+- 2026-07-22 clarification from historical PR #17 evidence (not newly executed in this session): `git diff --check` passed.
+- 2026-07-22 clarification from historical PR #17 evidence (not newly executed in this session): `bun run secrets:scan` passed over 868 paths with zero findings.
 <!-- AGENT-END:session-validation-run -->
 
 ## Bugs Encountered

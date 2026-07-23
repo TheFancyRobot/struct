@@ -88,7 +88,9 @@ function claim(
             projectId,
             requestHash: hash('1'),
             protocolVersion: '1' as const,
-            engineVersion: 'duckdb-test',
+            engineVersion: 'duckdb-1.5.4',
+            engineAdapterVersion: '@duckdb/node-api@1.5.4-r.1',
+            executionPolicyVersion: 1,
             engineConfigHash: hash('2'),
             canonicalSql: 'SELECT total FROM evidence',
             snapshots: [{

@@ -8,12 +8,14 @@ phase: '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phas
 status: completed
 owner: Codex
 created: '2026-07-17'
-updated: '2026-07-19'
+updated: '2026-07-22'
 depends_on:
   - '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Steps/Step_05_expose-directory-status-recovery-and-controls|STEP-03-05 Expose Directory Status Recovery and Controls]]'
 related_sessions:
   - '[[05_Sessions/2026-07-19-151248-test-large-tree-refresh-failures-and-recovery-codex-step-03-06-worker|SESSION-2026-07-19-151248 Codex STEP-03-06 worker session for Test Large-Tree Refresh Failures and Recovery]]'
-related_bugs: []
+related_bugs:
+  - '[[03_Bugs/BUG-0024_source-text-reindex-heartbeat-failure-test-asserts-redacted-persistence-detail|BUG-0024 Source Text Reindex Heartbeat Failure Test Asserts Redacted Persistence Detail]]'
+  - '[[03_Bugs/BUG-0025_ingestion-heartbeat-failure-test-asserts-redacted-persistence-detail|BUG-0025 Ingestion Heartbeat Failure Test Asserts Redacted Persistence Detail]]'
 tags:
   - agent-vault
   - step
@@ -52,10 +54,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: in_progress
+- Status: completed
 - Current owner: Codex
 - Last touched: 2026-07-19
-- Next action: Complete PR review remediation and merge before Phase 03 close-out and Phase 04 refinement.
+- Next action: None. PR #16 merged, Phase 03 is closed, and Phase 04 refinement completed before STEP-04-01 began.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

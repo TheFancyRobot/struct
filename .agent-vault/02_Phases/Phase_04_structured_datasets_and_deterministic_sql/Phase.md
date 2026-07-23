@@ -7,7 +7,7 @@ phase_id: PHASE-04
 status: completed
 owner: Codex
 created: '2026-07-17'
-updated: '2026-07-19'
+updated: '2026-07-22'
 depends_on:
   - '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|PHASE-03 Durable Directory Ingestion and Source Refresh]]'
 related_architecture:
@@ -22,6 +22,12 @@ related_decisions:
   - '[[04_Decisions/DEC-0011_gate-releases-on-a-reproducible-25000-file-evaluation-corpus|DEC-0011 Gate Releases on a Reproducible 25000-File Evaluation Corpus]]'
 related_bugs:
   - '[[03_Bugs/BUG-0010_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0010 Solid theme toggle does not apply the selected theme]]'
+  - '[[03_Bugs/BUG-0019_merged-pr-17-review-findings-remain-unresolved|BUG-0019 Merged PR 17 Review Findings Remain Unresolved]]'
+  - '[[03_Bugs/BUG-0020_completed-step-snapshots-contradict-canonical-status-across-vault|BUG-0020 Completed Step Snapshots Contradict Canonical Status Across Vault]]'
+  - '[[03_Bugs/BUG-0022_v1-performance-resilience-artifact-is-stale-after-canonical-evidence-updates|BUG-0022 V1 Performance Resilience Artifact Is Stale After Canonical Evidence Updates]]'
+  - '[[03_Bugs/BUG-0028_local-docker-daemon-is-unresponsive-for-required-data-engine-integration-validation|BUG-0028 Local Docker Daemon Is Unresponsive for Required Data-Engine Integration Validation]]'
+  - '[[03_Bugs/BUG-0029_stack-up-operation-can-validate-a-stale-data-engine-image-after-sidecar-source-changes|BUG-0029 Stack-up operation can validate a stale data-engine image after sidecar source changes]]'
+  - '[[03_Bugs/BUG-0030_mixed-case-reserved-sidecar-lineage-field-names-bypass-namespace-protection|BUG-0030 Mixed-case reserved sidecar lineage field names bypass namespace protection]]'
 tags:
   - agent-vault
   - phase
@@ -123,6 +129,12 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-related-bugs -->
 - [[03_Bugs/BUG-0010_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0010 Solid theme toggle does not apply the selected theme]]
+- [[03_Bugs/BUG-0019_merged-pr-17-review-findings-remain-unresolved|BUG-0019 Merged PR 17 Review Findings Remain Unresolved]]
+- [[03_Bugs/BUG-0020_completed-step-snapshots-contradict-canonical-status-across-vault|BUG-0020 Completed Step Snapshots Contradict Canonical Status Across Vault]]
+- [[03_Bugs/BUG-0022_v1-performance-resilience-artifact-is-stale-after-canonical-evidence-updates|BUG-0022 V1 Performance Resilience Artifact Is Stale After Canonical Evidence Updates]]
+- [[03_Bugs/BUG-0028_local-docker-daemon-is-unresponsive-for-required-data-engine-integration-validation|BUG-0028 Local Docker Daemon Is Unresponsive for Required Data-Engine Integration Validation]]
+- [[03_Bugs/BUG-0029_stack-up-operation-can-validate-a-stale-data-engine-image-after-sidecar-source-changes|BUG-0029 Stack-up operation can validate a stale data-engine image after sidecar source changes]]
+- [[03_Bugs/BUG-0030_mixed-case-reserved-sidecar-lineage-field-names-bypass-namespace-protection|BUG-0030 Mixed-case reserved sidecar lineage field names bypass namespace protection]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import {
+  DATA_ENGINE_VERSION,
   DatasetCitationId,
   DatasetId,
   DatasetSnapshotId,
@@ -81,7 +82,9 @@ function datasetEvidence(): DatasetCitationEvidence {
     projectId,
     requestHash: Sha256Digest.make(`sha256:${'e'.repeat(64)}`),
     protocolVersion: '1' as const,
-    engineVersion: 'duckdb-1.5.4',
+    engineVersion: DATA_ENGINE_VERSION,
+    engineAdapterVersion: '@duckdb/node-api@1.5.4-r.1' as const,
+    executionPolicyVersion: 1 as const,
     engineConfigHash: Sha256Digest.make(`sha256:${'f'.repeat(64)}`),
     canonicalSql,
     snapshots: [{

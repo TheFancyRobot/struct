@@ -1,4 +1,5 @@
 import {
+  DatasetQueryEvidencePersistenceError,
   DatasetQueryEvidenceScopeError,
 } from '@struct/persistence'
 import { DatasetQueryAuthorizationError } from '@struct/data-engine'
@@ -10,6 +11,8 @@ const workspaceId = '870e8400-e29b-41d4-a716-446655440001'
 const projectId = '870e8400-e29b-41d4-a716-446655440002'
 const citationId = '870e8400-e29b-41d4-a716-446655440003'
 const authorization = { authorization: 'Bearer test-api-credential' }
+const engineAdapterVersion = '@duckdb/node-api@1.5.4-r.1' as const
+const executionPolicyVersion = 1 as const
 
 describe('dataset query HTTP read routes', () => {
   it('routes bounded metadata-only history with parsed scope and limit', async () => {
@@ -31,13 +34,43 @@ describe('dataset query HTTP read routes', () => {
         },
         list: (workspace, project, limit) => {
           received = [workspace, project, limit]
-          return Effect.succeed([])
+          return Effect.succeed([{
+            id: citationId,
+            workspaceId,
+            projectId,
+            requestHash: `sha256:${'a'.repeat(64)}`,
+            protocolVersion: '1' as const,
+            engineVersion: 'duckdb-1.5.4',
+            engineAdapterVersion,
+            executionPolicyVersion,
+            engineConfigHash: `sha256:${'b'.repeat(64)}`,
+            canonicalSql: 'SELECT id FROM records ORDER BY ALL',
+            snapshots: [{
+              alias: 'records',
+              datasetId: '870e8400-e29b-41d4-a716-446655440004',
+              snapshotId: '870e8400-e29b-41d4-a716-446655440005',
+              schemaHash: `sha256:${'c'.repeat(64)}`,
+              parquetDigest: 'd'.repeat(64),
+            }],
+            schemaHash: `sha256:${'e'.repeat(64)}`,
+            resultHash: `sha256:${'f'.repeat(64)}`,
+            resultArtifactHash: `sha256:${'1'.repeat(64)}`,
+            rowCount: 1,
+            truncated: false,
+            executedAt: 1_721_430_000_000n,
+            createdAt: 1_721_430_000_000n,
+          }] as never)
         },
         reopen: () => Effect.die('citation route must not run'),
       },
     ))
     expect(response?.status).toBe(200)
-    expect(await response?.json()).toEqual([])
+    expect(await response?.json()).toEqual([
+      expect.objectContaining({
+        engineAdapterVersion,
+        executionPolicyVersion,
+      }),
+    ])
     expect(received).toEqual([workspaceId, projectId, 3])
   })
 
@@ -113,6 +146,79 @@ describe('dataset query HTTP read routes', () => {
     })
   })
 
+  it('returns reopened citation snapshots with explicit engine identity fields', async () => {
+    const response = await Effect.runPromise(datasetQueryReadRoute(
+      new Request(
+        `http://localhost/api/projects/${projectId}`
+        + `/dataset-citations/${citationId}?workspaceId=${workspaceId}`,
+        { headers: authorization },
+      ),
+      {
+        authorize: () => Effect.void,
+        list: () => Effect.die('history route must not run'),
+        reopen: () => Effect.succeed({
+          citation: {
+            id: citationId,
+            queryResultSnapshotId: '870e8400-e29b-41d4-a716-446655440006',
+            workspaceId,
+            projectId,
+            datasetId: '870e8400-e29b-41d4-a716-446655440004',
+            datasetSnapshotId: '870e8400-e29b-41d4-a716-446655440005',
+            schemaHash: `sha256:${'c'.repeat(64)}`,
+            parquetDigest: 'd'.repeat(64),
+            resultHash: `sha256:${'f'.repeat(64)}`,
+            resultArtifactHash: `sha256:${'1'.repeat(64)}`,
+            canonicalSql: 'SELECT id FROM records ORDER BY ALL',
+            selectedColumns: ['id'],
+            rowStart: 0,
+            rowEndExclusive: 1,
+            createdAt: 1_721_430_000_000n,
+          },
+          snapshot: {
+            id: '870e8400-e29b-41d4-a716-446655440006',
+            workspaceId,
+            projectId,
+            requestHash: `sha256:${'a'.repeat(64)}`,
+            protocolVersion: '1' as const,
+            engineVersion: 'duckdb-1.5.4',
+            engineAdapterVersion,
+            executionPolicyVersion,
+            engineConfigHash: `sha256:${'b'.repeat(64)}`,
+            canonicalSql: 'SELECT id FROM records ORDER BY ALL',
+            snapshots: [{
+              alias: 'records',
+              datasetId: '870e8400-e29b-41d4-a716-446655440004',
+              snapshotId: '870e8400-e29b-41d4-a716-446655440005',
+              schemaHash: `sha256:${'c'.repeat(64)}`,
+              parquetDigest: 'd'.repeat(64),
+            }],
+            schemaHash: `sha256:${'e'.repeat(64)}`,
+            resultHash: `sha256:${'f'.repeat(64)}`,
+            resultArtifactHash: `sha256:${'1'.repeat(64)}`,
+            columns: [{ ordinal: 0, name: 'id', type: 'BIGINT' }],
+            rows: [['1']],
+            rowCount: 1,
+            truncated: false,
+            executedAt: 1_721_430_000_000n,
+            createdAt: 1_721_430_000_000n,
+          },
+          columns: [{ ordinal: 0, name: 'id', type: 'BIGINT' }],
+          rows: [['1']],
+        } as never),
+      },
+    ))
+
+    expect(response?.status).toBe(200)
+    expect(await response?.json()).toEqual(
+      expect.objectContaining({
+        snapshot: expect.objectContaining({
+          engineAdapterVersion,
+          executionPolicyVersion,
+        }),
+      }),
+    )
+  })
+
   it('does not claim unrelated paths or non-GET methods', async () => {
     const dependencies = {
       authorize: () => Effect.void,
@@ -171,5 +277,53 @@ describe('dataset query HTTP read routes', () => {
     expect(forbidden?.status).toBe(404)
     expect(await forbidden?.json()).toEqual({ error: 'DatasetQueryNotFound' })
     expect(read).toBe(false)
+  })
+
+  it('returns a generic 503 for history persistence failures without leaking details', async () => {
+    const response = await Effect.runPromise(datasetQueryReadRoute(
+      new Request(
+        `http://localhost/api/projects/${projectId}/dataset-queries`
+        + `?workspaceId=${workspaceId}`,
+        { headers: authorization },
+      ),
+      {
+        authorize: () => Effect.void,
+        list: () => Effect.fail(new DatasetQueryEvidencePersistenceError({
+          operation: 'history',
+          message: "history failed: SELECT * FROM secrets WHERE password = 'top-secret' /Users/private/PATH_MARKER",
+        })),
+        reopen: () => Effect.die('citation route must not run'),
+      },
+    ))
+
+    expect(response?.status).toBe(503)
+    const body = await response?.json()
+    expect(body).toEqual({ error: 'DatasetQueryHistoryUnavailable' })
+    expect(JSON.stringify(body)).not.toContain('top-secret')
+    expect(JSON.stringify(body)).not.toContain('PATH_MARKER')
+  })
+
+  it('returns a generic 503 for citation persistence failures without leaking details', async () => {
+    const response = await Effect.runPromise(datasetQueryReadRoute(
+      new Request(
+        `http://localhost/api/projects/${projectId}`
+        + `/dataset-citations/${citationId}?workspaceId=${workspaceId}`,
+        { headers: authorization },
+      ),
+      {
+        authorize: () => Effect.void,
+        list: () => Effect.die('history route must not run'),
+        reopen: () => Effect.fail(new DatasetQueryEvidencePersistenceError({
+          operation: 'citation reopen',
+          message: 'citation failed: postgres://db-user:db-pass@db.internal/struct /Users/private/PATH_MARKER',
+        })),
+      },
+    ))
+
+    expect(response?.status).toBe(503)
+    const body = await response?.json()
+    expect(body).toEqual({ error: 'DatasetCitationUnavailable' })
+    expect(JSON.stringify(body)).not.toContain('db-pass')
+    expect(JSON.stringify(body)).not.toContain('PATH_MARKER')
   })
 })

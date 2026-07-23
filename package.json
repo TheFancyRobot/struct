@@ -35,7 +35,8 @@
     "v1:performance": "bun run scripts/v1-performance-gate.ts",
     "v1:evaluate": "bun run scripts/v1-evaluation-campaign.ts",
     "secrets:scan": "bun run scripts/secrets-scan.ts",
-    "docs:lint": "bun run scripts/docs-lint.ts"
+    "docs:lint": "bun run scripts/docs-lint.ts",
+    "vault:parity": "bun run scripts/vault-semantic-parity.ts"
   },
   "devDependencies": {
     "@babel/core": "7.29.7",

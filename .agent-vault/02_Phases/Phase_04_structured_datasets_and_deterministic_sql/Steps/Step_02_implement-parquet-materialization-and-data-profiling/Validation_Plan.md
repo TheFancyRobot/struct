@@ -2,7 +2,8 @@
 
 ## Acceptance Checks
 
-- Fixed JSON/CSV fixtures produce byte-stable logical schemas, profiles, result metadata, and content-addressed Parquet references across repeated runs.
+- Fixed JSON, JSONL/NDJSON, and CSV fixtures produce byte-stable logical schemas, profiles, per-record lineage metadata, result metadata, and content-addressed Parquet references across repeated runs.
+- Multi-file fixtures preserve stable source input/file identity, record ordinal/pointer, and stable record identity after deterministic ordering so downstream citations can reopen the original record.
 - The Bun client and sidecar reject protocol-version mismatch, malformed payloads, missing/invalid credentials, unknown snapshot/artifact IDs, and stale lineage.
 - Worker retry after an injected interruption reuses or safely replaces partial artifacts without duplicate snapshots or completion events.
 
@@ -14,7 +15,7 @@
 
 ## Deterministic Evidence
 
-- Store fixture hashes and exact expected profile/schema JSON in tests.
+- Store fixture hashes and exact expected profile/schema/lineage JSON in tests, including multi-file per-record lineage assertions.
 - Run: `docker compose config`
 - Run: `docker compose up -d --wait` and the sidecar health/auth integration tests, then `docker compose down`
 - Run: `bun test packages/data-engine apps/worker`

@@ -3,6 +3,7 @@ import {
   CitationId,
   ClaimId,
   CrossSourceEvidence,
+  DATA_ENGINE_VERSION,
   DatasetCitationId,
   DatasetId,
   DatasetSnapshotId,
@@ -89,7 +90,9 @@ const querySnapshot = {
   projectId,
   requestHash: hash('b'),
   protocolVersion: '1' as const,
-  engineVersion: 'duckdb-test',
+  engineVersion: DATA_ENGINE_VERSION,
+  engineAdapterVersion: '@duckdb/node-api@1.5.4-r.1' as const,
+  executionPolicyVersion: 1 as const,
   engineConfigHash: hash('c'),
   canonicalSql: 'SELECT total FROM evidence',
   snapshots: [{

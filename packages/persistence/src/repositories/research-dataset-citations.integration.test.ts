@@ -197,12 +197,13 @@ describeIf('research dataset citation completion (PostgreSQL)', () => {
     await sql.unsafe(
       `INSERT INTO query_result_snapshots (
          id, workspace_id, project_id, request_hash, protocol_version,
-         engine_version, engine_config_hash, canonical_sql, dataset_snapshots,
-         schema_hash, result_hash, result_artifact_hash, columns, rows,
-         row_count, truncated, executed_at, created_at
+         engine_version, engine_adapter_version, execution_policy_version,
+         engine_config_hash, canonical_sql, dataset_snapshots, schema_hash,
+         result_hash, result_artifact_hash, columns, rows, row_count,
+         truncated, executed_at, created_at
        ) VALUES (
-         $1, $2, $3, $4, '1', 'duckdb-test', $5, $6, $7::jsonb,
-         $8, $9, $10, $11::jsonb, $12::jsonb, 1, false,
+         $1, $2, $3, $4, '1', 'duckdb-1.5.4', '@duckdb/node-api@1.5.4-r.1', 1,
+         $5, $6, $7::jsonb, $8, $9, $10, $11::jsonb, $12::jsonb, 1, false,
          to_timestamp(0.001), to_timestamp(0.001)
        )`,
       [

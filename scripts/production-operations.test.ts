@@ -6,7 +6,9 @@ import { join } from 'node:path'
 import {
   OperationsError,
   STACK_RESTART_COMMANDS,
+  STACK_UP_COMMAND,
   assertSafeBackupPath,
+  main,
   parseLocalDatabaseTarget,
   requireDestructiveApproval,
   resolveArtifactBackupPath,
@@ -15,19 +17,31 @@ import {
   verifyApplicationReadiness,
 } from './production-operations'
 
-const previousApproval = process.env.STRUCT_ALLOW_DESTRUCTIVE_RESET
+const previousEnvironment = {
+  ARTIFACT_STORAGE_ROOT: process.env.ARTIFACT_STORAGE_ROOT,
+  API_PORT: process.env.API_PORT,
+  DATABASE_URL: process.env.DATABASE_URL,
+  STRUCT_ALLOW_DESTRUCTIVE_RESET: process.env.STRUCT_ALLOW_DESTRUCTIVE_RESET,
+  WEB_PORT: process.env.WEB_PORT,
+  WORKER_METRICS_PORT: process.env.WORKER_METRICS_PORT,
+}
 
 afterEach(() => {
-  if (previousApproval === undefined) delete process.env.STRUCT_ALLOW_DESTRUCTIVE_RESET
-  else process.env.STRUCT_ALLOW_DESTRUCTIVE_RESET = previousApproval
+  for (const [name, value] of Object.entries(previousEnvironment)) {
+    if (value === undefined) delete process.env[name]
+    else process.env[name] = value
+  }
 })
 
 describe('production operation safety boundaries', () => {
-  it('recreates the Compose stack so changed bind mounts take effect', () => {
+  it('builds and recreates the Compose stack so changed sidecar source takes effect', () => {
+    expect(STACK_UP_COMMAND).toEqual([
+      'docker', 'compose', 'up', '-d', '--build', '--wait',
+    ])
     expect(STACK_RESTART_COMMANDS).toEqual([
       ['bun', 'run', 'local:prepare'],
       ['docker', 'compose', 'config', '--quiet'],
-      ['docker', 'compose', 'up', '-d', '--wait', '--force-recreate'],
+      ['docker', 'compose', 'up', '-d', '--build', '--wait', '--force-recreate'],
     ])
     expect(STACK_RESTART_COMMANDS.flat()).not.toContain('restart')
   })
@@ -138,6 +152,38 @@ describe('production operation safety boundaries', () => {
       new Response('unavailable', { status: String(input).includes(':3001') ? 503 : 200 })) as typeof fetch
     await expect(verifyApplicationReadiness(fetcher, {})).rejects.toThrow(
       'api readiness returned 503',
+    )
+  })
+
+  it('lets artifact backups reach option validation without DATABASE_URL', async () => {
+    delete process.env.DATABASE_URL
+    await expect(main(['artifacts:backup'])).rejects.toThrow('--output is required')
+  })
+
+  it('lets artifact verification reach artifact checks without DATABASE_URL', async () => {
+    delete process.env.DATABASE_URL
+    process.env.ARTIFACT_STORAGE_ROOT = join(tmpdir(), `missing-artifacts-${randomUUID()}`)
+    await expect(main(['artifacts:verify'])).rejects.toThrow('Artifact store must be a real directory')
+  })
+
+  it('lets application verification reach readiness probes without DATABASE_URL', async () => {
+    delete process.env.DATABASE_URL
+    process.env.WEB_PORT = '0'
+    process.env.API_PORT = '0'
+    process.env.WORKER_METRICS_PORT = '0'
+    await expect(main(['application:verify'])).rejects.toThrow('web readiness request failed')
+  })
+
+  it('still requires DATABASE_URL for database verification', async () => {
+    delete process.env.DATABASE_URL
+    await expect(main(['database:verify'])).rejects.toThrow('DATABASE_URL is required')
+  })
+
+  it('still validates DATABASE_URL for database-backed commands', async () => {
+    process.env.DATABASE_URL = 'not-a-postgres-url'
+    await expect(main(['database:verify'])).rejects.toThrow('DATABASE_URL must be a valid PostgreSQL URL')
+    await expect(main(['artifacts:restore', '--input', '.local/backups/recovery.artifacts'])).rejects.toThrow(
+      'DATABASE_URL must be a valid PostgreSQL URL',
     )
   })
 })

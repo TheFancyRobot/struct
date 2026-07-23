@@ -1,4 +1,5 @@
 import {
+  DATA_ENGINE_VERSION,
   DatasetCitation,
   DatasetCitationEvidence,
   DatasetCitationId,
@@ -9,6 +10,16 @@ import {
   WorkspaceId,
 } from '@struct/domain'
 import { Effect, ParseResult, Schema } from 'effect'
+import {
+  datasetCitationValidationErrorMessage,
+  datasetQueryEvidenceConflictErrorMessage,
+  datasetQueryEvidencePersistenceErrorMessage,
+  datasetQueryEvidenceScopeErrorMessage,
+  sanitizeDatasetCitationValidationReason,
+  sanitizeDatasetQueryEvidenceEntity,
+  sanitizeDatasetQueryEvidenceId,
+  sanitizeDatasetQueryEvidenceOperation,
+} from '../error-boundary.js'
 import { SqlClient } from '../sql-client.js'
 
 const DateToNumber = Schema.transformOrFail(Schema.DateFromSelf, Schema.Number, {
@@ -21,7 +32,9 @@ const StoredResultRow = Schema.Struct({
   project_id: ProjectId,
   request_hash: Schema.String,
   protocol_version: Schema.Literal('1'),
-  engine_version: Schema.String,
+  engine_version: Schema.Literal(DATA_ENGINE_VERSION),
+  engine_adapter_version: Schema.String,
+  execution_policy_version: Schema.Union(Schema.Number, Schema.NumberFromString),
   engine_config_hash: Schema.String,
   canonical_sql: Schema.String,
   dataset_snapshots: Schema.Unknown,
@@ -58,7 +71,9 @@ const StoredHistoryRow = Schema.Struct({
   project_id: ProjectId,
   request_hash: Schema.String,
   protocol_version: Schema.Literal('1'),
-  engine_version: Schema.String,
+  engine_version: Schema.Literal(DATA_ENGINE_VERSION),
+  engine_adapter_version: Schema.String,
+  execution_policy_version: Schema.Union(Schema.Number, Schema.NumberFromString),
   engine_config_hash: Schema.String,
   canonical_sql: Schema.String,
   dataset_snapshots: Schema.Unknown,
@@ -75,25 +90,85 @@ export class DatasetQueryEvidencePersistenceError
   extends Schema.TaggedError<DatasetQueryEvidencePersistenceError>()(
     'DatasetQueryEvidencePersistenceError',
     { operation: Schema.String, message: Schema.String },
-  ) {}
+  ) {
+  constructor(args: {
+    operation: string
+    message?: string
+    cause?: unknown
+  }) {
+    const operation = sanitizeDatasetQueryEvidenceOperation(args.operation)
+    super({
+      operation,
+      message: datasetQueryEvidencePersistenceErrorMessage(operation),
+    })
+  }
+}
 
 export class DatasetQueryEvidenceScopeError
   extends Schema.TaggedError<DatasetQueryEvidenceScopeError>()(
     'DatasetQueryEvidenceScopeError',
-    { entity: Schema.Literal('result', 'citation'), id: Schema.String, message: Schema.String },
-  ) {}
+    { entity: Schema.String, id: Schema.String, message: Schema.String },
+  ) {
+  constructor(args: {
+    entity: string
+    id: string
+    message?: string
+    cause?: unknown
+  }) {
+    const entity = sanitizeDatasetQueryEvidenceEntity(args.entity)
+    const id = sanitizeDatasetQueryEvidenceId(
+      args.id,
+      entity === 'citation' ? 'unknown-citation-id' : 'unknown-result-id',
+    )
+    super({
+      entity,
+      id,
+      message: datasetQueryEvidenceScopeErrorMessage(entity),
+    })
+  }
+}
 
 export class DatasetQueryEvidenceConflictError
   extends Schema.TaggedError<DatasetQueryEvidenceConflictError>()(
     'DatasetQueryEvidenceConflictError',
-    { entity: Schema.Literal('result', 'citation'), message: Schema.String },
-  ) {}
+    { entity: Schema.String, message: Schema.String },
+  ) {
+  constructor(args: {
+    entity: string
+    message?: string
+    cause?: unknown
+  }) {
+    const entity = sanitizeDatasetQueryEvidenceEntity(args.entity)
+    super({
+      entity,
+      message: datasetQueryEvidenceConflictErrorMessage(entity),
+    })
+  }
+}
 
 export class DatasetCitationValidationError
   extends Schema.TaggedError<DatasetCitationValidationError>()(
     'DatasetCitationValidationError',
-    { citationId: DatasetCitationId, reason: Schema.String, message: Schema.String },
-  ) {}
+    { citationId: Schema.String, reason: Schema.String, message: Schema.String },
+  ) {
+  constructor(args: {
+    citationId: string
+    reason: string
+    message?: string
+    cause?: unknown
+  }) {
+    const citationId = sanitizeDatasetQueryEvidenceId(
+      args.citationId,
+      'unknown-citation-id',
+    )
+    const reason = sanitizeDatasetCitationValidationReason(args.reason)
+    super({
+      citationId,
+      reason,
+      message: datasetCitationValidationErrorMessage(reason),
+    })
+  }
+}
 
 export type DatasetQueryEvidenceError =
   | DatasetQueryEvidencePersistenceError
@@ -102,10 +177,7 @@ export type DatasetQueryEvidenceError =
   | DatasetCitationValidationError
 
 const failure = (operation: string) =>
-  new DatasetQueryEvidencePersistenceError({
-    operation,
-    message: `Dataset query evidence ${operation} failed`,
-  })
+  new DatasetQueryEvidencePersistenceError({ operation })
 
 function jsonValue(value: unknown): unknown {
   if (typeof value !== 'string') return value
@@ -126,6 +198,8 @@ function decodeResult(row: unknown) {
       requestHash: stored.request_hash,
       protocolVersion: stored.protocol_version,
       engineVersion: stored.engine_version,
+      engineAdapterVersion: stored.engine_adapter_version,
+      executionPolicyVersion: stored.execution_policy_version,
       engineConfigHash: stored.engine_config_hash,
       canonicalSql: stored.canonical_sql,
       snapshots: jsonValue(stored.dataset_snapshots),
@@ -175,6 +249,8 @@ function decodeHistory(row: unknown) {
       requestHash: stored.request_hash,
       protocolVersion: stored.protocol_version,
       engineVersion: stored.engine_version,
+      engineAdapterVersion: stored.engine_adapter_version,
+      executionPolicyVersion: stored.execution_policy_version,
       engineConfigHash: stored.engine_config_hash,
       canonicalSql: stored.canonical_sql,
       snapshots: jsonValue(stored.dataset_snapshots),
@@ -290,13 +366,15 @@ export class DatasetQueryEvidenceRepo
                 const inserted = await transaction.unsafe(
                   `INSERT INTO query_result_snapshots (
                      id, workspace_id, project_id, request_hash, protocol_version,
-                     engine_version, engine_config_hash, canonical_sql, dataset_snapshots,
-                     schema_hash, result_hash, result_artifact_hash, columns, rows,
-                     row_count, truncated, executed_at, created_at
+                     engine_version, engine_adapter_version,
+                     execution_policy_version, engine_config_hash, canonical_sql,
+                     dataset_snapshots, schema_hash, result_hash,
+                     result_artifact_hash, columns, rows, row_count, truncated,
+                     executed_at, created_at
                    ) VALUES (
-                     $1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10, $11, $12,
-                     $13::jsonb, $14::jsonb, $15, $16,
-                     to_timestamp($17 / 1000.0), to_timestamp($18 / 1000.0)
+                     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::jsonb, $12,
+                     $13, $14, $15::jsonb, $16::jsonb, $17, $18,
+                     to_timestamp($19 / 1000.0), to_timestamp($20 / 1000.0)
                    )
                    ON CONFLICT (workspace_id, project_id, request_hash)
                    DO NOTHING RETURNING *`,
@@ -307,6 +385,8 @@ export class DatasetQueryEvidenceRepo
                     result.requestHash,
                     result.protocolVersion,
                     result.engineVersion,
+                    result.engineAdapterVersion,
+                    result.executionPolicyVersion,
                     result.engineConfigHash,
                     result.canonicalSql,
                     JSON.stringify(result.snapshots),
@@ -433,7 +513,9 @@ export class DatasetQueryEvidenceRepo
                         result.columns AS result_columns,
                         result.rows AS result_rows, result.request_hash,
                         result.protocol_version,
-                        result.engine_version, result.engine_config_hash,
+                        result.engine_version, result.engine_adapter_version,
+                        result.execution_policy_version,
+                        result.engine_config_hash,
                         result.schema_hash AS result_schema_hash,
                         result.result_hash AS stored_result_hash,
                         result.result_artifact_hash AS stored_result_artifact_hash,
@@ -466,6 +548,8 @@ export class DatasetQueryEvidenceRepo
               requestHash: row['request_hash'],
               protocolVersion: row['protocol_version'],
               engineVersion: row['engine_version'],
+              engineAdapterVersion: row['engine_adapter_version'],
+              executionPolicyVersion: row['execution_policy_version'],
               engineConfigHash: row['engine_config_hash'],
               canonicalSql: row['canonical_sql'],
               snapshots: jsonValue(row['dataset_snapshots']),
@@ -541,10 +625,11 @@ export class DatasetQueryEvidenceRepo
             const rows = yield* Effect.tryPromise({
               try: () => sql.unsafe(
                 `SELECT id, workspace_id, project_id, request_hash,
-                        protocol_version, engine_version, engine_config_hash,
-                        canonical_sql, dataset_snapshots, schema_hash,
-                        result_hash, result_artifact_hash, row_count, truncated,
-                        executed_at, created_at
+                        protocol_version, engine_version,
+                        engine_adapter_version, execution_policy_version,
+                        engine_config_hash, canonical_sql, dataset_snapshots,
+                        schema_hash, result_hash, result_artifact_hash, row_count,
+                        truncated, executed_at, created_at
                  FROM query_result_snapshots
                  WHERE workspace_id = $1 AND project_id = $2
                  ORDER BY created_at DESC, id DESC LIMIT $3`,

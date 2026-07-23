@@ -112,6 +112,8 @@ function evidenceReference(
       queryResultSnapshotId: dataset.citation.queryResultSnapshotId,
       requestHash: dataset.snapshot.requestHash,
       engineVersion: dataset.snapshot.engineVersion,
+      engineAdapterVersion: dataset.snapshot.engineAdapterVersion,
+      executionPolicyVersion: dataset.snapshot.executionPolicyVersion,
       engineConfigHash: dataset.snapshot.engineConfigHash,
       querySnapshots: dataset.snapshot.snapshots,
       schemaHash: dataset.snapshot.schemaHash,

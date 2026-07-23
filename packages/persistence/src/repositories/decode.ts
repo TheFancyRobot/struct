@@ -18,6 +18,13 @@
 
 import { Effect, Schema, ParseResult } from 'effect'
 import * as Domain from '@struct/domain'
+import {
+  classifyDecodeReason,
+  decodeErrorMessage,
+  sanitizeDecodeReason,
+  sanitizeEntity,
+  sanitizeField,
+} from '../error-boundary.js'
 
 // --- DecodeError ---
 
@@ -30,7 +37,24 @@ export class DecodeError extends Schema.TaggedError<DecodeError>()('DecodeError'
   field: Schema.String,
   reason: Schema.String,
   message: Schema.String,
-}) {}
+}) {
+  constructor(args: {
+    entity: string
+    field: string
+    reason: string
+    message?: string
+  }) {
+    const entity = sanitizeEntity(args.entity)
+    const field = sanitizeField(args.field)
+    const reason = sanitizeDecodeReason(args.reason)
+    super({
+      entity,
+      field,
+      reason,
+      message: decodeErrorMessage(entity, field, reason),
+    })
+  }
+}
 
 // --- Row Schemas (wire format from PostgreSQL) ---
 
@@ -157,11 +181,14 @@ const EventJournalRowSchema = Schema.Struct({
 // --- Decode helpers ---
 
 function makeDecodeError(entity: string, cause: unknown): DecodeError {
-  const reason = cause instanceof Error ? cause.message : String(cause)
-  // Extract field name from ParseError if possible
-  const fieldMatch = reason.match(/\["(\w+)"\]/)
-  const field = fieldMatch ? fieldMatch[1] : 'unknown'
-  return new DecodeError({ entity, field, reason, message: `Failed to decode ${entity}: ${reason}` })
+  const details = cause instanceof Error ? cause.message : String(cause)
+  const fieldMatch = details.match(/\["([A-Za-z0-9_.-]+)"\]/)
+  const field = fieldMatch?.[1] ?? 'unknown-field'
+  return new DecodeError({
+    entity,
+    field,
+    reason: classifyDecodeReason(cause),
+  })
 }
 
 /**

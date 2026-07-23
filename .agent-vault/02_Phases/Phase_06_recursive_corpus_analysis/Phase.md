@@ -7,7 +7,7 @@ phase_id: PHASE-06
 status: completed
 owner: Codex
 created: '2026-07-17'
-updated: '2026-07-20'
+updated: '2026-07-22'
 depends_on:
   - '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|PHASE-04 Structured Datasets and Deterministic SQL]]'
   - '[[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|PHASE-05 Typed Research Planning and Bounded Execution]]'
@@ -28,6 +28,7 @@ related_decisions:
   - '[[04_Decisions/DEC-0014_use-solidjs-vite-8-and-solid-router-for-frontend-runtime|DEC-0014 Use SolidJS Vite 8 and Solid Router for Frontend Runtime]]'
 related_bugs:
   - '[[03_Bugs/BUG-0011_step-06-01-post-merge-contract-review-findings|BUG-0011 STEP-06-01 post-merge contract review findings]]'
+  - '[[03_Bugs/BUG-0026_recursive-analysis-route-tests-assert-redacted-persistence-details|BUG-0026 Recursive Analysis Route Tests Assert Redacted Persistence Details]]'
 tags:
   - agent-vault
   - phase
@@ -117,6 +118,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-related-bugs -->
 - [[03_Bugs/BUG-0011_step-06-01-post-merge-contract-review-findings|BUG-0011 STEP-06-01 post-merge contract review findings]]
+- [[03_Bugs/BUG-0026_recursive-analysis-route-tests-assert-redacted-persistence-details|BUG-0026 Recursive Analysis Route Tests Assert Redacted Persistence Details]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps

@@ -7,7 +7,7 @@ phase_id: PHASE-03
 status: completed
 owner: Codex
 created: '2026-07-17'
-updated: '2026-07-19'
+updated: '2026-07-22'
 depends_on:
   - '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]]'
 related_architecture:
@@ -21,7 +21,9 @@ related_decisions:
   - '[[04_Decisions/DEC-0007_compose-a-product-job-journal-with-fred-checkpoints|DEC-0007 Compose a Product Job Journal with Fred Checkpoints]]'
   - '[[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009 Sandbox Filesystem Roots and Allowlist Read-Only SQL]]'
   - '[[04_Decisions/DEC-0015_use-per-step-branch-pr-review-and-merge-gates|DEC-0015 Use Per-Step Branch PR Review and Merge Gates]]'
-related_bugs: []
+related_bugs:
+  - '[[03_Bugs/BUG-0024_source-text-reindex-heartbeat-failure-test-asserts-redacted-persistence-detail|BUG-0024 Source Text Reindex Heartbeat Failure Test Asserts Redacted Persistence Detail]]'
+  - '[[03_Bugs/BUG-0025_ingestion-heartbeat-failure-test-asserts-redacted-persistence-detail|BUG-0025 Ingestion Heartbeat Failure Test Asserts Redacted Persistence Detail]]'
 tags:
   - agent-vault
   - phase
@@ -105,7 +107,8 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Related Bugs
 
 <!-- AGENT-START:phase-related-bugs -->
-- None yet.
+- [[03_Bugs/BUG-0024_source-text-reindex-heartbeat-failure-test-asserts-redacted-persistence-detail|BUG-0024 Source Text Reindex Heartbeat Failure Test Asserts Redacted Persistence Detail]]
+- [[03_Bugs/BUG-0025_ingestion-heartbeat-failure-test-asserts-redacted-persistence-detail|BUG-0025 Ingestion Heartbeat Failure Test Asserts Redacted Persistence Detail]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps

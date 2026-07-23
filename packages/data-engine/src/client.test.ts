@@ -9,10 +9,13 @@ import { describe, expect, it } from 'bun:test'
 import { Effect } from 'effect'
 import { makeDataEngineClient } from './client.js'
 import {
+  DATA_ENGINE_ADAPTER_VERSION,
+  DATA_ENGINE_EXECUTION_POLICY_VERSION,
   DATA_ENGINE_PROTOCOL_VERSION,
   type MaterializeRequest,
   type QueryRequest,
 } from './protocol.js'
+import { canonicalExpectedEngineConfigHash } from './runtime-identity.js'
 
 const snapshotId = DatasetSnapshotId.make('550e8400-e29b-41d4-a716-446655440003')
 const digest = 'a'.repeat(64)
@@ -221,8 +224,11 @@ describe('DataEngineClient', () => {
     }
     const resultArtifactHash = hashJson(artifact)
     const hashInput = {
+      protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
       engineVersion: 'duckdb-1.5.4',
-      engineConfigHash: `sha256:${'e'.repeat(64)}`,
+      engineAdapterVersion: DATA_ENGINE_ADAPTER_VERSION,
+      executionPolicyVersion: DATA_ENGINE_EXECUTION_POLICY_VERSION,
+      engineConfigHash: canonicalExpectedEngineConfigHash(queryRequest.limits),
       canonicalSql: queryRequest.sql,
       snapshots: queryRequest.snapshots,
       schemaHash: `sha256:${'c'.repeat(64)}`,
@@ -232,7 +238,6 @@ describe('DataEngineClient', () => {
     const response = {
       ok: true as const,
       result: {
-        protocolVersion: '1' as const,
         workspaceId,
         projectId,
         ...hashInput,
@@ -323,6 +328,45 @@ describe('DataEngineClient', () => {
     expect(String(oversizedExit)).toContain('inconsistent result shape')
   })
 
+  it('rejects a self-consistent query response whose engine config hash does not match the requested limits', async () => {
+    const artifact = {
+      columns: [{ ordinal: 0, name: 'id', type: 'BIGINT' }],
+      rows: [['1']],
+      rowCount: 1,
+      truncated: false,
+    }
+    const resultArtifactHash = hashJson(artifact)
+    const hashInput = {
+      protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
+      engineVersion: 'duckdb-1.5.4',
+      engineAdapterVersion: DATA_ENGINE_ADAPTER_VERSION,
+      executionPolicyVersion: DATA_ENGINE_EXECUTION_POLICY_VERSION,
+      engineConfigHash: `sha256:${'9'.repeat(64)}`,
+      canonicalSql: queryRequest.sql,
+      snapshots: queryRequest.snapshots,
+      schemaHash: `sha256:${'c'.repeat(64)}`,
+      resultArtifactHash,
+      ...artifact,
+    }
+    const client = makeDataEngineClient({
+      baseUrl: 'http://data-engine',
+      credential: 'test-credential-value',
+    }, async () => Response.json({
+      ok: true,
+      result: {
+        workspaceId,
+        projectId,
+        ...hashInput,
+        resultHash: hashJson(hashInput),
+        executionMs: 1,
+      },
+    }))
+
+    const exit = await Effect.runPromiseExit(client.query(queryRequest))
+    expect(exit._tag).toBe('Failure')
+    expect(String(exit)).toContain('engine config hash')
+  })
+
   it('shares one timeout budget across fetch and body phases', async () => {
     const encoder = new TextEncoder()
     const materializeBody = encoder.encode(JSON.stringify({
@@ -342,7 +386,11 @@ describe('DataEngineClient', () => {
     const queryBody = encoder.encode(JSON.stringify({
       ok: true,
       result: {
-        protocolVersion: '1',
+        protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
+        engineVersion: 'duckdb-1.5.4',
+        engineAdapterVersion: DATA_ENGINE_ADAPTER_VERSION,
+        executionPolicyVersion: DATA_ENGINE_EXECUTION_POLICY_VERSION,
+        engineConfigHash: `sha256:${'e'.repeat(64)}`,
         workspaceId,
         projectId,
         canonicalSql: queryRequest.sql,

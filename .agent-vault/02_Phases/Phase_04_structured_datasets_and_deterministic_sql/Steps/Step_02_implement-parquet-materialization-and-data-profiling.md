@@ -8,20 +8,27 @@ phase: '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Pha
 status: completed
 owner: Codex
 created: '2026-07-17'
-updated: '2026-07-19'
+updated: '2026-07-23'
 depends_on:
   - '[[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_01_define-dataset-assets-schemas-and-versioned-catalog|STEP-04-01 Define Dataset Assets Schemas and Versioned Catalog]]'
 related_sessions:
   - '[[05_Sessions/2026-07-19-171923-implement-parquet-materialization-and-data-profiling-codex-step-04-02-worker|SESSION-2026-07-19-171923 codex-step-04-02-worker session for Implement Parquet Materialization and Data Profiling]]'
+  - '[[05_Sessions/2026-07-22-161910-implement-parquet-materialization-and-data-profiling-codex|SESSION-2026-07-22-161910 Codex session for Implement Parquet Materialization and Data Profiling]]'
+  - '[[05_Sessions/2026-07-23-040538-implement-parquet-materialization-and-data-profiling-codex|SESSION-2026-07-23-040538 Codex session for Implement Parquet Materialization and Data Profiling]]'
 related_bugs:
   - '[[03_Bugs/BUG-0010_solid-theme-toggle-does-not-apply-the-selected-theme|BUG-0010 Solid theme toggle does not apply the selected theme]]'
+  - '[[03_Bugs/BUG-0019_merged-pr-17-review-findings-remain-unresolved|BUG-0019 Merged PR 17 Review Findings Remain Unresolved]]'
+  - '[[03_Bugs/BUG-0020_completed-step-snapshots-contradict-canonical-status-across-vault|BUG-0020 Completed Step Snapshots Contradict Canonical Status Across Vault]]'
+  - '[[03_Bugs/BUG-0028_local-docker-daemon-is-unresponsive-for-required-data-engine-integration-validation|BUG-0028 Local Docker Daemon Is Unresponsive for Required Data-Engine Integration Validation]]'
+  - '[[03_Bugs/BUG-0029_stack-up-operation-can-validate-a-stale-data-engine-image-after-sidecar-source-changes|BUG-0029 Stack-up operation can validate a stale data-engine image after sidecar source changes]]'
+  - '[[03_Bugs/BUG-0030_mixed-case-reserved-sidecar-lineage-field-names-bypass-namespace-protection|BUG-0030 Mixed-case reserved sidecar lineage field names bypass namespace protection]]'
 tags:
   - agent-vault
   - step
-context_id: SESSION-2026-07-19-171923
-active_session_id: 05_Sessions/2026-07-19-171923-implement-parquet-materialization-and-data-profiling-codex-step-04-02-worker
-context_status: completed
-context_summary: 'STEP-04-02 passed local validation and bot review and merged to main in PR #19 at 7357870.'
+context_id: SESSION-2026-07-23-040538
+active_session_id: 05_Sessions/2026-07-23-040538-implement-parquet-materialization-and-data-profiling-codex
+context_status: active
+context_summary: Advance [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Steps/Step_02_implement-parquet-materialization-and-data-profiling|STEP-04-02 Implement Parquet Materialization and Data Profiling]].
 ---
 
 # Step 02 - Implement Parquet Materialization and Data Profiling
@@ -53,10 +60,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: in_progress
+- Status: completed
 - Current owner: Codex
 - Last touched: 2026-07-19
-- Next action: Resolve all PR #19 review findings and merge before marking this step completed or advancing to STEP-04-03.
+- Next action: None; step completed.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -67,6 +74,8 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 <!-- AGENT-START:step-session-history -->
 - 2026-07-19 - [[05_Sessions/2026-07-19-171923-implement-parquet-materialization-and-data-profiling-codex-step-04-02-worker|SESSION-2026-07-19-171923 codex-step-04-02-worker session for Implement Parquet Materialization and Data Profiling]] - Session created.
+- 2026-07-22 - [[05_Sessions/2026-07-22-161910-implement-parquet-materialization-and-data-profiling-codex|SESSION-2026-07-22-161910 Codex session for Implement Parquet Materialization and Data Profiling]] - Session created.
+- 2026-07-23 - [[05_Sessions/2026-07-23-040538-implement-parquet-materialization-and-data-profiling-codex|SESSION-2026-07-23-040538 Codex session for Implement Parquet Materialization and Data Profiling]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

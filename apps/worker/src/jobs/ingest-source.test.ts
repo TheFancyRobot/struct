@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { Effect, Exit, Option } from 'effect'
+import { Cause, Effect, Exit, Option } from 'effect'
 import {
   AuthorizationError,
   IngestionFailureError,
@@ -803,10 +803,12 @@ describe('processOneIngestionJob', () => {
   it('propagates heartbeat infrastructure failure and interrupts claimed work', async () => {
     const base = deps()
     let interrupted = false
+    const rawHeartbeatMarker = 'database unavailable HEARTBEAT_SECRET_MARKER__db-pass /Users/private/lease.json'
     const heartbeatFailure = new QueryError({
       operation: 'renewIngestionLease',
       entity: 'JobQueue',
-      message: 'database unavailable',
+      message: rawHeartbeatMarker,
+      cause: rawHeartbeatMarker,
     })
     const testDeps: IngestionWorkerTestDeps = {
       ...base,
@@ -830,7 +832,25 @@ describe('processOneIngestionJob', () => {
     const exit = await Effect.runPromiseExit(processOneIngestionJob(testDeps))
     expect(Exit.isFailure(exit)).toBe(true)
     if (Exit.isFailure(exit)) {
-      expect(String(exit.cause)).toContain('database unavailable')
+      const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
+      expect(failure).toBeInstanceOf(QueryError)
+      expect(failure).toMatchObject({
+        _tag: 'QueryError',
+        operation: 'renewIngestionLease',
+        entity: 'JobQueue',
+        message:
+          'Persistence query failed during renewIngestionLease on JobQueue',
+      })
+      for (const representation of [
+        String(exit),
+        JSON.stringify(exit),
+        String(exit.cause),
+      ]) {
+        expect(representation).not.toContain('database unavailable')
+        expect(representation).not.toContain('HEARTBEAT_SECRET_MARKER')
+        expect(representation).not.toContain('db-pass')
+        expect(representation).not.toContain('/Users/private/')
+      }
     }
     expect(interrupted).toBe(true)
     expect(base.calls.events).toEqual([])

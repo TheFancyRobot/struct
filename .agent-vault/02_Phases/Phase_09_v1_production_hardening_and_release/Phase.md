@@ -7,7 +7,7 @@ phase_id: PHASE-09
 status: completed
 owner: Codex
 created: '2026-07-17'
-updated: '2026-07-21'
+updated: '2026-07-22'
 depends_on:
   - '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Phase|PHASE-02 Document Research and Hybrid Retrieval]]'
   - '[[02_Phases/Phase_03_durable_directory_ingestion_and_source_refresh/Phase|PHASE-03 Durable Directory Ingestion and Source Refresh]]'
@@ -30,6 +30,7 @@ related_bugs:
   - '[[03_Bugs/BUG-0015_citation-navigation-bypasses-configured-web-base-path|BUG-0015 Citation navigation bypasses configured web base path]]'
   - '[[03_Bugs/BUG-0016_base-path-citation-regression-test-is-not-isolated-in-the-full-test-suite|BUG-0016 Base-path citation regression test is not isolated in the full test suite]]'
   - '[[03_Bugs/BUG-0017_staged-planning-documents-fail-whitespace-validation|BUG-0017 Staged planning documents fail whitespace validation]]'
+  - '[[03_Bugs/BUG-0027_e2e-app-server-helper-adopts-stale-port-listeners-and-leaves-orphans|BUG-0027 E2E App Server Helper Adopts Stale Port Listeners and Leaves Orphans]]'
 tags:
   - agent-vault
   - phase
@@ -151,6 +152,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - [[03_Bugs/BUG-0015_citation-navigation-bypasses-configured-web-base-path|BUG-0015 Citation navigation bypasses configured web base path]]
 - [[03_Bugs/BUG-0016_base-path-citation-regression-test-is-not-isolated-in-the-full-test-suite|BUG-0016 Base-path citation regression test is not isolated in the full test suite]]
 - [[03_Bugs/BUG-0017_staged-planning-documents-fail-whitespace-validation|BUG-0017 Staged planning documents fail whitespace validation]]
+- [[03_Bugs/BUG-0027_e2e-app-server-helper-adopts-stale-port-listeners-and-leaves-orphans|BUG-0027 E2E App Server Helper Adopts Stale Port Listeners and Leaves Orphans]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps

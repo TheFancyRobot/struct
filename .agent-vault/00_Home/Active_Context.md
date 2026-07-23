@@ -19,11 +19,11 @@ Keep this note short and current.
 ## Current Objective
 
 <!-- AGENT-START:current-focus -->
-_Last refreshed: 2026-07-21._
-- Session in progress: none.
-- Current remediation target: [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]] - status: confirmed.
-- [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] and all `STEP-10-*` roadmap steps are planned technical reference only; the zero-defect gate blocks their activation until BUG-0013 is fixed through independently tracked bug-remediation units.
-- Also active: 1 open critical bug.
+_Last refreshed: 2026-07-23._
+- Session in progress: [[05_Sessions/2026-07-23-040538-implement-parquet-materialization-and-data-profiling-codex|SESSION-2026-07-23-040538 Codex session for Implement Parquet Materialization and Data Profiling]] - owner: Codex - phase: [[02_Phases/Phase_04_structured_datasets_and_deterministic_sql/Phase|Phase 04 structured datasets and deterministic sql]] - updated: 2026-07-23
+- Current step: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle|STEP-10-01 Establish Workspace and Project Lifecycle]] - status: planned - phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]
+- Active phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: planned - updated: 2026-07-21
+- Also active: 1 more additional sessions, 25 more additional steps, 3 open critical bugs.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -58,7 +58,7 @@ _Last refreshed: 2026-07-21._
 ## Blockers
 
 <!-- AGENT-START:blockers -->
-- BUG-0013 is confirmed. PHASE-10 and STEP-10-01 are blocked as roadmap work until the defect is resolved through independently tracked bug-remediation units.
+- No phase, step, or session notes are currently marked blocked.
 <!-- AGENT-END:blockers -->
 
 ## Open Questions
@@ -70,6 +70,8 @@ _Last refreshed: 2026-07-21._
 
 <!-- AGENT-START:critical-bugs -->
 - [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]] - status: confirmed - severity: sev-1 - reported: 2026-07-21
+- [[03_Bugs/BUG-0019_merged-pr-17-review-findings-remain-unresolved|BUG-0019 Merged PR 17 Review Findings Remain Unresolved]] - status: resolved - severity: sev-2 - reported: 2026-07-22
+- [[03_Bugs/BUG-0020_completed-step-snapshots-contradict-canonical-status-across-vault|BUG-0020 Completed Step Snapshots Contradict Canonical Status Across Vault]] - status: resolved - severity: sev-2 - reported: 2026-07-22
 <!-- AGENT-END:critical-bugs -->
 
 ## Next Actions

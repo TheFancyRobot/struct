@@ -6,7 +6,7 @@ WORKDIR /opt/struct-data-engine
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts=false --no-audit --no-fund \
   && npm cache clean --force
-COPY server.mjs gateway.mjs ./
+COPY server.mjs gateway.mjs runtime-identity.mjs ./
 
 RUN mkdir -p /scratch/tmp /scratch/output \
   && chown -R 1000:1000 /scratch
