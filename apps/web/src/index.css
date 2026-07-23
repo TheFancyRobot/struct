@@ -1,5 +1,4 @@
-@import "@fontsource-variable/instrument-sans";
-@import "@fontsource-variable/newsreader";
+@import "@fontsource-variable/manrope";
 @import "@fontsource/ibm-plex-mono";
 @import "tailwindcss";
 
@@ -79,8 +78,7 @@
 }
 
 @theme {
-  --font-sans: "Instrument Sans Variable", sans-serif;
-  --font-serif: "Newsreader Variable", serif;
+  --font-sans: "Manrope Variable", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
 }
 
@@ -117,11 +115,6 @@ code,
 pre,
 kbd {
   font-family: var(--font-mono);
-}
-
-.synthesis-copy {
-  font-family: var(--font-serif);
-  font-optical-sizing: auto;
 }
 
 .break-anywhere {

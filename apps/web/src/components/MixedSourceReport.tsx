@@ -326,7 +326,7 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
                 </div>
               </Show>
               <div class="answer-copy py-8 sm:py-10">
-                <p class="synthesis-copy text-xl leading-relaxed sm:text-2xl">{props.report.answer}</p>
+                <p class="text-xl leading-relaxed sm:text-2xl">{props.report.answer}</p>
                 <div class="inline-citations mt-4 flex gap-2" aria-label="Answer citations">
                   <a
                     class="badge badge-outline badge-primary"
