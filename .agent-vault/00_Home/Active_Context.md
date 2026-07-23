@@ -40,9 +40,9 @@ _Last refreshed: 2026-07-23._
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
 - Phase 06 is completed, reviewed, and merged through STEP-06-06.
-- Phases 07–09 are complete and merged. BUG-0013 is fixed, but the v1 release checklist remains reopened by BUG-0034 and BUG-0035; the tag and GitHub release action are intentionally unperformed.
+- Phases 07–09 are complete and merged. BUG-0013's implementation remediation is complete, but release closure remains pending the real-stack journey evidence now tracked by BUG-0034 and BUG-0035; the tag and GitHub release action are intentionally unperformed.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
-- Current correction: BUG-0013 no longer blocks release. PHASE-10 remains technical reference only while BUG-0034 and BUG-0035 keep the zero-defect release gate open; historical fixture-backed browser evidence is not sufficient for v1 release.
+- Current correction: BUG-0013's implementation remediation is complete, but its release closure is not independently proven. PHASE-10 remains technical reference only while BUG-0034 and BUG-0035 keep the zero-defect release gate open; historical fixture-backed browser evidence is not sufficient for v1 release.
 
 ## Out Of Scope Right Now
 
@@ -64,7 +64,7 @@ _Last refreshed: 2026-07-23._
 ## Open Questions
 
 - No unresolved design question remains in the completed Phase 09 work.
-- PHASE-10 refinement has no unresolved design question. BUG-0013 is fixed; BUG-0034 and BUG-0035 are the confirmed release blockers.
+- PHASE-10 refinement has no unresolved design question. BUG-0013's implementation remediation is complete, while BUG-0034 and BUG-0035 are the confirmed release blockers.
 
 ## Release-Blocking Defects
 
