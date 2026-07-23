@@ -1,13 +1,13 @@
 /* eslint-disable no-unused-vars -- Babel's parser does not mark Solid JSX component imports as used. */
 import { useParams, useSearchParams } from '@solidjs/router'
 import { Show, createMemo, type Component } from 'solid-js'
+import { Schema } from 'effect'
 import {
   ProjectId,
   ResearchRunId,
   ResearchThreadId,
-  WorkspaceId,
 } from '@struct/domain'
-import { ResearchStream } from '../components/ResearchStream'
+import { ConversationPanel } from '../components/ConversationPanel'
 import {
   MixedSourceReport,
   mixedSourceDemoFixture,
@@ -37,23 +37,31 @@ export const ResearchPage: Component = () => {
       : 'complete'
     return mixedSourceDemoFixture(state)
   })
+  const scope = createMemo(() => {
+    if (
+      !Schema.is(ProjectId)(params.projectId)
+      || !Schema.is(ResearchThreadId)(params.threadId)
+    ) return null
+    return {
+      projectId: params.projectId,
+      threadId: params.threadId,
+      runId: Schema.is(ResearchRunId)(params.runId) ? params.runId : undefined,
+    }
+  })
   return (
     <section class="min-w-0">
       <Show
         when={demoReport()}
         fallback={(
-          <ResearchStream
-            projectId={ProjectId.make(params.projectId ?? '')}
-            threadId={ResearchThreadId.make(params.threadId ?? '')}
-            runId={ResearchRunId.make(params.runId ?? '')}
-            workspaceId={
-              typeof searchParams.workspaceId === 'string'
-                && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-                  .test(searchParams.workspaceId)
-                ? WorkspaceId.make(searchParams.workspaceId)
-                : undefined
-            }
-          />
+          <Show when={scope()} fallback={<p class="alert alert-error">This conversation is no longer available.</p>}>
+            {(loaded) => (
+              <ConversationPanel
+                projectId={loaded().projectId}
+                threadId={loaded().threadId}
+                runId={loaded().runId}
+              />
+            )}
+          </Show>
         )}
       >
         {(report) => <MixedSourceReport report={report()} />}

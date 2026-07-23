@@ -48,6 +48,7 @@ export interface ResearchRegistrationInput {
   readonly run: typeof ResearchRun.Type
   readonly job: typeof JobQueue.Type
   readonly event: typeof EventJournal.Type
+  readonly createThread?: boolean
 }
 
 export interface ResearchRegistrationResult {
@@ -575,18 +576,38 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
             if (Number(authorized[0]?.['count']) !== input.sourceVersionIds.length) {
               throw new ResearchScopeMismatchError('research-source-scope-mismatch')
             }
-            const threadRows = await transaction.unsafe(
-              `INSERT INTO research_threads (id, project_id, title, created_at, updated_at)
-               VALUES ($1, $2, $3, to_timestamp($4 / 1000.0), to_timestamp($5 / 1000.0))
-               RETURNING *`,
-              [
-                input.thread.id,
-                input.thread.projectId,
-                input.thread.title,
-                Number(input.thread.createdAt),
-                Number(input.thread.updatedAt),
-              ],
-            )
+            const threadRows = input.createThread === false
+              ? await transaction.unsafe(
+                  `UPDATE research_threads thread
+                   SET updated_at = to_timestamp($4 / 1000.0)
+                   FROM projects project
+                   WHERE thread.id = $1
+                     AND thread.project_id = $2
+                     AND project.id = thread.project_id
+                     AND project.workspace_id = $3
+                   RETURNING thread.*`,
+                  [
+                    input.thread.id,
+                    input.projectId,
+                    input.workspaceId,
+                    Number(input.run.updatedAt),
+                  ],
+                )
+              : await transaction.unsafe(
+                  `INSERT INTO research_threads (id, project_id, title, created_at, updated_at)
+                   VALUES ($1, $2, $3, to_timestamp($4 / 1000.0), to_timestamp($5 / 1000.0))
+                   RETURNING *`,
+                  [
+                    input.thread.id,
+                    input.thread.projectId,
+                    input.thread.title,
+                    Number(input.thread.createdAt),
+                    Number(input.thread.updatedAt),
+                  ],
+                )
+            if (threadRows.length !== 1) {
+              throw new ResearchScopeMismatchError('research-thread-scope-mismatch')
+            }
             const runRows = await transaction.unsafe(
               `INSERT INTO research_runs (id, thread_id, question, status, created_at, updated_at)
                VALUES ($1, $2, $3, $4, to_timestamp($5 / 1000.0), to_timestamp($6 / 1000.0))

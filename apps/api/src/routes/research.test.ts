@@ -46,7 +46,40 @@ describe('startResearch', () => {
     expect(result.job.entityType).toBe('research')
     expect(result.job.maxAttempts).toBe(1)
     expect(result.event.eventType).toBe('research-started')
+    expect(registrations[0]).toMatchObject({ createThread: true })
     expect(registrations).toHaveLength(1)
+  })
+
+  it('appends a run without renaming an existing thread', async () => {
+    const thread = {
+      id: ResearchThreadId.make('d50e8400-e29b-41d4-a716-446655440003'),
+      projectId,
+      title: 'First question',
+      createdAt: 1n,
+      updatedAt: 1n,
+    }
+    let registration: Parameters<StartResearchDeps['register']>[0] | undefined
+    await Effect.runPromise(startResearch({
+      workspaceId,
+      projectId,
+      sourceVersionIds: [sourceVersionId],
+      question: 'Follow up',
+      thread,
+    }, {
+      now: () => 2n,
+      randomThreadId: () => ResearchThreadId.make(crypto.randomUUID()),
+      randomRunId: () => ResearchRunId.make(crypto.randomUUID()),
+      randomJobId: () => JobQueueId.make(crypto.randomUUID()),
+      randomEventId: () => EventJournalId.make(crypto.randomUUID()),
+      register: (input) => {
+        registration = input
+        return Effect.succeed(input)
+      },
+    }))
+
+    expect(registration?.thread.title).toBe('First question')
+    expect(registration?.run.threadId).toBe(thread.id)
+    expect(registration?.createThread).toBe(false)
   })
 
   it('rejects empty questions and duplicate source versions before persistence', async () => {

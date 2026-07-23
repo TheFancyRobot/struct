@@ -2,12 +2,82 @@
 import { Effect, Schema } from 'effect'
 import {
   CitationDetail,
+  JobQueueId,
+  ResearchRunId,
+  ResearchStatus,
+  ResearchThreadId,
+  ResearchRun,
+  ResearchThread,
   RecursiveRunProgress,
 } from '@struct/domain'
 import type * as typeDomain from '@struct/domain'
 import { apiPath, basePathFromPublicBaseUrl } from '../base-path'
 
 const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
+
+const ResearchThreadList = Schema.Struct({ items: Schema.Array(ResearchThread) })
+const ResearchThreadHistory = Schema.Struct({
+  thread: ResearchThread,
+  runs: Schema.Array(ResearchRun),
+})
+const StartedResearch = Schema.Struct({
+  threadId: ResearchThreadId,
+  runId: ResearchRunId,
+  jobId: JobQueueId,
+  status: ResearchStatus,
+})
+
+async function researchJson(response: Response): Promise<unknown> {
+  const body = await response.json()
+  if (!response.ok) {
+    throw new Error(response.status === 404
+      ? 'This conversation is no longer available.'
+      : 'Research could not be loaded. Try again.')
+  }
+  return body
+}
+
+export async function fetchResearchThreads(projectId: typeDomain.ProjectId) {
+  const response = await fetch(
+    apiPath(`/projects/${projectId}/research`, appBasePath),
+    { signal: AbortSignal.timeout(10_000) },
+  )
+  return Schema.decodeUnknownPromise(ResearchThreadList)(await researchJson(response))
+}
+
+export async function fetchResearchThread(
+  projectId: typeDomain.ProjectId,
+  threadId: typeDomain.ResearchThreadId,
+) {
+  const response = await fetch(
+    apiPath(`/projects/${projectId}/research/${threadId}`, appBasePath),
+    { signal: AbortSignal.timeout(10_000) },
+  )
+  return Schema.decodeUnknownPromise(ResearchThreadHistory)(await researchJson(response))
+}
+
+export async function submitResearch(
+  projectId: typeDomain.ProjectId,
+  question: string,
+  sourceVersionIds: ReadonlyArray<typeDomain.SourceVersionId>,
+  threadId?: typeDomain.ResearchThreadId,
+) {
+  const response = await fetch(
+    apiPath(
+      threadId === undefined
+        ? `/projects/${projectId}/research`
+        : `/projects/${projectId}/research/${threadId}`,
+      appBasePath,
+    ),
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, sourceVersionIds }),
+      signal: AbortSignal.timeout(10_000),
+    },
+  )
+  return Schema.decodeUnknownPromise(StartedResearch)(await researchJson(response))
+}
 
 export async function fetchCitation(
   projectId: typeDomain.ProjectId,

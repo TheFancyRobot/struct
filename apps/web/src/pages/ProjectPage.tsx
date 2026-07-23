@@ -15,6 +15,7 @@ import { Schema } from 'effect'
 import { ProjectId, normalizeProjectName, projectNameCharacterCount } from '@struct/domain'
 import { ProjectNameConflictError, createProject, fetchProject, fetchProjects } from '../api/projects'
 import { ProjectSwitcher, type ProjectListState } from '../components/ProjectSwitcher'
+import { ConversationPanel } from '../components/ConversationPanel'
 import {
   clearPendingProjectCreate,
   readPendingProjectCreateState,
@@ -291,13 +292,7 @@ export const ProjectPage: Component = () => {
       />
       <Show when={activeProject() ?? undefined}>
         {(activeProject) => (
-          <section class="rounded-box border border-base-300 bg-base-100 p-6">
-            <h2 class="text-lg font-semibold">{activeProject().name}</h2>
-            <p class="mt-2 text-sm text-base-content/70">
-              Project lifecycle is now browser-backed. Later BUG-0013 units will add sources,
-              conversation, evidence, and notes to this route.
-            </p>
-          </section>
+          <ConversationPanel projectId={activeProject().id} />
         )}
       </Show>
     </section>
