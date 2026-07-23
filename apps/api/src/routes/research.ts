@@ -14,6 +14,7 @@ export interface StartResearchInput {
   readonly projectId: Domain.ProjectId
   readonly sourceVersionIds: ReadonlyArray<Domain.SourceVersionId>
   readonly question: string
+  readonly thread?: typeof Domain.ResearchThread.Type
 }
 
 export interface StartResearchDeps {
@@ -62,7 +63,14 @@ export const startResearch = (
     }
 
     const now = deps.now()
-    const thread: typeof Domain.ResearchThread.Type = {
+    if (input.thread !== undefined && input.thread.projectId !== input.projectId) {
+      return yield* new ValidationError({
+        field: 'threadId',
+        reason: 'invalid-scope',
+        message: 'Research thread does not belong to the requested project',
+      })
+    }
+    const thread: typeof Domain.ResearchThread.Type = input.thread ?? {
       id: deps.randomThreadId(),
       projectId: input.projectId,
       title: titleFor(question),
@@ -111,5 +119,6 @@ export const startResearch = (
       run,
       job,
       event,
+      createThread: input.thread === undefined,
     })
   })

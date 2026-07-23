@@ -152,4 +152,27 @@ describe('SSE retry policy', () => {
       dispose()
     })
   })
+
+  it('does not acknowledge a frame that fails decode or reduction', () => {
+    const lifecycle = fakeLifecycle()
+    createRoot((dispose) => {
+      const state = useSSE(
+        () => '/events',
+        () => {
+          throw new Error('invalid')
+        },
+        () => undefined,
+        [],
+        lifecycle.environment,
+      )
+      lifecycle.sources[0]?.onmessage?.(new MessageEvent('message', {
+        data: '{}',
+        lastEventId: '42',
+      }))
+
+      expect(state.error()).toContain('invalid')
+      expect(lifecycle.endpoints[0]?.searchParams.get('cursor')).toBeNull()
+      dispose()
+    })
+  })
 })

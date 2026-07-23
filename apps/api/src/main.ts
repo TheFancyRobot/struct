@@ -18,6 +18,8 @@ import {
   EntityNotFoundError,
   ProvenanceGraphRepo,
   ResearchExecutionRepo,
+  ResearchRunRepo,
+  ResearchThreadRepo,
   ResearchProjectionRepo,
   SourceRegistrationRepo,
   SourceCatalogRepo,
@@ -210,6 +212,8 @@ const server = Effect.gen(function* () {
   const registrationLayer = Layer.provide(SourceRegistrationRepo.Default, sqlLayer)
   const sourceCatalogLayer = Layer.provide(SourceCatalogRepo.Default, sqlLayer)
   const researchLayer = Layer.provide(ResearchExecutionRepo.Default, sqlLayer)
+  const researchRunLayer = Layer.provide(ResearchRunRepo.Default, sqlLayer)
+  const researchThreadLayer = Layer.provide(ResearchThreadRepo.Default, sqlLayer)
   const projectionLayer = Layer.provide(ResearchProjectionRepo.Default, sqlLayer)
   const directoryControlLayer = Layer.provide(
     DirectoryControlRepo.Default,
@@ -780,6 +784,34 @@ const server = Effect.gen(function* () {
       }
 
       const researchRoute = /^\/api\/projects\/([^/]+)\/research$/.exec(url.pathname)
+      if (researchRoute !== null && req.method === 'GET') {
+        const parsedProjectId = Schema.decodeUnknownEither(ProjectId)(researchRoute[1])
+        if (parsedProjectId._tag === 'Left') {
+          return jsonResponse({ error: 'ResourceNotFound' }, 404)
+        }
+        const project = await Runtime.runPromiseExit(effectRuntime)(
+          ProjectRepo.findById(parsedProjectId.right).pipe(Effect.provide(projectLayer)),
+        )
+        if (
+          project._tag === 'Failure'
+          || project.value.workspaceId !== identity.workspaceId
+        ) return jsonResponse({ error: 'ResourceNotFound' }, 404)
+        const threads = await Runtime.runPromiseExit(effectRuntime)(
+          ResearchThreadRepo.findByProjectId(parsedProjectId.right).pipe(
+            Effect.provide(researchThreadLayer),
+          ),
+        )
+        if (threads._tag === 'Failure') {
+          return jsonResponse({ error: 'ResearchServiceUnavailable' }, 503)
+        }
+        return jsonResponse({
+          items: threads.value.map((thread) => ({
+            ...thread,
+            createdAt: Number(thread.createdAt),
+            updatedAt: Number(thread.updatedAt),
+          })),
+        })
+      }
       if (researchRoute !== null && req.method === 'POST') {
         const program = Effect.gen(function* () {
           const body = yield* Effect.tryPromise({
@@ -791,15 +823,11 @@ const server = Effect.gen(function* () {
                 message: 'Invalid JSON body',
               }),
           })
-          const parsed = yield* parseResearchBody(body)
-          yield* authorizeWorkspace(identity, parsed.workspaceId)
-          if (parsed.projectId !== researchRoute[1]) {
-            return yield* new ValidationError({
-              field: 'projectId',
-              reason: 'path-body-mismatch',
-              message: 'Project scope does not match the request path',
-            })
-          }
+          const parsed = yield* parseResearchBody({
+            ...body,
+            workspaceId: identity.workspaceId,
+            projectId: researchRoute[1],
+          })
           const started = yield* Effect.gen(function* () {
               const started = yield* withWalkingSliceSpan(
                 'command',
@@ -865,6 +893,111 @@ const server = Effect.gen(function* () {
           },
           202,
         )
+      }
+
+      const researchThreadRoute =
+        /^\/api\/projects\/([^/]+)\/research\/([^/]+)$/.exec(url.pathname)
+      if (researchThreadRoute !== null && req.method === 'GET') {
+        const identifiers = Effect.try({
+          try: () => ({
+            projectId: Schema.decodeUnknownSync(ProjectId)(researchThreadRoute[1]),
+            threadId: Schema.decodeUnknownSync(ResearchThreadId)(researchThreadRoute[2]),
+          }),
+          catch: () => new Error('Invalid research thread identifiers'),
+        })
+        const ids = await Runtime.runPromiseExit(effectRuntime)(identifiers)
+        if (ids._tag === 'Failure') return jsonResponse({ error: 'ResourceNotFound' }, 404)
+        const thread = await Runtime.runPromiseExit(effectRuntime)(
+          ResearchThreadRepo.findById(ids.value.threadId).pipe(
+            Effect.provide(researchThreadLayer),
+          ),
+        )
+        if (thread._tag === 'Failure' || thread.value.projectId !== ids.value.projectId) {
+          return jsonResponse({ error: 'ResourceNotFound' }, 404)
+        }
+        const project = await Runtime.runPromiseExit(effectRuntime)(
+          ProjectRepo.findById(ids.value.projectId).pipe(Effect.provide(projectLayer)),
+        )
+        if (
+          project._tag === 'Failure'
+          || project.value.workspaceId !== identity.workspaceId
+        ) return jsonResponse({ error: 'ResourceNotFound' }, 404)
+        const runs = await Runtime.runPromiseExit(effectRuntime)(
+          ResearchRunRepo.findByThreadId(ids.value.threadId).pipe(
+            Effect.provide(researchRunLayer),
+          ),
+        )
+        if (runs._tag === 'Failure') {
+          return jsonResponse({ error: 'ResearchServiceUnavailable' }, 503)
+        }
+        return jsonResponse({
+          thread: {
+            ...thread.value,
+            createdAt: Number(thread.value.createdAt),
+            updatedAt: Number(thread.value.updatedAt),
+          },
+          runs: [...runs.value].reverse().map((run) => ({
+            ...run,
+            createdAt: Number(run.createdAt),
+            updatedAt: Number(run.updatedAt),
+          })),
+        })
+      }
+      if (researchThreadRoute !== null && req.method === 'POST') {
+        const program = Effect.gen(function* () {
+          const projectId = yield* Schema.decodeUnknown(ProjectId)(researchThreadRoute[1])
+          const threadId = yield* Schema.decodeUnknown(ResearchThreadId)(researchThreadRoute[2])
+          const thread = yield* ResearchThreadRepo.findById(threadId).pipe(
+            Effect.provide(researchThreadLayer),
+          )
+          if (thread.projectId !== projectId) {
+            return yield* new ApiAuthorizationError({ message: 'Resource scope is not authorized' })
+          }
+          const project = yield* ProjectRepo.findById(projectId).pipe(
+            Effect.provide(projectLayer),
+          )
+          if (project.workspaceId !== identity.workspaceId) {
+            return yield* new ApiAuthorizationError({ message: 'Resource scope is not authorized' })
+          }
+          const body = yield* Effect.tryPromise({
+            try: () => req.json() as Promise<ResearchRequestBody>,
+            catch: () => new ValidationError({
+              field: 'research',
+              reason: 'invalid-json',
+              message: 'Invalid JSON body',
+            }),
+          })
+          const parsed = yield* parseResearchBody({
+            ...body,
+            workspaceId: identity.workspaceId,
+            projectId,
+          })
+          return yield* startResearch({ ...parsed, thread }, {
+            now: () => BigInt(Date.now()),
+            randomThreadId: () => ResearchThreadId.make(crypto.randomUUID()),
+            randomRunId: () => ResearchRunId.make(crypto.randomUUID()),
+            randomJobId: () => JobQueueId.make(crypto.randomUUID()),
+            randomEventId: () => EventJournalId.make(crypto.randomUUID()),
+            register: (input) => ResearchExecutionRepo.register(input).pipe(
+              Effect.provide(researchLayer),
+            ),
+          })
+        })
+        const exit = await Runtime.runPromiseExit(effectRuntime)(program)
+        if (exit._tag === 'Failure') {
+          const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
+          if (
+            failure instanceof ApiAuthorizationError
+            || failure instanceof EntityNotFoundError
+          ) return jsonResponse({ error: 'ResourceNotFound' }, 404)
+          return researchFailureResponse(exit.cause)
+        }
+        return jsonResponse({
+          threadId: exit.value.thread.id,
+          runId: exit.value.run.id,
+          jobId: exit.value.job.id,
+          status: exit.value.run.status,
+        }, 202)
       }
 
       const eventsRoute =

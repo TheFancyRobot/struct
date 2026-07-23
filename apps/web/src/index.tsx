@@ -27,6 +27,7 @@ render(
       <Route path="/projects/:projectId" component={ProjectPage} />
       <Route path="/projects/:projectId/sources" component={SourcesPage} />
       <Route path="/projects/:projectId/research/:threadId/runs/:runId" component={ResearchPage} />
+      <Route path="/projects/:projectId/research/:threadId" component={ResearchPage} />
       <Route path="/projects/:projectId/research/:threadId/citation/:citationId" component={CitationPage} />
       <Route path="/projects/:projectId/notebook" component={NotebookPage} />
     </Router>

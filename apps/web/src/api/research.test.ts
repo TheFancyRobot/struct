@@ -1,15 +1,19 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import {
   CitationId,
+  JobQueueId,
   ProjectId,
   ResearchRunId,
   ResearchThreadId,
+  SourceVersionId,
   WorkspaceId,
 } from '@struct/domain'
 import {
   cancelResearchRun,
   fetchCitation,
   fetchRecursiveAnalysis,
+  fetchResearchThread,
+  submitResearch,
 } from './research'
 
 const originalFetch = globalThis.fetch
@@ -18,6 +22,8 @@ const threadId = ResearchThreadId.make('750e8400-e29b-41d4-a716-446655440002')
 const citationId = CitationId.make('750e8400-e29b-41d4-a716-446655440003')
 const runId = ResearchRunId.make('750e8400-e29b-41d4-a716-446655440004')
 const workspaceId = WorkspaceId.make('750e8400-e29b-41d4-a716-446655440005')
+const sourceVersionId = SourceVersionId.make('750e8400-e29b-41d4-a716-446655440006')
+const jobId = JobQueueId.make('750e8400-e29b-41d4-a716-446655440007')
 
 const rejectFetchWith = (error: unknown) => {
   globalThis.fetch = Object.assign(
@@ -98,5 +104,60 @@ describe('cancelResearchRun', () => {
     await expect(
       cancelResearchRun(projectId, runId, workspaceId),
     ).rejects.toBe(networkFailure)
+  })
+})
+
+describe('conversation requests', () => {
+  it('continues the selected thread with the exact ready source scope', async () => {
+    let url: string | undefined
+    let body: unknown
+    globalThis.fetch = Object.assign(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        url = String(input)
+        body = JSON.parse(String(init?.body))
+        return new Response(JSON.stringify({
+          threadId,
+          runId,
+          jobId,
+          status: 'pending',
+        }), { headers: { 'Content-Type': 'application/json' } })
+      },
+      { preconnect: originalFetch.preconnect },
+    )
+
+    await submitResearch(projectId, 'Follow up', [sourceVersionId], threadId)
+
+    expect(url).toEndWith(`/projects/${projectId}/research/${threadId}`)
+    expect(body).toEqual({
+      question: 'Follow up',
+      sourceVersionIds: [sourceVersionId],
+    })
+  })
+
+  it('decodes durable thread history after reload', async () => {
+    globalThis.fetch = Object.assign(
+      async () => new Response(JSON.stringify({
+        thread: {
+          id: threadId,
+          projectId,
+          title: 'First question',
+          createdAt: 1,
+          updatedAt: 2,
+        },
+        runs: [{
+          id: runId,
+          threadId,
+          question: 'First question',
+          status: 'completed',
+          createdAt: 1,
+          updatedAt: 2,
+        }],
+      }), { headers: { 'Content-Type': 'application/json' } }),
+      { preconnect: originalFetch.preconnect },
+    )
+
+    const history = await fetchResearchThread(projectId, threadId)
+    expect(history.runs[0]?.question).toBe('First question')
+    expect(history.runs[0]?.createdAt).toBe(1n)
   })
 })

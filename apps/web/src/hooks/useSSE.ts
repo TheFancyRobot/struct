@@ -81,9 +81,9 @@ export function useSSE<T>(
     }
     const receive = (message: MessageEvent<string>) => {
       if (source !== currentSource) return
-      if (message.lastEventId !== '') cursor = message.lastEventId
       try {
         onEvent(decode(JSON.parse(message.data)))
+        if (message.lastEventId !== '') cursor = message.lastEventId
         retries = 0
       } catch {
         stopWithError('A progress update was invalid. Refresh to reload persisted progress.')

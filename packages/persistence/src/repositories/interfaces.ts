@@ -699,7 +699,12 @@ function makeResearchThreadRepositoryImpl(sql: import('../sql-client.js').SqlCli
 
     findByProjectId: (projectId: typeof Domain.ProjectId.Type) =>
       Effect.tryPromise({
-        try: () => sql.unsafe(`SELECT * FROM research_threads WHERE project_id = $1 ORDER BY created_at DESC`, [projectId]),
+        try: () => sql.unsafe(
+          `SELECT * FROM research_threads
+           WHERE project_id = $1
+           ORDER BY updated_at DESC, id`,
+          [projectId],
+        ),
         catch: (err) => new QueryError({ operation: 'findByProjectId', entity: 'ResearchThread', message: String(err) }),
       }).pipe(
         Effect.flatMap((rows) =>
@@ -784,7 +789,12 @@ function makeResearchRunRepositoryImpl(sql: import('../sql-client.js').SqlClient
 
     findByThreadId: (threadId: typeof Domain.ResearchThreadId.Type) =>
       Effect.tryPromise({
-        try: () => sql.unsafe(`SELECT * FROM research_runs WHERE thread_id = $1 ORDER BY created_at DESC`, [threadId]),
+        try: () => sql.unsafe(
+          `SELECT * FROM research_runs
+           WHERE thread_id = $1
+           ORDER BY created_at DESC, id DESC`,
+          [threadId],
+        ),
         catch: (err) => new QueryError({ operation: 'findByThreadId', entity: 'ResearchRun', message: String(err) }),
       }).pipe(
         Effect.flatMap((rows) =>
