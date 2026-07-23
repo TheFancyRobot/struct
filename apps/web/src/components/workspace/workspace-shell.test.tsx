@@ -9,7 +9,11 @@ describe('workspace shell', () => {
   it('renders one ordered navigation, main, and evidence surface without the legacy shell', () => {
     const html = renderToString(() => (
       <WorkspaceStateProvider projectId="project-a">
-        <WorkspaceShell theme="struct-light" onToggleTheme={() => undefined}>
+        <WorkspaceShell
+          theme="struct-light"
+          onToggleTheme={() => undefined}
+          currentPathname="/projects/project-a/sources"
+        >
           <p>Conversation</p>
         </WorkspaceShell>
       </WorkspaceStateProvider>
@@ -22,5 +26,7 @@ describe('workspace shell', () => {
     expect(html).not.toContain('breadcrumbs')
     expect(html).not.toContain('Grounded analysis')
     expect(html).not.toContain('max-w-')
+    expect(html).toContain('href="/projects/project-a/sources" aria-current="page"')
+    expect((html.match(/aria-current="page"/g) ?? [])).toHaveLength(1)
   })
 })

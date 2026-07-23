@@ -43,8 +43,9 @@ Register one UTF-8 source and let the running worker ingest it:
 ```sh
 curl -sS -X POST http://localhost:3001/api/projects/310e8400-e29b-41d4-a716-446655440001/sources \
   -H "authorization: Bearer $API_AUTH_TOKEN" \
-  -H 'content-type: application/json' \
-  -d '{"workspaceId":"310e8400-e29b-41d4-a716-446655440000","projectId":"310e8400-e29b-41d4-a716-446655440001","name":"launch.txt","mediaType":"text/plain","contentBase64":"VGhlIGxhdW5jaCBkYXRlIGlzIEp1bHkgMTgu"}'
+  -F 'mode=paste' \
+  -F 'name=launch.txt' \
+  -F 'content=The launch date is July 18.'
 SOURCE_VERSION_ID=
 for attempt in $(seq 1 30); do
   SOURCE_VERSION_ID=$(docker compose exec -T postgres psql -U struct -d struct -Atc \

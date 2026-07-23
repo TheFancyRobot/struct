@@ -34,7 +34,8 @@ Solid Router owns all navigation. Route definitions map to research UI panels:
 | Route pattern | Panel | Notes |
 | --- | --- | --- |
 | `/` | Project list / landing | Entry point; prompts project selection or creation. |
-| `/projects/:projectId` | Project home | Source catalog, ingestion status, research threads. |
+| `/projects/:projectId` | Project home | Selected project summary and workspace entry. |
+| `/projects/:projectId/sources` | Source catalog | Browser file/folder/paste import and durable ingestion activity. |
 | `/projects/:projectId/sources/:sourceId` | Source details | Directory tree, manifest, version history, ingestion state. |
 | `/projects/:projectId/research/:threadId` | Research conversation | Streaming progress, final answer, follow-ups. |
 | `/projects/:projectId/research/:threadId/citation/:citationId` | Citation inspector | Evidence preview, document/file/dataset context. |

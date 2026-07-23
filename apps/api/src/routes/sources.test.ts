@@ -103,6 +103,32 @@ describe('registerTextSource', () => {
     )
   })
 
+  it('preserves a safe browser folder path while staging only its basename', async () => {
+    let stagedName = ''
+    const testDeps = deps({
+      storage: {
+        stageObject: (name) => {
+          stagedName = name
+          return Effect.succeed({
+            ref: 'staged://750e8400-e29b-41d4-a716-446655440100/notes.md',
+            byteLength: 7,
+          })
+        },
+      },
+    })
+
+    const result = await Effect.runPromise(registerTextSource({
+      workspaceId,
+      projectId,
+      name: 'folder/Notes.MD',
+      mediaType: 'text/markdown',
+      bytes: new TextEncoder().encode('# Title'),
+    }, testDeps))
+
+    expect(result.source.name).toBe('folder/Notes.MD')
+    expect(stagedName).toBe('Notes.MD')
+  })
+
   it.each([
     ['paper.pdf', 'application/pdf'],
     ['page.html', 'text/html'],

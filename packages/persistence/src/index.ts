@@ -39,6 +39,8 @@ export {
   JobQueueRepo,
   EventJournalReader,
   SourceRegistrationRepo,
+  SourceCatalogRepo,
+  SourceCatalogPersistenceError,
   ResearchExecutionRepo,
   ResearchProjectionRepo,
   SourceTextReindexRepo,
