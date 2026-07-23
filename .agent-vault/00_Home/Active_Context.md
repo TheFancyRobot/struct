@@ -66,9 +66,10 @@ _Last refreshed: 2026-07-23._
 - No unresolved design question remains in the completed Phase 09 work.
 - PHASE-10 refinement has no unresolved design question. BUG-0013's implementation remediation is complete, while BUG-0034 and BUG-0035 are the confirmed release blockers.
 
-## Release-Blocking Defects
+## Critical Bugs
 
 <!-- AGENT-START:critical-bugs -->
+- No open severity-critical bugs. The following sev-3 defects are release-blocking under the zero-defect gate:
 - [[03_Bugs/BUG-0034_recursive-analysis-responsive-e2e-emits-unhandled-500-responses|BUG-0034 Recursive analysis responsive E2E emits unhandled 500 responses]] - status: confirmed - severity: sev-3 - reported: 2026-07-23
 - [[03_Bugs/BUG-0035_v1-browser-journey-gate-stubs-every-api-route-instead-of-using-the-real-stack|BUG-0035 V1 browser journey gate stubs every API route instead of using the real stack]] - status: confirmed - severity: sev-3 - reported: 2026-07-23
 <!-- AGENT-END:critical-bugs -->
