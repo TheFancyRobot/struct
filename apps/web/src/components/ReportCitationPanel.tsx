@@ -46,7 +46,7 @@ export const ReportCitationPanel: Component<ReportCitationPanelProps> = (props) 
             <span class="badge badge-outline">{visibleClaim().citation.state}</span>
             <small class="text-xs text-base-content/55">Immutable citation · revision {visibleClaim().citation.revision}</small>
           </div>
-          <blockquote class="synthesis-copy my-5 border-l-2 border-primary/30 pl-4 text-xl leading-relaxed">
+          <blockquote class="my-5 border-l-2 border-primary/30 pl-4 text-xl leading-relaxed">
             {visibleClaim().revisions[visibleClaim().currentRevision]?.content}
           </blockquote>
           <Show

@@ -8,10 +8,11 @@ phase: '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usab
 status: planned
 owner: ''
 created: '2026-07-21'
-updated: '2026-07-21'
+updated: '2026-07-23'
 depends_on:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle|STEP-10-01 Establish Workspace and Project Lifecycle]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-23-124442-build-unified-three-pane-workspace-shell-openai-codex-gpt-5-4|SESSION-2026-07-23-124442 BUG-0013 workspace-shell remediation session]]'
 related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
 tags:
@@ -63,7 +64,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-23 - [[05_Sessions/2026-07-23-124442-build-unified-three-pane-workspace-shell-openai-codex-gpt-5-4|SESSION-2026-07-23-124442 BUG-0013 workspace-shell remediation session]] - Completed BUG-0013 remediation using this step only as technical reference; roadmap status remains planned.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

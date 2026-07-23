@@ -314,7 +314,7 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
         </div>
       </Show>
 
-      <div class="report-workspace-layout grid lg:grid-cols-[14rem_minmax(0,1fr)] xl:grid-cols-[14rem_minmax(0,1fr)_16rem]">
+        <div class="report-workspace-layout grid lg:grid-cols-[14rem_minmax(0,1fr)] 2xl:grid-cols-[14rem_minmax(0,1fr)_16rem]">
         <aside class="report-outline min-w-0 border-b border-base-300 p-4 lg:border-b-0 lg:border-r" aria-labelledby="report-outline-title">
           <header class="flex items-center justify-between gap-3">
             <h2 id="report-outline-title" class="font-semibold">Outline</h2>
@@ -413,7 +413,7 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
                 </header>
                 <Show
                   when={historyView() === null && selectedSection() === section.id}
-                  fallback={<p class="synthesis-copy whitespace-pre-wrap text-lg leading-relaxed text-base-content/80">{sectionContent(section)}</p>}
+                  fallback={<p class="whitespace-pre-wrap text-lg leading-relaxed text-base-content/80">{sectionContent(section)}</p>}
                 >
                   <label class="form-control">
                     <span class="sr-only">Edit {section.heading}</span>
@@ -478,7 +478,7 @@ export const ReportEditor: Component<ReportEditorProps> = (props) => {
           </For>
         </section>
 
-        <aside class="report-inspector min-w-0 border-t border-base-300 p-4 lg:col-span-2 xl:col-span-1 xl:border-l xl:border-t-0" aria-labelledby="report-inspector-title">
+        <aside class="report-inspector min-w-0 border-t border-base-300 p-4 lg:col-span-2 2xl:col-span-1 2xl:border-l 2xl:border-t-0" aria-labelledby="report-inspector-title">
           <header class="flex items-center justify-between gap-3">
             <h2 id="report-inspector-title" class="font-semibold">Publish check</h2>
             <span class={`badge badge-sm ${visibleBlockers().length === 0 ? 'badge-success' : 'badge-warning'}`}>{visibleBlockers().length === 0
