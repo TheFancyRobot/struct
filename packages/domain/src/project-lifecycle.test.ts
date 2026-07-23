@@ -7,6 +7,7 @@ import {
   encodeProjectListCursor,
   ProjectListCursor,
   ProjectListPage,
+  projectNameCharacterCount,
   ProjectSummary,
 } from './project-lifecycle'
 
@@ -38,6 +39,17 @@ describe('project lifecycle contracts', () => {
         name: candidate,
       })).toThrow()
     }
+  })
+
+  it('counts Unicode code points rather than UTF-16 code units in project names', () => {
+    const accepted = '🚀'.repeat(120)
+
+    expect(projectNameCharacterCount(accepted)).toBe(120)
+    expect(Schema.decodeUnknownSync(CreateProjectRequest)({ name: accepted }).name)
+      .toBe(accepted)
+    expect(() => Schema.decodeUnknownSync(CreateProjectRequest)({
+      name: '🚀'.repeat(121),
+    })).toThrow()
   })
 
   it('accepts only canonical bounded project-list cursors', () => {

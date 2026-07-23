@@ -3,7 +3,7 @@ note_type: bug
 template_version: 2
 contract_version: 1
 title: E2E build artifacts break canonical lint gate
-bug_id: BUG-0014
+bug_id: BUG-0032
 status: fixed
 severity: sev-3
 category: tooling
@@ -18,7 +18,7 @@ tags:
   - bug
 ---
 
-# BUG-0014 - E2E build artifacts break canonical lint gate
+# BUG-0032 - E2E build artifacts break canonical lint gate
 
 Use one note per bug. Capture reproduction, impact, root cause, workaround, and verification, then link back to the relevant phase, step, decision, or session. See [[07_Templates/Note_Contracts|Note Contracts]].
 

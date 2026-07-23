@@ -468,6 +468,51 @@ describe('project lifecycle browser path', () => {
     await page.close()
   })
 
+  it('treats malformed project route ids as not found without requesting the API', async () => {
+    const page = await browser.newPage()
+    let malformedRouteRequests = 0
+
+    await page.route('**/api/projects', (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ items: [], nextCursor: null }),
+    }))
+    await page.route('**/api/projects/not-a-uuid', async (route) => {
+      malformedRouteRequests += 1
+      await route.fulfill({ status: 500 })
+    })
+
+    await page.goto(`${origin}/projects/not-a-uuid`)
+    await page.getByText('This project is no longer available.').waitFor()
+    expect(malformedRouteRequests).toBe(0)
+    await page.close()
+  })
+
+  it('clears malformed cached project ids without blocking the chooser', async () => {
+    const page = await browser.newPage()
+    let malformedCacheRequests = 0
+
+    await page.addInitScript(() => {
+      window.localStorage.setItem('struct:last-project-id', 'not-a-uuid')
+    })
+    await page.route('**/api/projects', (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ items: [], nextCursor: null }),
+    }))
+    await page.route('**/api/projects/not-a-uuid', async (route) => {
+      malformedCacheRequests += 1
+      await route.fulfill({ status: 500 })
+    })
+
+    await page.goto(origin)
+    await page.getByText('Create your first project to establish the workspace foundation.').waitFor()
+    expect(await page.evaluate(() => window.localStorage.getItem('struct:last-project-id')))
+      .toBeNull()
+    expect(malformedCacheRequests).toBe(0)
+    await page.close()
+  })
+
   it('clears stale cached ids and serves the canonical route from a BASE_PATH deployment', async () => {
     const page = await browser.newPage()
     await page.addInitScript((staleProjectId) => {

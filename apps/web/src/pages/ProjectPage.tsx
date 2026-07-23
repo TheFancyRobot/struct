@@ -11,7 +11,8 @@ import {
   onMount,
   type Component,
 } from 'solid-js'
-import { ProjectId, normalizeProjectName } from '@struct/domain'
+import { Schema } from 'effect'
+import { ProjectId, normalizeProjectName, projectNameCharacterCount } from '@struct/domain'
 import { ProjectNameConflictError, createProject, fetchProject, fetchProjects } from '../api/projects'
 import { ProjectSwitcher, type ProjectListState } from '../components/ProjectSwitcher'
 import {
@@ -24,8 +25,8 @@ const LAST_PROJECT_ID_KEY = 'struct:last-project-id'
 
 function isProjectNameCandidateValid(value: string): boolean {
   const normalized = normalizeProjectName(value)
-  return normalized.length > 0
-    && normalized.length <= 120
+  return projectNameCharacterCount(normalized) > 0
+    && projectNameCharacterCount(normalized) <= 120
     && !Array.from(normalized).some((character) => {
       const codePoint = character.codePointAt(0)
       return codePoint !== undefined
@@ -100,8 +101,14 @@ export const HomePage: Component = () => {
 
     setCheckingCache(true)
     setCachedProjectError(null)
+    if (!Schema.is(ProjectId)(candidate)) {
+      window.localStorage.removeItem(LAST_PROJECT_ID_KEY)
+      setCachedProjectId(null)
+      setCheckingCache(false)
+      return
+    }
     try {
-      const reopened = await fetchProject(ProjectId.make(candidate))
+      const reopened = await fetchProject(candidate)
       if (reopened !== null) {
         window.localStorage.setItem(LAST_PROJECT_ID_KEY, reopened.id)
         navigate(`/projects/${reopened.id}`, { replace: true })
@@ -183,9 +190,17 @@ export const ProjectPage: Component = () => {
   const [enteredName, setEnteredName] = createSignal('')
   const [creating, setCreating] = createSignal(false)
   const [createError, setCreateError] = createSignal<string | null>(null)
-  const projectId = createMemo(() => ProjectId.make(params.projectId ?? ''))
+  const projectId = createMemo(() => {
+    const candidate = params.projectId
+    return candidate !== undefined && Schema.is(ProjectId)(candidate)
+      ? candidate
+      : null
+  })
   const [projects, { refetch: refetchProjects }] = createResource(fetchProjects)
-  const [project, { refetch: refetchProject }] = createResource(projectId, fetchProject)
+  const [project, { refetch: refetchProject }] = createResource(
+    projectId,
+    (candidate) => candidate === null ? null : fetchProject(candidate),
+  )
   const projectListState = createMemo<ProjectListState>(() =>
     projects.error !== undefined
       ? 'unavailable'
@@ -207,12 +222,15 @@ export const ProjectPage: Component = () => {
   })
   const currentProjectName = createMemo(() =>
     activeProject()?.name
-    ?? projects()?.items.find((item) => item.id === projectId())?.name
+    ?? (projectId() === null
+      ? undefined
+      : projects()?.items.find((item) => item.id === projectId())?.name)
     ?? null)
   const notFound = createMemo(() =>
-    project.state === 'ready'
+    projectId() === null
+      || (project.state === 'ready'
       && project.error === undefined
-      && activeProject() === null)
+      && activeProject() === null))
   const projectUnavailable = createMemo(() => project.error !== undefined)
 
   createEffect(() => {

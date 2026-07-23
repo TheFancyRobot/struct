@@ -20,9 +20,13 @@ export function normalizeProjectName(value: string): string {
   return value.trim().normalize('NFC')
 }
 
+export function projectNameCharacterCount(value: string): number {
+  return Array.from(value).length
+}
+
 function isCanonicalProjectName(value: string): boolean {
-  return value.length > 0
-    && value.length <= MAX_PROJECT_NAME_CHARACTERS
+  return projectNameCharacterCount(value) > 0
+    && projectNameCharacterCount(value) <= MAX_PROJECT_NAME_CHARACTERS
     && !hasControlCharacters(value)
 }
 
