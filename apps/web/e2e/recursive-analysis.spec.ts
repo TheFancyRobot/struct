@@ -15,6 +15,8 @@ const runId = 'e80e8400-e29b-41d4-a716-446655440003'
 const workspaceId = 'e80e8400-e29b-41d4-a716-446655440004'
 const citationId = 'e80e8400-e29b-41d4-a716-446655440005'
 const sourceVersionId = 'e80e8400-e29b-41d4-a716-446655440006'
+const sourceId = 'e80e8400-e29b-41d4-a716-446655440007'
+const sourceJobId = 'e80e8400-e29b-41d4-a716-446655440008'
 const origin = 'http://127.0.0.1:4178'
 const runUrl = `${origin}/projects/${projectId}/research/${threadId}/runs/${runId}`
 const sha = (digit: string) => `sha256:${digit.repeat(64)}`
@@ -178,6 +180,40 @@ let browser: Awaited<ReturnType<typeof chromium.launch>>
 let web: Awaited<ReturnType<typeof startAppServer>>
 
 async function routeProgress(page: typePage): Promise<void> {
+  await page.route(`**/api/projects/${projectId}/sources`, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        cursor: '0',
+        items: [{
+          sourceId,
+          name: 'support-operations.md',
+          kind: 'document',
+          mediaType: 'text/markdown',
+          latestVersionId: sourceVersionId,
+          latestVersion: 3,
+          readiness: 'ready',
+          updatedAt: 1,
+          job: { id: sourceJobId, status: 'completed', attempts: 1, maxAttempts: 3, updatedAt: 1 },
+        }],
+      }),
+    }))
+  await page.route(`**/api/projects/${projectId}/source-activity*`, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'text/event-stream',
+      body: ': heartbeat\n\n',
+    }))
+  await page.route(`**/api/projects/${projectId}/research/${threadId}`, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        thread: { id: threadId, projectId, title: 'Recursive analysis question', createdAt: 1, updatedAt: 2 },
+        runs: [{ id: runId, threadId, question: 'Recursive analysis question', status: 'completed', createdAt: 1, updatedAt: 2 }],
+      }),
+    }))
   await page.route(`**/api/projects/${projectId}/runs/${runId}/recursive-analysis`, (route) =>
     route.fulfill({
       status: 200,
@@ -224,12 +260,19 @@ describe('recursive analysis browser workflow', () => {
         const consoleErrors: string[] = []
         const pageErrors: string[] = []
         const failedRequests: string[] = []
+        const serverErrors: string[] = []
         page.on('console', (message) => {
           if (message.type() === 'error') consoleErrors.push(message.text())
         })
         page.on('pageerror', (error) => pageErrors.push(error.message))
         page.on('requestfailed', (request) => {
           failedRequests.push(`${request.method()} ${request.url()}`)
+        })
+        page.on('response', (response) => {
+          if (response.status() < 500) return
+          const url = new URL(response.url())
+          if (url.origin !== origin || !url.pathname.startsWith('/api/')) return
+          serverErrors.push(`${response.status()} ${response.request().method()} ${url.pathname}${url.search}`)
         })
         await page.addInitScript((selected) => {
           window.localStorage.setItem('struct-theme', `struct-${selected}`)
@@ -250,6 +293,7 @@ describe('recursive analysis browser workflow', () => {
           path: `${screenshotRoot}/${width}-${theme}.png`,
           fullPage: true,
         })
+        expect(serverErrors).toEqual([])
         expect(consoleErrors).toEqual([])
         expect(pageErrors).toEqual([])
         expect(failedRequests).toEqual([])

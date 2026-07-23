@@ -62,6 +62,8 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - `apps/web/e2e/recursive-analysis.spec.ts` uses `routeProgress(page)` to fulfill `**/api/projects/${projectId}/runs/${runId}/events*` with a heartbeat stream, then asserts `consoleErrors` is empty in the responsive test (`apps/web/e2e/recursive-analysis.spec.ts:180-190,224-253`).
 - The same file separately encodes the product's reconnect/error path by fulfilling `/events` with HTTP 500 in `shows loading, reconnect, and recoverable read-error states` (`apps/web/e2e/recursive-analysis.spec.ts:353-377`), which matches the exact console symptom now appearing in the responsive run.
 - The built web server proxies `/api/.../events` requests upstream with a server-only bearer token (`apps/web/src/server.ts`, `proxyApiRequest`), but `startAppServer` only boots the built web app and no API backend (`apps/web/e2e/support/app-server.ts:54-88`). The decisive evidence is the focused failing command output: the responsive test receives two real `500 (Internal Server Error)` resource failures and stops at the zero-console-error assertion even though the other five specs pass.
+- 2026-07-23 remediation confirmed the leak was broader than `/runs/:runId/events`: `ConversationPanel` always fetched `/api/projects/${projectId}/sources`, opened `/api/projects/${projectId}/source-activity?cursor=0`, and loaded `/api/projects/${projectId}/research/${threadId}` before the recursive panel settled. The responsive spec only stubbed `/recursive-analysis` and `/events`, so the built web server proxied those unstubbed requests to the absent API backend and emitted deterministic 500 responses.
+- The fix stayed in the harness: `apps/web/e2e/recursive-analysis.spec.ts` now stubs the source catalog, source-activity SSE heartbeat, and thread history alongside the recursive-analysis routes, and the responsive assertion now records origin-local API 5xx responses explicitly via `serverErrors` before checking console/page/request failures.
 
 ## Workaround
 
@@ -94,3 +96,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-07-23 - Reproduced with `bun test --timeout 60000 apps/web/e2e/recursive-analysis.spec.ts`: first case failed at `apps/web/e2e/recursive-analysis.spec.ts:253` because `consoleErrors` contained two `Failed to load resource: the server responded with a status of 500 (Internal Server Error)` entries; Bun summary: `5 pass, 1 fail`.
 - 2026-07-23 - Canonical evidence remained blocked: lead confirmed `bun run test:e2e` failed twice on the same recursive-analysis responsive path.
 <!-- AGENT-END:bug-timeline -->
+ith `TimeoutError: reload: Timeout 30000ms exceeded` plus the follow-on timed-out hook.
