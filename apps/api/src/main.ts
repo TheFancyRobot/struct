@@ -17,6 +17,7 @@ import {
   DatasetCitationValidationError,
   DatasetQueryEvidenceScopeError,
   DurableArtifactsRepo,
+  NoteRepo,
   EntityNotFoundError,
   ProvenanceGraphRepo,
   ResearchExecutionRepo,
@@ -44,6 +45,7 @@ import {
   ResearchRunId,
   ResearchThreadId,
   SourceVersionId,
+  NoteId,
   ValidationError,
 } from '@struct/domain'
 import {
@@ -116,6 +118,7 @@ import {
 } from './routes/dataset-queries'
 import { durableArtifactRoute } from './routes/durable-artifacts'
 import { reportExportRoute } from './routes/report-export'
+import { noteRoute } from './routes/notes'
 
 interface ResearchRequestBody {
   readonly workspaceId?: unknown
@@ -231,6 +234,7 @@ const server = Effect.gen(function* () {
     DurableArtifactsRepo.Default,
     sqlLayer,
   )
+  const noteLayer = Layer.provide(NoteRepo.Default, sqlLayer)
   const provenanceGraphLayer = Layer.provide(
     ProvenanceGraphRepo.Default,
     sqlLayer,
@@ -338,6 +342,41 @@ const server = Effect.gen(function* () {
             : jsonResponse({ error: 'ProjectScopeUnavailable' }, 503)
         }
       }
+      const noteResponse = await Runtime.runPromise(effectRuntime)(noteRoute(
+        req,
+        identity,
+        {
+          create: (input) => NoteRepo.create(input).pipe(Effect.provide(noteLayer)),
+          list: (workspaceId, projectId, archived) =>
+            NoteRepo.list(workspaceId, projectId, archived).pipe(
+              Effect.provide(noteLayer),
+            ),
+          find: (workspaceId, projectId, noteId) =>
+            NoteRepo.find(workspaceId, projectId, noteId).pipe(
+              Effect.provide(noteLayer),
+            ),
+          update: (input) => NoteRepo.update(input).pipe(Effect.provide(noteLayer)),
+          archive: (
+            workspaceId,
+            projectId,
+            noteId,
+            archived,
+            expectedRevision,
+            now,
+          ) => NoteRepo.archive(
+            workspaceId,
+            projectId,
+            noteId,
+            archived,
+            expectedRevision,
+            now,
+          ).pipe(Effect.provide(noteLayer)),
+          randomNoteId: () => NoteId.make(crypto.randomUUID()),
+          now: () => BigInt(Date.now()),
+        },
+      ))
+      if (noteResponse !== undefined) return noteResponse
+
       if (url.pathname === '/metrics' && req.method === 'GET') {
         return new Response(
           await Runtime.runPromise(effectRuntime)(renderWalkingSliceMetrics),

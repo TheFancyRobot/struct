@@ -78,6 +78,10 @@ export {
   DurableArtifactConflictError,
   DurableArtifactStaleWriteError,
   DurableArtifactDecodeError,
+  NoteRepo,
+  NoteConflictError,
+  NoteNotFoundError,
+  NoteProvenanceError,
   // Persistence errors
   QueryError,
   EntityNotFoundError,
@@ -145,6 +149,11 @@ export type {
   ResearchRegistrationInput,
   ResearchRegistrationResult,
 } from './repositories/research-execution.js'
+
+export type {
+  CreateNoteInput,
+  UpdateNoteInput,
+} from './repositories/notes.js'
 
 export type {
   CompletedResearchProjection,
