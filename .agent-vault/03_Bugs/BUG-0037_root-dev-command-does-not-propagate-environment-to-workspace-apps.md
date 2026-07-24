@@ -75,8 +75,9 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Regression Coverage Needed
 
 - Red: `bun dev` from the repository root reproduced the worker failure with missing `DATABASE_URL`.
-- Green: `bun test scripts/run-dev-apps.test.ts` passes and proves the new launcher forwards root environment variables into filtered app dev scripts.
+- Green: `bun test scripts/run-dev-apps.test.ts` passes and proves the launcher forwards root environment variables into filtered app dev scripts, covers the default `process.env` fallback branch, and statically asserts the root `package.json` `dev` script points at `scripts/run-dev-apps.ts`.
 - Green: `WEB_PORT=3100 API_PORT=3101 API_ORIGIN=http://127.0.0.1:3101 WORKER_METRICS_PORT=3102 bun dev` followed by HTTP checks returned `200` for `http://localhost:3100/`, `http://127.0.0.1:3101/readyz`, and `http://127.0.0.1:3102/readyz`.
+- Green: independent live validation still comes from `WEB_PORT=3100 API_PORT=3101 API_ORIGIN=http://127.0.0.1:3101 WORKER_METRICS_PORT=3102 bun dev` plus HTTP 200 checks; the unit test only locks the launcher wiring and env-forwarding branches.
 
 ## Related Notes
 
@@ -92,6 +93,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-07-24 - Reproduced: `bun dev` failed from the root because the worker child process did not receive `DATABASE_URL`.
 - 2026-07-24 - Verified the env-propagation hypothesis: `WORKER_METRICS_PORT=3022 bun --env-file=.env run --filter @struct/worker dev` reached worker readiness.
 - 2026-07-24 - Fixed root startup by adding `scripts/run-dev-apps.ts` and pointing the root `dev` script at it.
-- 2026-07-24 - Added `scripts/run-dev-apps.test.ts` to lock in env forwarding.
+- 2026-07-24 - Added `scripts/run-dev-apps.test.ts` to lock in env forwarding and a static assertion that the root `package.json` `dev` script still invokes `scripts/run-dev-apps.ts`.
 - 2026-07-24 - Verified green full-stack startup with overridden local ports 3100/3101/3102 and HTTP 200 responses on web, API, and worker readiness endpoints.
+- 2026-07-24 - Added a second regression test for the launcher default branch: `runWorkspaceDevApps({ cwd, stdio: 'pipe' })` confirms the helper reads `process.env` when no explicit env override is supplied and restores `process.env.DATABASE_URL` afterward.
 <!-- AGENT-END:bug-timeline -->
