@@ -57,7 +57,7 @@ tags:
 
 ## Workaround
 
-- Do not rely on `/healthz` during an API database outage; the process currently exits. This is unacceptable for production health semantics.
+- Before the 2026-07-25 fix, `/healthz` could not be relied on during an API database outage because the process exited before the listener bound. No workaround remains necessary after the scoped-bootstrap remediation.
 
 ## Permanent Fix Plan
 

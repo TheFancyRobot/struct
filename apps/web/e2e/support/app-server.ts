@@ -12,10 +12,21 @@ const e2eDatabaseUrl = `postgres://struct:struct@127.0.0.1:5432/${e2eDatabaseNam
 const e2eApiAuthToken = 'e2e-server-only-token'
 const e2eWorkspaceId = 'f50e8400-e29b-41d4-a716-446655440010'
 const defaultDataEngineToken = 'struct-local-data-engine-token'
+const dependencyDatabaseUrl = 'postgres://struct:struct@127.0.0.1:5432/struct'
 
 type AppServerChildProcess = ReturnType<typeof Bun.spawn>
+const dependencyStartCommand = [
+  'docker',
+  'start',
+  'struct-postgres',
+  'struct-data-engine',
+  'struct-data-engine-gateway',
+] as const
+const readinessMaxWaitMs = 30_000
+const readinessProbeTimeoutMs = 1_000
+const readinessRetryIntervalMs = 100
 
-interface CapturedProcess {
+export interface CapturedProcess {
   readonly name: string
   readonly process: AppServerChildProcess
   readonly logs: Promise<string>
@@ -52,11 +63,11 @@ function removeDistRoot(distRoot: string): void {
 
 function spawnCapturedProcess(
   name: string,
-  command: string[],
+  command: ReadonlyArray<string>,
   cwd: string,
   environment: Readonly<Record<string, string>>,
 ): CapturedProcess {
-  const child = Bun.spawn(command, {
+  const child = Bun.spawn([...command], {
     cwd,
     env: {
       ...process.env,
@@ -77,7 +88,7 @@ function spawnCapturedProcess(
 
 async function runCommand(
   name: string,
-  command: string[],
+  command: ReadonlyArray<string>,
   cwd: string,
   environment: Readonly<Record<string, string>>,
 ): Promise<void> {
@@ -89,8 +100,11 @@ async function runCommand(
   }
 }
 
-async function readCommandOutput(command: string[], cwd: string): Promise<string> {
-  const child = Bun.spawn(command, { cwd, stdout: 'pipe', stderr: 'ignore' })
+async function readCommandOutput(
+  command: ReadonlyArray<string>,
+  cwd: string,
+): Promise<string> {
+  const child = Bun.spawn([...command], { cwd, stdout: 'pipe', stderr: 'ignore' })
   const output = await new Response(child.stdout).text()
   const exitCode = await child.exited
   return exitCode === 0 ? output.trim() : ''
@@ -185,18 +199,35 @@ async function stopCapturedProcess(process: CapturedProcess | undefined): Promis
   await process.logs.catch(() => '')
 }
 
-async function waitForReady(process: CapturedProcess, origin: string): Promise<void> {
-  for (let attempt = 0; attempt < 120; attempt += 1) {
+export interface ReadinessProbeOptions {
+  readonly maxWaitMs?: number
+  readonly probeTimeoutMs?: number
+  readonly retryIntervalMs?: number
+}
+
+export async function waitForReady(
+  process: CapturedProcess,
+  origin: string,
+  options: ReadinessProbeOptions = {},
+): Promise<void> {
+  const maxWaitMs = Math.max(1, options.maxWaitMs ?? readinessMaxWaitMs)
+  const probeTimeoutMs = Math.max(1, options.probeTimeoutMs ?? readinessProbeTimeoutMs)
+  const retryIntervalMs = Math.max(1, options.retryIntervalMs ?? readinessRetryIntervalMs)
+  const deadline = Date.now() + maxWaitMs
+  while (Date.now() < deadline) {
     if (process.process.exitCode !== null) {
       const logs = await process.logs
       throw new Error(`${process.name} exited before becoming ready at ${origin}${logs ? `\n${logs}` : ''}`)
     }
     try {
-      if ((await fetch(origin)).ok) return
+      if ((await fetch(origin, {
+        signal: AbortSignal.timeout(probeTimeoutMs),
+      })).ok) return
     } catch {
       // Process is still starting.
     }
-    await Bun.sleep(100)
+    if (Date.now() >= deadline) break
+    await Bun.sleep(retryIntervalMs)
   }
   await stopCapturedProcess(process)
   const logs = await process.logs.catch(() => '')
@@ -208,29 +239,96 @@ function resetArtifactRoot(): void {
   mkdirSync(e2eArtifactRoot, { recursive: true })
 }
 
-async function prepareRealStack(environment: Readonly<Record<string, string>>): Promise<void> {
-  resetArtifactRoot()
-  await readCommandOutput([
-    'docker',
-    'start',
-    'struct-postgres',
-    'struct-data-engine',
-    'struct-data-engine-gateway',
-  ], repositoryRoot)
+export async function startDependencyContainers(
+  command: ReadonlyArray<string> = dependencyStartCommand,
+): Promise<void> {
+  await runCommand('dependency start', command, repositoryRoot, {})
+}
+
+function bootstrapDependencyEnvironment(): Readonly<Record<string, string>> {
+  const configuredToken = process.env['DATA_ENGINE_TOKEN']?.trim()
+  return {
+    DATABASE_URL: dependencyDatabaseUrl,
+    DATA_ENGINE_TOKEN: configuredToken && configuredToken.length >= 16
+      ? configuredToken
+      : defaultDataEngineToken,
+  }
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+async function runDependencyStackFallback(
+  environment: Readonly<Record<string, string>>,
+  cause: unknown,
+  run: (
+    name: string,
+    command: ReadonlyArray<string>,
+    cwd: string,
+    environment: Readonly<Record<string, string>>,
+  ) => Promise<void>,
+): Promise<void> {
   try {
-    await runCommand(
+    await run('dependency stack', ['bun', 'run', 'ops', 'stack:up'], repositoryRoot, environment)
+  } catch (fallbackError) {
+    throw new Error(
+      `dependency stack fallback failed after ${errorMessage(cause)}\n\n${errorMessage(fallbackError)}`,
+    )
+  }
+}
+
+export interface PrepareRealStackEnvironmentDependencies {
+  readonly resolveDataEngineToken?: () => Promise<string>
+  readonly resetDatabase?: (environment: Readonly<Record<string, string>>) => Promise<void>
+  readonly runCommand?: (
+    name: string,
+    command: ReadonlyArray<string>,
+    cwd: string,
+    environment: Readonly<Record<string, string>>,
+  ) => Promise<void>
+  readonly startDependencyContainers?: () => Promise<void>
+}
+
+export async function prepareRealStackEnvironment(
+  port: number,
+  dependencies: PrepareRealStackEnvironmentDependencies = {},
+): Promise<Readonly<Record<string, string>>> {
+  const bootstrapEnvironment = bootstrapDependencyEnvironment()
+  const run = dependencies.runCommand ?? runCommand
+  const start = dependencies.startDependencyContainers ?? (() => startDependencyContainers())
+  const readToken = dependencies.resolveDataEngineToken ?? resolveDataEngineToken
+  const reset = dependencies.resetDatabase ?? resetDatabase
+
+  resetArtifactRoot()
+  try {
+    await start()
+  } catch (error) {
+    await runDependencyStackFallback(bootstrapEnvironment, error, run)
+  }
+
+  let dependencyEnvironment = {
+    ...bootstrapEnvironment,
+    DATA_ENGINE_TOKEN: await readToken(),
+  }
+  try {
+    await run(
       'dependency check',
       ['bun', 'run', 'ops', 'database:verify'],
       repositoryRoot,
-      {
-        ...environment,
-        DATABASE_URL: 'postgres://struct:struct@127.0.0.1:5432/struct',
-      },
+      dependencyEnvironment,
     )
-  } catch {
-    await runCommand('dependency stack', ['bun', 'run', 'ops', 'stack:up'], repositoryRoot, environment)
+  } catch (error) {
+    await runDependencyStackFallback(dependencyEnvironment, error, run)
+    dependencyEnvironment = {
+      ...dependencyEnvironment,
+      DATA_ENGINE_TOKEN: await readToken(),
+    }
   }
-  await resetDatabase(environment)
+
+  const environment = realStackEnvironment(port, dependencyEnvironment['DATA_ENGINE_TOKEN'])
+  await reset(environment)
+  return environment
 }
 
 function realStackEnvironment(
@@ -302,12 +400,11 @@ export async function startAppServer(
 }
 
 export async function startRealAppStack(port: number): Promise<RealAppStackProcess> {
-  const environment = realStackEnvironment(port, await resolveDataEngineToken())
   let api: CapturedProcess | undefined
   let worker: CapturedProcess | undefined
   let web: AppServerProcess | undefined
   try {
-    await prepareRealStack(environment)
+    const environment = await prepareRealStackEnvironment(port)
     api = spawnCapturedProcess('API', ['bun', 'src/main.ts'], apiRoot, environment)
     await waitForReady(api, `${environment['API_ORIGIN']}/readyz`)
     worker = spawnCapturedProcess('worker', ['bun', 'src/main.ts'], workerRoot, environment)

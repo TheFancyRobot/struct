@@ -6,8 +6,6 @@ import {
 } from './support/app-server'
 
 const uuidPattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
-const notesListUrlPattern = /\/projects\/([0-9a-f-]{36})\/notes(?:\?.*)?$/i
-const noteDetailUrlPattern = /\/projects\/([0-9a-f-]{36})\/notes\/[0-9a-f-]{36}(?:\?.*)?$/i
 const releaseJourneyScenarios = [
   {
     name: 'root deployment',
@@ -36,15 +34,20 @@ function isExpectedRequestAbort(
   failure: string,
   requestMethod: string,
   requestUrl: string,
-  currentPageUrl: string,
+  _currentPageUrl: string,
 ): boolean {
-  if (failure !== 'net::ERR_ABORTED') return false
-  if (/\/source-activity\b/.test(requestUrl) || /\/events\b/.test(requestUrl)) return true
-  if (requestMethod !== 'GET') return false
+  return failure === 'net::ERR_ABORTED'
+    && requestMethod === 'GET'
+    && (/\/source-activity\b/.test(requestUrl) || /\/events\b/.test(requestUrl))
+}
 
-  const notesListProjectId = requestUrl.match(notesListUrlPattern)?.[1]
-  const noteDetailProjectId = currentPageUrl.match(noteDetailUrlPattern)?.[1]
-  return notesListProjectId !== undefined && notesListProjectId === noteDetailProjectId
+function isProjectNotesCollectionRequest(
+  requestMethod: string,
+  requestUrl: string,
+  projectId: string,
+): boolean {
+  return requestMethod === 'GET'
+    && new RegExp(`/api/projects/${projectId}/notes$`, 'i').test(new URL(requestUrl).pathname)
 }
 
 async function withProcessEnvironment<T>(
@@ -92,21 +95,53 @@ it('accepts only intentional aborts in the release journey failure capture', () 
   )).toBe(true)
   expect(isExpectedRequestAbort(
     'net::ERR_ABORTED',
-    'GET',
-    `http://127.0.0.1:4187/struct/api/projects/${projectId}/notes`,
-    `http://127.0.0.1:4187/struct/projects/${projectId}/notes/${noteId}`,
-  )).toBe(true)
+    'POST',
+    `http://127.0.0.1:4187/struct/api/projects/${projectId}/source-activity?cursor=1`,
+    `http://127.0.0.1:4187/struct/projects/${projectId}/sources`,
+  )).toBe(false)
+  expect(isExpectedRequestAbort(
+    'net::ERR_ABORTED',
+    'POST',
+    `http://127.0.0.1:4187/struct/api/projects/${projectId}/runs/${noteId}/events`,
+    `http://127.0.0.1:4187/struct/projects/${projectId}/research/${noteId}`,
+  )).toBe(false)
   expect(isExpectedRequestAbort(
     'net::ERR_ABORTED',
     'GET',
     `http://127.0.0.1:4187/struct/api/projects/${projectId}/notes`,
-    `http://127.0.0.1:4187/struct/projects/${projectId}/sources`,
+    `http://127.0.0.1:4187/struct/projects/${projectId}/notes/${noteId}`,
   )).toBe(false)
   expect(isExpectedRequestAbort(
     'net::ERR_ABORTED',
     'PATCH',
     `http://127.0.0.1:4187/struct/api/projects/${projectId}/notes/${noteId}`,
     `http://127.0.0.1:4187/struct/projects/${projectId}/notes/${noteId}`,
+  )).toBe(false)
+})
+
+it('identifies project note collection refreshes across deployments', () => {
+  const projectId = '11111111-1111-1111-1111-111111111111'
+  const noteId = '22222222-2222-2222-2222-222222222222'
+
+  expect(isProjectNotesCollectionRequest(
+    'GET',
+    `http://127.0.0.1:4183/api/projects/${projectId}/notes`,
+    projectId,
+  )).toBe(true)
+  expect(isProjectNotesCollectionRequest(
+    'GET',
+    `http://127.0.0.1:4187/struct/api/projects/${projectId}/notes`,
+    projectId,
+  )).toBe(true)
+  expect(isProjectNotesCollectionRequest(
+    'GET',
+    `http://127.0.0.1:4187/struct/api/projects/${projectId}/notes/${noteId}`,
+    projectId,
+  )).toBe(false)
+  expect(isProjectNotesCollectionRequest(
+    'PATCH',
+    `http://127.0.0.1:4187/struct/api/projects/${projectId}/notes`,
+    projectId,
   )).toBe(false)
 })
 
@@ -198,8 +233,22 @@ for (const scenario of releaseJourneyScenarios) {
         /\/notes\/([0-9a-f-]{36})$/i,
         'note id missing from note url',
       )[1]!
+      let noteUpdateCompleted = false
+      const noteUpdate = page.waitForResponse((response) => {
+        const matches = response.request().method() === 'PATCH'
+          && new RegExp(`/api/projects/${projectId}/notes/${noteId}$`, 'i').test(new URL(response.url()).pathname)
+        if (!matches || !response.ok()) return false
+        noteUpdateCompleted = true
+        return true
+      })
+      const notesRefresh = page.waitForResponse((response) =>
+        noteUpdateCompleted
+        && response.ok()
+        && isProjectNotesCollectionRequest(response.request().method(), response.url(), projectId))
       await page.getByLabel('Title').fill('Acme renewal follow-up')
+      await noteUpdate
       await page.getByRole('status').filter({ hasText: 'Saved' }).waitFor()
+      await notesRefresh
       await page.reload()
       await page.getByLabel('Title').waitFor()
       expect(await page.getByLabel('Title').inputValue()).toBe('Acme renewal follow-up')

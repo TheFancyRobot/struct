@@ -120,6 +120,7 @@ import {
 import { durableArtifactRoute } from './routes/durable-artifacts'
 import { reportExportRoute } from './routes/report-export'
 import { noteRoute } from './routes/notes'
+import { workspaceBootstrapLoop } from './workspace-bootstrap'
 
 interface ResearchRequestBody {
   readonly workspaceId?: unknown
@@ -255,20 +256,6 @@ const server = Effect.gen(function* () {
   )
   const effectRuntime = yield* Effect.runtime<never>()
   let ready = false
-  const bootstrapWorkspace = async (): Promise<void> => {
-    while (!ready) {
-      const exit = await Runtime.runPromiseExit(effectRuntime)(ensureApiWorkspace)
-      if (exit._tag === 'Success') {
-        ready = true
-        await Runtime.runPromise(effectRuntime)(
-          Effect.log('API ready after workspace bootstrap'),
-        )
-        return
-      }
-      console.error('API workspace bootstrap failed:', Cause.pretty(exit.cause))
-      await Bun.sleep(1000)
-    }
-  }
   const authorizeApiScope = Effect.fn('ApiAuth.authorizeScope')(
     function* (
       credential: string,
@@ -1696,7 +1683,12 @@ const server = Effect.gen(function* () {
   yield* Effect.log(`API server starting on port ${port}`)
   yield* Effect.log(`Health check: http://localhost:${port}/healthz`)
   yield* Effect.log(`Readiness check: http://localhost:${port}/readyz`)
-  void bootstrapWorkspace()
+  yield* Effect.forkScoped(workspaceBootstrapLoop(ensureApiWorkspace, {
+    isReady: () => ready,
+    markReady: () => {
+      ready = true
+    },
+  }))
   yield* Effect.never
 })
 

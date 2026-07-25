@@ -51,8 +51,8 @@ tags:
 
 ## Confirmed Root Cause
 
-- Investigation pending. The ownership fence is proven to reject writes once `job_queue.status` or `research_runs.status` is no longer `in-progress` (`packages/persistence/src/repositories/research-execution.ts:347-360`), and the reproduction logged `terminalStatus: "failed"` before the failed checkpoint.
-- Update 2026-07-25 (bug-0038-attempt-1): the replay fixture itself seeded `research_runs` and `job_queue` with a hard-coded 2024 `updated_at` (`const now = 1_721_430_000_000n` in `apps/worker/test/research-replay.integration.test.ts`). Any live worker polling the shared database could immediately classify that in-progress job as stale via `ResearchExecutionRepo.recoverStale`, which atomically set `job_queue.status`, `research_runs.status`, and `research_run_control.terminal_status` to `failed` before the test reached its cancellation assertions.
+- The replay fixture itself seeded `research_runs` and `job_queue` with a hard-coded 2024 `updated_at` (`const now = 1_721_430_000_000n` in `apps/worker/test/research-replay.integration.test.ts`). Any live worker polling the shared database could immediately classify that in-progress job as stale via `ResearchExecutionRepo.recoverStale`, which atomically set `job_queue.status`, `research_runs.status`, and `research_run_control.terminal_status` to `failed` before the test reached its cancellation assertions.
+- The ownership fence in `packages/persistence/src/repositories/research-execution.ts:347-360` then correctly rejected `persistCheckpoint` because the durable job no longer had in-progress ownership.
 - Evidence: adding `expect(await runRepo(sql, ResearchExecutionRepo.recoverStale(300_000))).toEqual([])` at the start of the replay test failed before the fix because it returned the replay job as recovered stale ownership. After changing the fixture timestamp to `BigInt(Date.now())`, the same assertion passed and the durable state after the model-provider failure probe still reported `cancellationStatus: 'none'` with no terminal status.
 
 ## Workaround
@@ -61,7 +61,7 @@ tags:
 
 ## Permanent Fix Plan
 
-- Trace the exact terminal transition and isolate the model-provider failure probe from the cancellation/restart identity or otherwise retain the fixture's required ownership invariants. Add deterministic regression coverage for the resolved scenario.
+- Keep the replay fixture timestamps current (`BigInt(Date.now())`), assert `ResearchExecutionRepo.recoverStale(300_000)` does not reclaim the seeded run before the scenario starts, and retain the post-provider-failure nonterminal-state assertion so cancellation coverage stays bound to an owned in-progress durable job.
 
 ## Regression Coverage Needed
 

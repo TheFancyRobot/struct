@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'bun:test'
 import { existsSync, readdirSync, rmSync } from 'node:fs'
+import { createServer as createHttpServer } from 'node:http'
 import { resolve } from 'node:path'
-import { startAppServer, stopAppServer } from './app-server'
+import {
+  prepareRealStackEnvironment,
+  startAppServer,
+  startDependencyContainers,
+  stopAppServer,
+  waitForReady,
+  type CapturedProcess,
+} from './app-server'
 
 const webRoot = resolve(import.meta.dir, '../..')
 const e2eDistRoot = resolve(webRoot, '.e2e-dist')
@@ -71,5 +79,172 @@ describe('isolated production web lifecycle', () => {
     await stopAppServer(second)
 
     cleanupPortDistRoots(port)
+  })
+
+  it('surfaces nonzero dependency start exits', async () => {
+    await expect(startDependencyContainers([
+      'bun',
+      '-e',
+      'process.exit(7)',
+    ])).rejects.toThrow('dependency start failed (7)')
+  })
+
+  it('resolves the live data-engine token before verifying a healthy pre-existing stack', async () => {
+    const calls: string[] = []
+    const commandEnvironments = new Map<string, Readonly<Record<string, string>>>()
+    const originalToken = process.env['DATA_ENGINE_TOKEN']
+    process.env['DATA_ENGINE_TOKEN'] = 'shell-data-engine-token'
+
+    try {
+      const environment = await prepareRealStackEnvironment(4192, {
+        startDependencyContainers: async () => {
+          calls.push('dependency start')
+        },
+        runCommand: async (name, _command, _cwd, environment) => {
+          calls.push(name)
+          commandEnvironments.set(name, environment)
+        },
+        resolveDataEngineToken: async () => {
+          calls.push('resolve token')
+          return 'live-data-engine-token'
+        },
+        resetDatabase: async () => {
+          calls.push('reset database')
+        },
+      })
+
+      expect(calls).toEqual([
+        'dependency start',
+        'resolve token',
+        'dependency check',
+        'reset database',
+      ])
+      expect(commandEnvironments.get('dependency check')).toMatchObject({
+        DATABASE_URL: 'postgres://struct:struct@127.0.0.1:5432/struct',
+        DATA_ENGINE_TOKEN: 'live-data-engine-token',
+      })
+      expect(environment['DATA_ENGINE_TOKEN']).toBe('live-data-engine-token')
+    } finally {
+      if (originalToken === undefined) {
+        delete process.env['DATA_ENGINE_TOKEN']
+      } else {
+        process.env['DATA_ENGINE_TOKEN'] = originalToken
+      }
+    }
+  })
+
+  it('falls back to stack:up from a clean environment and resolves the data-engine token afterward', async () => {
+    const calls: string[] = []
+    const databaseResets: Readonly<Record<string, string>>[] = []
+    const commandEnvironments = new Map<string, Readonly<Record<string, string>>>()
+    const originalToken = process.env['DATA_ENGINE_TOKEN']
+    process.env['DATA_ENGINE_TOKEN'] = 'short'
+
+    try {
+      const environment = await prepareRealStackEnvironment(4193, {
+        startDependencyContainers: async () => {
+          calls.push('dependency start')
+          throw new Error('dependency start failed (1)\nNo such container: struct-postgres')
+        },
+        runCommand: async (name, _command, _cwd, environment) => {
+          calls.push(name)
+          commandEnvironments.set(name, environment)
+        },
+        resolveDataEngineToken: async () => {
+          calls.push('resolve token')
+          return 'resolved-data-engine-token'
+        },
+        resetDatabase: async (environment) => {
+          calls.push('reset database')
+          databaseResets.push(environment)
+        },
+      })
+
+      expect(calls).toEqual([
+        'dependency start',
+        'dependency stack',
+        'resolve token',
+        'dependency check',
+        'reset database',
+      ])
+      expect(commandEnvironments.get('dependency stack')).toMatchObject({
+        DATABASE_URL: 'postgres://struct:struct@127.0.0.1:5432/struct',
+        DATA_ENGINE_TOKEN: 'struct-local-data-engine-token',
+      })
+      expect(commandEnvironments.get('dependency check')).toMatchObject({
+        DATABASE_URL: 'postgres://struct:struct@127.0.0.1:5432/struct',
+        DATA_ENGINE_TOKEN: 'resolved-data-engine-token',
+      })
+      expect(environment['DATA_ENGINE_TOKEN']).toBe('resolved-data-engine-token')
+      expect(environment['DATABASE_URL']).toBe('postgres://struct:struct@127.0.0.1:5432/struct_e2e_workspace_release')
+      expect(databaseResets).toEqual([environment])
+    } finally {
+      if (originalToken === undefined) {
+        delete process.env['DATA_ENGINE_TOKEN']
+      } else {
+        process.env['DATA_ENGINE_TOKEN'] = originalToken
+      }
+    }
+  })
+
+  it('keeps bootstrap failures diagnosable when stack fallback also fails', async () => {
+    await expect(prepareRealStackEnvironment(4194, {
+      startDependencyContainers: async () => {
+        throw new Error('dependency start failed (1)\nNo such container: struct-postgres')
+      },
+      runCommand: async (name) => {
+        if (name === 'dependency stack') {
+          throw new Error('dependency stack failed (2)\ncompose logs')
+        }
+      },
+      resolveDataEngineToken: async () => 'resolved-data-engine-token',
+      resetDatabase: async () => {},
+    })).rejects.toThrow(
+      'dependency stack fallback failed after dependency start failed (1)\nNo such container: struct-postgres\n\ndependency stack failed (2)\ncompose logs',
+    )
+  })
+
+  it('times out hung readiness probes instead of spending the whole startup budget in one fetch', async () => {
+    const hangingServer = createHttpServer((_request, _response) => {
+      // Accept the connection and intentionally never finish the response.
+    })
+    await new Promise<void>((resolveStart, reject) => {
+      hangingServer.once('error', reject)
+      hangingServer.listen(0, '127.0.0.1', () => resolveStart())
+    })
+    const address = hangingServer.address()
+    if (!address || typeof address === 'string') {
+      hangingServer.close()
+      throw new Error('Could not allocate a hanging readiness port')
+    }
+
+    const child = Bun.spawn(['bun', '-e', 'setInterval(() => {}, 1000)'], {
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    const process: CapturedProcess = {
+      name: 'hung readiness probe',
+      process: child,
+      logs: Promise.resolve('probe logs'),
+    }
+
+    const startedAt = Date.now()
+    try {
+      await expect(waitForReady(
+        process,
+        `http://127.0.0.1:${address.port}`,
+        {
+          maxWaitMs: 80,
+          probeTimeoutMs: 20,
+          retryIntervalMs: 1,
+        },
+      )).rejects.toThrow('hung readiness probe did not become ready')
+      expect(Date.now() - startedAt).toBeLessThan(500)
+    } finally {
+      hangingServer.closeAllConnections()
+      await new Promise<void>((resolveStop) => hangingServer.close(() => resolveStop()))
+      if (child.exitCode === null) child.kill()
+      await child.exited
+    }
   })
 })

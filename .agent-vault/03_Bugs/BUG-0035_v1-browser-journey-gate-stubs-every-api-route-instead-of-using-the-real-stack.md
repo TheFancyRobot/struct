@@ -11,7 +11,7 @@ reported_on: '2026-07-23'
 fixed_on: '2026-07-25'
 owner: ''
 created: '2026-07-23'
-updated: '2026-07-24'
+updated: '2026-07-25'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey|STEP-10-08 Gate v1 on the Complete Browser Journey]]'
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'

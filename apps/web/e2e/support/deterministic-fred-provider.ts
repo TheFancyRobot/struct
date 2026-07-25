@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
-import { appendFileSync } from 'node:fs'
+import { appendFileSync, mkdirSync } from 'node:fs'
+import { dirname, isAbsolute, relative, resolve } from 'node:path'
 import * as AiModel from '@effect/ai/Model'
 import * as LanguageModel from '@effect/ai/LanguageModel'
 import * as Stream from 'effect/Stream'
@@ -20,13 +21,44 @@ function collectStrings(value: unknown, output: string[] = []): string[] {
   return output
 }
 
-function promptText(prompt: unknown): string {
+const repositoryRoot = resolve(import.meta.dir, '../../../..')
+const approvedProviderLogRoot = resolve(
+  repositoryRoot,
+  '.local/e2e/workspace-release-artifacts',
+)
+
+export function promptText(prompt: unknown): string {
   try {
-    return JSON.stringify(prompt, (_key, value) =>
+    const json = JSON.stringify(prompt, (_key, value) =>
       typeof value === 'bigint' ? Number(value) : value)
+    if (typeof json === 'string') return json
   } catch {
-    return collectStrings(prompt).join('\n')
+    // Fall back to string extraction below.
   }
+  const collected = collectStrings(prompt).join('\n')
+  return collected.length > 0 ? collected : String(prompt)
+}
+
+function resolveProviderLogPath(logPath: string): string {
+  const resolved = resolve(repositoryRoot, logPath)
+  const relativePath = relative(approvedProviderLogRoot, resolved)
+  if (
+    relativePath === ''
+    || (!relativePath.startsWith('..') && !isAbsolute(relativePath))
+  ) {
+    return resolved
+  }
+  throw new Error(
+    'DET_PROVIDER_LOG must stay within .local/e2e/workspace-release-artifacts',
+  )
+}
+
+function appendDebugLog(objectName: string, text: string, response: unknown): void {
+  const configuredPath = process.env['DET_PROVIDER_LOG']
+  if (!configuredPath) return
+  const logPath = resolveProviderLogPath(configuredPath)
+  mkdirSync(dirname(logPath), { recursive: true })
+  appendFileSync(logPath, `${objectName}\n${text}\n${JSON.stringify(response)}\n---\n`)
 }
 
 function deepFind(value: unknown, field: string): string | undefined {
@@ -91,12 +123,14 @@ function answerFor(question: string): string {
 }
 
 function structuredResponse(options: LanguageModel.ProviderOptions): unknown {
-  if (options.responseFormat.type !== 'json') return { text: answerFor(questionFrom(options.prompt)) }
-
-  const objectName = options.responseFormat.objectName
   const text = promptText(options.prompt)
+  const objectName = options.responseFormat.type === 'json'
+    ? options.responseFormat.objectName
+    : 'text'
   let response: unknown
-  switch (objectName) {
+  if (options.responseFormat.type !== 'json') {
+    response = { text: answerFor(questionFrom(options.prompt)) }
+  } else switch (objectName) {
     case 'struct_question-classifier':
       response = {
         version: '1',
@@ -202,9 +236,7 @@ function structuredResponse(options: LanguageModel.ProviderOptions): unknown {
     default:
       response = { text: answerFor(questionFrom(options.prompt)) }
   }
-  if (process.env['DET_PROVIDER_LOG']) {
-    appendFileSync(process.env['DET_PROVIDER_LOG'], `${objectName}\n${text}\n${JSON.stringify(response)}\n---\n`)
-  }
+  appendDebugLog(objectName, text, response)
   return response
 }
 
