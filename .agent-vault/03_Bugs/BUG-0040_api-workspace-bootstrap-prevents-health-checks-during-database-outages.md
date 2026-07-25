@@ -3,7 +3,7 @@ note_type: bug
 template_version: 2
 contract_version: 1
 title: API workspace bootstrap prevents health checks during database outages
-bug_id: BUG-0037
+bug_id: BUG-0040
 status: fixed
 severity: sev-2
 category: logic
@@ -20,7 +20,7 @@ tags:
   - bug
 ---
 
-# BUG-0037 - API workspace bootstrap prevents health checks during database outages
+# BUG-0040 - API workspace bootstrap prevents health checks during database outages
 
 ## Summary
 

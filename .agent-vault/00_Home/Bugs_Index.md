@@ -29,15 +29,16 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 <!-- AGENT-START:bugs-index -->
 _Last rebuilt: 2026-07-25._
 
-- Notes indexed: 26
-- Status summary: fixed (26)
+- Notes indexed: 27
+- Status summary: fixed (27)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
 | BUG-0013 | [v1 UI lacks core research workflows](../03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows.md) | fixed | sev-1 | 2026-07-21 | 2026-07-23 | - |
 | BUG-0038 | [Research replay loses durable job ownership before cancellation verification](../03_Bugs/BUG-0038_research-replay-loses-durable-job-ownership-before-cancellation-verification.md) | fixed | sev-2 | 2026-07-25 | 2026-07-25 | - |
-| BUG-0037 | [API workspace bootstrap prevents health checks during database outages](../03_Bugs/BUG-0037_api-workspace-bootstrap-prevents-health-checks-during-database-outages.md) | fixed | sev-2 | 2026-07-24 | 2026-07-25 | - |
+| BUG-0040 | [API workspace bootstrap prevents health checks during database outages](../03_Bugs/BUG-0040_api-workspace-bootstrap-prevents-health-checks-during-database-outages.md) | fixed | sev-2 | 2026-07-24 | 2026-07-25 | - |
 | BUG-0039 | [Recursive evaluation setup timeout is too short under full-suite load](../03_Bugs/BUG-0039_recursive-evaluation-setup-timeout-is-too-short-under-full-suite-load.md) | fixed | sev-3 | 2026-07-25 | 2026-07-25 | - |
+| BUG-0037 | [Root dev command does not propagate environment to workspace apps](../03_Bugs/BUG-0037_root-dev-command-does-not-propagate-environment-to-workspace-apps.md) | fixed | sev-3 | 2026-07-24 | 2026-07-24 | - |
 | BUG-0033 | [E2E project lifecycle cache test asserts a nonexistent level-two project heading](../03_Bugs/BUG-0033_e2e-project-lifecycle-cache-test-asserts-a-nonexistent-level-two-project-heading.md) | fixed | sev-3 | 2026-07-23 | 2026-07-23 | - |
 | BUG-0034 | [Recursive analysis responsive E2E emits unhandled 500 responses](../03_Bugs/BUG-0034_recursive-analysis-responsive-e2e-emits-unhandled-500-responses.md) | fixed | sev-3 | 2026-07-23 | 2026-07-23 | - |
 | BUG-0035 | [V1 browser journey gate stubs every API route instead of using the real stack](../03_Bugs/BUG-0035_v1-browser-journey-gate-stubs-every-api-route-instead-of-using-the-real-stack.md) | fixed | sev-3 | 2026-07-23 | 2026-07-25 | - |
