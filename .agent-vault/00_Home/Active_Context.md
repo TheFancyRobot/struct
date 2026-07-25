@@ -19,11 +19,11 @@ Keep this note short and current.
 ## Current Objective
 
 <!-- AGENT-START:current-focus -->
-_Last refreshed: 2026-07-24._
+_Last refreshed: 2026-07-23._
 - Session in progress: [[05_Sessions/2026-07-23-044455-establish-workspace-and-project-lifecycle-codex|SESSION-2026-07-23-044455 Codex session for Establish Workspace and Project Lifecycle]] - owner: Codex - phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]] - updated: 2026-07-23
 - Current step: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle|STEP-10-01 Establish Workspace and Project Lifecycle]] - status: planned - phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]
 - Active phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: planned - updated: 2026-07-21
-- Also active: 25 more additional steps, 1 open confirmed release blocker.
+- Also active: 25 more additional steps; no open release-blocking bug.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -40,9 +40,9 @@ _Last refreshed: 2026-07-24._
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
 - Phase 06 is completed, reviewed, and merged through STEP-06-06.
-- Phases 07–09 are complete and merged. BUG-0013's implementation remediation is complete, but release closure remains pending the real-stack journey evidence now tracked by BUG-0035; the tag and GitHub release action are intentionally unperformed.
+- Phases 07–09 are complete and merged. BUG-0035's real-stack browser journey remediation passed final validation; the tag and GitHub release action remain intentionally unperformed.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
-- Current correction: BUG-0013's implementation remediation is complete, but its release closure is not independently proven. PHASE-10 remains technical reference only while BUG-0035 keeps the zero-defect release gate open; historical fixture-backed browser evidence is not sufficient for v1 release.
+- Current correction: BUG-0035 replaced fixture-backed browser evidence with a validated real-stack journey. PHASE-10 remains technical reference only; the v1.0 release action is still intentionally unperformed.
 
 ## Out Of Scope Right Now
 
@@ -58,22 +58,21 @@ _Last refreshed: 2026-07-24._
 ## Blockers
 
 <!-- AGENT-START:blockers -->
-- [[03_Bugs/BUG-0035_v1-browser-journey-gate-stubs-every-api-route-instead-of-using-the-real-stack|BUG-0035]] remains the confirmed release blocker until the real-stack browser journey replaces the fixture-backed gate.
+- No known repository defect blocks this branch. The v1.0 release action remains intentionally unperformed.
 <!-- AGENT-END:blockers -->
 
 ## Open Questions
 
 - No unresolved design question remains in the completed Phase 09 work.
-- PHASE-10 refinement has no unresolved design question. BUG-0013's implementation remediation is complete, while BUG-0035 is the confirmed release blocker.
+- PHASE-10 refinement has no unresolved design question. BUG-0035 is fixed; do not perform the v1.0 release action without explicit authorization.
 
 ## Critical Bugs
 
 <!-- AGENT-START:critical-bugs -->
-- [[03_Bugs/BUG-0035_v1-browser-journey-gate-stubs-every-api-route-instead-of-using-the-real-stack|BUG-0035 V1 browser journey gate stubs every API route instead of using the real stack]] - status: confirmed - severity: sev-3 - reported: 2026-07-23
+- No open severity-critical or release-blocking bugs.
 <!-- AGENT-END:critical-bugs -->
 
 ## Next Actions
 
-- Resolve all actionable feedback on PR #72, then merge the BUG-0034 remediation.
-- Replace the fixture-backed `workspace-release.spec.ts` gate with a real-stack browser journey for BUG-0035.
-- Keep the release checklist open until BUG-0035 is fixed and the complete real browser journey passes; only then activate Phase 10 or perform the v1.0 release action.
+- Commit and review the validated BUG-0035 remediation branch.
+- Do not perform the v1.0 release action without explicit authorization.

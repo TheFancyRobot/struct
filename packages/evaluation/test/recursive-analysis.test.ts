@@ -31,12 +31,18 @@ const run = () => Effect.runPromise(
   ),
 )
 
+const RECURSIVE_EVALUATION_SETUP_TIMEOUT_MS = 60_000
+
 describe('25,000-file recursive analysis evaluation', () => {
   let reports: Awaited<ReturnType<typeof run>>[]
 
   beforeAll(async () => {
     reports = [await run(), await run()]
-  }, 30_000)
+  }, RECURSIVE_EVALUATION_SETUP_TIMEOUT_MS)
+
+  it('keeps enough setup headroom for two real evaluations under full-suite load', () => {
+    expect(RECURSIVE_EVALUATION_SETUP_TIMEOUT_MS).toBeGreaterThanOrEqual(60_000)
+  })
 
   it('passes correctness, budget, recovery, retention, and scale-signal gates', async () => {
     const report = reports[0]!

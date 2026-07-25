@@ -78,7 +78,7 @@ const ids = {
   ),
 } as const
 
-const now = 1_721_430_000_000n
+const now = BigInt(Date.now())
 const budget = {
   maximumSteps: 2,
   maximumModelCalls: 1,
@@ -402,6 +402,12 @@ describeIf('research replay through production persistence and workflow paths', 
   })
 
   it('resumes committed artifacts once and survives authenticated sidecar restart', async () => {
+    const staleRecovery = await runRepo(
+      sql,
+      ResearchExecutionRepo.recoverStale(300_000),
+    )
+    expect(staleRecovery).toEqual([])
+
     await runRepo(sql, ResearchExecutionRepo.persistPlan({
       workspaceId: ids.workspace,
       projectId: ids.project,
@@ -732,6 +738,21 @@ describeIf('research replay through production persistence and workflow paths', 
       /ResearchProviderFailure/,
     )?.[0] ?? 'none'
     expect(modelFailureTag).toBe('ResearchProviderFailure')
+    const durableAfterModelFailure = await runRepo(
+      sql,
+      ResearchExecutionRepo.loadDurableState(
+        ids.workspace,
+        ids.project,
+        ids.run,
+      ),
+    )
+    expect(Option.isSome(durableAfterModelFailure)).toBe(true)
+    if (Option.isNone(durableAfterModelFailure)) {
+      throw new Error('model failure lost durable replay state')
+    }
+    expect(durableAfterModelFailure.value.cancellationStatus).toBe('none')
+    expect(Option.isNone(durableAfterModelFailure.value.terminalStatus))
+      .toBe(true)
     const replacement = Bun.spawn(
       ['bun', resolve(
         import.meta.dir,

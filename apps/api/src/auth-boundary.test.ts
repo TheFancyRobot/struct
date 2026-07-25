@@ -58,6 +58,22 @@ afterAll(() => {
 })
 
 describe('API HTTP authentication boundary', () => {
+  it('keeps liveness up while readiness reports the blocked database bootstrap', async () => {
+    const health = await fetch(`${origin}/healthz`)
+    expect(health.status).toBe(200)
+    expect(await health.json()).toEqual({ status: 'alive' })
+
+    const readiness = await fetch(`${origin}/readyz`)
+    expect(readiness.status).toBe(503)
+    expect(await readiness.json()).toEqual({
+      status: 'not-ready',
+      failures: [
+        { dependency: 'api', classification: 'stalled' },
+        { dependency: 'database', classification: 'dependency-unavailable' },
+      ],
+    })
+  })
+
   const protectedRequests = [
     ['GET', '/metrics'],
     ['GET', '/api/projects'],

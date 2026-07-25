@@ -4,17 +4,20 @@ template_version: 2
 contract_version: 1
 title: V1 browser journey gate stubs every API route instead of using the real stack
 bug_id: BUG-0035
-status: confirmed
+status: fixed
 severity: sev-3
 category: logic
 reported_on: '2026-07-23'
-fixed_on: ''
+fixed_on: '2026-07-25'
 owner: ''
 created: '2026-07-23'
-updated: '2026-07-23'
+updated: '2026-07-24'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey|STEP-10-08 Gate v1 on the Complete Browser Journey]]'
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
+  - '[[03_Bugs/BUG-0037_api-workspace-bootstrap-prevents-health-checks-during-database-outages|BUG-0037 API workspace bootstrap prevents health checks during database outages]]'
+  - '[[03_Bugs/BUG-0038_research-replay-loses-durable-job-ownership-before-cancellation-verification|BUG-0038 Research replay loses durable job ownership before cancellation verification]]'
+  - '[[03_Bugs/BUG-0039_recursive-evaluation-setup-timeout-is-too-short-under-full-suite-load|BUG-0039 Recursive evaluation setup timeout is too short under full-suite load]]'
 tags:
   - agent-vault
   - bug
@@ -85,6 +88,9 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-related-notes -->
 - [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey|STEP-10-08 Gate v1 on the Complete Browser Journey]]
 - [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]
+- [[03_Bugs/BUG-0037_api-workspace-bootstrap-prevents-health-checks-during-database-outages|BUG-0037 API workspace bootstrap prevents health checks during database outages]]
+- [[03_Bugs/BUG-0038_research-replay-loses-durable-job-ownership-before-cancellation-verification|BUG-0038 Research replay loses durable job ownership before cancellation verification]]
+- [[03_Bugs/BUG-0039_recursive-evaluation-setup-timeout-is-too-short-under-full-suite-load|BUG-0039 Recursive evaluation setup timeout is too short under full-suite load]]
 <!-- AGENT-END:bug-related-notes -->
 
 ## Timeline
@@ -93,4 +99,8 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-07-23 - Reported.
 - 2026-07-23 - Verified by source inspection: `apps/web/e2e/workspace-release.spec.ts` installs `page.route('**/api/**', ...)` at line 110 and fulfills every release-journey API from in-memory fixtures through line 228.
 - 2026-07-23 - Focused validation: `bun test --timeout 120000 --max-concurrency 1 apps/web/e2e/workspace-release.spec.ts` passed `1 pass, 0 fail`, confirming the mocked journey can go green without proving the real stack.
+- 2026-07-24 - Real-stack harness now drives the root and `BASE_PATH=/struct` browser journeys through the built web proxy, API, PostgreSQL, worker, ingestion, deterministic provider boundary, research, evidence, and durable notes. The provider and request-abort regressions have focused coverage.
+- 2026-07-24 - Independent root validation: `bun test --timeout 120000 --max-concurrency 1 apps/web/e2e/workspace-release.spec.ts` passed `4 pass, 0 fail`; `bun run typecheck`, `bun run lint`, `bun run build`, `bun run lint:imports`, `bun run docs:lint`, and `bun run secrets:scan` passed.
+- 2026-07-24 - Closure blocked: full `bun run test` found the API startup health regression and research-replay ownership failure, tracked and fixed as BUG-0037 and BUG-0038; recursive evaluation harness headroom was subsequently fixed as BUG-0039.
+- 2026-07-25 - Final evidence: `bun run test` passed (960 pass, 3 skip, 0 fail); typecheck, lint, build, import lint, docs lint, and secrets scan passed; the real-stack root and `BASE_PATH=/struct` journey passed (4 pass); worktree-local vault validation completed with zero errors and warnings. The release action remains intentionally unperformed.
 <!-- AGENT-END:bug-timeline -->
