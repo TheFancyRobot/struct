@@ -3,6 +3,7 @@ import { A, useNavigate } from '@solidjs/router'
 import {
   For,
   Show,
+  batch,
   createEffect,
   createMemo,
   createResource,
@@ -331,10 +332,12 @@ export const ConversationPanel: Component<{
                       checked={selected().includes(item.latestVersionId!)}
                       disabled={!selected().includes(item.latestVersionId!) && selected().length >= 10}
                       onChange={(event) => {
-                        setSelectionTouched(true)
-                        setSelected((current) => event.currentTarget.checked
-                          ? [...new Set([...current, item.latestVersionId!])]
-                          : current.filter((id) => id !== item.latestVersionId))
+                        batch(() => {
+                          setSelectionTouched(true)
+                          setSelected((current) => event.currentTarget.checked
+                            ? [...new Set([...current, item.latestVersionId!])]
+                            : current.filter((id) => id !== item.latestVersionId))
+                        })
                       }}
                     />
                     <span class="label-text">{item.name}</span>

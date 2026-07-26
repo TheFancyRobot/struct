@@ -1,4 +1,5 @@
-import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { expect, it } from 'bun:test'
+import { resolve } from 'node:path'
 import { chromium } from 'playwright'
 import {
   startRealAppStack,
@@ -10,6 +11,7 @@ import {
 } from './support/note-save'
 
 const uuidPattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
+const folderFixture = resolve(import.meta.dir, 'fixtures/release-folder')
 const releaseJourneyScenarios = [
   {
     name: 'root deployment',
@@ -61,43 +63,31 @@ it('does not stub browser API traffic at the page boundary', async () => {
   expect(source).not.toMatch(/await page\.route\(['"]\*\*\/api\/\*\*['"]/)
 })
 
-for (const scenario of releaseJourneyScenarios) {
-  describe(`v1 browser journey (${scenario.name})`, () => {
-    let browser: Awaited<ReturnType<typeof chromium.launch>>
-    let stack: Awaited<ReturnType<typeof startRealAppStack>> | undefined
-
-    beforeAll(async () => {
-      stack = await withProcessEnvironment(
-        scenario.environment,
-        () => startRealAppStack(scenario.port),
-      )
-      browser = await chromium.launch({ headless: true })
-    })
-
-    afterAll(async () => {
-      await browser?.close()
-      await stopRealAppStack(stack)
-    })
-
-    it('takes a first-time user through a durable source-grounded workspace and back', async () => {
-      const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
+async function runReleaseJourney(
+  page: import('playwright').Page,
+  scenario: (typeof releaseJourneyScenarios)[number],
+): Promise<void> {
       const pageErrors: string[] = []
       const requestFailures: string[] = []
       const serverErrors: string[] = []
-      page.on('pageerror', (error) => pageErrors.push(String(error)))
-      page.on('requestfailed', (request) => {
+      const onPageError = (error: Error) => pageErrors.push(String(error))
+      const onRequestFailed = (request: import('playwright').Request) => {
         const failure = request.failure()?.errorText ?? 'failed'
         const url = request.url()
         if (!isExpectedRequestAbort(failure, request.method(), url)) {
           requestFailures.push(`${request.method()} ${url} ${failure}`)
         }
-      })
-      page.on('response', (response) => {
+      }
+      const onResponse = (response: import('playwright').Response) => {
         if (response.status() >= 500) {
           serverErrors.push(`${response.status()} ${response.request().method()} ${response.url()}`)
         }
-      })
+      }
+      page.on('pageerror', onPageError)
+      page.on('requestfailed', onRequestFailed)
+      page.on('response', onResponse)
 
+      try {
       const sourceName = 'renewals.md'
 
       await page.goto(scenario.origin)
@@ -118,11 +108,39 @@ for (const scenario of releaseJourneyScenarios) {
         buffer: Buffer.from('# Renewals\nAcme renewal is at risk.\nContact the account owner.'),
       })
       await page.getByRole('button', { name: 'Add sources' }).click()
-      await page.getByLabel('Sources', { exact: true }).getByText(sourceName).waitFor()
-      await page.getByText('ready', { exact: true }).waitFor()
+      const sources = page.getByRole('region', { name: 'Sources' })
+      const waitForReadySource = async (name: string | RegExp) => {
+        const item = sources.getByRole('listitem').filter({ hasText: name })
+        await item.getByText('ready', { exact: true }).waitFor()
+      }
+      await waitForReadySource(sourceName)
+
+      await page.getByRole('button', { name: 'Paste' }).click()
+      await page.getByLabel('Source name').fill('customer-context.md')
+      await page.getByLabel('Text or Markdown').fill('The customer asked for a renewal review.')
+      await page.getByRole('button', { name: 'Add sources' }).click()
+      await waitForReadySource('customer-context.md')
+
+      await page.getByRole('button', { name: 'Folder' }).click()
+      await page.locator('input[type="file"]').setInputFiles(folderFixture)
+      await page.getByRole('button', { name: 'Add sources' }).click()
+      await waitForReadySource(/account-owner\.md/)
+
+      await page.getByRole('button', { name: 'Dataset' }).click()
+      await page.locator('input[type="file"]').setInputFiles({
+        name: 'renewal-accounts.csv',
+        mimeType: 'text/csv',
+        buffer: Buffer.from('account,risk\nAcme,high\nBeta,low\n'),
+      })
+      await page.getByRole('button', { name: 'Add sources' }).click()
+      await waitForReadySource('renewal-accounts.csv')
 
       await page.getByRole('link', { name: 'Conversation' }).click()
       await page.getByRole('checkbox', { name: sourceName }).waitFor()
+      for (const name of ['customer-context.md', 'renewal-accounts.csv']) {
+        await page.getByRole('checkbox', { name }).uncheck()
+      }
+      await page.getByRole('checkbox', { name: /account-owner\.md/ }).uncheck()
       await page.getByRole('textbox', { name: 'Ask your sources' }).fill('Where is renewal risk?')
       await page.getByRole('button', { name: 'Start research' }).click()
       await page.waitForURL(new RegExp(`/projects/${projectId}/research/${uuidPattern.source}/runs/${uuidPattern.source}$`, 'i'))
@@ -176,11 +194,43 @@ for (const scenario of releaseJourneyScenarios) {
 
       await page.goto(`${scenario.origin}/projects/${projectId}/research/${threadId}`)
       await page.getByText('Where is renewal risk?').first().waitFor()
+      for (const name of ['customer-context.md', 'renewal-accounts.csv']) {
+        await page.getByRole('checkbox', { name }).uncheck()
+      }
+      await page.getByRole('checkbox', { name: /account-owner\.md/ }).uncheck()
       await page.getByRole('textbox', { name: 'Ask your sources' }).fill('What should we do next?')
       await page.getByRole('button', { name: 'Ask follow-up' }).click()
       await page.waitForURL(new RegExp(`/projects/${projectId}/research/${threadId}/runs/${uuidPattern.source}$`, 'i'))
       expect(page.url()).not.toBe(firstRunUrl)
       await page.getByText('Contact the account owner.').waitFor()
+
+      await page.setViewportSize({ width: 1440, height: 900 })
+      for (const checkbox of await page.getByRole('checkbox').all()) {
+        await checkbox.uncheck()
+      }
+      await page.getByRole('checkbox', { name: 'renewal-accounts.csv' }).check()
+      await page.getByRole('textbox', { name: 'Ask your sources' }).fill('How many records are in the dataset?')
+      await page.getByRole('button', { name: 'Ask follow-up' }).click()
+      await page.waitForURL(new RegExp(`/projects/${projectId}/research/${threadId}/runs/${uuidPattern.source}$`, 'i'))
+      const datasetAnswer = page.getByText('The dataset contains 2 records.')
+      const unavailable = page.getByRole('alert').filter({
+        hasText: 'Live progress became unavailable',
+      })
+      await Promise.race([
+        datasetAnswer.waitFor(),
+        unavailable.waitFor(),
+      ])
+      if (await unavailable.isVisible()) {
+        await page.reload()
+        await datasetAnswer.waitFor()
+      }
+      await page.getByRole('button', { name: 'Open dataset citation 1' }).click()
+      await page.getByRole('heading', { name: 'Deterministic dataset result' }).waitFor()
+      await page.getByText(
+        'SELECT COUNT(*) AS row_count FROM "records" ORDER BY ALL',
+      ).waitFor()
+      await page.getByRole('cell', { name: '2', exact: true }).waitFor()
+      await page.getByRole('button', { name: 'Close evidence' }).click()
 
       await page.goto(`${scenario.origin}/projects/${projectId}/notes/${noteId}`)
       await page.getByLabel('Title').waitFor()
@@ -189,7 +239,41 @@ for (const scenario of releaseJourneyScenarios) {
       expect(pageErrors).toEqual([])
       expect(requestFailures).toEqual([])
       expect(serverErrors).toEqual([])
-      await page.close()
-    })
-  })
+      } finally {
+        page.off('pageerror', onPageError)
+        page.off('requestfailed', onRequestFailed)
+        page.off('response', onResponse)
+      }
 }
+
+it('takes a first-time user through root and BASE_PATH durable source-grounded workspaces', async () => {
+  const browser = await chromium.launch({ headless: true, timeout: 15_000 })
+  try {
+    const context = await browser.newContext({
+      viewport: { width: 1440, height: 900 },
+    })
+    try {
+      const page = await context.newPage()
+      try {
+        for (const scenario of releaseJourneyScenarios) {
+          let stack: Awaited<ReturnType<typeof startRealAppStack>> | undefined
+          try {
+            stack = await withProcessEnvironment(
+              scenario.environment,
+              () => startRealAppStack(scenario.port),
+            )
+            await runReleaseJourney(page, scenario)
+          } finally {
+            await stopRealAppStack(stack)
+          }
+        }
+      } finally {
+        await page.close()
+      }
+    } finally {
+      await context.close()
+    }
+  } finally {
+    await browser.close()
+  }
+}, 120_000)

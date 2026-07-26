@@ -8,10 +8,10 @@ status: fixed
 severity: sev-1
 category: logic
 reported_on: '2026-07-21'
-fixed_on: '2026-07-23'
-owner: Codex
+fixed_on: '2026-07-26'
+owner: phase10_step08_attempt2
 created: '2026-07-21'
-updated: '2026-07-23'
+updated: '2026-07-26'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]]'
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle|STEP-10-01 Establish Workspace and Project Lifecycle]]'
@@ -147,3 +147,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-07-23 - Responsive accessibility remediation slice completed without closing BUG-0013: shared workspace Escape handling now closes an empty mobile/tablet evidence sheet and restores focus, and bounded shell CSS enforces 44px visible button/navigation targets. The existing Playwright shell matrix passes at 375/768/1024/1440 in both themes. See [[05_Sessions/2026-07-23-150027-complete-responsive-accessibility-and-theme-behavior-openai-codex-gpt-5-6-sol-fallback-required-openai-codex-gpt-5-4-unavailable|SESSION-2026-07-23-150027]].
 - 2026-07-23 - Final browser-journey remediation added one stateful Playwright gate for visible project creation, source acceptance/readiness, source-grounded research, exact evidence inspection, provenance-backed note save/edit/reload, mobile navigation/theme/overflow essentials, and returning-user conversation continuation. It also repaired three stale browser assertions exposed by the aggregate web suite. Focused journey, affected browser coverage, web typecheck, lint, and import boundaries passed. BUG-0013 remains confirmed pending independent root repository-wide verification and closure; PHASE-10 and all STEP-10-* notes remain planned.
 - 2026-07-23: Final browser journey gate merged in PR #69. Full suite (958 passing, 3 intentional skips), integration suite (117 passing, 3 intentional skips), and stateful first-run/returning-user browser journey passed. BUG-0013 is fixed; PHASE-10 remains planned and inactive.
+- 2026-07-26 - Final verification passed the real root and `/struct` browser journeys, full E2E (63/63, 659 assertions), canonical generation, and independent 23-gate canonical check with zero failed criteria and SHA-256 `801de1f3059eb911d1616bfffca73826474a5b7bbce7f34050a221acc7972396`.

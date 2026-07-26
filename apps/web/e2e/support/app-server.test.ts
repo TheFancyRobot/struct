@@ -3,6 +3,8 @@ import { existsSync, readdirSync, rmSync } from 'node:fs'
 import { createServer as createHttpServer } from 'node:http'
 import { resolve } from 'node:path'
 import {
+  isolatedDataEngineGatewayRunCommand,
+  isolatedDataEngineRunCommand,
   prepareRealStackEnvironment,
   startAppServer,
   startDependencyContainers,
@@ -12,6 +14,7 @@ import {
 } from './app-server'
 
 const webRoot = resolve(import.meta.dir, '../..')
+const repositoryRoot = resolve(webRoot, '../..')
 const e2eDistRoot = resolve(webRoot, '.e2e-dist')
 
 function listPortDistRoots(port: number): string[] {
@@ -34,6 +37,29 @@ function newDistRoots(before: readonly string[], after: readonly string[]): stri
 }
 
 describe('isolated production web lifecycle', () => {
+  it('binds the release artifact root into a disposable no-egress data-engine', () => {
+    const command = isolatedDataEngineRunCommand(
+      'struct-e2e-data-engine-test',
+      'struct-e2e-data-engine-test',
+      'test-data-engine-token',
+    )
+    const gateway = isolatedDataEngineGatewayRunCommand(
+      'struct-e2e-data-engine-gateway-test',
+      4195,
+      'test-data-engine-token',
+    )
+
+    expect(command).toContain('--rm')
+    expect(command).toContain('--read-only')
+    expect(command).toContain('no-new-privileges:true')
+    expect(command).toContain(
+      `type=bind,source=${resolve(repositoryRoot, '.local/e2e/workspace-release-artifacts')},target=/artifacts,readonly`,
+    )
+    expect(command).toContain('data-engine')
+    expect(gateway).toContain('127.0.0.1:4195:4300')
+    expect(gateway).toContain('gateway.mjs')
+  })
+
   it('removes the exact generated bundle when the server stops', async () => {
     const port = 4189
     cleanupPortDistRoots(port)

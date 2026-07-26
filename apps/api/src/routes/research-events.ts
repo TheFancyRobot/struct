@@ -1,6 +1,6 @@
 import { Effect, Schema } from 'effect'
 import { withWalkingSliceSpan } from '@struct/observability'
-import { ResearchEvent } from '@struct/domain'
+import { DatasetCitation, ResearchEvent } from '@struct/domain'
 import type * as typeDomain from '@struct/domain'
 import type * as typePersistence from '@struct/persistence'
 import { EntityNotFoundError, QueryError } from '@struct/persistence'
@@ -103,7 +103,8 @@ export function parseEventCursor(value: string | null): bigint | undefined {
 }
 
 export function encodeSseEvent(event: ResearchEvent): string {
-  return `id: ${event.cursor}\nevent: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`
+  const encoded = Schema.encodeSync(ResearchEvent)(event)
+  return `id: ${event.cursor}\nevent: ${event.type}\ndata: ${JSON.stringify(encoded)}\n\n`
 }
 
 export const loadResearchEvents = (
@@ -137,15 +138,31 @@ export const loadResearchEvents = (
           createdAt: Number(event.createdAt),
           type: event.eventType,
         }
-        const candidate = event.eventType === 'research-completed'
-          ? {
-              ...base,
-              data: {
-                ...event.payload,
-                ...(yield* deps.findCompleted(workspaceId, projectId, runId)),
-              },
-            }
-          : { ...base, data: event.payload }
+        let candidate: unknown = { ...base, data: event.payload }
+        if (event.eventType === 'research-completed') {
+          const completed = yield* deps.findCompleted(
+            workspaceId,
+            projectId,
+            runId,
+          )
+          const datasetCitations = yield* Schema.encode(
+            Schema.Array(DatasetCitation),
+          )(completed.datasetCitations).pipe(
+            Effect.mapError(() => new QueryError({
+              operation: 'projectResearchEvent',
+              entity: 'ResearchProjection',
+              message: 'Research event data is invalid',
+            })),
+          )
+          candidate = {
+            ...base,
+            data: {
+              ...event.payload,
+              ...completed,
+              datasetCitations,
+            },
+          }
+        }
         return yield* Schema.decodeUnknown(ResearchEvent)(candidate).pipe(
           Effect.mapError(() => new QueryError({
             operation: 'projectResearchEvent',
