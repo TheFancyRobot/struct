@@ -39,25 +39,28 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- The Projects and Sources navigation sections offered filtering and discovery only; creating a project required navigating to the root independently, while importing a source required locating the project Sources page.
+- At the root, the navigation gave no indication that source creation depends on opening a project.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- Projects exposes a direct, labeled action that opens the existing project-creation form.
+- Sources exposes a direct, labeled action that opens the current project's existing source-import form; before a project is open, the action remains visibly disabled and explains the prerequisite.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Open the workspace root and inspect the Projects and Sources sidebar section headers.
+2. Search either list, then look for a creation action within its section.
+3. Observe that no action leads to the existing project-creation or source-import flow, and source creation's project prerequisite is not communicated.
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- Affects the web workspace navigation on desktop and its mobile navigation sheet.
+- Affects users creating notebooks or adding source documents, but does not change project or source API contracts, persistence, or existing creation forms.
 
 ## Suspected Root Cause
 
-- Record current theories and assumptions.
+- The discovery navigation was added as a read-only list projection and was not connected to the established route-based project creation and source import entry points.
 
 ## Confirmed Root Cause
 
@@ -66,7 +69,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- Navigate to the workspace root to use the project form, or open a project and visit its Sources route to use the import form. This adds navigation overhead and leaves the source prerequisite undiscoverable at the root.
 
 ## Permanent Fix Plan
 
