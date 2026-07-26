@@ -26,6 +26,7 @@ const describeIf = DATABASE_URL ? describe : describe.skip
 const id = (suffix: string) => `c70e8400-e29b-41d4-a716-${suffix}`
 const workspaceId = WorkspaceId.make(id('446655440001'))
 const projectId = ProjectId.make(id('446655440002'))
+const attachedProjectId = ProjectId.make(id('446655440014'))
 const sourceId = SourceId.make(id('446655440003'))
 const sourceVersionId = SourceVersionId.make(id('446655440004'))
 const threadId = ResearchThreadId.make(id('446655440005'))
@@ -139,13 +140,18 @@ describeIf('research durability (PostgreSQL, serial)', () => {
     )
     await sql.unsafe(
       `INSERT INTO projects (id, workspace_id, name)
-       VALUES ($1, $2, 'Durability project')`,
-      [projectId, workspaceId],
+       VALUES ($1, $2, 'Durability project'), ($3, $2, 'Attached project')`,
+      [projectId, workspaceId, attachedProjectId],
     )
     await sql.unsafe(
       `INSERT INTO sources (id, project_id, name, kind)
        VALUES ($1, $2, 'durable.txt', 'document')`,
       [sourceId, projectId],
+    )
+    await sql.unsafe(
+      `INSERT INTO project_sources (workspace_id, project_id, source_id)
+       VALUES ($1, $2, $3)`,
+      [workspaceId, attachedProjectId, sourceId],
     )
     await sql.unsafe(
       `INSERT INTO source_versions (
@@ -204,6 +210,7 @@ describeIf('research durability (PostgreSQL, serial)', () => {
     const registration = (
       sourceVersionId: typeof SourceVersionId.Type,
       suffix: string,
+      registrationProjectId = projectId,
     ) => {
       const createdAt = BigInt(Date.now())
       const registeredThreadId = ResearchThreadId.make(id(`446655440${suffix}0`))
@@ -212,11 +219,11 @@ describeIf('research durability (PostgreSQL, serial)', () => {
       registeredRunIds.push(registeredRunId)
       return ResearchExecutionRepo.register({
         workspaceId,
-        projectId,
+        projectId: registrationProjectId,
         sourceVersionIds: [sourceVersionId],
         thread: {
           id: registeredThreadId,
-          projectId,
+          projectId: registrationProjectId,
           title: 'Ready source scope',
           createdAt,
           updatedAt: createdAt,
@@ -235,7 +242,7 @@ describeIf('research durability (PostgreSQL, serial)', () => {
           entityType: 'research',
           entityId: registeredRunId,
           status: 'pending',
-          payload: { projectId, sourceVersionIds: [sourceVersionId] },
+          payload: { projectId: registrationProjectId, sourceVersionIds: [sourceVersionId] },
           attempts: 0,
           maxAttempts: 1,
           createdAt,
@@ -293,10 +300,14 @@ describeIf('research durability (PostgreSQL, serial)', () => {
       const current = await Effect.runPromiseExit(
         registration(currentVersionId, '07'),
       )
+      const attached = await Effect.runPromiseExit(
+        registration(sourceVersionId, '08', attachedProjectId),
+      )
 
       expect(Exit.isFailure(stale)).toBe(true)
       expect(Exit.isFailure(unreadyDataset)).toBe(true)
       expect(Exit.isSuccess(current)).toBe(true)
+      expect(Exit.isSuccess(attached)).toBe(true)
       if (Exit.isFailure(stale) && Exit.isFailure(unreadyDataset)) {
         expect(String(stale.cause)).toContain('AuthorizationError')
         expect(String(unreadyDataset.cause)).toContain('AuthorizationError')
@@ -316,8 +327,8 @@ describeIf('research durability (PostgreSQL, serial)', () => {
       )
       await sql.unsafe(
         `DELETE FROM research_threads
-         WHERE project_id = $1 AND title = 'Ready source scope'`,
-        [projectId],
+         WHERE project_id = ANY($1::uuid[]) AND title = 'Ready source scope'`,
+        [[projectId, attachedProjectId]],
       )
       await sql.unsafe(
         `DELETE FROM source_versions WHERE source_id = ANY($1::uuid[])`,
@@ -342,7 +353,7 @@ describeIf('research durability (PostgreSQL, serial)', () => {
     await sql.unsafe('DELETE FROM research_threads WHERE id = $1', [threadId])
     await sql.unsafe('DELETE FROM source_versions WHERE source_id = $1', [sourceId])
     await sql.unsafe('DELETE FROM sources WHERE id = $1', [sourceId])
-    await sql.unsafe('DELETE FROM projects WHERE id = $1', [projectId])
+    await sql.unsafe('DELETE FROM projects WHERE id = ANY($1::uuid[])', [[projectId, attachedProjectId]])
     await sql.unsafe('DELETE FROM workspaces WHERE id = $1', [workspaceId])
     await sql.end()
   })

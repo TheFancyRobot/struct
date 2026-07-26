@@ -43,25 +43,25 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- Importing a source made it visible only through its origin `sources.project_id`. A second project in the same workspace could neither select it nor use its immutable version without loading a duplicate.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- A source is owned by its workspace and has one ingestion/version lineage. Any project in that workspace can explicitly attach it, then use it for catalog, research, retrieval, datasets, exports, and provenance without re-ingestion.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Create two projects in one workspace and import a ready document into the first.
+2. Open the source library and attach that source to the second project.
+3. Verify the second project can list, research, retrieve, export, and detach the shared source while the source/version remains a single record.
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- Affected source catalog and imports, research execution, text retrieval, dataset materializations, reports, provenance, findings, document chunks, the API, and the web workspace source library.
 
 ## Suspected Root Cause
 
-- Record current theories and assumptions.
+- The one-project model was likely an initial ingestion simplification. Immutable versions and artifacts were already reusable, but every consumer treated the origin project as the authorization boundary.
 
 ## Confirmed Root Cause
 
@@ -70,7 +70,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- No safe workaround existed: duplicating imports wasted work and split provenance. The fix replaces that behavior with explicit workspace-owned sources and project attachments.
 
 ## Permanent Fix Plan
 
@@ -80,9 +80,9 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
 - Added persistence integration coverage proving one workspace source is listed once, attaches to a second project, becomes visible there, and disappears after detach without another source/version.
-- Passed 27 focused API/web/registration tests and 17 affected persistence integration tests, plus typecheck, lint, migration down/up, upgrade migration coverage, and vault doctor.
+- Added attached-source authorization coverage for source registration, catalog, research, retrieval, dataset scope, report export, and chunk ownership boundaries.
+- Passed focused API/web/registration and affected persistence integration tests, migration down/up and upgrade coverage, typecheck, lint, and vault doctor.
 
 ## Related Notes
 
@@ -101,4 +101,6 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-26 - Reported.
+- 2026-07-26 - Fixed with workspace source ownership and explicit project attachments.
+- 2026-07-26 - Verified with reuse, authorization, migration, type, lint, and vault integrity checks.
 <!-- AGENT-END:bug-timeline -->

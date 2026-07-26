@@ -25,6 +25,9 @@ WHERE project.id = source.project_id;
 ALTER TABLE sources
   ALTER COLUMN workspace_id SET NOT NULL;
 
+ALTER TABLE sources
+  ADD CONSTRAINT uq_sources_workspace_id_id UNIQUE (workspace_id, id);
+
 CREATE INDEX idx_sources_workspace_id ON sources(workspace_id);
 
 CREATE TABLE project_sources (
@@ -38,8 +41,8 @@ CREATE TABLE project_sources (
     REFERENCES projects(workspace_id, id)
     ON DELETE CASCADE,
   CONSTRAINT fk_project_sources_source
-    FOREIGN KEY (source_id)
-    REFERENCES sources(id)
+    FOREIGN KEY (workspace_id, source_id)
+    REFERENCES sources(workspace_id, id)
     ON DELETE CASCADE
 );
 

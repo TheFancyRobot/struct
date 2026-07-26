@@ -461,6 +461,7 @@ function makeSourceRepositoryImpl(sql: import('../sql-client.js').SqlClientShape
            FROM sources source
            JOIN project_sources attached
              ON attached.source_id = source.id
+            AND attached.workspace_id = source.workspace_id
            WHERE attached.project_id = $1
            ORDER BY source.created_at DESC`,
           [projectId],

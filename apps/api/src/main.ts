@@ -695,10 +695,6 @@ const server = Effect.gen(function* () {
       }
 
       const sourceRoute = /^\/api\/projects\/([^/]+)\/sources$/.exec(url.pathname)
-      const sourceImportProjectId = sourceRoute?.[1]
-        ?? (url.pathname === '/api/sources'
-          ? url.searchParams.get('projectId')
-          : null)
       if (url.pathname === '/api/sources' && req.method === 'GET') {
         const exit = await Runtime.runPromiseExit(effectRuntime)(
           SourceCatalogRepo.list(identity.workspaceId, null).pipe(
@@ -737,7 +733,10 @@ const server = Effect.gen(function* () {
             ).pipe(Effect.provide(sourceCatalogLayer)))),
         )
         if (exit._tag === 'Failure') {
-          return jsonResponse({ error: 'SourceAttachmentUnavailable' }, 503)
+          const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
+          return failure instanceof ValidationError
+            ? jsonResponse({ error: 'InvalidSourceAttachmentScope' }, 400)
+            : jsonResponse({ error: 'SourceAttachmentUnavailable' }, 503)
         }
         return exit.value
           ? new Response(null, { status: 204 })
@@ -825,7 +824,7 @@ const server = Effect.gen(function* () {
           : jsonResponse({ error: 'SourceJobNotFound' }, 404)
       }
 
-      if (sourceImportProjectId !== null && req.method === 'POST') {
+      if (sourceRoute !== null && req.method === 'POST') {
         const program = Effect.gen(function* () {
           const parsed = yield* Effect.tryPromise({
             try: () => decodeBrowserSourceImport(req, maxBytes),
@@ -835,7 +834,7 @@ const server = Effect.gen(function* () {
               message: 'Invalid browser source import',
             }),
           })
-          const projectId = yield* Schema.decodeUnknown(ProjectId)(sourceImportProjectId)
+          const projectId = yield* Schema.decodeUnknown(ProjectId)(sourceRoute[1])
           const prepared = yield* Effect.forEach(parsed.items, (item) =>
             Effect.either(withWalkingSliceSpan(
                 'command',
@@ -1565,10 +1564,14 @@ const server = Effect.gen(function* () {
                 `SELECT version.id, version.artifact_ref
                  FROM source_versions version
                  JOIN sources source ON source.id = version.source_id
-                 JOIN projects project ON project.id = source.project_id
                  WHERE version.id = ANY($1::uuid[])
-                   AND source.project_id = $2
-                   AND project.workspace_id = $3`,
+                   AND source.workspace_id = $3
+                   AND EXISTS (
+                     SELECT 1 FROM project_sources attached
+                     WHERE attached.workspace_id = $3
+                       AND attached.project_id = $2
+                       AND attached.source_id = source.id
+                   )`,
                 [
                   [...report.sourceVersionIds],
                   report.projectId,

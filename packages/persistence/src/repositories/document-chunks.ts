@@ -280,6 +280,12 @@ export class DocumentChunkRepo extends Effect.Service<DocumentChunkRepo>()(
                    AND version.id = $5
                    AND source.id = $2
                    AND source.workspace_id = $3
+                   AND EXISTS (
+                     SELECT 1 FROM project_sources attached
+                     WHERE attached.workspace_id = $3
+                       AND attached.project_id = $6
+                       AND attached.source_id = source.id
+                   )
                  RETURNING job.id`,
                 [
                   input.job.id,
@@ -287,6 +293,7 @@ export class DocumentChunkRepo extends Effect.Service<DocumentChunkRepo>()(
                   input.workspaceId,
                   input.job.attempts,
                   input.document.sourceVersionId,
+                  input.projectId,
                 ],
               )
               if (ownership.length !== 1) {

@@ -348,7 +348,7 @@ describe('ingestion attempt ownership heartbeats', () => {
     expect(ownership?.query).toMatch(/job\.workspace_id = \$3/i)
     expect(ownership?.query).toMatch(/job\.attempts = \$4/i)
     expect(ownership?.query).toMatch(/source\.id = \$2/i)
-    expect(ownership?.query).toMatch(/project\.workspace_id = \$3/i)
+    expect(ownership?.query).toMatch(/source\.workspace_id = \$3/i)
     expect(ownership?.query).toMatch(/RETURNING job\.id/i)
     expect(ownership?.params).toEqual([ingestionJobId, sourceId, workspaceId, 1])
     expect(calls.some((call) => call.query.includes('INSERT INTO source_versions'))).toBe(true)
@@ -421,7 +421,7 @@ describe('ingestion attempt ownership heartbeats', () => {
     }
     expect(calls).toHaveLength(1)
     expect(calls[0]?.query).toMatch(/job\.workspace_id = \$3/i)
-    expect(calls[0]?.query).toMatch(/project\.workspace_id = \$3/i)
+    expect(calls[0]?.query).toMatch(/source\.workspace_id = \$3/i)
     expect(calls[0]?.params).toEqual([
       ingestionJobId,
       sourceId,
