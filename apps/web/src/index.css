@@ -133,6 +133,10 @@ kbd {
   min-width: 2.75rem;
 }
 
+.app-shell .btn-xs {
+  min-width: 2.75rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

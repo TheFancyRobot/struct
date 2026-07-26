@@ -15,6 +15,7 @@ import {
   type ProjectId,
   type ResearchRunId,
   type ResearchThreadId,
+  type SourceCatalogItem,
 } from '@struct/domain'
 import { fetchSourceCatalog, decodeSourceActivityEvent, sourceActivityUrl } from '../api/sources'
 import { fetchResearchThread, fetchResearchThreads, submitResearch } from '../api/research'
@@ -32,9 +33,110 @@ const SourceRefresh: Component<{
     () => sourceActivityUrl(props.projectId, props.cursor),
     decodeSourceActivityEvent,
     props.refresh,
-    ['ingestion-completed', 'ingestion-failed', 'ingestion-cancelled'],
+    [
+      'ingestion-requested',
+      'file-processed',
+      'ingestion-completed',
+      'ingestion-failed',
+      'ingestion-retried',
+      'ingestion-cancelled',
+    ],
   )
   return null
+}
+
+export const MobileSourceActivity: Component<{
+  readonly projectId: ProjectId
+  readonly items: ReadonlyArray<SourceCatalogItem>
+}> = (props) => {
+  let opener: HTMLButtonElement | undefined
+  let heading: HTMLHeadingElement | undefined
+  const [open, setOpen] = createSignal(false)
+  const activities = createMemo(() => props.items.filter((item) =>
+    item.job !== null && item.job.status !== 'completed'))
+  const failures = createMemo(() => activities().filter((item) =>
+    item.job?.status === 'failed' || item.job?.status === 'cancelled').length)
+  const summary = () => failures() > 0
+    ? `${failures()} import${failures() === 1 ? ' needs' : 's need'} attention`
+    : `${activities().length} import${activities().length === 1 ? '' : 's'} in progress`
+  const close = () => {
+    setOpen(false)
+    queueMicrotask(() => opener?.focus())
+  }
+  return (
+    <Show when={activities().length > 0}>
+      <section class="md:hidden" aria-live="polite" aria-label="Source activity">
+        <button
+          ref={(element) => { opener = element }}
+          type="button"
+          class="btn h-auto min-h-11 w-full justify-between py-2 text-left"
+          aria-haspopup="dialog"
+          onClick={() => {
+            setOpen(true)
+            queueMicrotask(() => heading?.focus())
+          }}
+        >
+          <span>
+            <strong class="block text-sm">Source activity</strong>
+            <span class="block text-xs font-normal">{summary()}</span>
+          </span>
+          <span aria-hidden="true">View</span>
+        </button>
+        <Show when={open()}>
+          <button
+            type="button"
+            class="fixed inset-0 z-40 bg-neutral/45"
+            aria-label="Close source progress"
+            onClick={close}
+          />
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="source-progress-heading"
+            class="fixed inset-x-0 bottom-0 z-50 max-h-[80dvh] overflow-y-auto rounded-t-box bg-base-100 p-4 shadow-xl"
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') close()
+            }}
+          >
+            <div class="flex min-h-11 items-center justify-between gap-2">
+              <h2
+                id="source-progress-heading"
+                ref={(element) => { heading = element }}
+                tabindex="-1"
+                class="font-semibold"
+              >
+                Source progress
+              </h2>
+              <button
+                type="button"
+                class="btn btn-ghost btn-sm"
+                onClick={close}
+              >
+                Close
+              </button>
+            </div>
+            <ul class="mt-3 space-y-2">
+              <For each={activities()}>
+                {(item) => (
+                  <li class="flex min-h-11 items-center justify-between gap-2 rounded border border-base-300 p-2 text-sm">
+                    <span class="break-anywhere font-medium">{item.name}</span>
+                    <span class="badge">{item.job?.status}</span>
+                  </li>
+                )}
+              </For>
+            </ul>
+            <A
+              class="btn btn-primary mt-4 w-full"
+              href={`/projects/${props.projectId}/sources`}
+              onClick={close}
+            >
+              Manage sources
+            </A>
+          </section>
+        </Show>
+      </section>
+    </Show>
+  )
 }
 
 export const ConversationPanel: Component<{
@@ -190,6 +292,10 @@ export const ConversationPanel: Component<{
           runId={props.runId!}
         />
       </Show>
+      <MobileSourceActivity
+        projectId={props.projectId}
+        items={catalog()?.items ?? []}
+      />
       <form
         class="rounded-box border border-base-300 bg-base-100 p-4"
         onSubmit={(event) => {
