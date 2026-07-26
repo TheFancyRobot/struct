@@ -20,10 +20,10 @@ Keep this note short and current.
 
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-26._
-- No roadmap implementation session or step is active.
-- [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] remains planned technical reference only; it is not release authorization.
-- BUG-0035 remediation is validated and under PR review; the v1.0 release action remains intentionally unperformed.
-- No open critical or release-blocking bugs.
+- Session in progress: none.
+- Current step: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_02_build-unified-three-pane-workspace-shell|STEP-10-02 Build Unified Three Pane Workspace Shell]] - status: planned - phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]
+- Active phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: planned - updated: 2026-07-21
+- Also active: 24 more additional steps, 3 open critical bugs.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -69,7 +69,9 @@ _Last refreshed: 2026-07-26._
 ## Critical Bugs
 
 <!-- AGENT-START:critical-bugs -->
-- No open severity-critical or release-blocking bugs.
+- [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]] - status: fixed - severity: sev-1 - reported: 2026-07-21
+- [[03_Bugs/BUG-0038_research-replay-loses-durable-job-ownership-before-cancellation-verification|BUG-0038 Research replay loses durable job ownership before cancellation verification]] - status: fixed - severity: sev-2 - reported: 2026-07-25
+- [[03_Bugs/BUG-0040_api-workspace-bootstrap-prevents-health-checks-during-database-outages|BUG-0040 API workspace bootstrap prevents health checks during database outages]] - status: fixed - severity: sev-2 - reported: 2026-07-24
 <!-- AGENT-END:critical-bugs -->
 
 ## Next Actions

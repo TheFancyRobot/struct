@@ -1,6 +1,8 @@
 # Implementation Notes
 
 - Capture durable findings learned during execution. Prefer short bullets with file paths, commands, and observed behavior.
+- 2026-07-26 verification found the refined project lifecycle already implemented across `packages/domain/src/project-lifecycle.ts`, migration `0018_project_lifecycle.sql`, persistence/API project routes, `ProjectPage`/`ProjectSwitcher`, and `apps/web/e2e/project-lifecycle.spec.ts`.
+- No product-code delta was required. The only local setup repair was `bun install --frozen-lockfile` to restore lockfile-pinned `@effect/ai` packages before repository typecheck.
 
 ## Related Notes
 
