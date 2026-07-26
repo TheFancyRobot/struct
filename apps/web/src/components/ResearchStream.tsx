@@ -32,7 +32,11 @@ import { RecursiveRunTimeline } from './RecursiveRunTimeline'
 import { PartialFindingsPanel } from './PartialFindingsPanel'
 import { appendResearchEvent } from './conversation-state'
 import { evidenceSelection } from './evidence-selection'
-import { mergeRecursiveRead } from './recursive-progress-state'
+import {
+  findCommittedRecursiveResultEvent,
+  mergeRecursiveRead,
+  researchNoteProjection,
+} from './recursive-progress-state'
 import { useWorkspaceState } from './workspace/workspace-state'
 interface ResearchStreamProps {
   readonly projectId: ProjectId
@@ -97,6 +101,19 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
   const legacyEvents = createMemo(() => state.events.filter(
     (event) => !event.type.startsWith('recursive-'),
   ))
+  const recursiveNoteEvent = createMemo(() => {
+    const result = recursive()?.result
+    if (result === null || result === undefined) return undefined
+    const event = findCommittedRecursiveResultEvent(
+      state.events,
+      props.runId,
+      result,
+    )
+    return event !== undefined
+      && researchNoteProjection(event, props.threadId) !== undefined
+      ? event
+      : undefined
+  })
 
   createEffect(() => {
     const loaded = recursiveRead()
@@ -226,35 +243,24 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
   }
 
   const saveNote = async (
-    event: Extract<ResearchEvent, { readonly type: 'research-completed' }>,
+    event: Extract<
+      ResearchEvent,
+      {
+        readonly type:
+          | 'research-completed'
+          | 'recursive-result-progress-committed'
+      }
+    >,
   ) => {
     if (savingNote()) return
+    const projection = researchNoteProjection(event, props.threadId)
+    if (projection === undefined) return
     setSavingNote(true)
     setNoteSaveError(undefined)
     try {
       const note = await createNote({
         projectId: props.projectId,
-        title: event.data.answer.slice(0, 200),
-        body: event.data.answer,
-        idempotencyKey: `save-note-run-${props.runId}`,
-        origin: {
-          threadId: props.threadId,
-          runId: props.runId,
-          citations: [
-            ...event.data.citations.map((citation) => ({
-              kind: 'document' as const,
-              id: citation.id,
-              sourceVersionId: citation.sourceVersionId,
-              locator: citation.locator,
-            })),
-            ...event.data.datasetCitations.map((citation) => ({
-              kind: 'dataset' as const,
-              id: citation.id,
-              queryResultSnapshotId: citation.queryResultSnapshotId,
-              datasetSnapshotId: citation.datasetSnapshotId,
-            })),
-          ],
-        },
+        ...projection,
       })
       setSavedNoteId(note.id)
     } catch (error) {
@@ -310,11 +316,44 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
               />
               <Show when={progress().result}>
                 {(result) => (
-                  <PartialFindingsPanel
-                    projectId={props.projectId}
-                    threadId={props.threadId}
-                    result={result()}
-                  />
+                  <div class="space-y-3">
+                    <PartialFindingsPanel
+                      projectId={props.projectId}
+                      threadId={props.threadId}
+                      result={result()}
+                    />
+                    <Show when={recursiveNoteEvent()}>
+                      {(committed) => (
+                        <div class="flex flex-wrap items-center gap-3">
+                          <button
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            disabled={savingNote() || savedNoteId() !== undefined}
+                            onClick={() => void saveNote(committed())}
+                          >
+                            {savedNoteId() !== undefined
+                              ? 'Saved as note'
+                              : savingNote()
+                                ? 'Saving note…'
+                                : 'Save as note'}
+                          </button>
+                          <Show when={savedNoteId()}>
+                            {(noteId) => (
+                              <A
+                                class="link link-primary"
+                                href={`/projects/${props.projectId}/notes/${noteId()}`}
+                              >
+                                Open note
+                              </A>
+                            )}
+                          </Show>
+                          <Show when={noteSaveError()}>
+                            {(message) => <div class="alert alert-error" role="alert">{message()}</div>}
+                          </Show>
+                        </div>
+                      )}
+                    </Show>
+                  </div>
                 )}
               </Show>
             </div>
@@ -391,10 +430,7 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
                             </button>
                           )}
                         </For>
-                        <Show when={
-                          completed().data.citations.length
-                          + completed().data.datasetCitations.length > 0
-                        }>
+                        <Show when={researchNoteProjection(completed(), props.threadId)}>
                           <button
                             type="button"
                             class="btn btn-primary btn-sm"

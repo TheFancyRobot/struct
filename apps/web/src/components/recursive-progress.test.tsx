@@ -4,8 +4,11 @@ import { describe, expect, it } from 'bun:test'
 import { renderToString } from 'solid-js/web'
 import { Schema } from 'effect'
 import {
+  EventJournalId,
+  JobQueueId,
   ProjectId,
   RecursiveAnalysisRequestId,
+  ResearchEvent,
   ResearchRunId,
   ResearchThreadId,
   SourceVersionId,
@@ -14,7 +17,12 @@ import {
 } from '@struct/domain'
 import { RecursiveRunTimeline } from './RecursiveRunTimeline'
 import { PartialFindingsPanel } from './PartialFindingsPanel'
-import { mergeRecursiveRead } from './recursive-progress-state'
+import {
+  findCommittedRecursiveResultEvent,
+  mergeRecursiveRead,
+  recursiveResultNoteBody,
+  researchNoteProjection,
+} from './recursive-progress-state'
 
 const sha = (digit: string) => `sha256:${digit.repeat(64)}`
 const progress = Schema.decodeUnknownSync(RecursiveRunProgress)({
@@ -105,6 +113,24 @@ const progress = Schema.decodeUnknownSync(RecursiveRunProgress)({
   },
   updatedAt: 1_700_000_000_001,
 })
+const threadId = ResearchThreadId.make(
+  'd70e8400-e29b-41d4-a716-446655440005',
+)
+const committedResult = Schema.decodeUnknownSync(ResearchEvent)({
+  id: EventJournalId.make('d70e8400-e29b-41d4-a716-446655440007'),
+  cursor: '7',
+  runId: progress.runId,
+  createdAt: progress.updatedAt,
+  type: 'recursive-result-progress-committed',
+  data: {
+    jobId: JobQueueId.make('d70e8400-e29b-41d4-a716-446655440008'),
+    attempt: 1,
+    workspaceId: progress.workspaceId,
+    requestId: progress.requestId,
+    planId: progress.planId,
+    result: progress.result,
+  },
+})
 
 describe('recursive progress Solid components', () => {
   it('does not let an older initial read overwrite newer streamed progress', () => {
@@ -142,7 +168,7 @@ describe('recursive progress Solid components', () => {
     const html = renderToString(() => (
       <PartialFindingsPanel
         projectId={ProjectId.make('d70e8400-e29b-41d4-a716-446655440004')}
-        threadId={ResearchThreadId.make('d70e8400-e29b-41d4-a716-446655440005')}
+        threadId={threadId}
         result={result}
       />
     ))
@@ -150,5 +176,76 @@ describe('recursive progress Solid components', () => {
     expect(html).toContain('One partition has not committed')
     expect(html).toContain('Open exact citation')
     expect(html).toContain('/citation/d70e8400-e29b-41d4-a716-446655440006')
+  })
+
+  it('projects a committed partial result to one exact provenance-safe note', () => {
+    if (
+      committedResult.type !== 'recursive-result-progress-committed'
+      || progress.result === null
+    ) throw new Error('Expected a committed recursive result')
+
+    expect(recursiveResultNoteBody(progress.result)).toBe(
+      [
+        'Status: partial',
+        '',
+        'Coverage',
+        '- Status: partial',
+        '- Expected items: 2',
+        '- Examined items: 1',
+        '- Missing items: 1',
+        '- Excluded items: 0',
+        '- Expected partitions: 2',
+        '- Examined partitions: 1',
+        '',
+        'Findings',
+        '',
+        '1. The retained evidence supports the operational finding.',
+        '   - Limitation: One partition has not committed.',
+        '',
+        'Missing evidence',
+        '- partition-2',
+        '',
+        'Analysis limitations',
+        '- One partition has not committed.',
+      ].join('\n'),
+    )
+    expect(researchNoteProjection(committedResult, threadId)).toEqual({
+      title: 'Partial research findings',
+      body: recursiveResultNoteBody(progress.result),
+      idempotencyKey: `save-note-answer-${committedResult.id}`,
+      origin: {
+        threadId,
+        runId: progress.runId,
+        answerId: committedResult.id,
+        citations: [{
+          kind: 'document',
+          id: progress.result.citations[0]!.citationId,
+          sourceVersionId: progress.result.citations[0]!.sourceVersionId,
+          locator: progress.result.citations[0]!.locator,
+        }],
+      },
+    })
+    expect(findCommittedRecursiveResultEvent(
+      [committedResult],
+      progress.runId,
+      progress.result,
+    )).toBe(committedResult)
+  })
+
+  it('does not invent a saveable note without committed findings and citations', () => {
+    if (committedResult.type !== 'recursive-result-progress-committed') {
+      throw new Error('Expected a committed recursive result')
+    }
+    expect(researchNoteProjection({
+      ...committedResult,
+      data: {
+        ...committedResult.data,
+        result: {
+          ...committedResult.data.result,
+          findings: [],
+          citations: [],
+        },
+      },
+    }, threadId)).toBeUndefined()
   })
 })

@@ -15,6 +15,7 @@ const noteId = NoteId.make('570e8400-e29b-41d4-a716-446655440020')
 const origin = {
   threadId: '570e8400-e29b-41d4-a716-446655440030',
   runId: '570e8400-e29b-41d4-a716-446655440040',
+  answerId: '570e8400-e29b-41d4-a716-446655440070',
   citations: [{
     kind: 'document' as const,
     id: '570e8400-e29b-41d4-a716-446655440050',
@@ -44,8 +45,9 @@ const note = Schema.decodeUnknownSync(Note)({
 function deps(overrides: Partial<NoteRouteDeps> = {}): NoteRouteDeps {
   return {
     create: () => Effect.succeed(note),
-    list: () => Effect.succeed([]),
+    list: () => Effect.succeed({ items: [], nextCursor: null }),
     find: () => Effect.succeed(note),
+    listRevisions: () => Effect.succeed({ items: [], nextCursor: null }),
     update: () => Effect.succeed(note),
     archive: () => Effect.succeed(note),
     randomNoteId: () => noteId,
@@ -130,5 +132,24 @@ describe('note route', () => {
       error: 'NoteConflict',
       currentRevision: 2,
     })
+  })
+
+  it('hides archived notes unless the archived view is explicit', async () => {
+    const archived: typeof Note.Type = { ...note, archived: true }
+    const hidden = await Effect.runPromise(noteRoute(
+      new Request(`http://localhost/api/projects/${projectId}/notes/${noteId}`),
+      { workspaceId },
+      deps({ find: () => Effect.succeed(archived) }),
+    ))
+    const visible = await Effect.runPromise(noteRoute(
+      new Request(
+        `http://localhost/api/projects/${projectId}/notes/${noteId}?archived=true`,
+      ),
+      { workspaceId },
+      deps({ find: () => Effect.succeed(archived) }),
+    ))
+
+    expect(hidden?.status).toBe(404)
+    expect(visible?.status).toBe(200)
   })
 })

@@ -380,19 +380,34 @@ const server = Effect.gen(function* () {
         identity,
         {
           create: (input) => NoteRepo.create(input).pipe(Effect.provide(noteLayer)),
-          list: (workspaceId, projectId, archived) =>
-            NoteRepo.list(workspaceId, projectId, archived).pipe(
+          list: (workspaceId, projectId, archived, limit, cursor) =>
+            NoteRepo.list(
+              workspaceId,
+              projectId,
+              archived,
+              limit,
+              cursor,
+            ).pipe(
               Effect.provide(noteLayer),
             ),
           find: (workspaceId, projectId, noteId) =>
             NoteRepo.find(workspaceId, projectId, noteId).pipe(
               Effect.provide(noteLayer),
             ),
+          listRevisions: (workspaceId, projectId, noteId, limit, before) =>
+            NoteRepo.listRevisions(
+              workspaceId,
+              projectId,
+              noteId,
+              limit,
+              before,
+            ).pipe(Effect.provide(noteLayer)),
           update: (input) => NoteRepo.update(input).pipe(Effect.provide(noteLayer)),
           archive: (
             workspaceId,
             projectId,
             noteId,
+            authorId,
             archived,
             expectedRevision,
             now,
@@ -400,6 +415,7 @@ const server = Effect.gen(function* () {
             workspaceId,
             projectId,
             noteId,
+            authorId,
             archived,
             expectedRevision,
             now,

@@ -3,8 +3,13 @@ import { Cause, Effect, Option, Schema } from 'effect'
 import {
   ArchiveNoteRequest,
   CreateNoteRequest,
+  DEFAULT_NOTE_PAGE_SIZE,
+  MAX_NOTE_PAGE_SIZE,
   Note,
   NoteId,
+  NoteListCursor,
+  NoteListPage,
+  NoteRevisionPage,
   ProjectId,
   UpdateNoteRequest,
   normalizeNoteText,
@@ -66,6 +71,15 @@ function requestBody(request: Request) {
   })
 }
 
+const PageLimit = Schema.NumberFromString.pipe(
+  Schema.int(),
+  Schema.between(1, MAX_NOTE_PAGE_SIZE),
+)
+const RevisionCursor = Schema.NumberFromString.pipe(
+  Schema.int(),
+  Schema.positive(),
+)
+
 export interface NoteRouteIdentity {
   readonly workspaceId: typeof WorkspaceId.Type
 }
@@ -76,17 +90,27 @@ export interface NoteRouteDeps {
     workspaceId: typeof WorkspaceId.Type,
     projectId: typeof ProjectId.Type,
     archived: boolean,
-  ) => Effect.Effect<ReadonlyArray<typeof Note.Type>, unknown>
+    limit: number,
+    cursor?: typeof NoteListCursor.Type | null,
+  ) => Effect.Effect<typeof NoteListPage.Type, unknown>
   readonly find: (
     workspaceId: typeof WorkspaceId.Type,
     projectId: typeof ProjectId.Type,
     noteId: typeof NoteId.Type,
   ) => Effect.Effect<typeof Note.Type, unknown>
+  readonly listRevisions: (
+    workspaceId: typeof WorkspaceId.Type,
+    projectId: typeof ProjectId.Type,
+    noteId: typeof NoteId.Type,
+    limit: number,
+    before?: number | null,
+  ) => Effect.Effect<typeof NoteRevisionPage.Type, unknown>
   readonly update: (input: UpdateNoteInput) => Effect.Effect<typeof Note.Type, unknown>
   readonly archive: (
     workspaceId: typeof WorkspaceId.Type,
     projectId: typeof ProjectId.Type,
     noteId: typeof NoteId.Type,
+    authorId: typeof WorkspaceId.Type,
     archived: boolean,
     expectedRevision: number,
     now: bigint,
@@ -103,20 +127,36 @@ export const noteRoute = Effect.fn('NoteRoute.route')(function* (
   const url = new URL(request.url)
   const collection = /^\/api\/projects\/([^/]+)\/notes$/.exec(url.pathname)
   const detail = /^\/api\/projects\/([^/]+)\/notes\/([^/]+)$/.exec(url.pathname)
+  const revisions = /^\/api\/projects\/([^/]+)\/notes\/([^/]+)\/revisions$/.exec(url.pathname)
   const archive = /^\/api\/projects\/([^/]+)\/notes\/([^/]+)\/archive$/.exec(url.pathname)
-  if (collection === null && detail === null && archive === null) return undefined
+  if (
+    collection === null
+    && detail === null
+    && revisions === null
+    && archive === null
+  ) return undefined
 
   const program = Effect.gen(function* () {
     const projectId = yield* Schema.decodeUnknown(ProjectId)(
-      (collection ?? detail ?? archive)?.[1],
+      (collection ?? detail ?? revisions ?? archive)?.[1],
     )
     if (collection !== null && request.method === 'GET') {
+      const rawLimit = url.searchParams.get('limit')
+      const limit = rawLimit === null
+        ? DEFAULT_NOTE_PAGE_SIZE
+        : yield* Schema.decodeUnknown(PageLimit)(rawLimit)
+      const rawCursor = url.searchParams.get('cursor')
+      const cursor = rawCursor === null
+        ? null
+        : yield* Schema.decodeUnknown(NoteListCursor)(rawCursor)
       return {
-        body: yield* Schema.encode(Schema.Array(Note))(
+        body: yield* Schema.encode(NoteListPage)(
           yield* deps.list(
             identity.workspaceId,
             projectId,
             url.searchParams.get('archived') === 'true',
+            limit,
+            cursor,
           ),
         ),
         status: 200,
@@ -150,13 +190,40 @@ export const noteRoute = Effect.fn('NoteRoute.route')(function* (
       return { body: yield* Schema.encode(Note)(note), status: 201 }
     }
     const noteId = yield* Schema.decodeUnknown(NoteId)(
-      (detail ?? archive)?.[2],
+      (detail ?? revisions ?? archive)?.[2],
     )
-    if (detail !== null && request.method === 'GET') {
+    if (revisions !== null && request.method === 'GET') {
+      yield* deps.find(identity.workspaceId, projectId, noteId)
+      const rawLimit = url.searchParams.get('limit')
+      const limit = rawLimit === null
+        ? DEFAULT_NOTE_PAGE_SIZE
+        : yield* Schema.decodeUnknown(PageLimit)(rawLimit)
+      const rawBefore = url.searchParams.get('before')
+      const before = rawBefore === null
+        ? null
+        : yield* Schema.decodeUnknown(RevisionCursor)(rawBefore)
       return {
-        body: yield* Schema.encode(Note)(
-          yield* deps.find(identity.workspaceId, projectId, noteId),
+        body: yield* Schema.encode(NoteRevisionPage)(
+          yield* deps.listRevisions(
+            identity.workspaceId,
+            projectId,
+            noteId,
+            limit,
+            before,
+          ),
         ),
+        status: 200,
+      }
+    }
+    if (detail !== null && request.method === 'GET') {
+      const note = yield* deps.find(identity.workspaceId, projectId, noteId)
+      if (note.archived && url.searchParams.get('archived') !== 'true') {
+        return yield* Effect.fail(new NoteNotFoundError({
+          message: 'Note not found',
+        }))
+      }
+      return {
+        body: yield* Schema.encode(Note)(note),
         status: 200,
       }
     }
@@ -192,6 +259,7 @@ export const noteRoute = Effect.fn('NoteRoute.route')(function* (
         identity.workspaceId,
         projectId,
         noteId,
+        identity.workspaceId,
         decoded.archived,
         decoded.expectedRevision,
         deps.now(),
