@@ -74,6 +74,22 @@ describe('decodeBrowserSourceImport', () => {
     ])
   })
 
+  it('accepts a file at exactly maxFileBytes and rejects one byte over', async () => {
+    const atLimit = form()
+    atLimit.set('mode', 'files')
+    atLimit.append('files', new File(['a'.repeat(1024)], 'exact.txt', { type: 'text/plain' }))
+    const atResult = await decodeBrowserSourceImport(request(atLimit), 1024)
+    expect(atResult.rejected).toEqual([])
+    expect(atResult.items).toHaveLength(1)
+
+    const over = form()
+    over.set('mode', 'files')
+    over.append('files', new File(['a'.repeat(1025)], 'over.txt', { type: 'text/plain' }))
+    const overResult = await decodeBrowserSourceImport(request(over), 1024)
+    expect(overResult.items).toEqual([])
+    expect(overResult.rejected).toEqual([{ name: 'over.txt', reason: 'too-large' }])
+  })
+
   it('keeps every supported structured format explicitly in the dataset path', async () => {
     const input = form()
     input.set('mode', 'dataset')

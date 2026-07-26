@@ -20,7 +20,7 @@ export interface TextSourceClassification {
   readonly kind: Extract<SourceKind, 'document'>
 }
 
-const DEFAULT_MAX_TEXT_SOURCE_BYTES = 268_435_456
+export const DEFAULT_MAX_TEXT_SOURCE_BYTES = 268_435_456
 
 export function supportedTextSourceExtensionFor(
   name: string,
