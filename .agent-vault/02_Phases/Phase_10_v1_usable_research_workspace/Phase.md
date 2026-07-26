@@ -31,6 +31,8 @@ related_bugs:
   - '[[03_Bugs/BUG-0045_sources-are-scoped-to-one-project-and-cannot-be-reused|BUG-0045 Sources are scoped to one project and cannot be reused]]'
   - '[[03_Bugs/BUG-0046_global-source-import-is-blocked-by-project-selection|BUG-0046 Global source import is blocked by project selection]]'
   - '[[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]'
+  - '[[03_Bugs/BUG-0048_workspace-source-attachments-do-not-enqueue-text-indexing|BUG-0048 Workspace source attachments do not enqueue text indexing]]'
+  - '[[03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets|BUG-0049 Global dataset attachments did not materialize project datasets]]'
 tags:
   - agent-vault
   - phase
@@ -133,6 +135,8 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - [[03_Bugs/BUG-0045_sources-are-scoped-to-one-project-and-cannot-be-reused|BUG-0045 Sources are scoped to one project and cannot be reused]]
 - [[03_Bugs/BUG-0046_global-source-import-is-blocked-by-project-selection|BUG-0046 Global source import is blocked by project selection]]
 - [[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]
+- [[03_Bugs/BUG-0048_workspace-source-attachments-do-not-enqueue-text-indexing|BUG-0048 Workspace source attachments do not enqueue text indexing]]
+- [[03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets|BUG-0049 Global dataset attachments did not materialize project datasets]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps
@@ -146,6 +150,7 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - [x] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_06_add-durable-user-notes-with-provenance|STEP-10-06 Add Durable User Notes with Provenance]]
 - [x] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]
 - [x] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey|STEP-10-08 Gate v1 on the Complete Browser Journey]]
+- [x] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_09_make-source-registration-workspace-scoped|STEP-10-09 Make Source Registration Workspace Scoped]]
 <!-- AGENT-END:phase-steps -->
 
 ## Notes

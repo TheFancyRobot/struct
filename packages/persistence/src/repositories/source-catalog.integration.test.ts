@@ -22,6 +22,8 @@ const pendingSourceId = 'a50e8400-e29b-41d4-a716-446655440003'
 const readyJobId = 'a50e8400-e29b-41d4-a716-446655440004'
 const failedJobId = 'a50e8400-e29b-41d4-a716-446655440005'
 const directorySourceId = 'a50e8400-e29b-41d4-a716-446655440010'
+const globalDatasetSourceId = 'a50e8400-e29b-41d4-a716-446655440012'
+const globalDatasetVersionId = 'a50e8400-e29b-41d4-a716-446655440013'
 
 describeIf('source catalog projection', () => {
   let sql: postgresTypes.Sql
@@ -32,7 +34,8 @@ describeIf('source catalog projection', () => {
     layer = Layer.provide(SourceCatalogRepo.Default, SqlClientLive(sql))
     await sql.unsafe('DELETE FROM event_journal WHERE workspace_id = $1', [workspaceId])
     await sql.unsafe('DELETE FROM job_queue WHERE workspace_id = $1', [workspaceId])
-    await sql.unsafe('DELETE FROM source_versions WHERE source_id IN ($1, $2)', [readySourceId, pendingSourceId])
+    await sql.unsafe('DELETE FROM source_versions WHERE source_id IN ($1, $2, $3)', [readySourceId, pendingSourceId, globalDatasetSourceId])
+    await sql.unsafe('DELETE FROM sources WHERE id = $1', [globalDatasetSourceId])
     await sql.unsafe('DELETE FROM sources WHERE project_id = $1', [projectId])
     await sql.unsafe('DELETE FROM projects WHERE id = $1', [projectId])
     await sql.unsafe('DELETE FROM projects WHERE id = $1', [secondProjectId])
@@ -44,8 +47,9 @@ describeIf('source catalog projection', () => {
       `INSERT INTO sources (id, workspace_id, project_id, name, kind) VALUES
        ($1, $3, $4, 'ready.md', 'document'),
        ($2, $3, $4, 'failed.md', 'document'),
-       ($5, $3, $4, 'existing-directory', 'directory')`,
-      [readySourceId, pendingSourceId, workspaceId, projectId, directorySourceId],
+       ($5, $3, $4, 'existing-directory', 'directory'),
+       ($6, $3, NULL, 'global.csv', 'dataset')`,
+      [readySourceId, pendingSourceId, workspaceId, projectId, directorySourceId, globalDatasetSourceId],
     )
     await sql.unsafe(
       `INSERT INTO source_versions (
@@ -58,12 +62,28 @@ describeIf('source catalog projection', () => {
       [readySourceId],
     )
     await sql.unsafe(
+      `INSERT INTO source_versions (
+         id, source_id, version, artifact_ref, content_hash
+       ) VALUES (
+         $1, $2, 1,
+         'artifact://sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+         'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+       )`,
+      [globalDatasetVersionId, globalDatasetSourceId],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_text_index (source_version_id, content)
+       VALUES ('a50e8400-e29b-41d4-a716-446655440006', 'ready source')`,
+    )
+    await sql.unsafe(
       `INSERT INTO job_queue (
          id, workspace_id, entity_type, entity_id, status, payload, attempts, max_attempts
        ) VALUES
        ($1, $3, 'ingestion', $4, 'in-progress', '{"mediaType":"text/markdown"}', 1, 3),
-       ($2, $3, 'ingestion', $5, 'failed', '{"mediaType":"text/markdown"}', 1, 3)`,
-      [readyJobId, failedJobId, workspaceId, readySourceId, pendingSourceId],
+       ($2, $3, 'ingestion', $5, 'failed', '{"mediaType":"text/markdown"}', 1, 3),
+       ('a50e8400-e29b-41d4-a716-446655440014', $3, 'ingestion', $6, 'completed',
+        '{"stagedRef":"staged://a50e8400-e29b-41d4-a716-446655440000/global.csv","name":"global.csv","mediaType":"text/csv","projectId":null,"sourceKind":"dataset","structuredFormat":"csv"}', 1, 3)`,
+      [readyJobId, failedJobId, workspaceId, readySourceId, pendingSourceId, globalDatasetSourceId],
     )
     await sql.unsafe(
       `INSERT INTO event_journal (
@@ -80,7 +100,8 @@ describeIf('source catalog projection', () => {
     if (!sql) return
     await sql.unsafe('DELETE FROM event_journal WHERE workspace_id = $1', [workspaceId])
     await sql.unsafe('DELETE FROM job_queue WHERE workspace_id = $1', [workspaceId])
-    await sql.unsafe('DELETE FROM source_versions WHERE source_id IN ($1, $2)', [readySourceId, pendingSourceId])
+    await sql.unsafe('DELETE FROM source_versions WHERE source_id IN ($1, $2, $3)', [readySourceId, pendingSourceId, globalDatasetSourceId])
+    await sql.unsafe('DELETE FROM sources WHERE id = $1', [globalDatasetSourceId])
     await sql.unsafe('DELETE FROM sources WHERE project_id = $1', [projectId])
     await sql.unsafe('DELETE FROM projects WHERE id = $1', [projectId])
     await sql.unsafe('DELETE FROM projects WHERE id = $1', [secondProjectId])
@@ -182,14 +203,69 @@ describeIf('source catalog projection', () => {
       .toEqual([projectId, secondProjectId])
     expect(secondProject.items.map((item) => item.sourceId)).toEqual([readyId])
 
+    await sql.unsafe(
+      `UPDATE source_text_reindex_jobs job
+       SET status = 'failed', attempts = max_attempts, last_error_code = 'attachment-lost'
+       FROM source_versions version
+       WHERE version.source_id = $1 AND job.source_version_id = version.id`,
+      [readySourceId],
+    )
+
     expect(await Effect.runPromise(SourceCatalogRepo.setAttached(
       workspaceId,
       secondProjectId,
       readyId,
       false,
     ).pipe(Effect.provide(layer)))).toBe(true)
+    expect(await Effect.runPromise(SourceCatalogRepo.setAttached(
+      workspaceId,
+      secondProjectId,
+      readyId,
+      true,
+    ).pipe(Effect.provide(layer)))).toBe(true)
+    const [requeued] = await sql.unsafe(
+      `SELECT project_id, status, attempts, last_error_code
+       FROM source_text_reindex_jobs job
+       JOIN source_versions version ON version.id = job.source_version_id
+       WHERE version.source_id = $1`,
+      [readySourceId],
+    )
+    expect(requeued).toMatchObject({
+      project_id: secondProjectId,
+      status: 'pending',
+      attempts: 0,
+      last_error_code: null,
+    })
     expect((await Effect.runPromise(
       SourceCatalogRepo.list(workspaceId, secondProjectId).pipe(Effect.provide(layer)),
-    )).items).toHaveLength(0)
+    )).items.map((item) => item.sourceId)).toEqual([readyId])
+  })
+
+  it('replays a global dataset from its immutable version when attached to a project', async () => {
+    expect(await Effect.runPromise(SourceCatalogRepo.setAttached(
+      workspaceId,
+      secondProjectId,
+      SourceId.make(globalDatasetSourceId),
+      true,
+    ).pipe(Effect.provide(layer)))).toBe(true)
+
+    const [replay] = await sql.unsafe(
+      `SELECT payload FROM job_queue
+       WHERE workspace_id = $1
+         AND entity_type = 'ingestion'
+         AND entity_id = $2
+         AND status = 'pending'
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [workspaceId, globalDatasetSourceId],
+    )
+    expect(replay?.['payload']).toMatchObject({
+      projectId: secondProjectId,
+      materializeExistingVersion: {
+        id: globalDatasetVersionId,
+        artifactRef: 'artifact://sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+        contentHash: 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      },
+    })
   })
 })

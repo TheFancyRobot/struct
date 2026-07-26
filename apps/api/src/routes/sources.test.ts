@@ -41,6 +41,31 @@ function deps(overrides: Partial<RegisterTextSourceDeps> = {}): RegisterTestDeps
 }
 
 describe('registerTextSource', () => {
+  it('registers a workspace source when the workspace has no projects', async () => {
+    let projectLookupCalled = false
+    const testDeps = deps({
+      projects: {
+        findById: () => {
+          projectLookupCalled = true
+          return Effect.die('workspace import must not require a project')
+        },
+      },
+    })
+
+    const result = await Effect.runPromise(registerTextSource({
+      workspaceId,
+      projectId: null,
+      name: 'workspace-notes.md',
+      mediaType: 'text/markdown',
+      bytes: new TextEncoder().encode('# Workspace notes'),
+    }, testDeps))
+
+    expect(projectLookupCalled).toBe(false)
+    expect(result.source.projectId).toBeNull()
+    expect(result.job.payload['projectId']).toBeNull()
+    expect(result.job.status).toBe('pending')
+  })
+
   it('creates a logical Source, stages bytes, enqueues job_queue, and records ingestion-requested without raw text', async () => {
     const testDeps = deps()
 

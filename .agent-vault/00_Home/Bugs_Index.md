@@ -29,14 +29,15 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 <!-- AGENT-START:bugs-index -->
 _Last rebuilt: 2026-07-26._
 
-- Notes indexed: 34
-- Status summary: new (2), fixed (32)
+- Notes indexed: 36
+- Status summary: new (1), fixed (35)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
-| BUG-0046 | [Global source import is blocked by project selection](../03_Bugs/BUG-0046_global-source-import-is-blocked-by-project-selection.md) | new | sev-3 | 2026-07-26 | - | - |
 | BUG-0047 | [Source import notice ignores the source library content gutter](../03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter.md) | new | sev-3 | 2026-07-26 | - | - |
+| BUG-0049 | [Global dataset attachments did not materialize project datasets](../03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets.md) | fixed | sev-1 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0013 | [v1 UI lacks core research workflows](../03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows.md) | fixed | sev-1 | 2026-07-21 | 2026-07-26 | - |
+| BUG-0048 | [Workspace source attachments do not enqueue text indexing](../03_Bugs/BUG-0048_workspace-source-attachments-do-not-enqueue-text-indexing.md) | fixed | sev-2 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0038 | [Research replay loses durable job ownership before cancellation verification](../03_Bugs/BUG-0038_research-replay-loses-durable-job-ownership-before-cancellation-verification.md) | fixed | sev-2 | 2026-07-25 | 2026-07-25 | - |
 | BUG-0040 | [API workspace bootstrap prevents health checks during database outages](../03_Bugs/BUG-0040_api-workspace-bootstrap-prevents-health-checks-during-database-outages.md) | fixed | sev-2 | 2026-07-24 | 2026-07-25 | - |
 | BUG-0041 | [Project creation controls overlap when the name field is focused](../03_Bugs/BUG-0041_project-creation-controls-overlap-when-the-name-field-is-focused.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
@@ -44,6 +45,7 @@ _Last rebuilt: 2026-07-26._
 | BUG-0043 | [Workspace navigation lacks project, source, and recent discovery sections](../03_Bugs/BUG-0043_workspace-navigation-lacks-project-source-and-recent-discovery-sections.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0044 | [Navigation discovery sections lack direct creation actions](../03_Bugs/BUG-0044_navigation-discovery-sections-lack-direct-creation-actions.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0045 | [Sources are scoped to one project and cannot be reused](../03_Bugs/BUG-0045_sources-are-scoped-to-one-project-and-cannot-be-reused.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
+| BUG-0046 | [Global source import is blocked by project selection](../03_Bugs/BUG-0046_global-source-import-is-blocked-by-project-selection.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0039 | [Recursive evaluation setup timeout is too short under full-suite load](../03_Bugs/BUG-0039_recursive-evaluation-setup-timeout-is-too-short-under-full-suite-load.md) | fixed | sev-3 | 2026-07-25 | 2026-07-25 | - |
 | BUG-0037 | [Root dev command does not propagate environment to workspace apps](../03_Bugs/BUG-0037_root-dev-command-does-not-propagate-environment-to-workspace-apps.md) | fixed | sev-3 | 2026-07-24 | 2026-07-24 | - |
 | BUG-0033 | [E2E project lifecycle cache test asserts a nonexistent level-two project heading](../03_Bugs/BUG-0033_e2e-project-lifecycle-cache-test-asserts-a-nonexistent-level-two-project-heading.md) | fixed | sev-3 | 2026-07-23 | 2026-07-23 | - |

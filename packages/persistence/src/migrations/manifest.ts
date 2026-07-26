@@ -116,4 +116,19 @@ export const migrations: readonly Migration[] = [
     upPath: new URL('./0021_workspace_source_library.sql', import.meta.url).pathname,
     downPath: new URL('./0021_workspace_source_library.down.sql', import.meta.url).pathname,
   },
+  {
+    name: '0022_workspace_source_registration',
+    upPath: new URL('./0022_workspace_source_registration.sql', import.meta.url).pathname,
+    downPath: new URL('./0022_workspace_source_registration.down.sql', import.meta.url).pathname,
+  },
+  {
+    name: '0023_attached_source_text_reindex',
+    upPath: new URL('./0023_attached_source_text_reindex.sql', import.meta.url).pathname,
+    downPath: new URL('./0023_attached_source_text_reindex.down.sql', import.meta.url).pathname,
+  },
+  {
+    name: '0024_workspace_dataset_attachments',
+    upPath: new URL('./0024_workspace_dataset_attachments.sql', import.meta.url).pathname,
+    downPath: new URL('./0024_workspace_dataset_attachments.down.sql', import.meta.url).pathname,
+  },
 ] as const

@@ -68,6 +68,7 @@ export const SourcesPage: Component = () => {
   const libraryMode = createMemo(() => params.projectId === undefined)
   const [projects] = createResource(fetchProjects)
   const [selectedProjectId, setSelectedProjectId] = createSignal<typeof ProjectId.Type | null>(null)
+  const [attachNewSources, setAttachNewSources] = createSignal(false)
   const [catalog, { refetch }] = createResource(
     () => libraryMode() ? 'workspace' : projectId(),
     (scope) => scope === 'workspace'
@@ -137,12 +138,21 @@ export const SourcesPage: Component = () => {
                     onCommand={(item, command) => void control(item, command)}
                   />
                 </Show>
-                <Show when={!libraryMode() || selectedProjectId() !== null} fallback={(
-                  <p class="alert alert-info">Create a project before importing sources.</p>
-                )}>
-                  <Show when={libraryMode()}>
+                <Show when={libraryMode()}>
+                  <div class="space-y-3 rounded-box border border-base-300 bg-base-100 p-4">
+                    <label class="flex min-h-11 cursor-pointer items-center gap-3">
+                      <input
+                        type="checkbox"
+                        class="checkbox checkbox-sm"
+                        checked={attachNewSources()}
+                        disabled={selectedProjectId() === null}
+                        onChange={(event) => setAttachNewSources(event.currentTarget.checked)}
+                      />
+                      <span>Attach new sources to a project</span>
+                    </label>
+                    <Show when={(projects()?.items.length ?? 0) > 0}>
                     <label class="form-control block">
-                      <span class="label-text">Attach new sources to</span>
+                      <span class="label-text">Project</span>
                       <select
                         class="select select-bordered mt-1 w-full"
                         aria-label="Project for new sources"
@@ -154,12 +164,16 @@ export const SourcesPage: Component = () => {
                         </For>
                       </select>
                     </label>
-                  </Show>
-                  <SourceImportPanel
-                    projectId={(projectId() ?? selectedProjectId())!}
-                    onAccepted={() => void refetch()}
-                  />
+                    </Show>
+                  </div>
                 </Show>
+                <SourceImportPanel
+                  projectId={libraryMode()
+                    ? attachNewSources() ? selectedProjectId() : null
+                    : projectId()}
+                  attachToProject={!libraryMode() || attachNewSources()}
+                  onAccepted={() => void refetch()}
+                />
                 <Show when={libraryMode()} fallback={<SourceCatalogList items={loaded().items} />}>
                   <section aria-labelledby="workspace-source-library-heading">
                     <h2 id="workspace-source-library-heading" class="mb-3 text-lg font-semibold">Source library</h2>

@@ -47,6 +47,15 @@ describe('source import components', () => {
     expect(html).not.toContain('modal')
   })
 
+  it('renders workspace import without a project', () => {
+    const html = renderToString(() => (
+      <SourceImportPanel projectId={null} attachToProject={false} onAccepted={() => undefined} />
+    ))
+
+    expect(html).toContain('Add sources')
+    expect(html).not.toContain('Create a project')
+  })
+
   it('keeps failed work actionable without hiding successful source history', () => {
     const html = renderToString(() => (
       <BackgroundActivityTray

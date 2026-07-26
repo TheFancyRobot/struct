@@ -253,6 +253,82 @@ describe('classifyIngestionFailure', () => {
 })
 
 describe('processOneIngestionJob', () => {
+  it('ingests an unattached workspace source without a project-scoped text index', async () => {
+    const base = deps()
+    const testDeps = deps({
+      jobs: {
+        ...base.jobs,
+        claimNextIngestionJob: () => Effect.succeed(Option.some({
+          id: jobId,
+          workspaceId,
+          entityType: 'ingestion',
+          entityId: sourceId,
+          status: 'in-progress' as const,
+          payload: {
+            stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/notes.md',
+            name: 'notes.md',
+            mediaType: 'text/markdown',
+            byteLength: 10,
+            projectId: null,
+          },
+          attempts: 1,
+          maxAttempts: 3,
+          createdAt: 0n,
+          updatedAt: 0n,
+        })),
+      },
+    })
+
+    const result = await Effect.runPromise(processOneIngestionJob(testDeps))
+
+    expect(result.processed).toBe(true)
+    expect(base.calls.completed).toEqual([jobId])
+    expect(testDeps.calls.indexedInputs).toEqual([])
+    expect(testDeps.calls.versions).toHaveLength(1)
+  })
+
+  it('does not emit a dataset materialization event for an unattached workspace source', async () => {
+    const base = deps()
+    const testDeps: IngestionWorkerTestDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        claimNextIngestionJob: () => Effect.succeed(Option.some({
+          id: jobId,
+          workspaceId,
+          entityType: 'ingestion',
+          entityId: sourceId,
+          status: 'in-progress' as const,
+          payload: {
+            stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/rows.csv',
+            name: 'rows.csv',
+            mediaType: 'text/csv',
+            byteLength: 10,
+            projectId: null,
+            sourceKind: 'dataset',
+            structuredFormat: 'csv',
+          },
+          attempts: 1,
+          maxAttempts: 3,
+          createdAt: 0n,
+          updatedAt: 0n,
+        })),
+      },
+      ingestion: {
+        ...base.ingestion,
+        ingestStructuredSource: () => Effect.succeed({
+          artifactRef: 'artifact://sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          contentHash: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          byteLength: 10,
+        }),
+      },
+    }
+
+    await Effect.runPromise(processOneIngestionJob(testDeps))
+
+    expect(testDeps.calls.events).toEqual(['file-processed', 'ingestion-completed'])
+  })
+
   it('claims one job, ingests artifacts, creates SourceVersion only after artifacts exist, emits events, and completes the job', async () => {
     const testDeps = deps()
 
@@ -357,6 +433,82 @@ describe('processOneIngestionJob', () => {
         'ingestion-completed',
       ])
     }
+  })
+
+  it('materializes a global dataset from its immutable version after project attachment', async () => {
+    const base = deps()
+    const created: unknown[] = []
+    const existing = {
+      id: sourceVersionId,
+      sourceId,
+      version: 1,
+      artifactRef: 'artifact://sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      contentHash: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      createdAt: 0n,
+    }
+    const testDeps: IngestionWorkerTestDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        claimNextIngestionJob: () => Effect.succeed(Option.some({
+          id: jobId,
+          workspaceId,
+          entityType: 'ingestion',
+          entityId: sourceId,
+          status: 'in-progress' as const,
+          payload: {
+            stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/rows.csv',
+            name: 'rows.csv',
+            mediaType: 'text/csv',
+            projectId,
+            sourceKind: 'dataset',
+            structuredFormat: 'csv',
+            materializeExistingVersion: {
+              id: sourceVersionId,
+              artifactRef: existing.artifactRef,
+              contentHash: existing.contentHash,
+            },
+          },
+          attempts: 1,
+          maxAttempts: 3,
+          createdAt: 0n,
+          updatedAt: 0n,
+        })),
+      },
+      sourceVersions: {
+        ...base.sourceVersions,
+        findBySourceId: () => Effect.succeed([existing]),
+      },
+      ingestion: {
+        ...base.ingestion,
+        ingestStructuredSource: () => Effect.die('attachment replay must use the immutable artifact'),
+      },
+      datasets: {
+        inspect: () => Effect.succeed([{
+          ordinal: 0,
+          name: 'value',
+          sourceType: 'VARCHAR',
+          logicalType: 'string',
+          nullable: true,
+        }]),
+        createDataset: (dataset) => {
+          created.push(dataset)
+          return Effect.void
+        },
+        createSchemaFamily: () => Effect.void,
+        createSnapshot: () => Effect.void,
+        enqueueMaterialization: () => Effect.void,
+      },
+    }
+
+    await Effect.runPromise(processOneIngestionJob(testDeps))
+
+    expect(testDeps.calls.versions).toEqual([])
+    expect(created[0]).toMatchObject({ projectId })
+    expect(testDeps.calls.events).toEqual([
+      'dataset-materialization-enqueued',
+      'ingestion-completed',
+    ])
   })
 
   it('creates the next immutable version number without mutating existing SourceVersions', async () => {

@@ -27,7 +27,7 @@ export { ValidationError, AuthorizationError }
 
 export interface RegisterTextSourceInput {
   readonly workspaceId: WorkspaceId
-  readonly projectId: ProjectId
+  readonly projectId: ProjectId | null
   readonly name: string
   readonly mediaType: string
   readonly bytes: Uint8Array
@@ -114,9 +114,11 @@ export const prepareSourceRegistration = (
       return yield* new ValidationError({ field: 'mediaType', reason: 'unsupported-source-type', message: 'Source extension and media type are not supported' })
     }
 
-    const project = yield* deps.projects.findById(input.projectId).pipe(Effect.mapError(mapUnknown('project lookup')))
-    if (project.workspaceId !== input.workspaceId) {
-      return yield* new AuthorizationError({ detail: 'workspace-project-mismatch', message: 'Project does not belong to the supplied workspace' })
+    if (input.projectId !== null) {
+      const project = yield* deps.projects.findById(input.projectId).pipe(Effect.mapError(mapUnknown('project lookup')))
+      if (project.workspaceId !== input.workspaceId) {
+        return yield* new AuthorizationError({ detail: 'workspace-project-mismatch', message: 'Project does not belong to the supplied workspace' })
+      }
     }
 
     const staged = yield* deps.storage.stageObject(posix.basename(input.name), input.bytes, { mediaType: input.mediaType }).pipe(

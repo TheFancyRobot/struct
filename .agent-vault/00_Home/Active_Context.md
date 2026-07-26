@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-26._
 - Session in progress: none.
-- Current step: none - roadmap advancement is blocked by [[03_Bugs/BUG-0046_global-source-import-is-blocked-by-project-selection|BUG-0046]] and [[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047]].
-- Active phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: blocked - updated: 2026-07-26.
-- Pending handoff: implement and validate BUG-0046 and BUG-0047; do not approve or merge PR #89 until both are fixed.
+- Current step: [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_01_improve-research-search-navigation-and-command-ux|STEP-11-01 Improve Research Search Navigation and Command UX]] - status: planned - phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]
+- Active phase: [[02_Phases/Phase_12_v1_2_additional_sources/Phase|PHASE-12 v1.2 Additional Sources]] - status: planned - updated: 2026-07-17
+- Also active: 17 more additional steps, 5 open critical bugs.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -40,7 +40,7 @@ _Last refreshed: 2026-07-26._
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
 - Phase 06 is completed, reviewed, and merged through STEP-06-06.
-- Phases 07–09 are complete and merged. Phase 10 delivery is blocked by BUG-0046 and BUG-0047; do not approve or merge its documentation PR until both fixes are validated.
+- Phases 07–09 are complete and merged. BUG-0046 is fixed; Phase 10 delivery remains blocked by BUG-0047. Do not activate Phase 11 until BUG-0047 is validated and merged.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 - Current correction: BUG-0013 is fixed by the validated real-stack root and BASE_PATH browser journey. The v1.0 release action remains intentionally unperformed.
 
@@ -59,22 +59,25 @@ _Last refreshed: 2026-07-26._
 
 <!-- AGENT-START:blockers -->
 - Phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: blocked - owner: Codex - updated: 2026-07-26
+- Phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|PHASE-11 v1.1 Research Usability]] - status: blocked - updated: 2026-07-26
 <!-- AGENT-END:blockers -->
 
 ## Open Questions
 
 - No unresolved design question remains in the completed Phase 09 work.
-- PHASE-10 is blocked on BUG-0046 and BUG-0047. Phase 11 must not advance until both defects are fixed and validated; do not perform the v1.0 release action without explicit authorization.
+- PHASE-10 is blocked on BUG-0047. Phase 11 must not advance until BUG-0047 is fixed and validated; do not perform the v1.0 release action without explicit authorization.
 
 ## Critical Bugs
 
 <!-- AGENT-START:critical-bugs -->
+- [[03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets|BUG-0049 Global dataset attachments did not materialize project datasets]] - status: fixed - severity: sev-1 - reported: 2026-07-26
 - [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]] - status: fixed - severity: sev-1 - reported: 2026-07-21
+- [[03_Bugs/BUG-0048_workspace-source-attachments-do-not-enqueue-text-indexing|BUG-0048 Workspace source attachments do not enqueue text indexing]] - status: fixed - severity: sev-2 - reported: 2026-07-26
 - [[03_Bugs/BUG-0038_research-replay-loses-durable-job-ownership-before-cancellation-verification|BUG-0038 Research replay loses durable job ownership before cancellation verification]] - status: fixed - severity: sev-2 - reported: 2026-07-25
 - [[03_Bugs/BUG-0040_api-workspace-bootstrap-prevents-health-checks-during-database-outages|BUG-0040 API workspace bootstrap prevents health checks during database outages]] - status: fixed - severity: sev-2 - reported: 2026-07-24
 <!-- AGENT-END:critical-bugs -->
 
 ## Next Actions
 
-- Implement and validate BUG-0046 and BUG-0047 in separate bug branches and PRs; only then approve or merge PR #89 and refine Phase 11 before activating STEP-11-01.
+- Implement and validate BUG-0047 in its own bug branch and PR; then refine Phase 11 before activating STEP-11-01.
 - Do not perform the v1.0 release action without explicit authorization.

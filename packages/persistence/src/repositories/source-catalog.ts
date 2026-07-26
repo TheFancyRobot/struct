@@ -22,6 +22,7 @@ const CatalogRow = Schema.Struct({
   latest_version_id: Schema.NullOr(Schema.UUID),
   latest_version: Schema.NullOr(Integer),
   materialized: Schema.Boolean,
+  text_reindex_status: Schema.NullOr(JobStatus),
   updated_at: DateToNumber,
   job_id: Schema.NullOr(Schema.UUID),
   job_status: Schema.NullOr(JobStatus),
@@ -91,7 +92,11 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
                       version.id AS latest_version_id,
                       version.version AS latest_version,
                       CASE
-                        WHEN source.kind <> 'dataset' THEN TRUE
+                        WHEN source.kind <> 'dataset' THEN $2::uuid IS NULL OR EXISTS (
+                          SELECT 1
+                          FROM source_text_index indexed
+                          WHERE indexed.source_version_id = version.id
+                        )
                         ELSE EXISTS (
                           SELECT 1
                           FROM dataset_snapshot_sources lineage
@@ -100,6 +105,7 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
                           WHERE lineage.source_version_id = version.id
                         )
                       END AS materialized,
+                      text_reindex.status AS text_reindex_status,
                       GREATEST(
                         source.updated_at,
                         COALESCE(job.updated_at, source.updated_at),
@@ -134,6 +140,9 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
                  ORDER BY candidate.updated_at DESC, candidate.id DESC
                  LIMIT 1
                ) job ON TRUE
+               LEFT JOIN source_text_reindex_jobs text_reindex
+                 ON text_reindex.source_version_id = version.id
+                AND ($2::uuid IS NULL OR text_reindex.project_id = $2)
                WHERE source.workspace_id = $1
                  AND ($2::uuid IS NULL OR EXISTS (
                    SELECT 1 FROM project_sources attached
@@ -172,6 +181,8 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
                 }
             const readiness = row.latest_version_id !== null && row.materialized
               ? 'ready'
+              : row.text_reindex_status === 'failed'
+                ? 'failed'
               : row.latest_version_id !== null
                 ? 'processing'
               : row.job_status === 'failed'
@@ -313,23 +324,135 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
         return yield* Effect.tryPromise({
           try: async () => {
             if (attached) {
-              const rows = await sql.unsafe(
-                `INSERT INTO project_sources (workspace_id, project_id, source_id)
-                 SELECT $1, project.id, source.id
-                 FROM projects project
-                 JOIN sources source ON source.id = $3 AND source.workspace_id = $1
-                 WHERE project.id = $2 AND project.workspace_id = $1
-                 ON CONFLICT DO NOTHING
-                 RETURNING source_id`,
-                [workspaceId, projectId, sourceId],
-              )
-              if (rows.length > 0) return true
-              const existing = await sql.unsafe(
-                `SELECT 1 FROM project_sources
-                 WHERE workspace_id = $1 AND project_id = $2 AND source_id = $3`,
-                [workspaceId, projectId, sourceId],
-              )
-              return existing.length === 1
+              return sql.transaction(async (transaction) => {
+                await transaction.unsafe(
+                  `INSERT INTO project_sources (workspace_id, project_id, source_id)
+                   SELECT $1, project.id, source.id
+                   FROM projects project
+                   JOIN sources source ON source.id = $3 AND source.workspace_id = $1
+                   WHERE project.id = $2 AND project.workspace_id = $1
+                   ON CONFLICT DO NOTHING`,
+                  [workspaceId, projectId, sourceId],
+                )
+                const existing = await transaction.unsafe(
+                  `SELECT 1 FROM project_sources
+                   WHERE workspace_id = $1 AND project_id = $2 AND source_id = $3`,
+                  [workspaceId, projectId, sourceId],
+                )
+                if (existing.length !== 1) return false
+                await transaction.unsafe(
+                  `SELECT id FROM sources
+                   WHERE id = $2 AND workspace_id = $1
+                   FOR UPDATE`,
+                  [workspaceId, sourceId],
+                )
+                await transaction.unsafe(
+                  `INSERT INTO source_text_reindex_jobs (
+                     source_version_id,
+                     workspace_id,
+                     project_id,
+                     artifact_ref,
+                     content_hash
+                   )
+                   SELECT version.id, source.workspace_id, $2,
+                          version.artifact_ref, version.content_hash
+                   FROM source_versions version
+                   JOIN sources source ON source.id = version.source_id
+                   WHERE source.id = $3
+                     AND source.workspace_id = $1
+                   ON CONFLICT (source_version_id) DO UPDATE
+                   SET workspace_id = EXCLUDED.workspace_id,
+                       project_id = EXCLUDED.project_id,
+                       artifact_ref = EXCLUDED.artifact_ref,
+                       content_hash = EXCLUDED.content_hash,
+                       status = 'pending',
+                       attempts = 0,
+                       last_error_code = NULL,
+                       updated_at = NOW()
+                   WHERE source_text_reindex_jobs.status <> 'completed'`,
+                  [workspaceId, projectId, sourceId],
+                )
+                const datasetVersion = await transaction.unsafe(
+                  `SELECT version.id, version.artifact_ref, version.content_hash
+                   FROM source_versions version
+                   JOIN job_queue job
+                     ON job.entity_id = version.source_id
+                    AND job.workspace_id = $1
+                    AND job.entity_type = 'ingestion'
+                    AND job.status = 'completed'
+                    AND job.payload->>'sourceKind' = 'dataset'
+                    AND job.payload->>'projectId' IS NULL
+                   WHERE version.source_id = $2
+                   ORDER BY version.version DESC
+                   LIMIT 1`,
+                  [workspaceId, sourceId],
+                )
+                const version = datasetVersion[0]
+                if (
+                  version !== undefined
+                  && typeof version['id'] === 'string'
+                  && typeof version['artifact_ref'] === 'string'
+                  && typeof version['content_hash'] === 'string'
+                ) {
+                  const alreadyMaterialized = await transaction.unsafe(
+                    `SELECT 1
+                     FROM dataset_snapshot_sources source
+                     JOIN dataset_snapshots snapshot
+                       ON snapshot.id = source.snapshot_id
+                     WHERE source.source_version_id = $1
+                       AND snapshot.workspace_id = $2
+                       AND snapshot.project_id = $3
+                     LIMIT 1`,
+                    [version['id'], workspaceId, projectId],
+                  )
+                  const activeReplay = await transaction.unsafe(
+                    `SELECT 1 FROM job_queue
+                     WHERE workspace_id = $1
+                       AND entity_type = 'ingestion'
+                       AND entity_id = $3
+                       AND status IN ('pending', 'in-progress')
+                       AND payload->'materializeExistingVersion'->>'id' = $4
+                       AND payload->>'projectId' = $2::text
+                     LIMIT 1`,
+                    [workspaceId, projectId, sourceId, version['id']],
+                  )
+                  if (alreadyMaterialized.length === 0 && activeReplay.length === 0) {
+                    await transaction.unsafe(
+                      `INSERT INTO job_queue (
+                         id, workspace_id, entity_type, entity_id, payload
+                       ) SELECT
+                         $1, $2, 'ingestion', $3,
+                         job.payload || jsonb_build_object(
+                           'projectId', $4::text,
+                           'materializeExistingVersion', jsonb_build_object(
+                             'id', $5::text,
+                             'artifactRef', $6::text,
+                             'contentHash', $7::text
+                           )
+                         )
+                       FROM job_queue job
+                       WHERE job.workspace_id = $2
+                         AND job.entity_type = 'ingestion'
+                         AND job.entity_id = $3
+                         AND job.status = 'completed'
+                         AND job.payload->>'sourceKind' = 'dataset'
+                         AND job.payload->>'projectId' IS NULL
+                       ORDER BY job.updated_at DESC
+                       LIMIT 1`,
+                      [
+                        crypto.randomUUID(),
+                        workspaceId,
+                        sourceId,
+                        projectId,
+                        version['id'],
+                        version['artifact_ref'],
+                        version['content_hash'],
+                      ],
+                    )
+                  }
+                }
+                return true
+              })
             }
             const rows = await sql.unsafe(
               `DELETE FROM project_sources attached

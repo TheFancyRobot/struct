@@ -4,10 +4,10 @@ template_version: 2
 contract_version: 1
 title: v1.1 Research Usability
 phase_id: PHASE-11
-status: planned
+status: blocked
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-21'
+updated: '2026-07-26'
 depends_on:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]]'
 related_architecture:
@@ -16,7 +16,7 @@ related_architecture:
   - '[[01_Architecture/Integration_Map|Integration Map]]'
   - '[[01_Architecture/Agent_Workflow|Agent Workflow]]'
 related_decisions: []
-related_bugs: []
+related_bugs: '- ''[[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]'''
 tags:
   - agent-vault
   - phase
@@ -49,6 +49,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Dependencies
 
 - Depends on [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]].
+- Blocked by [[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]] until its fix is validated and merged.
 
 ## Acceptance Criteria
 
@@ -67,7 +68,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]]
-- Current phase status: planned
+- Current phase status: blocked by [[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]
 - Next phase: [[02_Phases/Phase_12_v1_2_additional_sources/Phase|PHASE-12 v1.2 Additional Sources]]
 <!-- AGENT-END:phase-linear-context -->
 
@@ -89,7 +90,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Related Bugs
 
 <!-- AGENT-START:phase-related-bugs -->
-- None yet.
+- [[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps

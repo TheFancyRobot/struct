@@ -63,7 +63,7 @@ export const Project = Schema.Struct({
 
 export const Source = Schema.Struct({
   id: Ids.SourceId,
-  projectId: Ids.ProjectId,
+  projectId: Schema.NullOr(Ids.ProjectId),
   name: Schema.String,
   kind: SourceKind,
   createdAt: Schema.BigIntFromNumber,

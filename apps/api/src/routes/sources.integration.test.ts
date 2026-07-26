@@ -9,7 +9,9 @@ import {
   IngestionJobOwnershipLostError,
   JobQueueRepo,
   ProjectRepo,
+  SourceCatalogRepo,
   SourceRegistrationRepo,
+  SourceTextReindexRepo,
   SourceVersionRepo,
   SqlClientLive,
 } from '@struct/persistence'
@@ -18,6 +20,7 @@ import { ingestTextSource } from '@struct/ingestion'
 import { TextRetrieval } from '@struct/retrieval'
 import { EventJournalId, JobQueueId, ProjectId, SourceId, SourceVersionId, WorkspaceId } from '@struct/domain'
 import { processOneIngestionJob } from '../../../worker/src/jobs/ingest-source'
+import { processOneSourceTextReindex } from '../../../worker/src/jobs/reindex-source-text'
 import { registerTextSource } from './sources'
 
 const DATABASE_URL = process.env['DATABASE_URL']
@@ -31,12 +34,16 @@ const rollbackSourceId = SourceId.make('950e8400-e29b-41d4-a716-446655440020')
 const rollbackJobId = JobQueueId.make('950e8400-e29b-41d4-a716-446655440021')
 const rollbackEventId = EventJournalId.make('950e8400-e29b-41d4-a716-446655440022')
 const staleJobId = JobQueueId.make('950e8400-e29b-41d4-a716-446655440030')
+const workspaceSourceId = SourceId.make('950e8400-e29b-41d4-a716-446655440040')
+const workspaceIngestionJobId = JobQueueId.make('950e8400-e29b-41d4-a716-446655440041')
+const workspaceEventId = EventJournalId.make('950e8400-e29b-41d4-a716-446655440042')
+const workspaceSourceVersionId = SourceVersionId.make('950e8400-e29b-41d4-a716-446655440043')
 
 async function cleanup(sql: postgresTypes.Sql): Promise<void> {
   await sql.unsafe(`DELETE FROM event_journal WHERE workspace_id = '${workspaceId}'`)
   await sql.unsafe(`DELETE FROM job_queue WHERE workspace_id = '${workspaceId}'`)
-  await sql.unsafe(`DELETE FROM source_versions WHERE source_id IN (SELECT id FROM sources WHERE project_id = '${projectId}')`)
-  await sql.unsafe(`DELETE FROM sources WHERE project_id = '${projectId}'`)
+  await sql.unsafe(`DELETE FROM source_versions WHERE source_id IN (SELECT id FROM sources WHERE workspace_id = '${workspaceId}')`)
+  await sql.unsafe(`DELETE FROM sources WHERE workspace_id = '${workspaceId}'`)
   await sql.unsafe(`DELETE FROM projects WHERE id = '${projectId}'`)
   await sql.unsafe(`DELETE FROM workspaces WHERE id = '${workspaceId}'`)
 }
@@ -157,6 +164,117 @@ describeIf('single text source ingestion real DB integration', () => {
     expect(events.map((event) => event['event_type'])).toEqual(['ingestion-requested', 'file-processed', 'ingestion-completed'])
     expect(JSON.stringify(events)).not.toContain('# Title')
     expect(JSON.stringify(events)).not.toContain('/Users/')
+  })
+
+  it('reindexes a workspace-library document when it is attached to a project', async () => {
+    const storage = await Effect.runPromise(LocalArtifactStore.make({ root }))
+    const sqlLayer = SqlClientLive(sql)
+    const projectLayer = Layer.provide(ProjectRepo.Default, sqlLayer)
+    const registrationLayer = Layer.provide(SourceRegistrationRepo.Default, sqlLayer)
+    const jobLayer = Layer.provide(JobQueueRepo.Default, sqlLayer)
+    const sourceVersionLayer = Layer.provide(SourceVersionRepo.Default, sqlLayer)
+    const sourceCatalogLayer = Layer.provide(SourceCatalogRepo.Default, sqlLayer)
+    const reindexLayer = Layer.provide(SourceTextReindexRepo.Default, sqlLayer)
+    const retrievalLayer = Layer.provide(TextRetrieval.Default, sqlLayer)
+
+    await Effect.runPromise(registerTextSource({
+      workspaceId,
+      projectId: null,
+      name: 'workspace-notes.md',
+      mediaType: 'text/markdown',
+      bytes: new TextEncoder().encode('# Workspace note\nThe retrieval token is marigold.'),
+    }, {
+      now: () => BigInt(Date.now()),
+      randomUuid: () => workspaceSourceId,
+      randomJobQueueId: () => workspaceIngestionJobId,
+      randomEventJournalId: () => workspaceEventId,
+      maxBytes: 1024,
+      projects: { findById: (id) => ProjectRepo.findById(id).pipe(Effect.provide(projectLayer)) },
+      registration: {
+        create: (input) => SourceRegistrationRepo.create(input).pipe(Effect.provide(registrationLayer)),
+      },
+      storage,
+    }))
+
+    await Effect.runPromise(processOneIngestionJob({
+      now: () => BigInt(Date.now()),
+      randomSourceVersionId: () => workspaceSourceVersionId,
+      staleAfterMs: 300_000,
+      heartbeatIntervalMs: 1_000,
+      jobs: {
+        recoverStaleIngestionJobs: (staleAfterMs) => JobQueueRepo.recoverStaleIngestionJobs(staleAfterMs).pipe(Effect.provide(jobLayer)),
+        claimNextIngestionJob: () => JobQueueRepo.claimNextIngestionJob().pipe(Effect.provide(jobLayer)),
+        renewLease: (job) => JobQueueRepo.renewLease(job).pipe(Effect.provide(jobLayer)),
+        appendInProgressEvent: (job, event) => JobQueueRepo.appendInProgressEvent(job, event).pipe(Effect.provide(jobLayer)),
+        markCompleted: (job, event) => JobQueueRepo.markCompleted(job, event).pipe(Effect.provide(jobLayer)),
+        markPending: (job, event) => JobQueueRepo.markPending(job, event).pipe(Effect.provide(jobLayer)),
+        markFailed: (job, event) => JobQueueRepo.markFailed(job, event).pipe(Effect.provide(jobLayer)),
+      },
+      sourceVersions: {
+        findBySourceId: (id) => SourceVersionRepo.findBySourceId(id).pipe(Effect.provide(sourceVersionLayer)),
+        createForIngestionAttempt: (job, version) => SourceVersionRepo.createForIngestionAttempt(job, version).pipe(Effect.provide(sourceVersionLayer)),
+      },
+      textIndex: {
+        indexText: (input) => TextRetrieval.indexText(input).pipe(Effect.provide(retrievalLayer)),
+      },
+      ingestion: {
+        ingestTextSource: (input) => ingestTextSource({ store: storage, ...input, maxBytes: 1024 }),
+      },
+    }))
+
+    const [unattachedJobCount] = await sql.unsafe(
+      `SELECT COUNT(*)::int AS count FROM source_text_reindex_jobs WHERE source_version_id = $1`,
+      [workspaceSourceVersionId],
+    )
+    expect(unattachedJobCount?.['count']).toBe(0)
+
+    expect(await Effect.runPromise(SourceCatalogRepo.setAttached(
+      workspaceId,
+      projectId,
+      workspaceSourceId,
+      true,
+    ).pipe(Effect.provide(sourceCatalogLayer)))).toBe(true)
+
+    const [queued] = await sql.unsafe(
+      `SELECT project_id, status FROM source_text_reindex_jobs WHERE source_version_id = $1`,
+      [workspaceSourceVersionId],
+    )
+    expect(queued).toMatchObject({ project_id: projectId, status: 'pending' })
+    const catalogBeforeReindex = await Effect.runPromise(
+      SourceCatalogRepo.list(workspaceId, projectId).pipe(Effect.provide(sourceCatalogLayer)),
+    )
+    expect(catalogBeforeReindex.items.find((item) => item.sourceId === workspaceSourceId))
+      .toMatchObject({ readiness: 'processing' })
+
+    await Effect.runPromise(processOneSourceTextReindex({
+      staleAfterMs: 300_000,
+      heartbeatIntervalMs: 1_000,
+      jobs: {
+        recoverStale: (staleAfterMs) => SourceTextReindexRepo.recoverStale(staleAfterMs).pipe(Effect.provide(reindexLayer)),
+        claimNext: () => SourceTextReindexRepo.claimNext().pipe(Effect.provide(reindexLayer)),
+        renewLease: (job) => SourceTextReindexRepo.renewLease(job).pipe(Effect.provide(reindexLayer)),
+        recordFailure: (job, errorCode) => SourceTextReindexRepo.recordFailure(job, errorCode).pipe(Effect.provide(reindexLayer)),
+      },
+      store: storage,
+      textIndex: {
+        indexText: (input) => TextRetrieval.indexText(input).pipe(Effect.provide(retrievalLayer)),
+      },
+    }))
+
+    const result = await Effect.runPromise(TextRetrieval.searchText({
+      workspaceId,
+      projectId,
+      sourceVersionIds: [workspaceSourceVersionId],
+      query: 'marigold',
+      limit: 1,
+    }).pipe(Effect.provide(retrievalLayer)))
+    expect(result.evidence).toHaveLength(1)
+    expect(result.evidence[0]?.excerpt).toContain('marigold')
+    const catalogAfterReindex = await Effect.runPromise(
+      SourceCatalogRepo.list(workspaceId, projectId).pipe(Effect.provide(sourceCatalogLayer)),
+    )
+    expect(catalogAfterReindex.items.find((item) => item.sourceId === workspaceSourceId))
+      .toMatchObject({ readiness: 'ready' })
   })
 
   it('fences stale ingestion attempts from events and every terminal transition', async () => {
