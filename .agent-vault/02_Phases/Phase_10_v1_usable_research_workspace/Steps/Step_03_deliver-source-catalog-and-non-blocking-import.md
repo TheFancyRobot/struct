@@ -6,9 +6,9 @@ title: Deliver Source Catalog and Non Blocking Import
 step_id: STEP-10-03
 phase: '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]'
 status: planned
-owner: ''
+owner: phase10-step03-attempt1
 created: '2026-07-21'
-updated: '2026-07-23'
+updated: '2026-07-26'
 depends_on:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_02_build-unified-three-pane-workspace-shell|STEP-10-02 Build Unified Three Pane Workspace Shell]]'
 related_sessions:
@@ -66,6 +66,9 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 <!-- AGENT-START:step-session-history -->
 - 2026-07-23 - [[05_Sessions/2026-07-23-131531-deliver-source-catalog-and-non-blocking-import-openai-codex-gpt-5-4|SESSION-2026-07-23-131531 BUG-0013 source-import remediation session]] - Completed BUG-0013 remediation using this planned step as technical reference only.
 <!-- AGENT-END:step-session-history -->
+- 2026-07-26 verification attempt (`phase10-step03-attempt1`): existing source catalog, bounded file/folder/paste import, durable activity replay, and scoped cancel/retry coverage passed. STEP-10-03 remains planned because structured dataset import/materialization and durable batch idempotency are still explicitly deferred.
+- 2026-07-26 retry audit (phase10-step03-attempt2): confirmed the browser import POST currently routes every item through document ingestion (`registerTextSource` → `SourceRegistrationRepo` → `processOneIngestionJob`) and does not read an `Idempotency-Key`. The existing dataset path begins separately at `DatasetCatalogRepo` / `DatasetMaterializationRepo.enqueue` and accepts only JSON/JSONL/CSV protocol formats. Focused tests remained green (18 passed), but structured CSV/TSV/JSON/JSONL/Parquet import-to-materialization and durable client-batch replay remain unimplemented; step must not be marked complete.
+- 2026-07-26 attempt 3: a provisional validator/format-contract patch was validated but discarded because the POST route still sends dataset items through document registration. No durable `(workspace, project, clientBatchId)` aggregate or post-ingestion dataset catalog/snapshot/materialization composition exists. Step remains planned.
 
 ## Related Notes
 

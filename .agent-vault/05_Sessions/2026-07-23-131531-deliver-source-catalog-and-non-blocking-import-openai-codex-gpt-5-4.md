@@ -132,6 +132,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `bun run secrets:scan` — passed, 1,286 repository paths and zero secrets.
 - Agent Vault doctor — clean: 244 notes, zero errors or warnings.
 - Root verification (2026-07-23): focused source import/catalog tests, browser E2E, `bun run typecheck`, `bun run lint`, `bun run lint:imports`, `bun run test` (947 pass, 3 expected skips), `bun run build`, `bun run docs:lint`, `bun run secrets:scan`, `bun install --frozen-lockfile`, `git diff --check`, and Agent Vault doctor all passed.
+- STEP-10-03 verification attempt (2026-07-26): focused domain/API/persistence coverage passed (18 tests); focused web coverage passed (3 tests); `bun run typecheck` passed.
+- No product code changed. Exact remaining gap is unchanged: structured dataset import/materialization and durable batch idempotency require a separately bounded cross-cutting implementation; the step must not be marked complete from the existing BUG-0013 remediation slice.
 
 ## Bugs Encountered
 
