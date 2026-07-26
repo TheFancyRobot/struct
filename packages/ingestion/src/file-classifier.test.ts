@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { Cause, Effect, Exit } from 'effect'
-import { classifyTextSource, UnsupportedSourceTypeError } from './file-classifier'
+import { classifyTextSource, UnsupportedSourceTypeError, DEFAULT_MAX_TEXT_SOURCE_BYTES } from './file-classifier'
 
 describe('classifyTextSource', () => {
   it('accepts only plain text and markdown files for the walking slice', async () => {
@@ -34,5 +34,15 @@ describe('classifyTextSource', () => {
         expect(failure.value._tag).toBe('SourceTooLargeError')
       }
     }
+  })
+
+  it('accepts a file at exactly the configured cap', async () => {
+    await expect(
+      Effect.runPromise(classifyTextSource({ name: 'exact.txt', mediaType: 'text/plain', byteLength: 10, maxBytes: 10 })),
+    ).resolves.toMatchObject({ extension: '.txt' })
+  })
+
+  it('defaults to the 256 MiB production limit', () => {
+    expect(DEFAULT_MAX_TEXT_SOURCE_BYTES).toBe(268_435_456)
   })
 })

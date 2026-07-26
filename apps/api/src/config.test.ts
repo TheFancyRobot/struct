@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'bun:test'
 import { Effect, ConfigProvider, Layer, Exit, Redacted } from 'effect'
 import { apiAuthTokenConfig, apiPortConfig, apiWorkspaceIdConfig, artifactStorageRootConfig, databaseUrlConfig, maxTextSourceBytesConfig } from './config'
+import { DEFAULT_MAX_TEXT_SOURCE_BYTES } from '@struct/ingestion'
 
 describe('API Config', () => {
   it('uses default port 3001 when API_PORT not set', async () => {
@@ -106,7 +107,15 @@ describe('API upload staging config', () => {
     )
 
     expect(root).toBe('./.local/artifacts')
-    expect(maxBytes).toBe(1048576)
+    expect(maxBytes).toBe(268435456)
+  })
+
+  it('matches the ingestion package default so config and classifier stay in sync', async () => {
+    const provider = ConfigProvider.fromMap(new Map())
+    const maxBytes = await Effect.runPromise(
+      maxTextSourceBytesConfig.pipe(Effect.provide(Layer.setConfigProvider(provider))),
+    )
+    expect(maxBytes).toBe(DEFAULT_MAX_TEXT_SOURCE_BYTES)
   })
 
   it('rejects non-positive MAX_TEXT_SOURCE_BYTES values', async () => {

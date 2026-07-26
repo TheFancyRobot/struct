@@ -206,6 +206,18 @@ describe('registerTextSource', () => {
     expect(staged).toBe(false)
   })
 
+  it('accepts a file at exactly maxBytes', async () => {
+    const testDeps = deps({ maxBytes: 5 })
+    const result = await Effect.runPromise(registerTextSource({
+      workspaceId,
+      projectId,
+      name: 'exact.md',
+      mediaType: 'text/markdown',
+      bytes: new TextEncoder().encode('12345'),
+    }, testDeps))
+    expect(result.job.status).toBe('pending')
+  })
+
   it('rejects unsupported and oversized uploads before enqueueing', async () => {
     const testDeps = deps({ maxBytes: 4 })
 

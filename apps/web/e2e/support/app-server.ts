@@ -397,7 +397,7 @@ function realStackEnvironment(
     DATA_ENGINE_URL: `http://127.0.0.1:${dataEnginePort}`,
     FRED_MODEL: 'deterministic-e2e',
     FRED_PROVIDER_PACKAGE: deterministicProviderPackage,
-    MAX_TEXT_SOURCE_BYTES: '1048576',
+    MAX_TEXT_SOURCE_BYTES: '268435456',
     RESEARCH_MAX_ELAPSED_MS: '15000',
     WEB_PORT: String(webPort),
     WORKER_JOB_STALE_MS: '45000',
