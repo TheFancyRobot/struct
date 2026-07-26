@@ -12,6 +12,7 @@ import {
 } from '@struct/data-engine'
 import {
   ProjectRepo,
+  WorkspaceRepo,
   DirectoryControlRepo,
   DatasetQueryEvidenceRepo,
   DatasetCitationValidationError,
@@ -119,6 +120,7 @@ import {
 import { durableArtifactRoute } from './routes/durable-artifacts'
 import { reportExportRoute } from './routes/report-export'
 import { noteRoute } from './routes/notes'
+import { workspaceBootstrapLoop } from './workspace-bootstrap'
 
 interface ResearchRequestBody {
   readonly workspaceId?: unknown
@@ -215,6 +217,7 @@ const server = Effect.gen(function* () {
       Effect.promise(() => client.end({ timeout: 5 })).pipe(Effect.orDie),
   )
   const sqlLayer = SqlClientLive(sql)
+  const workspaceLayer = Layer.provide(WorkspaceRepo.Default, sqlLayer)
   const projectLayer = Layer.provide(ProjectRepo.Default, sqlLayer)
   const registrationLayer = Layer.provide(SourceRegistrationRepo.Default, sqlLayer)
   const sourceCatalogLayer = Layer.provide(SourceCatalogRepo.Default, sqlLayer)
@@ -239,7 +242,20 @@ const server = Effect.gen(function* () {
     ProvenanceGraphRepo.Default,
     sqlLayer,
   )
+  const ensureApiWorkspace = WorkspaceRepo.findById(apiWorkspaceId).pipe(
+    Effect.provide(workspaceLayer),
+    Effect.catchIf(
+      (error): error is EntityNotFoundError => error instanceof EntityNotFoundError,
+      () => WorkspaceRepo.create({
+        id: apiWorkspaceId,
+        name: 'Workspace',
+        createdAt: BigInt(Date.now()),
+        updatedAt: BigInt(Date.now()),
+      }).pipe(Effect.provide(workspaceLayer)),
+    ),
+  )
   const effectRuntime = yield* Effect.runtime<never>()
+  let ready = false
   const authorizeApiScope = Effect.fn('ApiAuth.authorizeScope')(
     function* (
       credential: string,
@@ -277,15 +293,27 @@ const server = Effect.gen(function* () {
 
       if (isPublicApiRequest(req)) {
         if (url.pathname === '/healthz') return healthResponse()
-        return Runtime.runPromise(effectRuntime)(readinessResponse([{
-          dependency: 'database',
-          check: observeBoundary({
-            boundary: 'readiness',
-            event: 'api.database.readiness',
-            identity: {},
-            effect: databaseReadinessCheck(sql),
-          }),
-        }]))
+        return Runtime.runPromise(effectRuntime)(readinessResponse([
+          {
+            dependency: 'api',
+            check: ready
+              ? Effect.void
+              : Effect.fail(new DependencyReadinessError({
+                  dependency: 'api',
+                  classification: 'stalled',
+                  message: 'API workspace bootstrap is incomplete',
+                })),
+          },
+          {
+            dependency: 'database',
+            check: observeBoundary({
+              boundary: 'readiness',
+              event: 'api.database.readiness',
+              identity: {},
+              effect: databaseReadinessCheck(sql),
+            }),
+          },
+        ]))
       }
 
       const authenticated = await Runtime.runPromiseExit(effectRuntime)(
@@ -1655,6 +1683,12 @@ const server = Effect.gen(function* () {
   yield* Effect.log(`API server starting on port ${port}`)
   yield* Effect.log(`Health check: http://localhost:${port}/healthz`)
   yield* Effect.log(`Readiness check: http://localhost:${port}/readyz`)
+  yield* Effect.forkScoped(workspaceBootstrapLoop(ensureApiWorkspace, {
+    isReady: () => ready,
+    markReady: () => {
+      ready = true
+    },
+  }))
   yield* Effect.never
 })
 

@@ -227,7 +227,7 @@ export class DependencyReadinessError
   extends Schema.TaggedError<DependencyReadinessError>()(
     'DependencyReadinessError',
     {
-      dependency: Schema.Literal('database', 'data-engine', 'worker'),
+      dependency: Schema.Literal('api', 'database', 'data-engine', 'worker'),
       classification: Schema.Literal('dependency-unavailable', 'timeout', 'stalled'),
       message: Schema.String,
     },

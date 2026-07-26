@@ -13,7 +13,7 @@ import {
   onMount,
   type ParentComponent,
 } from 'solid-js'
-import { basePathFromPublicBaseUrl, withBasePath } from '../../base-path'
+import { basePathFromPublicBaseUrl, stripBasePath, withBasePath } from '../../base-path'
 import { EvidenceInspector as EvidenceDetailInspector } from '../EvidenceInspector'
 import { parseEvidenceSelection } from '../evidence-selection'
 import { useWorkspaceState } from './workspace-state'
@@ -220,9 +220,10 @@ export const WorkspaceShell: ParentComponent<{
   const state = useWorkspaceState()
   const selection = createMemo(() => parseEvidenceSelection(props.evidence))
   const evidenceScope = createMemo(() => {
-    const route = /^\/projects\/([^/]+)\/research\/([^/]+)\/runs\/([^/]+)$/.exec(
-      props.currentPathname ?? '',
-    )
+    const routePath = stripBasePath(props.currentPathname ?? '', appBasePath)
+    const route = routePath === null
+      ? null
+      : /^\/projects\/([^/]+)\/research\/([^/]+)\/runs\/([^/]+)$/.exec(routePath)
     return route !== null
       && Schema.is(ProjectId)(route[1])
       && Schema.is(ResearchThreadId)(route[2])

@@ -170,13 +170,13 @@ describeIf('ingestion transition event contracts (PostgreSQL)', () => {
        )
        VALUES
          ($1, $5, 'ingestion', $6, 'in-progress',
-          '{"byteLength":12}'::jsonb, 1, 3, NOW(), NOW() - INTERVAL '1 hour'),
+          '{"byteLength":12}'::jsonb, 1, 3, NOW(), NOW()),
          ($2, $5, 'ingestion', $6, 'in-progress',
-          '{"byteLength":12}'::jsonb, 1, 3, NOW(), NOW() - INTERVAL '1 hour'),
+          '{"byteLength":12}'::jsonb, 1, 3, NOW(), NOW()),
          ($3, $5, 'ingestion', $6, 'in-progress',
-          '{"byteLength":12}'::jsonb, 1, 3, NOW(), NOW() - INTERVAL '1 hour'),
+          '{"byteLength":12}'::jsonb, 1, 3, NOW(), NOW()),
          ($4, $5, 'ingestion', $6, 'in-progress',
-          '{"byteLength":12}'::jsonb, 3, 3, NOW(), NOW() - INTERVAL '1 hour')`,
+          '{"byteLength":12}'::jsonb, 3, 3, NOW(), NOW())`,
       [
         jobIds['append-event'],
         jobIds.complete,
@@ -258,6 +258,18 @@ describeIf('ingestion transition event contracts (PostgreSQL)', () => {
       expect(String(exit.cause)).toContain(IngestionEventValidationError.name)
     }
   }
+
+  it('keeps seeded contract fixtures out of stale recovery', async () => {
+    const before = await snapshot()
+    const recovered = await Effect.runPromise(
+      JobQueueRepo.recoverStaleIngestionJobs(300_000).pipe(
+        Effect.provide(layer),
+      ),
+    )
+
+    expect(recovered).toEqual({ requeued: [], failed: [] })
+    expect(await snapshot()).toEqual(before)
+  })
 
   it('rejects forged payloads and invalid top-level metadata on every path with no side effects', async () => {
     const before = await snapshot()
