@@ -127,9 +127,11 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - [[03_Bugs/BUG-0041_project-creation-controls-overlap-when-the-name-field-is-focused|BUG-0041 Project creation controls overlap when the name field is focused]]
 - [[03_Bugs/BUG-0042_center-workspace-is-fragmented-by-redundant-title-chrome-and-card-framing|BUG-0042 Center workspace is fragmented by redundant title chrome and card framing]]
 - [[03_Bugs/BUG-0043_workspace-navigation-lacks-project-source-and-recent-discovery-sections|BUG-0043 Workspace navigation lacks project, source, and recent discovery sections]]
-- [[03_Bugs/BUG-0044_navigation-discovery-sections-lack-direct-creation-actions|BUG-0044 Navigation discovery sections lack direct creation actions]]
-- [[03_Bugs/BUG-0045_sources-are-scoped-to-one-project-and-cannot-be-reused|BUG-0045 Sources are scoped to one project and cannot be reused]]
-<!-- AGENT-END:phase-related-bugs -->
+  - [[03_Bugs/BUG-0044_navigation-discovery-sections-lack-direct-creation-actions|BUG-0044 Navigation discovery sections lack direct creation actions]]
+  - [[03_Bugs/BUG-0045_sources-are-scoped-to-one-project-and-cannot-be-reused|BUG-0045 Sources are scoped to one project and cannot be reused]]
+  - [[03_Bugs/BUG-0046_global-source-import-is-blocked-by-project-selection|BUG-0046 Global source import is blocked by project selection]]
+  - [[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]
+  <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps
 
