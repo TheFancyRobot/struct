@@ -1,6 +1,10 @@
 # Validation Plan
 
-- Record the direct validation commands, acceptance checks, edge cases, and regression expectations here.
+- Acceptance: a workspace with zero projects can import a source, receive an immutable source version, and complete ingestion without project text indexing or dataset materialization.
+- Acceptance: project-route imports remain attached; library attachment is opt-in.
+- Migration checks: apply all migrations on a clean greenfield database; reject rollback if workspace-only records exist.
+- Commands run: focused API/web/worker/PostgreSQL regression tests, `bun run typecheck`, `bun run lint`, `bun run test`, and `vault_validate all`.
+- Final evidence: 990 tests passed, 3 skipped, 0 failed; typecheck, lint, and vault validation passed.
 
 ## Related Notes
 

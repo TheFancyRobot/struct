@@ -344,24 +344,32 @@ export class SourceRegistrationRepo extends Effect.Service<SourceRegistrationRep
         try: () =>
           sql.transaction(async (transaction) => {
             const validated = validateRegistrationAggregate(input)
-            const projectRows = await transaction.unsafe(
-              `SELECT id, workspace_id
-               FROM projects
-               WHERE id = $1
-               FOR SHARE`,
-              [input.source.projectId],
-            )
-            const authorizedProject = projectRows[0]
+            const authorizedProject = input.source.projectId === null
+              ? undefined
+              : (await transaction.unsafe(
+                  `SELECT id, workspace_id
+                   FROM projects
+                   WHERE id = $1
+                   FOR SHARE`,
+                  [input.source.projectId],
+                ))[0]
             if (
-              authorizedProject === undefined
-              || authorizedProject['workspace_id'] !== input.job.workspaceId
+              input.source.projectId !== null
+              && (
+                authorizedProject === undefined
+                || authorizedProject['workspace_id'] !== input.job.workspaceId
+              )
             ) {
               throw new SourceRegistrationScopeMismatchError(
                 'source-registration-project-workspace-mismatch',
               )
             }
-            const projectId = String(authorizedProject['id'])
-            const workspaceId = String(authorizedProject['workspace_id'])
+            const projectId = authorizedProject === undefined
+              ? null
+              : String(authorizedProject['id'])
+            const workspaceId = authorizedProject === undefined
+              ? input.job.workspaceId
+              : String(authorizedProject['workspace_id'])
             const sourceRows = await transaction.unsafe(
               `INSERT INTO sources (id, workspace_id, project_id, name, kind, created_at, updated_at)
                VALUES ($1, $2, $3, $4, $5, to_timestamp($6 / 1000.0), to_timestamp($7 / 1000.0))
@@ -376,12 +384,14 @@ export class SourceRegistrationRepo extends Effect.Service<SourceRegistrationRep
                 Number(input.source.updatedAt),
               ],
             )
-            await transaction.unsafe(
-              `INSERT INTO project_sources (workspace_id, project_id, source_id)
-               VALUES ($1, $2, $3)
-               ON CONFLICT DO NOTHING`,
-              [workspaceId, projectId, input.source.id],
-            )
+            if (projectId !== null) {
+              await transaction.unsafe(
+                `INSERT INTO project_sources (workspace_id, project_id, source_id)
+                 VALUES ($1, $2, $3)
+                 ON CONFLICT DO NOTHING`,
+                [workspaceId, projectId, input.source.id],
+              )
+            }
             const jobRows = await transaction.unsafe(
               `INSERT INTO job_queue (id, workspace_id, entity_type, entity_id, status, payload, attempts, max_attempts, created_at, updated_at)
                VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, to_timestamp($9 / 1000.0), to_timestamp($10 / 1000.0))

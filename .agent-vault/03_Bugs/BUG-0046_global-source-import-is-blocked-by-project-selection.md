@@ -64,7 +64,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Confirmed Root Cause
 
-- Pending implementation investigation. The screenshot confirms the UI gate remains after workspace-owned source support was introduced.
+- The screenshot confirmed the UI gate remained after workspace-owned source support was introduced.
 - The web import client and API route encoded project selection in the URL, and batch registration always inserted `project_sources`, conflating ingestion context with catalog attachment.
 
 ## Workaround
@@ -73,11 +73,11 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Permanent Fix Plan
 
-- Separate global source import from project attachment. Provide global and project source tabs when a project is open; both tabs can add a source globally, with an optional project attachment defaulted on only for the selected project.
+- Completed: global import is separate from project attachment. The library imports without a project; project-route imports always attach, while library attachment is opt-in.
 
 ## Regression Coverage Needed
 
-- Cover import with no project, import with project attachment enabled by default, global-source search and selection, project-tab filtering to attached sources only, and attachment toggling after import.
+- Completed: zero-project API registration, PostgreSQL persistence/replay, worker ingestion, library UI rendering, project-route attachment, and full-suite coverage. No follow-up coverage is outstanding for BUG-0046.
 
 ## Related Notes
 

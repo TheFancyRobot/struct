@@ -1,3 +1,12 @@
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM sources WHERE project_id IS NULL)
+    OR EXISTS (SELECT 1 FROM source_import_batches WHERE project_id IS NULL) THEN
+    RAISE EXCEPTION 'cannot roll back 0022 after workspace-level source imports exist';
+  END IF;
+END;
+$$;
+
 ALTER TABLE sources
   ALTER COLUMN project_id SET NOT NULL;
 

@@ -287,6 +287,48 @@ describe('processOneIngestionJob', () => {
     expect(testDeps.calls.versions).toHaveLength(1)
   })
 
+  it('does not emit a dataset materialization event for an unattached workspace source', async () => {
+    const base = deps()
+    const testDeps: IngestionWorkerTestDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        claimNextIngestionJob: () => Effect.succeed(Option.some({
+          id: jobId,
+          workspaceId,
+          entityType: 'ingestion',
+          entityId: sourceId,
+          status: 'in-progress' as const,
+          payload: {
+            stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/rows.csv',
+            name: 'rows.csv',
+            mediaType: 'text/csv',
+            byteLength: 10,
+            projectId: null,
+            sourceKind: 'dataset',
+            structuredFormat: 'csv',
+          },
+          attempts: 1,
+          maxAttempts: 3,
+          createdAt: 0n,
+          updatedAt: 0n,
+        })),
+      },
+      ingestion: {
+        ...base.ingestion,
+        ingestStructuredSource: () => Effect.succeed({
+          artifactRef: 'artifact://sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          contentHash: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          byteLength: 10,
+        }),
+      },
+    }
+
+    await Effect.runPromise(processOneIngestionJob(testDeps))
+
+    expect(testDeps.calls.events).toEqual(['file-processed', 'ingestion-completed'])
+  })
+
   it('claims one job, ingests artifacts, creates SourceVersion only after artifacts exist, emits events, and completes the job', async () => {
     const testDeps = deps()
 

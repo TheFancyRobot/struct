@@ -424,18 +424,36 @@ function completeJob(
         sourceVersion,
         artifactResult as WorkerStructuredIngestionResult,
       )
-      yield* appendOwnedEvent(deps, job, 'dataset-materialization-enqueued', {
-        sourceVersionId: sourceVersion.id,
-        artifactRef: sourceVersion.artifactRef,
-        contentHash: artifactResult.contentHash,
-        byteLength: artifactResult.byteLength,
-        ...dataset,
-      })
-      completionPayload = {
-        sourceVersionId: sourceVersion.id,
-        artifactRef: sourceVersion.artifactRef,
-        contentHash: artifactResult.contentHash,
-        ...dataset,
+      if (
+        dataset.datasetId !== undefined
+        && dataset.snapshotId !== undefined
+        && dataset.materializationJobId !== undefined
+      ) {
+        yield* appendOwnedEvent(deps, job, 'dataset-materialization-enqueued', {
+          sourceVersionId: sourceVersion.id,
+          artifactRef: sourceVersion.artifactRef,
+          contentHash: artifactResult.contentHash,
+          byteLength: artifactResult.byteLength,
+          ...dataset,
+        })
+        completionPayload = {
+          sourceVersionId: sourceVersion.id,
+          artifactRef: sourceVersion.artifactRef,
+          contentHash: artifactResult.contentHash,
+          ...dataset,
+        }
+      } else {
+        yield* appendOwnedEvent(deps, job, 'file-processed', {
+          sourceVersionId: sourceVersion.id,
+          artifactRef: sourceVersion.artifactRef,
+          contentHash: artifactResult.contentHash,
+          byteLength: artifactResult.byteLength,
+        })
+        completionPayload = {
+          sourceVersionId: sourceVersion.id,
+          artifactRef: sourceVersion.artifactRef,
+          contentHash: artifactResult.contentHash,
+        }
       }
     } else {
       const document = artifactResult as WorkerIngestionResult

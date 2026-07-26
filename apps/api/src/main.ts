@@ -837,9 +837,10 @@ const server = Effect.gen(function* () {
               message: 'Invalid browser source import',
             }),
           })
-          const requestedProjectId = sourceRoute === null
-            ? parsed.formProjectId
-            : sourceRoute[1]
+          const attachToProject = sourceRoute !== null || parsed.attachToProject
+          const requestedProjectId = attachToProject
+            ? (sourceRoute === null ? parsed.formProjectId : sourceRoute[1])
+            : null
           const projectId = requestedProjectId === null
             ? null
             : yield* Schema.decodeUnknown(ProjectId)(requestedProjectId)
@@ -888,7 +889,7 @@ const server = Effect.gen(function* () {
           const response = yield* SourceRegistrationRepo.createBatch({
             workspaceId: identity.workspaceId,
             projectId,
-            attachToProject: parsed.attachToProject,
+            attachToProject,
             clientBatchId: parsed.clientBatchId,
             requestHash: hashBrowserSourceImport(parsed),
             registrations: prepared.flatMap((result) =>
