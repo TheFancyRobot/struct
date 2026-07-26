@@ -40,13 +40,15 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 
 ## Scope
 
-- Integrate `struct-theme.css` CSS custom properties and Tailwind v4 `@theme inline` mappings into the existing global stylesheet, adapting the dark-mode selector from `.dark` to `[data-theme="struct-dark"]` to match the existing DaisyUI `data-theme` mechanism.
-- Replace Manrope Variable and IBM Plex Mono with the brand fonts: Space Grotesk (display), Inter (interface), JetBrains Mono (code/structured data).
-- Copy all 18 SVG assets from `.brand/assets/svg/` into the application and render the compact lockup in the top-left corner of the workspace navigation, switching between on-light and on-dark variants by active theme.
-- Update the DaisyUI theme color values to match the brand palette so existing `base-*`, `primary`, `accent`, `success`, `warning`, `error` classes render brand-correct colors.
-- Add brand-specific semantic Tailwind utilities (`bg-background`, `bg-surface`, `bg-surface-muted`, `text-foreground`, `text-muted`, `border-border`, `rounded-control`, `rounded-card`, `rounded-panel`, `shadow-card`, `shadow-float`, `font-brand`, `font-sans`, `font-mono`).
-- Update the favicon from `struct-favicon.svg`.
-- Migrate component surfaces where DaisyUI tokens are insufficient (e.g., `bg-base-200` backgrounds should become `bg-background`, panel/card surfaces should use `bg-surface`).
+- Add `--struct-*` brand tokens to `:root` and `[data-theme="struct-dark"]` in `apps/web/src/index.css` as the single source of truth.
+- Update DaisyUI `@plugin "daisyui/theme"` blocks to reference `var(--struct-*)` instead of hardcoded hex values.
+- Replace Manrope Variable and IBM Plex Mono with Inter (interface) and JetBrains Mono (code/structured data). Omit Space Grotesk per grilling decision.
+- Create inline SVG SolidJS components for all 18 brand assets in `apps/web/src/components/icons/`.
+- Place the compact lockup in the top-left corner of the workspace navigation using `currentColor` for theme-aware coloring.
+- Update the favicon to `struct-favicon.svg` (static file in `apps/web/public/`).
+- Audit component surfaces for hardcoded colors and migrate any exceptions to DaisyUI semantic classes.
+- Add visual regression test coverage using the existing `page.screenshot()` e2e pattern.
+- No custom `@theme inline` utilities (`bg-surface`, `text-foreground`, etc.). DaisyUI built-in utilities only.
 
 ## Non-Goals
 
@@ -69,9 +71,9 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - [ ] The favicon is updated to `struct-favicon.svg`.
 - [ ] Global colors are semantic and support both light and dark modes through the existing `data-theme` mechanism.
 - [ ] No ordinary product component contains unexplained raw hex values (the codebase currently has none — this must remain true).
-- [ ] Inter is the interface font; JetBrains Mono is the code/structured-data font; Space Grotesk is available for display roles.
-- [ ] DaisyUI theme values match the brand palette in both modes.
-- [ ] Brand-specific Tailwind utilities (`bg-surface`, `text-foreground`, `rounded-card`, etc.) are available and functional.
+- [ ] Inter is the interface font; JetBrains Mono is the code/structured-data font. Space Grotesk is omitted.
+- [ ] DaisyUI theme values match the brand palette in both modes via `var(--struct-*)` references.
+- [ ] DaisyUI built-in utilities (`bg-base-100`, `text-primary`, etc.) are the only utility classes. No custom `bg-surface`, `text-foreground`, etc.
 - [ ] Focus-visible states remain obvious and consistent.
 - [ ] Dark mode uses navy/slate surfaces (not pure black) and remains readable.
 - [ ] Responsive behavior is unchanged or improved.
