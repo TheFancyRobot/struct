@@ -4,13 +4,51 @@ import {
   DatasetSnapshotId,
   SourceVersionId,
 } from '@struct/domain'
-import { makeProductionResearchPlanningPolicy } from './research-planning.js'
+import {
+  compileDatasetQuerySql,
+  makeProductionResearchPlanningPolicy,
+} from './research-planning.js'
 
 const sourceVersionId = SourceVersionId.make(
   'ab0e8400-e29b-41d4-a716-446655440001',
 )
 
 describe('production research planning policy', () => {
+  it('compiles deterministic dataset operations with the required total ordering', () => {
+    const snapshot = {
+      alias: 'records',
+      datasetId: DatasetId.make('ab0e8400-e29b-41d4-a716-446655440002'),
+      datasetSnapshotId: DatasetSnapshotId.make(
+        'ab0e8400-e29b-41d4-a716-446655440003',
+      ),
+    }
+    const limits = {
+      maxRows: 10,
+      maxOutputBytes: 1_000,
+      maxMemoryMb: 64,
+      timeoutMs: 1_000,
+    }
+
+    expect(compileDatasetQuerySql({
+      kind: 'dataset-query',
+      operation: 'count',
+      snapshot,
+      columns: [],
+      rowLimit: 1,
+      limits,
+    })).toBe('SELECT COUNT(*) AS row_count FROM "records" ORDER BY ALL')
+    expect(compileDatasetQuerySql({
+      kind: 'dataset-query',
+      operation: 'inspect',
+      snapshot,
+      columns: ['account', 'risk'],
+      rowLimit: 10,
+      limits,
+    })).toBe(
+      'SELECT "account", "risk" FROM "records" ORDER BY ALL LIMIT 10',
+    )
+  })
+
   it('grants exact dataset queries only when resolved lineage includes a dataset snapshot', () => {
     const document = makeProductionResearchPlanningPolicy(
       [{ kind: 'document', sourceVersionId }],

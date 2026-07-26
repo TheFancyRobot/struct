@@ -17,7 +17,7 @@ it('waits for the BASE_PATH notes refresh to finish before reloading', async () 
   const requestFailures: string[] = []
   let title = 'Saved note'
   let revision = 1
-  let releaseNotesRefresh: (() => void) | undefined
+  const releaseNotesRefreshes = new Set<() => void>()
   const notesRefreshStarted = Promise.withResolvers<void>()
   let web: AppServerProcess | undefined
   let browser: Browser | undefined
@@ -66,7 +66,7 @@ it('waits for the BASE_PATH notes refresh to finish before reloading', async () 
       if (revision > 1) {
         notesRefreshStarted.resolve()
         await new Promise<void>((resolve) => {
-          releaseNotesRefresh = resolve
+          releaseNotesRefreshes.add(resolve)
         })
       }
       await route.fulfill({
@@ -89,19 +89,22 @@ it('waits for the BASE_PATH notes refresh to finish before reloading', async () 
 
     await page.goto(`http://127.0.0.1:4188/struct/projects/${projectId}/notes/${noteId}`)
     await page.getByLabel('Title').waitFor()
+    await page.getByRole('link', { name: 'Saved note' }).waitFor()
     const { noteUpdate, notesRefresh } = waitForNoteSaveAndRefresh(page, projectId, noteId)
     await page.getByLabel('Title').fill('Acme renewal follow-up')
     await noteUpdate
     await page.getByRole('status').filter({ hasText: 'Saved' }).waitFor()
     await notesRefreshStarted.promise
-    releaseNotesRefresh?.()
+    for (const release of releaseNotesRefreshes) release()
+    releaseNotesRefreshes.clear()
     await notesRefresh
     await page.reload()
     await page.getByLabel('Title').waitFor()
 
     expect(requestFailures).toEqual([])
   } finally {
-    releaseNotesRefresh?.()
+    for (const release of releaseNotesRefreshes) release()
+    releaseNotesRefreshes.clear()
     await page?.close()
     await browser?.close()
     await stopAppServer(web)

@@ -4,10 +4,10 @@ template_version: 2
 contract_version: 1
 title: v1 Usable Research Workspace
 phase_id: PHASE-10
-status: planned
-owner: ''
+status: completed
+owner: Codex
 created: '2026-07-21'
-updated: '2026-07-21'
+updated: '2026-07-26'
 depends_on:
   - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]]'
 related_architecture:
@@ -74,24 +74,24 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 
 ## Acceptance Criteria
 
-- [ ] Scope is concrete and linked to the right durable notes.
-- [ ] Step notes exist for the first executable work units.
-- [ ] Validation and documentation expectations are explicit.
-- [ ] A new browser session can create/select a project without manually supplied identifiers.
-- [ ] A user can add supported files, folders, pasted text, and structured data from the left pane, return to navigation immediately, and monitor durable progress without an overlay toast.
-- [ ] Ready sources can be queried while other sources process; partial failures are recoverable and never erase successful work.
-- [ ] Conversation drafts and active state survive pane changes, route navigation, and SSE reconnects.
-- [ ] Inline citations open exact document or deterministic dataset evidence in the right pane without moving the conversation.
-- [ ] A user can save, edit, reload, and reopen a first-class note with originating run and citation provenance.
-- [ ] The approved desktop, tablet, mobile, light/dark, accessibility, and reduced-motion behaviors pass.
-- [ ] Playwright proves create project → add sources → navigate during upload → chat → citation → save note → reload/reopen against real API-backed state.
-- [ ] The fixture-driven root experience is removed, documentation is accurate, all repository gates pass, Agent Vault validates cleanly, and zero confirmed defects remain.
+- [x] Scope is concrete and linked to the right durable notes.
+- [x] Step notes exist for the first executable work units.
+- [x] Validation and documentation expectations are explicit.
+- [x] A new browser session can create/select a project without manually supplied identifiers.
+- [x] A user can add supported files, folders, pasted text, and structured data from the left pane, return to navigation immediately, and monitor durable progress without an overlay toast.
+- [x] Ready sources can be queried while other sources process; partial failures are recoverable and never erase successful work.
+- [x] Conversation drafts and active state survive pane changes, route navigation, and SSE reconnects.
+- [x] Inline citations open exact document or deterministic dataset evidence in the right pane without moving the conversation.
+- [x] A user can save, edit, reload, and reopen a first-class note with originating run and citation provenance.
+- [x] The approved desktop, tablet, mobile, light/dark, accessibility, and reduced-motion behaviors pass.
+- [x] Playwright proves create project → add sources → navigate during upload → chat → citation → save note → reload/reopen against real API-backed state.
+- [x] The fixture-driven root experience is removed, documentation is accurate, all repository gates pass, Agent Vault validates cleanly, and zero confirmed defects remain.
 
 ## Linear Context
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]]
-- Current phase status: planned
+- Current phase status: completed
 - Next phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]
 <!-- AGENT-END:phase-linear-context -->
 
@@ -125,13 +125,13 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 
 <!-- AGENT-START:phase-steps -->
 - [x] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle|STEP-10-01 Establish Workspace and Project Lifecycle]]
-- [ ] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_02_build-unified-three-pane-workspace-shell|STEP-10-02 Build Unified Three Pane Workspace Shell]]
-- [ ] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_03_deliver-source-catalog-and-non-blocking-import|STEP-10-03 Deliver Source Catalog and Non Blocking Import]]
-- [ ] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_04_deliver-source-grounded-conversation|STEP-10-04 Deliver Source Grounded Conversation]]
-- [ ] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_05_integrate-exact-evidence-inspector|STEP-10-05 Integrate Exact Evidence Inspector]]
-- [ ] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_06_add-durable-user-notes-with-provenance|STEP-10-06 Add Durable User Notes with Provenance]]
-- [ ] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]
-- [ ] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey|STEP-10-08 Gate v1 on the Complete Browser Journey]]
+- [x] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_02_build-unified-three-pane-workspace-shell|STEP-10-02 Build Unified Three Pane Workspace Shell]]
+- [x] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_03_deliver-source-catalog-and-non-blocking-import|STEP-10-03 Deliver Source Catalog and Non Blocking Import]]
+- [x] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_04_deliver-source-grounded-conversation|STEP-10-04 Deliver Source Grounded Conversation]]
+- [x] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_05_integrate-exact-evidence-inspector|STEP-10-05 Integrate Exact Evidence Inspector]]
+- [x] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_06_add-durable-user-notes-with-provenance|STEP-10-06 Add Durable User Notes with Provenance]]
+- [x] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]
+- [x] [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey|STEP-10-08 Gate v1 on the Complete Browser Journey]]
 <!-- AGENT-END:phase-steps -->
 
 ## Notes
@@ -155,12 +155,12 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - Accessibility is implemented in every functional slice; STEP-10-07 is the cross-cutting audit and remediation pass, not the first accessibility pass. All panes and sheets require semantic labels, keyboard operation, visible focus, and deterministic focus restoration as they are introduced.
 - The later approved workspace typography supersedes the prior editorial baseline: STEP-10-02 locally bundles Manrope for interface/conversation text, retains IBM Plex Mono for identifiers/query metadata, and removes the Newsreader editorial role from workspace routes. No remote font request is allowed.
 - The release journey uses the real web proxy, API, worker, PostgreSQL, artifact storage, ingestion, retrieval, citations, and note persistence. A deterministic test provider is allowed at the model-provider boundary, but page-level network stubs, fixture routes, direct database shortcuts, and direct API calls are not release evidence.
-- BUG-0013 is the one confirmed repository defect. The zero-defect gate forbids starting this phase or any `STEP-10-*` roadmap step while the bug remains confirmed. The eight packets are approved technical reference for independently tracked BUG-0013 remediation units; they do not authorize Phase 10 advancement. No unrelated phase or step may advance, and any new confirmed defect stops all work until fixed.
+- BUG-0013 was the confirmed repository defect at refinement. Phase 10 resolved it through the eight independently reviewed remediation units; any new confirmed defect still stops advancement until fixed.
 - The root orchestrator owns all git operations. Each implementation step uses one fresh `openai-codex/gpt-5.4` worker, one branch, one reviewed pull request, and independent root verification.
 
 ### Remediation Design Readiness Matrix
 
-This matrix proves that the planned Phase 10 packets are specified; it is not execution authorization while BUG-0013 is confirmed.
+This matrix records the execution readiness that preceded the now-completed Phase 10 work.
 
 | Step | Readiness | Durable clarification |
 | --- | --- | --- |
@@ -173,4 +173,4 @@ This matrix proves that the planned Phase 10 packets are specified; it is not ex
 | STEP-10-07 | Pass | Exact viewport/theme/input/accessibility matrix, `/struct` regression, artifacts, and manual checks are specified. |
 | STEP-10-08 | Pass | Real-stack deterministic journey, demo removal, full gate ladder, documentation refresh, and defect closure are specified. |
 
-No unresolved design question or external blocker remains for refinement. BUG-0013 remains a confirmed blocker, so Phase 10 and every `STEP-10-*` unit remain unstarted; resolve the defect through independently tracked bug-remediation units before activating the phase.
+No unresolved design question or external blocker remains. BUG-0013 is fixed, all Phase 10 steps and acceptance criteria are complete, and Phase 11 refinement remains gated on Phase 10 review and merge.

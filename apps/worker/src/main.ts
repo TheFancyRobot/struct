@@ -76,7 +76,10 @@ import {
 import { processOneIngestionJob } from './jobs/ingest-source'
 import { processOneResearchJob } from './jobs/run-research'
 import { makeProductionResearchWorkflow } from './jobs/research-workflow'
-import { makeProductionResearchPlanningPolicy } from './jobs/research-planning'
+import {
+  compileDatasetQuerySql,
+  makeProductionResearchPlanningPolicy,
+} from './jobs/research-planning'
 import { processOneSourceTextReindex } from './jobs/reindex-source-text'
 import { processOneDatasetMaterialization } from './jobs/materialize-dataset'
 import { runWorkerPollLoops } from './polling'
@@ -451,12 +454,7 @@ const program = Effect.gen(function* () {
           })
         }
         const spec = node.toolInput
-        const alias = `"${spec.snapshot.alias}"`
-        const sql = spec.operation === "count"
-          ? `SELECT COUNT(*) AS row_count FROM ${alias}`
-          : `SELECT ${
-              spec.columns.map((column) => `"${column}"`).join(", ")
-            } FROM ${alias} LIMIT ${spec.rowLimit}`
+        const sql = compileDatasetQuerySql(spec)
         const query = {
           credential: "research-worker", workspaceId: plan.workspaceId,
           projectId: plan.projectId, sql,

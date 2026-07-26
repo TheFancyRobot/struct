@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'bun:test'
 import { Effect } from 'effect'
 import {
+  DatasetCitationId,
+  DatasetId,
+  DatasetSnapshotId,
   EventJournalId,
   JobQueueId,
   ProjectId,
+  QueryResultSnapshotId,
   ResearchRunId,
   ResearchThreadId,
+  Sha256Digest,
   WorkspaceId,
 } from '@struct/domain'
 import {
@@ -114,6 +119,72 @@ describe('research event projection', () => {
 
     expect(event?.cursor).toBe('5')
     expect(encodeSseEvent(event!)).toContain('id: 5\nevent: research-started\ndata:')
+  })
+
+  it('encodes completed dataset citations before projecting the SSE event', async () => {
+    const createdAt = 1_700_000_000_000n
+    const [event] = await Effect.runPromise(loadResearchEvents(
+      workspaceId,
+      projectId,
+      runId,
+      5n,
+      {
+        listEventsAfter: () => Effect.succeed([{
+          id: EventJournalId.make('b50e8400-e29b-41d4-a716-446655440007'),
+          workspaceId,
+          entityType: 'research',
+          entityId: runId,
+          eventType: 'research-completed',
+          payload: {
+            jobId: JobQueueId.make('b50e8400-e29b-41d4-a716-446655440008'),
+            attempt: 1,
+            citationCount: 0,
+          },
+          cursor: 6n,
+          createdAt,
+        }]),
+        findCompleted: () => Effect.succeed({
+          answer: 'The dataset contains 2 records.',
+          citations: [],
+          datasetCitations: [{
+            id: DatasetCitationId.make(
+              'b50e8400-e29b-41d4-a716-446655440009',
+            ),
+            queryResultSnapshotId: QueryResultSnapshotId.make(
+              'b50e8400-e29b-41d4-a716-446655440010',
+            ),
+            workspaceId,
+            projectId,
+            datasetId: DatasetId.make(
+              'b50e8400-e29b-41d4-a716-446655440011',
+            ),
+            datasetSnapshotId: DatasetSnapshotId.make(
+              'b50e8400-e29b-41d4-a716-446655440012',
+            ),
+            schemaHash: Sha256Digest.make(`sha256:${'a'.repeat(64)}`),
+            parquetDigest: 'b'.repeat(64),
+            resultHash: Sha256Digest.make(`sha256:${'c'.repeat(64)}`),
+            resultArtifactHash: Sha256Digest.make(
+              `sha256:${'d'.repeat(64)}`,
+            ),
+            canonicalSql: 'SELECT COUNT(*) AS row_count FROM "records" ORDER BY ALL',
+            selectedColumns: ['row_count'],
+            rowStart: 0,
+            rowEndExclusive: 1,
+            createdAt,
+          }],
+        }),
+      },
+    ))
+
+    expect(event?.type).toBe('research-completed')
+    if (event?.type !== 'research-completed') {
+      throw new Error('Expected completed event')
+    }
+    expect(event.data.datasetCitations[0]?.createdAt).toBe(createdAt)
+    expect(encodeSseEvent(event)).toContain(
+      `"createdAt":${createdAt.toString()}`,
+    )
   })
 
   it('emits a comment heartbeat after 30 seconds without persisted events', async () => {

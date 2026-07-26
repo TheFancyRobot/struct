@@ -259,6 +259,26 @@ describeIf('DatasetQueryEvidenceRepo (PostgreSQL)', () => {
     expect(replay).toEqual(first)
     expect(replay.result.id).toBe(resultId)
     expect(replay.citations[0]?.id).toBe(citationId)
+    const [jsonStorage] = await sql.unsafe(
+      `SELECT
+         jsonb_typeof(dataset_snapshots) AS snapshots_kind,
+         jsonb_typeof(columns) AS columns_kind,
+         jsonb_typeof(rows) AS rows_kind,
+         (
+           SELECT jsonb_typeof(selected_columns)
+           FROM dataset_citations
+           WHERE id = $1
+         ) AS selected_columns_kind
+       FROM query_result_snapshots
+       WHERE id = $2`,
+      [citationId, resultId],
+    )
+    expect(jsonStorage).toMatchObject({
+      snapshots_kind: 'array',
+      columns_kind: 'array',
+      rows_kind: 'array',
+      selected_columns_kind: 'array',
+    })
 
     const evidence = await Effect.runPromise(
       DatasetQueryEvidenceRepo.reopen(

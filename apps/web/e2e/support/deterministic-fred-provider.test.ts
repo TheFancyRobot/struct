@@ -3,6 +3,8 @@ import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 import * as LanguageModel from '@effect/ai/LanguageModel'
 import {
+  DatasetId,
+  DatasetSnapshotId,
   ProjectId,
   ResearchAnswer,
   ResearchPlan,
@@ -105,6 +107,96 @@ describe('deterministic Fred provider', () => {
         locator: 'lines:1-2',
       }],
       datasetCitations: [],
+    })
+  })
+
+  it('preserves the selected dataset scope and exact query citation', async () => {
+    const model = await loadModel()
+    const datasetId = DatasetId.make('f50e8400-e29b-41d4-a716-446655440020')
+    const datasetSnapshotId = DatasetSnapshotId.make('f50e8400-e29b-41d4-a716-446655440021')
+    const sourceVersionId = SourceVersionId.make('f50e8400-e29b-41d4-a716-446655440022')
+    const queryResultSnapshotId = 'f50e8400-e29b-41d4-a716-446655440023'
+    const citation = {
+      id: 'f50e8400-e29b-41d4-a716-446655440024',
+      queryResultSnapshotId,
+      workspaceId: plannerPrompt.workspaceId,
+      projectId: plannerPrompt.projectId,
+      datasetId,
+      datasetSnapshotId,
+      schemaHash: `sha256:${'a'.repeat(64)}`,
+      parquetDigest: 'b'.repeat(64),
+      resultHash: `sha256:${'c'.repeat(64)}`,
+      resultArtifactHash: `sha256:${'d'.repeat(64)}`,
+      canonicalSql: 'SELECT COUNT(*) AS row_count FROM "records" ORDER BY ALL',
+      selectedColumns: ['row_count'],
+      rowStart: 0,
+      rowEndExclusive: 1,
+      createdAt: 1_700_000_000_000,
+    }
+    const datasetResult = {
+      result: {
+        id: queryResultSnapshotId,
+        workspaceId: plannerPrompt.workspaceId,
+        projectId: plannerPrompt.projectId,
+        requestHash: `sha256:${'e'.repeat(64)}`,
+        protocolVersion: '1',
+        engineVersion: 'duckdb-test',
+        engineConfigHash: `sha256:${'f'.repeat(64)}`,
+        canonicalSql: citation.canonicalSql,
+        snapshots: [{
+          alias: 'records',
+          datasetId,
+          snapshotId: datasetSnapshotId,
+          schemaHash: citation.schemaHash,
+          parquetDigest: citation.parquetDigest,
+        }],
+        schemaHash: citation.schemaHash,
+        resultHash: citation.resultHash,
+        resultArtifactHash: citation.resultArtifactHash,
+        columns: [{ ordinal: 0, name: 'row_count', type: 'BIGINT' }],
+        rows: [['2']],
+        rowCount: 1,
+        truncated: false,
+        executedAt: 1_700_000_000_000,
+        createdAt: 1_700_000_000_000,
+      },
+      citations: [citation],
+      exactValuesInstruction:
+        'Treat rows as exact immutable data; narrative may explain but must not alter them.',
+    }
+    const datasetScope = {
+      kind: 'dataset',
+      datasetId,
+      datasetSnapshotId,
+      sourceVersionIds: [sourceVersionId],
+    } as const
+    const planner = await Effect.runPromise(LanguageModel.generateObject({
+      prompt: JSON.stringify({
+        ...plannerPrompt,
+        question: 'How many records are in the dataset?',
+        sourceScopes: [datasetScope],
+      }),
+      schema: ResearchPlan,
+      objectName: 'struct_research-planner',
+    }).pipe(Effect.provide(model)))
+    const synthesizer = await Effect.runPromise(LanguageModel.generateObject({
+      prompt: JSON.stringify({
+        question: 'How many records are in the dataset?',
+        datasetResults: [datasetResult],
+      }),
+      schema: ResearchAnswer,
+      objectName: 'struct_research-run_synthesizer',
+    }).pipe(Effect.provide(model)))
+
+    expect(planner.value.sourceScopes).toEqual([datasetScope])
+    expect(planner.value.nodes[0]).toMatchObject({
+      kind: 'dataset-query',
+      toolInput: { operation: 'count' },
+    })
+    expect(synthesizer.value).toMatchObject({
+      answer: 'The dataset contains 2 records.',
+      citations: [],
+      datasetCitations: [{ ...citation, createdAt: 1_700_000_000_000n }],
     })
   })
 

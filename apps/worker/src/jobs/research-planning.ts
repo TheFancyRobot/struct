@@ -1,6 +1,15 @@
 // eslint-disable-next-line no-unused-vars -- Babel's parser does not mark type-only namespace use.
 import type * as typeDomain from '@struct/domain'
 
+export function compileDatasetQuerySql(
+  spec: typeDomain.ResearchDatasetQuerySpec,
+): string {
+  const alias = `"${spec.snapshot.alias}"`
+  return spec.operation === 'count'
+    ? `SELECT COUNT(*) AS row_count FROM ${alias} ORDER BY ALL`
+    : `SELECT ${spec.columns.map((column) => `"${column}"`).join(', ')} FROM ${alias} ORDER BY ALL LIMIT ${spec.rowLimit}`
+}
+
 export function makeProductionResearchPlanningPolicy(
   sourceScopes: ReadonlyArray<typeDomain.ResearchSourceScope>,
   maximumElapsedMilliseconds: number,

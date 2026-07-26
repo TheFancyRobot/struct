@@ -61,12 +61,12 @@ function appendDebugLog(objectName: string, text: string, response: unknown): vo
   appendFileSync(logPath, `${objectName}\n${text}\n${JSON.stringify(response)}\n---\n`)
 }
 
-function deepFind(value: unknown, field: string): string | undefined {
+function deepFindValue(value: unknown, field: string): unknown {
   if (typeof value === 'string') {
     const trimmed = value.trim()
     if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
       try {
-        return deepFind(JSON.parse(trimmed), field)
+        return deepFindValue(JSON.parse(trimmed), field)
       } catch {
         return undefined
       }
@@ -75,21 +75,25 @@ function deepFind(value: unknown, field: string): string | undefined {
   }
   if (Array.isArray(value)) {
     for (const item of value) {
-      const found = deepFind(item, field)
-      if (found) return found
+      const found = deepFindValue(item, field)
+      if (found !== undefined) return found
     }
     return undefined
   }
   if (value && typeof value === 'object') {
     const record = value as Record<string, unknown>
-    const direct = record[field]
-    if (typeof direct === 'string') return direct
+    if (field in record) return record[field]
     for (const item of Object.values(record)) {
-      const found = deepFind(item, field)
-      if (found) return found
+      const found = deepFindValue(item, field)
+      if (found !== undefined) return found
     }
   }
   return undefined
+}
+
+function deepFind(value: unknown, field: string): string | undefined {
+  const found = deepFindValue(value, field)
+  return typeof found === 'string' ? found : undefined
 }
 
 function questionFrom(prompt: unknown): string {
@@ -109,6 +113,57 @@ function inputId(prompt: unknown, field: string): string {
   const value = deepFind(prompt, field)
   if (!value) throw new Error(`Missing ${field} in deterministic provider input`)
   return value
+}
+
+function datasetScopeFrom(prompt: unknown): {
+  readonly kind: 'dataset'
+  readonly datasetId: string
+  readonly datasetSnapshotId: string
+  readonly sourceVersionIds: ReadonlyArray<string>
+} | undefined {
+  const scopes = deepFindValue(prompt, 'sourceScopes')
+  if (!Array.isArray(scopes)) return undefined
+  const scope = scopes.find((candidate) =>
+    candidate !== null
+    && typeof candidate === 'object'
+    && (candidate as Record<string, unknown>)['kind'] === 'dataset')
+  if (scope === undefined) return undefined
+  const record = scope as Record<string, unknown>
+  const sourceVersionIds = record['sourceVersionIds']
+  return typeof record['datasetId'] === 'string'
+    && typeof record['datasetSnapshotId'] === 'string'
+    && Array.isArray(sourceVersionIds)
+    && sourceVersionIds.every((id) => typeof id === 'string')
+    ? {
+        kind: 'dataset',
+        datasetId: record['datasetId'],
+        datasetSnapshotId: record['datasetSnapshotId'],
+        sourceVersionIds,
+      }
+    : undefined
+}
+
+function datasetCitationsFrom(prompt: unknown): ReadonlyArray<unknown> {
+  const results = deepFindValue(prompt, 'datasetResults')
+  return Array.isArray(results)
+    ? results.flatMap((result) => {
+        if (result === null || typeof result !== 'object') return []
+        const citations = (result as Record<string, unknown>)['citations']
+        return Array.isArray(citations) ? citations : []
+      })
+    : []
+}
+
+function datasetCountFrom(prompt: unknown): string {
+  const results = deepFindValue(prompt, 'datasetResults')
+  if (!Array.isArray(results)) return 'an exact number of'
+  const first = results[0]
+  if (first === null || typeof first !== 'object') return 'an exact number of'
+  const result = (first as Record<string, unknown>)['result']
+  if (result === null || typeof result !== 'object') return 'an exact number of'
+  const rows = (result as Record<string, unknown>)['rows']
+  const count = Array.isArray(rows) && Array.isArray(rows[0]) ? rows[0][0] : undefined
+  return typeof count === 'string' ? count : 'an exact number of'
 }
 
 function deterministicUuid(seed: string, label: string): string {
@@ -131,27 +186,120 @@ function structuredResponse(options: LanguageModel.ProviderOptions): unknown {
   if (options.responseFormat.type !== 'json') {
     response = { text: answerFor(questionFrom(options.prompt)) }
   } else switch (objectName) {
-    case 'struct_question-classifier':
-      response = {
+    case 'struct_question-classifier': {
+      const dataset = datasetScopeFrom(options.prompt)
+      response = dataset === undefined ? {
         version: '1',
         kind: 'document',
         routes: ['document'],
         mode: 'quick',
         requiresExactComputation: false,
         confidence: 1,
+      } : {
+        version: '1',
+        kind: 'dataset',
+        routes: ['dataset'],
+        mode: 'quick',
+        requiresExactComputation: true,
+        confidence: 1,
       }
       break
+    }
     case 'struct_research-planner': {
       const runId = inputId(options.prompt, 'runId')
       const planId = inputId(options.prompt, 'planId')
       const workspaceId = inputId(options.prompt, 'workspaceId')
       const projectId = inputId(options.prompt, 'projectId')
+      const dataset = datasetScopeFrom(options.prompt)
       const sourceVersionId = firstSourceVersionId(options.prompt)
       const question = questionFrom(options.prompt)
-      const retrieveId = deterministicUuid(runId, 'retrieve')
+      const evidenceNodeId = deterministicUuid(runId, dataset === undefined ? 'retrieve' : 'dataset')
       const critiqueId = deterministicUuid(runId, 'critique')
       const synthesizeId = deterministicUuid(runId, 'synthesize')
       const evidenceId = deterministicUuid(runId, 'evidence')
+      if (dataset !== undefined) {
+        response = {
+          version: '1',
+          id: planId,
+          runId,
+          workspaceId,
+          projectId,
+          objective: question,
+          sourceScopes: [dataset],
+          nodes: [
+            {
+              id: evidenceNodeId,
+              kind: 'dataset-query',
+              goal: 'Count the selected dataset records exactly.',
+              dependencies: [],
+              inputRefs: [{
+                kind: 'dataset-snapshot',
+                datasetId: dataset.datasetId,
+                datasetSnapshotId: dataset.datasetSnapshotId,
+              }],
+              evidenceRefs: [evidenceId],
+              toolInput: {
+                kind: 'dataset-query',
+                operation: 'count',
+                snapshot: {
+                  alias: 'records',
+                  datasetId: dataset.datasetId,
+                  datasetSnapshotId: dataset.datasetSnapshotId,
+                },
+                columns: [],
+                rowLimit: 1,
+                limits: {
+                  maxRows: 1,
+                  maxOutputBytes: 100_000,
+                  maxMemoryMb: 64,
+                  timeoutMs: 1_000,
+                },
+              },
+            },
+            {
+              id: critiqueId,
+              kind: 'evidence-evaluation',
+              goal: 'Evaluate whether the exact count answers the question.',
+              dependencies: [evidenceNodeId],
+              inputRefs: [{ kind: 'node-output', nodeId: evidenceNodeId }],
+              evidenceRefs: [],
+            },
+            {
+              id: synthesizeId,
+              kind: 'answer-synthesis',
+              goal: 'Answer the question from the exact dataset result.',
+              dependencies: [critiqueId],
+              inputRefs: [{ kind: 'node-output', nodeId: critiqueId }],
+              evidenceRefs: [],
+            },
+          ],
+          evidenceRequirements: [{
+            id: evidenceId,
+            kind: 'dataset',
+            datasetId: dataset.datasetId,
+            datasetSnapshotId: dataset.datasetSnapshotId,
+            minimumCitations: 1,
+          }],
+          toolPolicy: {
+            grants: [{
+              toolId: 'dataset-query',
+              capability: 'dataset:query',
+              maximumCalls: 1,
+            }],
+          },
+          budget: {
+            maximumSteps: 3,
+            maximumModelCalls: 2,
+            maximumToolCalls: 1,
+            maximumTokens: 4096,
+            maximumElapsedMilliseconds: 15000,
+            maximumEstimatedCostMicros: 1000,
+            maximumFanOut: 1,
+            maximumRevisions: 0,
+          },
+        }
+        break
+      }
       const retrievalGoal = question.toLowerCase().includes('what should we do next')
         ? 'Contact the account owner.'
         : question
@@ -165,7 +313,7 @@ function structuredResponse(options: LanguageModel.ProviderOptions): unknown {
         sourceScopes: [{ kind: 'document', sourceVersionId }],
         nodes: [
           {
-            id: retrieveId,
+            id: evidenceNodeId,
             kind: 'document-retrieval',
             goal: retrievalGoal,
             dependencies: [],
@@ -176,8 +324,8 @@ function structuredResponse(options: LanguageModel.ProviderOptions): unknown {
             id: critiqueId,
             kind: 'evidence-evaluation',
             goal: 'Evaluate whether the retrieved evidence supports the question.',
-            dependencies: [retrieveId],
-            inputRefs: [{ kind: 'node-output', nodeId: retrieveId }],
+            dependencies: [evidenceNodeId],
+            inputRefs: [{ kind: 'node-output', nodeId: evidenceNodeId }],
             evidenceRefs: [],
           },
           {
@@ -223,13 +371,16 @@ function structuredResponse(options: LanguageModel.ProviderOptions): unknown {
       break
     case 'struct_research-run_synthesizer': {
       const question = questionFrom(options.prompt)
+      const datasetCitations = datasetCitationsFrom(options.prompt)
       response = {
-        answer: answerFor(question),
-        citations: [{
+        answer: datasetCitations.length > 0
+          ? `The dataset contains ${datasetCountFrom(options.prompt)} records.`
+          : answerFor(question),
+        citations: datasetCitations.length > 0 ? [] : [{
           sourceVersionId: firstSourceVersionId(options.prompt),
           locator: firstLocator(options.prompt),
         }],
-        datasetCitations: [],
+        datasetCitations,
       }
       break
     }

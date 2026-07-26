@@ -10,6 +10,7 @@ const jobId = 'a50e8400-e29b-41d4-a716-446655440003'
 
 let browser: Awaited<ReturnType<typeof chromium.launch>>
 let web: Awaited<ReturnType<typeof startAppServer>>
+let page: import('playwright').Page | undefined
 
 async function installApi(page: import('playwright').Page) {
   await page.route('**/api/**', (route) => {
@@ -66,17 +67,18 @@ async function installApi(page: import('playwright').Page) {
 
 beforeAll(async () => {
   web = await startAppServer(4186, { BASE_PATH: '/struct', BASE_URL: '/struct/' })
-  browser = await chromium.launch({ headless: true })
+  browser = await chromium.launch({ headless: true, timeout: 15_000 })
 })
 
 afterAll(async () => {
+  await page?.close()
   await browser?.close()
   await stopAppServer(web)
 })
 
 describe('workspace accessibility browser contract', () => {
   it('keeps mobile source failures visible, operable, and focus-safe', async () => {
-    const page = await browser.newPage({
+    page = await browser.newPage({
       viewport: { width: 375, height: 812 },
       reducedMotion: 'reduce',
     })

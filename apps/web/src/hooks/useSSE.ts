@@ -1,4 +1,4 @@
-import { createSignal, onCleanup } from 'solid-js'
+import { createEffect, createSignal, onCleanup } from 'solid-js'
 
 export const SSE_BACKOFF = {
   initialMs: 1_000,
@@ -57,6 +57,7 @@ export function useSSE<T>(
   let cursor: string | undefined
   let disposed = false
   let terminated = false
+  let activeUrl = url()
 
   const stopWithError = (message: string) => {
     terminated = true
@@ -69,7 +70,7 @@ export function useSSE<T>(
 
   const connect = () => {
     if (disposed || terminated) return
-    const endpoint = new URL(url(), environment.origin)
+    const endpoint = new URL(activeUrl, environment.origin)
     if (cursor !== undefined) endpoint.searchParams.set('cursor', cursor)
     const currentSource = environment.createSource(endpoint)
     source = currentSource
@@ -120,6 +121,24 @@ export function useSSE<T>(
   }
 
   connect()
+  createEffect(() => {
+    const nextUrl = url()
+    if (nextUrl === activeUrl) return
+    source?.close()
+    source = undefined
+    if (retryTimer !== undefined) {
+      environment.cancel(retryTimer)
+      retryTimer = undefined
+    }
+    activeUrl = nextUrl
+    retries = 0
+    cursor = undefined
+    terminated = false
+    setConnected(false)
+    setReconnecting(false)
+    setError(undefined)
+    connect()
+  })
   onCleanup(() => {
     disposed = true
     source?.close()

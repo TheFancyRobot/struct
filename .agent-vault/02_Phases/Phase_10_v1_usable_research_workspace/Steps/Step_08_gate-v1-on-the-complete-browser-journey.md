@@ -5,23 +5,24 @@ contract_version: 1
 title: Gate v1 on the Complete Browser Journey
 step_id: STEP-10-08
 phase: '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]'
-status: planned
-owner: ''
+status: completed
+owner: phase10_step08_attempt2
 created: '2026-07-21'
-updated: '2026-07-23'
+updated: '2026-07-26'
 depends_on:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
 related_sessions:
   - '[[05_Sessions/2026-07-23-150614-gate-v1-on-the-complete-browser-journey-openai-codex-gpt-5-6-sol-fallback|SESSION-2026-07-23-150614 openai-codex/gpt-5.6-sol fallback session for Gate v1 on the Complete Browser Journey]]'
+  - '[[05_Sessions/2026-07-26-083732-gate-v1-on-the-complete-browser-journey-openai-codex-gpt-5-6-sol|SESSION-2026-07-26-083732 openai-codex/gpt-5.6-sol session for Gate v1 on the Complete Browser Journey]]'
 related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
 tags:
   - agent-vault
   - step
-context_id: SESSION-2026-07-23-150614
-active_session_id: 05_Sessions/2026-07-23-150614-gate-v1-on-the-complete-browser-journey-openai-codex-gpt-5-6-sol-fallback
+context_id: SESSION-2026-07-26-083732
+active_session_id: 05_Sessions/2026-07-26-083732-gate-v1-on-the-complete-browser-journey-openai-codex-gpt-5-6-sol
 context_status: completed
-context_summary: Advance [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey|STEP-10-08 Gate v1 on the Complete Browser Journey]].
+context_summary: Completed STEP-10-08 with the complete real-stack root and BASE_PATH browser journey plus the green 23-gate canonical campaign.
 ---
 
 # Step 08 - Gate v1 on the Complete Browser Journey
@@ -56,10 +57,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-21
-- Next action: Read [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey/Validation_Plan|Validation Plan]].
+- Status: completed
+- Current owner: phase10_step08_attempt2
+- Last touched: 2026-07-26
+- Next action: Root-orchestrator review and publication; stop before the v1.0 release action.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -70,6 +71,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 <!-- AGENT-START:step-session-history -->
 - 2026-07-23 - [[05_Sessions/2026-07-23-150614-gate-v1-on-the-complete-browser-journey-openai-codex-gpt-5-6-sol-fallback|SESSION-2026-07-23-150614 openai-codex/gpt-5.6-sol fallback session for Gate v1 on the Complete Browser Journey]] - Session created.
+- 2026-07-26 - [[05_Sessions/2026-07-26-083732-gate-v1-on-the-complete-browser-journey-openai-codex-gpt-5-6-sol|SESSION-2026-07-26-083732 openai-codex/gpt-5.6-sol session for Gate v1 on the Complete Browser Journey]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes

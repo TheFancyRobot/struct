@@ -10,7 +10,8 @@ import {
 
 const run = process.env['DATA_ENGINE_INTEGRATION'] === '1'
 const suite = run ? describe : describe.skip
-const token = 'struct-local-data-engine-token'
+const token = process.env['DATA_ENGINE_TOKEN']
+  ?? 'struct-local-data-engine-token'
 const fixturePath = join(
   process.cwd(),
   'packages/data-engine/test/fixtures/records.json',
