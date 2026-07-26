@@ -31,7 +31,7 @@ afterAll(async () => {
   await stopAppServer(web)
 })
 
-describe('workspace shell browser contract', () => {
+describe('responsive workspace browser contract', () => {
   it('keeps one ordered, overflow-free shell at every target width and theme', async () => {
     for (const width of [375, 768, 1024, 1440]) {
       for (const theme of ['struct-light', 'struct-dark'] as const) {
