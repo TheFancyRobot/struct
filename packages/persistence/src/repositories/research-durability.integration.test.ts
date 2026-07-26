@@ -193,6 +193,143 @@ describeIf('research durability (PostgreSQL, serial)', () => {
     )
   })
 
+  it('registers only current ready immutable source versions', async () => {
+    const staleSourceId = SourceId.make(id('446655440040'))
+    const staleVersionId = SourceVersionId.make(id('446655440041'))
+    const currentVersionId = SourceVersionId.make(id('446655440042'))
+    const datasetSourceId = SourceId.make(id('446655440043'))
+    const unreadyDatasetVersionId = SourceVersionId.make(id('446655440044'))
+    const registeredRunIds: Array<typeof ResearchRunId.Type> = []
+
+    const registration = (
+      sourceVersionId: typeof SourceVersionId.Type,
+      suffix: string,
+    ) => {
+      const createdAt = BigInt(Date.now())
+      const registeredThreadId = ResearchThreadId.make(id(`446655440${suffix}0`))
+      const registeredRunId = ResearchRunId.make(id(`446655440${suffix}1`))
+      const registeredJobId = JobQueueId.make(id(`446655440${suffix}2`))
+      registeredRunIds.push(registeredRunId)
+      return ResearchExecutionRepo.register({
+        workspaceId,
+        projectId,
+        sourceVersionIds: [sourceVersionId],
+        thread: {
+          id: registeredThreadId,
+          projectId,
+          title: 'Ready source scope',
+          createdAt,
+          updatedAt: createdAt,
+        },
+        run: {
+          id: registeredRunId,
+          threadId: registeredThreadId,
+          question: 'Is this source ready?',
+          status: 'pending',
+          createdAt,
+          updatedAt: createdAt,
+        },
+        job: {
+          id: registeredJobId,
+          workspaceId,
+          entityType: 'research',
+          entityId: registeredRunId,
+          status: 'pending',
+          payload: { projectId, sourceVersionIds: [sourceVersionId] },
+          attempts: 0,
+          maxAttempts: 1,
+          createdAt,
+          updatedAt: createdAt,
+        },
+        event: {
+          id: EventJournalId.make(id(`446655440${suffix}3`)),
+          workspaceId,
+          entityType: 'research',
+          entityId: registeredRunId,
+          eventType: 'research-started',
+          payload: {
+            jobId: registeredJobId,
+            threadId: registeredThreadId,
+          },
+          cursor: 0n,
+          createdAt,
+        },
+      }).pipe(Effect.provide(layer))
+    }
+
+    try {
+      await sql.unsafe(
+        `INSERT INTO sources (id, project_id, name, kind)
+         VALUES
+           ($1, $3, 'versioned.txt', 'document'),
+           ($2, $3, 'unready.csv', 'dataset')`,
+        [staleSourceId, datasetSourceId, projectId],
+      )
+      await sql.unsafe(
+        `INSERT INTO source_versions (
+           id, source_id, version, artifact_ref, content_hash
+         ) VALUES
+           ($1, $4, 1, 'artifact://versioned/1', $6),
+           ($2, $4, 2, 'artifact://versioned/2', $7),
+           ($3, $5, 1, 'artifact://unready/1', $8)`,
+        [
+          staleVersionId,
+          currentVersionId,
+          unreadyDatasetVersionId,
+          staleSourceId,
+          datasetSourceId,
+          `sha256:${'b'.repeat(64)}`,
+          `sha256:${'c'.repeat(64)}`,
+          `sha256:${'d'.repeat(64)}`,
+        ],
+      )
+
+      const stale = await Effect.runPromiseExit(
+        registration(staleVersionId, '05'),
+      )
+      const unreadyDataset = await Effect.runPromiseExit(
+        registration(unreadyDatasetVersionId, '06'),
+      )
+      const current = await Effect.runPromiseExit(
+        registration(currentVersionId, '07'),
+      )
+
+      expect(Exit.isFailure(stale)).toBe(true)
+      expect(Exit.isFailure(unreadyDataset)).toBe(true)
+      expect(Exit.isSuccess(current)).toBe(true)
+      if (Exit.isFailure(stale) && Exit.isFailure(unreadyDataset)) {
+        expect(String(stale.cause)).toContain('AuthorizationError')
+        expect(String(unreadyDataset.cause)).toContain('AuthorizationError')
+      }
+    } finally {
+      await sql.unsafe(
+        `DELETE FROM event_journal WHERE entity_id = ANY($1::uuid[])`,
+        [registeredRunIds],
+      )
+      await sql.unsafe(
+        `DELETE FROM job_queue WHERE entity_id = ANY($1::uuid[])`,
+        [registeredRunIds],
+      )
+      await sql.unsafe(
+        `DELETE FROM research_runs WHERE id = ANY($1::uuid[])`,
+        [registeredRunIds],
+      )
+      await sql.unsafe(
+        `DELETE FROM research_threads
+         WHERE project_id = $1 AND title = 'Ready source scope'`,
+        [projectId],
+      )
+      await sql.unsafe(
+        `DELETE FROM source_versions WHERE source_id = ANY($1::uuid[])`,
+        [[staleSourceId, datasetSourceId]],
+      )
+      await sql.unsafe(
+        `DELETE FROM sources WHERE id = ANY($1::uuid[])`,
+        [[staleSourceId, datasetSourceId]],
+      )
+    }
+  })
+
   afterAll(async () => {
     await sql.unsafe(
       `DELETE FROM research_cancellation_requests

@@ -9,10 +9,17 @@ import {
   createSignal,
   type Component,
 } from 'solid-js'
-import type { ProjectId, ResearchRunId, ResearchThreadId, SourceVersionId } from '@struct/domain'
+import { Schema } from 'effect'
+import {
+  SourceVersionId,
+  type ProjectId,
+  type ResearchRunId,
+  type ResearchThreadId,
+} from '@struct/domain'
 import { fetchSourceCatalog, decodeSourceActivityEvent, sourceActivityUrl } from '../api/sources'
 import { fetchResearchThread, fetchResearchThreads, submitResearch } from '../api/research'
 import { useSSE } from '../hooks/useSSE'
+import { reconcileSourceSelection } from './conversation-state'
 import { useWorkspaceState } from './workspace/workspace-state'
 import { ResearchStream } from './ResearchStream'
 
@@ -53,6 +60,7 @@ export const ConversationPanel: Component<{
   )
   const [selected, setSelected] = createSignal<ReadonlyArray<SourceVersionId>>([])
   const [selectionTouched, setSelectionTouched] = createSignal(false)
+  const [selectionNotice, setSelectionNotice] = createSignal<string>()
   const [submitting, setSubmitting] = createSignal(false)
   const [submitError, setSubmitError] = createSignal<string>()
   const storageKey = () => `struct:conversation:${props.projectId}:${props.threadId ?? 'new'}`
@@ -75,7 +83,7 @@ export const ConversationPanel: Component<{
       }
       if (typeof value.draft === 'string') workspace.setDraft(value.draft.slice(0, 2_048))
       if (Array.isArray(value.selected)) {
-        setSelected(value.selected.filter((id): id is SourceVersionId => typeof id === 'string'))
+        setSelected(value.selected.filter(Schema.is(SourceVersionId)))
         setSelectionTouched(value.selectionTouched === true)
       }
     } catch {
@@ -85,8 +93,19 @@ export const ConversationPanel: Component<{
 
   createEffect(() => {
     const ready = readyVersions()
-    if (!selectionTouched()) setSelected(ready)
-    else setSelected((current) => current.filter((id) => ready.includes(id)))
+    setSelected((current) => {
+      const reconciled = reconcileSourceSelection(
+        current,
+        ready,
+        selectionTouched(),
+      )
+      setSelectionNotice(reconciled.removed.length === 0
+        ? undefined
+        : reconciled.removed.length === 1
+          ? 'A source that is no longer ready was removed from this question.'
+          : `${reconciled.removed.length} sources that are no longer ready were removed from this question.`)
+      return reconciled.selected
+    })
   })
 
   createEffect(() => {
@@ -219,6 +238,9 @@ export const ConversationPanel: Component<{
             </div>
           </Show>
         </fieldset>
+        <Show when={selectionNotice()}>
+          {(message) => <p class="alert alert-warning mt-3" role="status">{message()}</p>}
+        </Show>
         <Show when={submitError()}>{(error) => <p class="alert alert-error mt-3" role="alert">{error()}</p>}</Show>
         <button
           type="submit"
