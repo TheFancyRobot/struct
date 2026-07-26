@@ -128,9 +128,17 @@ export const WorkspaceNavigation: ParentComponent<{
           </section>
         </Show>
         <section aria-labelledby="projects-heading">
-          <h3 id="projects-heading" class="mb-2 text-xs font-semibold uppercase tracking-wide text-base-content/60">
-            Projects
-          </h3>
+          <div class="mb-2 flex items-center justify-between gap-2">
+            <h3 id="projects-heading" class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+              Projects
+            </h3>
+            <a
+              href={withBasePath('/#project-create', appBasePath)}
+              class="btn btn-ghost min-h-11 px-3 text-xs"
+            >
+              Add project
+            </a>
+          </div>
           <label class="input input-sm mb-2 flex w-full items-center">
             <span class="sr-only">Search projects</span>
             <input
@@ -158,9 +166,31 @@ export const WorkspaceNavigation: ParentComponent<{
           </ul>
         </section>
         <section aria-labelledby="navigation-sources-heading">
-          <h3 id="navigation-sources-heading" class="mb-2 text-xs font-semibold uppercase tracking-wide text-base-content/60">
-            Sources
-          </h3>
+          <div class="mb-2 flex items-center justify-between gap-2">
+            <h3 id="navigation-sources-heading" class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+              Sources
+            </h3>
+            <Show
+              when={state.projectId() !== null}
+              fallback={(
+                <button
+                  type="button"
+                  class="btn btn-ghost min-h-11 px-3 text-xs"
+                  disabled
+                  aria-describedby="add-source-requirement"
+                >
+                  Add source
+                </button>
+              )}
+            >
+              <a
+                href={withBasePath(`${projectPath()}/sources#source-import-heading`, appBasePath)}
+                class="btn btn-ghost min-h-11 px-3 text-xs"
+              >
+                Add source
+              </a>
+            </Show>
+          </div>
           <label class="input input-sm mb-2 flex w-full items-center">
             <span class="sr-only">Search sources</span>
             <input
@@ -174,7 +204,7 @@ export const WorkspaceNavigation: ParentComponent<{
           </label>
           <Show
             when={state.projectId() !== null}
-            fallback={<p class="px-2 text-xs text-base-content/60">Open a project to view its sources.</p>}
+            fallback={<p id="add-source-requirement" class="px-2 text-xs text-base-content/60">Open a project to view its sources.</p>}
           >
             <ul class="menu w-full gap-1 p-0">
               <For

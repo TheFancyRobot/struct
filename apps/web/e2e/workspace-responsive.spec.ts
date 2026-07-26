@@ -32,6 +32,60 @@ afterAll(async () => {
 })
 
 describe('responsive workspace browser contract', () => {
+  it('exposes creation actions with project-aware source availability on desktop and mobile', async () => {
+    const projectId = '11111111-1111-4111-8111-111111111111'
+    const project = { id: projectId, name: 'Alpha research', createdAt: 1, updatedAt: 2 }
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
+    await page.route('**/api/projects', (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ items: [project], nextCursor: null }),
+    }))
+    await page.route(`**/api/projects/${projectId}`, (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(project),
+    }))
+    await page.route(`**/api/projects/${projectId}/sources`, (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ cursor: '0', items: [] }),
+    }))
+
+    await page.goto(origin)
+    const navigation = page.getByRole('navigation', { name: 'Workspace navigation' })
+    const addProject = navigation.getByRole('link', { name: 'Add project' })
+    const disabledAddSource = navigation.getByRole('button', { name: 'Add source' })
+    expect(await addProject.getAttribute('href')).toBe('/#project-create')
+    expect(await disabledAddSource.isDisabled()).toBe(true)
+    expect(await disabledAddSource.getAttribute('aria-describedby')).toBe('add-source-requirement')
+    expect(await navigation.locator('#add-source-requirement').textContent()).toBe('Open a project to view its sources.')
+    expect((await addProject.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    expect((await disabledAddSource.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+
+    await page.goto(`${origin}/projects/${projectId}`)
+    const addSource = navigation.getByRole('link', { name: 'Add source' })
+    expect(await addSource.getAttribute('href')).toBe(`/projects/${projectId}/sources#source-import-heading`)
+
+    await page.waitForFunction(
+      ([storageKey, expectedProjectId]) => window.localStorage.getItem(storageKey) === expectedProjectId,
+      ['struct:last-project-id', projectId],
+    )
+    await addProject.click()
+    await page.waitForURL(`${origin}/#project-create`)
+    const projectName = page.getByLabel('Project name')
+    await projectName.waitFor()
+    expect(await projectName.evaluate((element) => element === document.activeElement)).toBe(true)
+
+    await page.goto(`${origin}/projects/${projectId}`)
+    await page.setViewportSize({ width: 375, height: 844 })
+    await page.getByRole('button', { name: 'Open workspace navigation' }).click()
+    await addProject.waitFor()
+    expect((await addProject.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    expect((await addSource.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    await page.close()
+  })
+
   it('filters projects and current-project documents while hiding recents in a project', async () => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
     const projectId = '11111111-1111-4111-8111-111111111111'
