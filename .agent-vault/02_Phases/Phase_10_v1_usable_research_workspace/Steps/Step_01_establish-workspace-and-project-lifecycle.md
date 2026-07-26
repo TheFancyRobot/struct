@@ -17,6 +17,7 @@ related_sessions:
 related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
   - '[[03_Bugs/BUG-0018_vite-proxy-regression-test-does-not-typecheck|BUG-0018 Vite proxy regression test does not typecheck]]'
+  - '[[03_Bugs/BUG-0041_project-creation-controls-overlap-when-the-name-field-is-focused|BUG-0041 Project creation controls overlap when the name field is focused]]'
 tags:
   - agent-vault
   - step
