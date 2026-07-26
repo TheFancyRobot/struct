@@ -695,6 +695,55 @@ const server = Effect.gen(function* () {
       }
 
       const sourceRoute = /^\/api\/projects\/([^/]+)\/sources$/.exec(url.pathname)
+      const sourceImportProjectId = sourceRoute?.[1]
+        ?? (url.pathname === '/api/sources'
+          ? url.searchParams.get('projectId')
+          : null)
+      if (url.pathname === '/api/sources' && req.method === 'GET') {
+        const exit = await Runtime.runPromiseExit(effectRuntime)(
+          SourceCatalogRepo.list(identity.workspaceId, null).pipe(
+            Effect.provide(sourceCatalogLayer),
+          ),
+        )
+        return exit._tag === 'Failure'
+          ? jsonResponse({ error: 'SourceCatalogUnavailable' }, 503)
+          : jsonResponse(exit.value)
+      }
+
+      const sourceAttachmentRoute =
+        /^\/api\/projects\/([^/]+)\/sources\/([^/]+)$/.exec(url.pathname)
+      if (
+        sourceAttachmentRoute !== null
+        && (req.method === 'PUT' || req.method === 'DELETE')
+      ) {
+        const scope = Effect.try({
+          try: () => ({
+            projectId: Schema.decodeUnknownSync(ProjectId)(sourceAttachmentRoute[1]),
+            sourceId: Schema.decodeUnknownSync(SourceId)(sourceAttachmentRoute[2]),
+          }),
+          catch: () => new ValidationError({
+            field: 'sourceAttachment',
+            reason: 'invalid-scope',
+            message: 'Source attachment scope is invalid',
+          }),
+        })
+        const exit = await Runtime.runPromiseExit(effectRuntime)(
+          scope.pipe(Effect.flatMap(({ projectId, sourceId }) =>
+            SourceCatalogRepo.setAttached(
+              identity.workspaceId,
+              projectId,
+              sourceId,
+              req.method === 'PUT',
+            ).pipe(Effect.provide(sourceCatalogLayer)))),
+        )
+        if (exit._tag === 'Failure') {
+          return jsonResponse({ error: 'SourceAttachmentUnavailable' }, 503)
+        }
+        return exit.value
+          ? new Response(null, { status: 204 })
+          : jsonResponse({ error: 'ResourceNotFound' }, 404)
+      }
+
       if (sourceRoute !== null && req.method === 'GET') {
         const projectId = Schema.decodeUnknownSync(ProjectId)(sourceRoute[1])
         const exit = await Runtime.runPromiseExit(effectRuntime)(
@@ -776,7 +825,7 @@ const server = Effect.gen(function* () {
           : jsonResponse({ error: 'SourceJobNotFound' }, 404)
       }
 
-      if (sourceRoute !== null && req.method === 'POST') {
+      if (sourceImportProjectId !== null && req.method === 'POST') {
         const program = Effect.gen(function* () {
           const parsed = yield* Effect.tryPromise({
             try: () => decodeBrowserSourceImport(req, maxBytes),
@@ -786,7 +835,7 @@ const server = Effect.gen(function* () {
               message: 'Invalid browser source import',
             }),
           })
-          const projectId = yield* Schema.decodeUnknown(ProjectId)(sourceRoute[1])
+          const projectId = yield* Schema.decodeUnknown(ProjectId)(sourceImportProjectId)
           const prepared = yield* Effect.forEach(parsed.items, (item) =>
             Effect.either(withWalkingSliceSpan(
                 'command',

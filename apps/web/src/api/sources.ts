@@ -25,6 +25,28 @@ export async function fetchSourceCatalog(
   return Schema.decodeUnknownPromise(SourceCatalog)(await responseJson(response))
 }
 
+export async function fetchWorkspaceSourceCatalog(): Promise<typeof SourceCatalog.Type> {
+  const response = await fetch(apiPath('/sources', appBasePath), {
+    signal: AbortSignal.timeout(10_000),
+  })
+  return Schema.decodeUnknownPromise(SourceCatalog)(await responseJson(response))
+}
+
+export async function setProjectSourceAttached(
+  projectId: type.ProjectId,
+  sourceId: type.SourceId,
+  attached: boolean,
+): Promise<void> {
+  const response = await fetch(
+    apiPath(`/projects/${projectId}/sources/${sourceId}`, appBasePath),
+    {
+      method: attached ? 'PUT' : 'DELETE',
+      signal: AbortSignal.timeout(10_000),
+    },
+  )
+  if (!response.ok) throw new Error('Source attachment could not be updated')
+}
+
 export function sourceActivityUrl(
   projectId: type.ProjectId,
   cursor: string,

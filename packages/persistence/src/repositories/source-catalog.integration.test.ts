@@ -6,6 +6,7 @@ import {
   EventJournalId,
   JobQueueId,
   ProjectId,
+  SourceId,
   WorkspaceId,
 } from '@struct/domain'
 import { SqlClientLive } from '../sql-client'
@@ -15,6 +16,7 @@ const DATABASE_URL = process.env['DATABASE_URL']
 const describeIf = DATABASE_URL ? describe : describe.skip
 const workspaceId = WorkspaceId.make('a50e8400-e29b-41d4-a716-446655440000')
 const projectId = ProjectId.make('a50e8400-e29b-41d4-a716-446655440001')
+const secondProjectId = ProjectId.make('a50e8400-e29b-41d4-a716-446655440011')
 const readySourceId = 'a50e8400-e29b-41d4-a716-446655440002'
 const pendingSourceId = 'a50e8400-e29b-41d4-a716-446655440003'
 const readyJobId = 'a50e8400-e29b-41d4-a716-446655440004'
@@ -33,15 +35,17 @@ describeIf('source catalog projection', () => {
     await sql.unsafe('DELETE FROM source_versions WHERE source_id IN ($1, $2)', [readySourceId, pendingSourceId])
     await sql.unsafe('DELETE FROM sources WHERE project_id = $1', [projectId])
     await sql.unsafe('DELETE FROM projects WHERE id = $1', [projectId])
+    await sql.unsafe('DELETE FROM projects WHERE id = $1', [secondProjectId])
     await sql.unsafe('DELETE FROM workspaces WHERE id = $1', [workspaceId])
     await sql.unsafe('INSERT INTO workspaces (id, name) VALUES ($1, $2)', [workspaceId, 'Catalog workspace'])
     await sql.unsafe('INSERT INTO projects (id, workspace_id, name) VALUES ($1, $2, $3)', [projectId, workspaceId, 'Catalog project'])
+    await sql.unsafe('INSERT INTO projects (id, workspace_id, name) VALUES ($1, $2, $3)', [secondProjectId, workspaceId, 'Second project'])
     await sql.unsafe(
-      `INSERT INTO sources (id, project_id, name, kind) VALUES
-       ($1, $3, 'ready.md', 'document'),
-       ($2, $3, 'failed.md', 'document'),
-       ($4, $3, 'existing-directory', 'directory')`,
-      [readySourceId, pendingSourceId, projectId, directorySourceId],
+      `INSERT INTO sources (id, workspace_id, project_id, name, kind) VALUES
+       ($1, $3, $4, 'ready.md', 'document'),
+       ($2, $3, $4, 'failed.md', 'document'),
+       ($5, $3, $4, 'existing-directory', 'directory')`,
+      [readySourceId, pendingSourceId, workspaceId, projectId, directorySourceId],
     )
     await sql.unsafe(
       `INSERT INTO source_versions (
@@ -79,6 +83,7 @@ describeIf('source catalog projection', () => {
     await sql.unsafe('DELETE FROM source_versions WHERE source_id IN ($1, $2)', [readySourceId, pendingSourceId])
     await sql.unsafe('DELETE FROM sources WHERE project_id = $1', [projectId])
     await sql.unsafe('DELETE FROM projects WHERE id = $1', [projectId])
+    await sql.unsafe('DELETE FROM projects WHERE id = $1', [secondProjectId])
     await sql.unsafe('DELETE FROM workspaces WHERE id = $1', [workspaceId])
     await sql.end()
   })
@@ -155,5 +160,36 @@ describeIf('source catalog projection', () => {
       'ingestion-cancelled',
       'ingestion-retried',
     ])
+  })
+
+  it('lists each source once in the workspace and reuses it through project attachments', async () => {
+    const readyId = SourceId.make(readySourceId)
+    expect(await Effect.runPromise(SourceCatalogRepo.setAttached(
+      workspaceId,
+      secondProjectId,
+      readyId,
+      true,
+    ).pipe(Effect.provide(layer)))).toBe(true)
+
+    const workspace = await Effect.runPromise(
+      SourceCatalogRepo.list(workspaceId, null).pipe(Effect.provide(layer)),
+    )
+    const secondProject = await Effect.runPromise(
+      SourceCatalogRepo.list(workspaceId, secondProjectId).pipe(Effect.provide(layer)),
+    )
+    expect(workspace.items.filter((item) => item.sourceId === readyId)).toHaveLength(1)
+    expect(workspace.items.find((item) => item.sourceId === readyId)?.projectIds)
+      .toEqual([projectId, secondProjectId])
+    expect(secondProject.items.map((item) => item.sourceId)).toEqual([readyId])
+
+    expect(await Effect.runPromise(SourceCatalogRepo.setAttached(
+      workspaceId,
+      secondProjectId,
+      readyId,
+      false,
+    ).pipe(Effect.provide(layer)))).toBe(true)
+    expect((await Effect.runPromise(
+      SourceCatalogRepo.list(workspaceId, secondProjectId).pipe(Effect.provide(layer)),
+    )).items).toHaveLength(0)
   })
 })

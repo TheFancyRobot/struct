@@ -170,26 +170,12 @@ export const WorkspaceNavigation: ParentComponent<{
             <h3 id="navigation-sources-heading" class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
               Sources
             </h3>
-            <Show
-              when={state.projectId() !== null}
-              fallback={(
-                <button
-                  type="button"
-                  class="btn btn-ghost min-h-11 px-3 text-xs"
-                  disabled
-                  aria-describedby="add-source-requirement"
-                >
-                  Add source
-                </button>
-              )}
+            <a
+              href={withBasePath('/sources#source-import-heading', appBasePath)}
+              class="btn btn-ghost min-h-11 px-3 text-xs"
             >
-              <a
-                href={withBasePath(`${projectPath()}/sources#source-import-heading`, appBasePath)}
-                class="btn btn-ghost min-h-11 px-3 text-xs"
-              >
-                Add source
-              </a>
-            </Show>
+              Add source
+            </a>
           </div>
           <label class="input input-sm mb-2 flex w-full items-center">
             <span class="sr-only">Search sources</span>
@@ -204,7 +190,7 @@ export const WorkspaceNavigation: ParentComponent<{
           </label>
           <Show
             when={state.projectId() !== null}
-            fallback={<p id="add-source-requirement" class="px-2 text-xs text-base-content/60">Open a project to view its sources.</p>}
+            fallback={<a class="link px-2 text-xs" href={withBasePath('/sources', appBasePath)}>Manage source library</a>}
           >
             <ul class="menu w-full gap-1 p-0">
               <For

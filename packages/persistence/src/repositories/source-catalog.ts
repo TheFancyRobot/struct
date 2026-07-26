@@ -28,6 +28,7 @@ const CatalogRow = Schema.Struct({
   job_attempts: Schema.NullOr(Integer),
   job_max_attempts: Schema.NullOr(Integer),
   job_updated_at: Schema.NullOr(DateToNumber),
+  project_ids: Schema.Array(Schema.UUID),
 })
 
 const ActivityRow = Schema.Struct({
@@ -63,7 +64,7 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
 
       const list = Effect.fn('SourceCatalogRepo.list')(function* (
         workspaceId: type.WorkspaceId,
-        projectId: type.ProjectId,
+        projectId: type.ProjectId | null,
       ) {
         const [cursorRows, rows] = yield* Effect.tryPromise({
           try: async () => {
@@ -71,10 +72,14 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
               `SELECT COALESCE(MAX(event.cursor), 0)::text AS cursor
                FROM event_journal event
                JOIN sources source ON source.id = event.entity_id
-               JOIN projects project ON project.id = source.project_id
                WHERE event.workspace_id = $1
-                 AND project.id = $2
-                 AND project.workspace_id = $1
+                 AND source.workspace_id = $1
+                 AND ($2::uuid IS NULL OR EXISTS (
+                   SELECT 1 FROM project_sources attached
+                   WHERE attached.workspace_id = $1
+                     AND attached.project_id = $2
+                     AND attached.source_id = source.id
+                 ))
                  AND event.entity_type = 'ingestion'`,
               [workspaceId, projectId],
             )
@@ -105,8 +110,14 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
                       job.attempts AS job_attempts,
                       job.max_attempts AS job_max_attempts,
                       job.updated_at AS job_updated_at
+                      ,ARRAY(
+                        SELECT attached.project_id
+                        FROM project_sources attached
+                        WHERE attached.workspace_id = $1
+                          AND attached.source_id = source.id
+                        ORDER BY attached.attached_at, attached.project_id
+                      ) AS project_ids
                FROM sources source
-               JOIN projects project ON project.id = source.project_id
                LEFT JOIN LATERAL (
                  SELECT candidate.*
                  FROM source_versions candidate
@@ -119,12 +130,17 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
                  FROM job_queue candidate
                  WHERE candidate.entity_type = 'ingestion'
                    AND candidate.entity_id = source.id
-                   AND candidate.workspace_id = project.workspace_id
+                   AND candidate.workspace_id = source.workspace_id
                  ORDER BY candidate.updated_at DESC, candidate.id DESC
                  LIMIT 1
                ) job ON TRUE
-               WHERE project.workspace_id = $1
-                 AND project.id = $2
+               WHERE source.workspace_id = $1
+                 AND ($2::uuid IS NULL OR EXISTS (
+                   SELECT 1 FROM project_sources attached
+                   WHERE attached.workspace_id = $1
+                     AND attached.project_id = $2
+                     AND attached.source_id = source.id
+                 ))
                  AND source.kind <> 'directory'
                ORDER BY source.updated_at DESC, source.id`,
               [workspaceId, projectId],
@@ -175,6 +191,7 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
               readiness,
               updatedAt: row.updated_at,
               job,
+              projectIds: row.project_ids,
             }
           }),
         }).pipe(Effect.mapError(() => failure('decode')))
@@ -196,10 +213,14 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
                       event.created_at
                FROM event_journal event
                JOIN sources source ON source.id = event.entity_id
-               JOIN projects project ON project.id = source.project_id
                WHERE event.workspace_id = $1
-                 AND project.id = $2
-                 AND project.workspace_id = $1
+                 AND source.workspace_id = $1
+                 AND EXISTS (
+                   SELECT 1 FROM project_sources attached
+                   WHERE attached.workspace_id = $1
+                     AND attached.project_id = $2
+                     AND attached.source_id = source.id
+                 )
                  AND event.entity_type = 'ingestion'
                  AND event.cursor > $3
                ORDER BY event.cursor
@@ -238,13 +259,17 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
                SET status = CASE WHEN $4 = 'retry' THEN 'pending' ELSE 'cancelled' END,
                    updated_at = to_timestamp($5::bigint / 1000.0)
                FROM sources source
-               JOIN projects project ON project.id = source.project_id
                WHERE job.id = $3
                  AND job.workspace_id = $1
                  AND job.entity_type = 'ingestion'
                  AND job.entity_id = source.id
-                 AND project.id = $2
-                 AND project.workspace_id = $1
+                 AND source.workspace_id = $1
+                 AND EXISTS (
+                   SELECT 1 FROM project_sources attached
+                   WHERE attached.workspace_id = $1
+                     AND attached.project_id = $2
+                     AND attached.source_id = source.id
+                 )
                  AND (
                    ($4 = 'cancel' AND job.status IN ('pending', 'in-progress'))
                    OR
@@ -279,7 +304,53 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
         })
       })
 
-      return { list, listEventsAfter, controlJob }
+      const setAttached = Effect.fn('SourceCatalogRepo.setAttached')(function* (
+        workspaceId: type.WorkspaceId,
+        projectId: type.ProjectId,
+        sourceId: type.SourceId,
+        attached: boolean,
+      ) {
+        return yield* Effect.tryPromise({
+          try: async () => {
+            if (attached) {
+              const rows = await sql.unsafe(
+                `INSERT INTO project_sources (workspace_id, project_id, source_id)
+                 SELECT $1, project.id, source.id
+                 FROM projects project
+                 JOIN sources source ON source.id = $3 AND source.workspace_id = $1
+                 WHERE project.id = $2 AND project.workspace_id = $1
+                 ON CONFLICT DO NOTHING
+                 RETURNING source_id`,
+                [workspaceId, projectId, sourceId],
+              )
+              if (rows.length > 0) return true
+              const existing = await sql.unsafe(
+                `SELECT 1 FROM project_sources
+                 WHERE workspace_id = $1 AND project_id = $2 AND source_id = $3`,
+                [workspaceId, projectId, sourceId],
+              )
+              return existing.length === 1
+            }
+            const rows = await sql.unsafe(
+              `DELETE FROM project_sources attached
+               USING projects project, sources source
+               WHERE attached.workspace_id = $1
+                 AND attached.project_id = $2
+                 AND attached.source_id = $3
+                 AND project.id = attached.project_id
+                 AND project.workspace_id = $1
+                 AND source.id = attached.source_id
+                 AND source.workspace_id = $1
+               RETURNING attached.source_id`,
+              [workspaceId, projectId, sourceId],
+            )
+            return rows.length === 1
+          },
+          catch: () => failure(attached ? 'attach' : 'detach'),
+        })
+      })
+
+      return { list, listEventsAfter, controlJob, setAttached }
     }),
   },
 ) {}

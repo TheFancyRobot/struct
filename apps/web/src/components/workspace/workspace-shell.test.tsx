@@ -30,7 +30,7 @@ describe('workspace shell', () => {
     expect(html).toContain('Search projects')
     expect(html).toContain('Search sources')
     expect(html).toContain('href="/#project-create"')
-    expect(html).toContain('href="/projects/project-a/sources#source-import-heading"')
+    expect(html).toContain('href="/sources#source-import-heading"')
     expect(html).toContain('Add project')
     expect(html).toContain('Add source')
     expect((html.match(/aria-current="page"/g) ?? [])).toHaveLength(1)

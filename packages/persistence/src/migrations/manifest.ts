@@ -111,4 +111,9 @@ export const migrations: readonly Migration[] = [
     upPath: new URL('./0020_source_import_batches.sql', import.meta.url).pathname,
     downPath: new URL('./0020_source_import_batches.down.sql', import.meta.url).pathname,
   },
+  {
+    name: '0021_workspace_source_library',
+    upPath: new URL('./0021_workspace_source_library.sql', import.meta.url).pathname,
+    downPath: new URL('./0021_workspace_source_library.down.sql', import.meta.url).pathname,
+  },
 ] as const

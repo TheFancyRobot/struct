@@ -425,14 +425,17 @@ export class ProvenanceGraphRepo
                  ON document.id = chunk.document_id
                 AND document.source_version_id = chunk.source_version_id
                JOIN sources source ON source.id = document.source_id
-               JOIN projects project ON project.id = source.project_id
                WHERE chunk.id = $1 AND chunk.document_id = $2
                  AND chunk.source_version_id = $3
                  AND chunk.chunking_version = $4 AND chunk.ordinal = $5
                  AND document.workspace_id = $6
-                 AND document.project_id = $7
-                 AND source.project_id = $7
-                 AND project.workspace_id = $6`,
+                 AND source.workspace_id = $6
+                 AND EXISTS (
+                   SELECT 1 FROM project_sources attached
+                   WHERE attached.workspace_id = $6
+                     AND attached.project_id = $7
+                     AND attached.source_id = source.id
+                 )`,
               [
                 chunkId,
                 documentId,

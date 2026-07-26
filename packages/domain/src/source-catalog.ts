@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { EventJournalId, JobQueueId, SourceId, SourceVersionId } from './branded-ids.js'
+import { EventJournalId, JobQueueId, ProjectId, SourceId, SourceVersionId } from './branded-ids.js'
 import { JobStatus, SourceKind } from './schemas.js'
 
 const Timestamp = Schema.Number.pipe(Schema.int(), Schema.nonNegative())
@@ -33,6 +33,9 @@ export const SourceCatalogItem = Schema.Struct({
   readiness: SourceReadiness,
   updatedAt: Timestamp,
   job: Schema.NullOr(SourceCatalogJob),
+  projectIds: Schema.optionalWith(Schema.Array(ProjectId), {
+    default: () => [],
+  }),
 })
 export type SourceCatalogItem = Schema.Schema.Type<typeof SourceCatalogItem>
 

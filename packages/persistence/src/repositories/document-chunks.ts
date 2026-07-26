@@ -271,7 +271,6 @@ export class DocumentChunkRepo extends Effect.Service<DocumentChunkRepo>()(
                  SET updated_at = NOW()
                  FROM source_versions AS version
                  JOIN sources AS source ON source.id = version.source_id
-                 JOIN projects AS project ON project.id = source.project_id
                  WHERE job.id = $1
                    AND job.entity_type = 'ingestion'
                    AND job.entity_id = $2
@@ -280,8 +279,7 @@ export class DocumentChunkRepo extends Effect.Service<DocumentChunkRepo>()(
                    AND job.attempts = $4
                    AND version.id = $5
                    AND source.id = $2
-                   AND project.id = $6
-                   AND project.workspace_id = $3
+                   AND source.workspace_id = $3
                  RETURNING job.id`,
                 [
                   input.job.id,
@@ -289,7 +287,6 @@ export class DocumentChunkRepo extends Effect.Service<DocumentChunkRepo>()(
                   input.workspaceId,
                   input.job.attempts,
                   input.document.sourceVersionId,
-                  input.projectId,
                 ],
               )
               if (ownership.length !== 1) {

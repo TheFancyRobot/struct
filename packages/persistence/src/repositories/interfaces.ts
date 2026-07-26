@@ -415,8 +415,10 @@ function makeSourceRepositoryImpl(sql: import('../sql-client.js').SqlClientShape
       Effect.tryPromise({
         try: () =>
           sql.unsafe(
-            `INSERT INTO sources (id, project_id, name, kind, created_at, updated_at)
-             VALUES ($1, $2, $3, $4, to_timestamp($5 / 1000.0), to_timestamp($6 / 1000.0))
+            `INSERT INTO sources (id, workspace_id, project_id, name, kind, created_at, updated_at)
+             SELECT $1, project.workspace_id, $2, $3, $4,
+                    to_timestamp($5 / 1000.0), to_timestamp($6 / 1000.0)
+             FROM projects project WHERE project.id = $2
              RETURNING *`,
             [source.id, source.projectId, source.name, source.kind, Number(source.createdAt), Number(source.updatedAt)],
           ),
@@ -454,7 +456,15 @@ function makeSourceRepositoryImpl(sql: import('../sql-client.js').SqlClientShape
 
     findByProjectId: (projectId: typeof Domain.ProjectId.Type) =>
       Effect.tryPromise({
-        try: () => sql.unsafe(`SELECT * FROM sources WHERE project_id = $1 ORDER BY created_at DESC`, [projectId]),
+        try: () => sql.unsafe(
+          `SELECT source.*
+           FROM sources source
+           JOIN project_sources attached
+             ON attached.source_id = source.id
+           WHERE attached.project_id = $1
+           ORDER BY source.created_at DESC`,
+          [projectId],
+        ),
         catch: (err) => new QueryError({ operation: 'findByProjectId', entity: 'Source', message: String(err) }),
       }).pipe(
         Effect.flatMap((rows) =>
@@ -541,7 +551,6 @@ function makeSourceVersionRepositoryImpl(sql: import('../sql-client.js').SqlClie
               `UPDATE job_queue AS job
                SET updated_at = NOW()
                FROM sources AS source
-               JOIN projects AS project ON project.id = source.project_id
                WHERE job.id = $1
                  AND job.entity_type = 'ingestion'
                  AND job.entity_id = $2
@@ -549,7 +558,7 @@ function makeSourceVersionRepositoryImpl(sql: import('../sql-client.js').SqlClie
                  AND job.status = 'in-progress'
                  AND job.attempts = $4
                  AND source.id = $2
-                 AND project.workspace_id = $3
+                 AND source.workspace_id = $3
                RETURNING job.id`,
               [job.id, job.entityId, job.workspaceId, job.attempts],
             )
@@ -1268,12 +1277,11 @@ function makeJobQueueRepositoryImpl(sql: import('../sql-client.js').SqlClientSha
                     job.attempts, job.max_attempts, job.payload
              FROM job_queue job
              JOIN sources source ON source.id = job.entity_id
-             JOIN projects project ON project.id = source.project_id
              WHERE job.id = $1
                AND job.entity_type = 'ingestion'
                AND job.entity_id = $2
                AND job.workspace_id = $3
-               AND project.workspace_id = $3
+               AND source.workspace_id = $3
                AND job.status = 'in-progress'
                AND job.attempts = $4
              FOR UPDATE`,

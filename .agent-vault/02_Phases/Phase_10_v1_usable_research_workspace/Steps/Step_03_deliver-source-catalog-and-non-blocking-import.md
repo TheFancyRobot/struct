@@ -16,6 +16,7 @@ related_sessions:
   - '[[05_Sessions/2026-07-26-063333-deliver-source-catalog-and-non-blocking-import-openai-codex-gpt-5-6-sol|SESSION-2026-07-26-063333 OpenAI Codex GPT-5.6-sol session for Deliver Source Catalog and Non Blocking Import]]'
 related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
+  - '[[03_Bugs/BUG-0045_sources-are-scoped-to-one-project-and-cannot-be-reused|BUG-0045 Sources are scoped to one project and cannot be reused]]'
 tags:
   - agent-vault
   - step

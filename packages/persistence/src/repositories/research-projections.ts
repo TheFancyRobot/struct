@@ -269,13 +269,18 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
                  ON text.source_version_id = version.id
                LEFT JOIN documents document
                  ON document.source_version_id = version.id
-                AND document.project_id = thread.project_id
                 AND document.source_id = source.id
                WHERE citation.id = $1
                  AND citation.status = 'validated'
                  AND thread.id = $2
                  AND thread.project_id = $3
-                 AND source.project_id = $3`,
+                 AND EXISTS (
+                   SELECT 1 FROM project_sources attached
+                   JOIN projects project ON project.id = attached.project_id
+                   WHERE attached.project_id = $3
+                     AND attached.source_id = source.id
+                     AND project.workspace_id = source.workspace_id
+                 )`,
               [citationId, threadId, projectId],
             ),
             catch: () => new QueryError({

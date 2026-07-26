@@ -361,17 +361,24 @@ export class SourceRegistrationRepo extends Effect.Service<SourceRegistrationRep
             const projectId = String(authorizedProject['id'])
             const workspaceId = String(authorizedProject['workspace_id'])
             const sourceRows = await transaction.unsafe(
-              `INSERT INTO sources (id, project_id, name, kind, created_at, updated_at)
-               VALUES ($1, $2, $3, $4, to_timestamp($5 / 1000.0), to_timestamp($6 / 1000.0))
+              `INSERT INTO sources (id, workspace_id, project_id, name, kind, created_at, updated_at)
+               VALUES ($1, $2, $3, $4, $5, to_timestamp($6 / 1000.0), to_timestamp($7 / 1000.0))
                RETURNING *`,
               [
                 input.source.id,
+                workspaceId,
                 projectId,
                 input.source.name,
                 input.source.kind,
                 Number(input.source.createdAt),
                 Number(input.source.updatedAt),
               ],
+            )
+            await transaction.unsafe(
+              `INSERT INTO project_sources (workspace_id, project_id, source_id)
+               VALUES ($1, $2, $3)
+               ON CONFLICT DO NOTHING`,
+              [workspaceId, projectId, input.source.id],
             )
             const jobRows = await transaction.unsafe(
               `INSERT INTO job_queue (id, workspace_id, entity_type, entity_id, status, payload, attempts, max_attempts, created_at, updated_at)
@@ -513,20 +520,28 @@ export class SourceRegistrationRepo extends Effect.Service<SourceRegistrationRep
                 }
                 await transaction.unsafe(
                   `INSERT INTO sources (
-                     id, project_id, name, kind, created_at, updated_at
+                     id, workspace_id, project_id, name, kind, created_at, updated_at
                    ) VALUES (
-                     $1, $2, $3, $4,
-                     to_timestamp($5 / 1000.0),
-                     to_timestamp($6 / 1000.0)
+                     $1, $2, $3, $4, $5,
+                     to_timestamp($6 / 1000.0),
+                     to_timestamp($7 / 1000.0)
                    )`,
                   [
                     registration.source.id,
+                    input.workspaceId,
                     input.projectId,
                     registration.source.name,
                     registration.source.kind,
                     Number(registration.source.createdAt),
                     Number(registration.source.updatedAt),
                   ],
+                )
+                await transaction.unsafe(
+                  `INSERT INTO project_sources (
+                     workspace_id, project_id, source_id
+                   ) VALUES ($1, $2, $3)
+                   ON CONFLICT DO NOTHING`,
+                  [input.workspaceId, input.projectId, registration.source.id],
                 )
                 await transaction.unsafe(
                   `INSERT INTO job_queue (

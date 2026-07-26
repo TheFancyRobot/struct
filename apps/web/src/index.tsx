@@ -25,6 +25,7 @@ render(
   () => (
     <Router root={App} base={routerBase}>
       <Route path="/" component={HomePage} />
+      <Route path="/sources" component={SourcesPage} />
       <Route path="/projects/:projectId" component={ProjectPage} />
       <Route path="/projects/:projectId/sources" component={SourcesPage} />
       <Route path="/projects/:projectId/notes" component={NotesPage} />
