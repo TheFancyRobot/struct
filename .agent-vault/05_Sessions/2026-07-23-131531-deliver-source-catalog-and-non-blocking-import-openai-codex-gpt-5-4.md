@@ -26,7 +26,7 @@ related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
 related_decisions: []
 created: '2026-07-23'
-updated: '2026-07-23'
+updated: '2026-07-26'
 tags:
   - agent-vault
   - session
@@ -133,7 +133,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Agent Vault doctor — clean: 244 notes, zero errors or warnings.
 - Root verification (2026-07-23): focused source import/catalog tests, browser E2E, `bun run typecheck`, `bun run lint`, `bun run lint:imports`, `bun run test` (947 pass, 3 expected skips), `bun run build`, `bun run docs:lint`, `bun run secrets:scan`, `bun install --frozen-lockfile`, `git diff --check`, and Agent Vault doctor all passed.
 - STEP-10-03 verification attempt (2026-07-26): focused domain/API/persistence coverage passed (18 tests); focused web coverage passed (3 tests); `bun run typecheck` passed.
-- No product code changed. Exact remaining gap is unchanged: structured dataset import/materialization and durable batch idempotency require a separately bounded cross-cutting implementation; the step must not be marked complete from the existing BUG-0013 remediation slice.
+- No product code changed in this verification attempt. At that time, structured dataset import/materialization and durable batch idempotency required a separately bounded cross-cutting implementation; that work is now completed in [[05_Sessions/2026-07-26-063333-deliver-source-catalog-and-non-blocking-import-openai-codex-gpt-5-6-sol|the later STEP-10-03 implementation session]].
 
 ## Bugs Encountered
 
