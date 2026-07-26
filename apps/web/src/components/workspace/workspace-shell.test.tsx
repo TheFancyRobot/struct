@@ -27,6 +27,8 @@ describe('workspace shell', () => {
     expect(html).not.toContain('Grounded analysis')
     expect(html).not.toContain('max-w-')
     expect(html).toContain('href="/projects/project-a/sources" aria-current="page"')
+    expect(html).toContain('Search projects')
+    expect(html).toContain('Search sources')
     expect((html.match(/aria-current="page"/g) ?? [])).toHaveLength(1)
   })
 })

@@ -6,14 +6,19 @@ import {
   ResearchThreadId,
 } from '@struct/domain'
 import {
+  For,
   Show,
   createEffect,
   createMemo,
+  createResource,
+  createSignal,
   onCleanup,
   onMount,
   type ParentComponent,
 } from 'solid-js'
 import { basePathFromPublicBaseUrl, stripBasePath, withBasePath } from '../../base-path'
+import { fetchProjects } from '../../api/projects'
+import { fetchSourceCatalog } from '../../api/sources'
 import { EvidenceInspector as EvidenceDetailInspector } from '../EvidenceInspector'
 import { parseEvidenceSelection } from '../evidence-selection'
 import { useWorkspaceState } from './workspace-state'
@@ -21,6 +26,17 @@ import { useWorkspaceState } from './workspace-state'
 type Theme = 'struct-light' | 'struct-dark'
 
 const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
+const RECENT_PROJECT_IDS_KEY = 'struct:recent-project-ids'
+
+function readRecentProjectIds(): ReadonlyArray<string> {
+  if (typeof window === 'undefined') return []
+  try {
+    const value: unknown = JSON.parse(window.localStorage.getItem(RECENT_PROJECT_IDS_KEY) ?? '[]')
+    return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
+  } catch {
+    return []
+  }
+}
 
 function focus(element: HTMLElement | undefined): void {
   queueMicrotask(() => element?.focus())
@@ -33,11 +49,42 @@ export const WorkspaceNavigation: ParentComponent<{
   readonly onCollapse: () => void
 }> = (props) => {
   const state = useWorkspaceState()
+  const [projectSearch, setProjectSearch] = createSignal('')
+  const [sourceSearch, setSourceSearch] = createSignal('')
+  const [recentProjectIds, setRecentProjectIds] = createSignal(readRecentProjectIds())
+  const [projects] = createResource(fetchProjects)
+  const [sources] = createResource(state.projectId, (projectId) =>
+    projectId === null || !Schema.is(ProjectId)(projectId)
+      ? null
+      : fetchSourceCatalog(projectId))
   const projectPath = () => state.projectId() === null
     ? '/'
     : `/projects/${state.projectId()}`
   const isCurrent = (path: string) =>
     props.currentPathname === withBasePath(path, appBasePath)
+  const matches = (name: string, query: string) =>
+    name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())
+  const filteredProjects = createMemo(() =>
+    (projects()?.items ?? []).filter((project) => matches(project.name, projectSearch())))
+  const recentProjects = createMemo(() => {
+    return recentProjectIds().flatMap((id) => {
+      const project = (projects()?.items ?? []).find((item) => item.id === id)
+      return project === undefined ? [] : [project]
+    })
+  })
+  const recentSources = createMemo(() =>
+    (sources()?.items ?? [])
+      .filter((source) => source.kind === 'document' && matches(source.name, sourceSearch()))
+      .toSorted((left, right) => right.updatedAt - left.updatedAt)
+      .slice(0, 5))
+
+  createEffect(() => {
+    const projectId = state.projectId()
+    if (projectId === null || typeof window === 'undefined') return
+    const next = [projectId, ...readRecentProjectIds().filter((id) => id !== projectId)].slice(0, 5)
+    window.localStorage.setItem(RECENT_PROJECT_IDS_KEY, JSON.stringify(next))
+    setRecentProjectIds(next)
+  })
 
   return (
     <nav
@@ -65,12 +112,85 @@ export const WorkspaceNavigation: ParentComponent<{
           Collapse
         </button>
       </div>
-      <ul class="menu min-h-0 w-full flex-1 gap-1 overflow-y-auto p-0 text-sm">
-        <li>
-          <a href={withBasePath('/', appBasePath)}>
+      <div class="min-h-0 flex-1 space-y-5 overflow-y-auto px-2 py-3 text-sm">
+        <Show when={state.projectId() === null && recentProjects().length > 0}>
+          <section aria-labelledby="recent-projects-heading">
+            <h3 id="recent-projects-heading" class="mb-2 text-xs font-semibold uppercase tracking-wide text-base-content/60">
+              Recents
+            </h3>
+            <ul class="menu w-full gap-1 p-0">
+              <For each={recentProjects()}>
+                {(project) => (
+                  <li><a href={withBasePath(`/projects/${project.id}`, appBasePath)}>{project.name}</a></li>
+                )}
+              </For>
+            </ul>
+          </section>
+        </Show>
+        <section aria-labelledby="projects-heading">
+          <h3 id="projects-heading" class="mb-2 text-xs font-semibold uppercase tracking-wide text-base-content/60">
             Projects
-          </a>
-        </li>
+          </h3>
+          <label class="input input-sm mb-2 flex w-full items-center">
+            <span class="sr-only">Search projects</span>
+            <input
+              type="search"
+              class="grow"
+              aria-label="Search projects"
+              placeholder="Search projects"
+              value={projectSearch()}
+              onInput={(event) => setProjectSearch(event.currentTarget.value)}
+            />
+          </label>
+          <ul class="menu w-full gap-1 p-0">
+            <For each={filteredProjects()}>
+              {(project) => (
+                <li>
+                  <a
+                    href={withBasePath(`/projects/${project.id}`, appBasePath)}
+                    aria-current={isCurrent(`/projects/${project.id}`) ? 'page' : undefined}
+                  >
+                    {project.name}
+                  </a>
+                </li>
+              )}
+            </For>
+          </ul>
+        </section>
+        <section aria-labelledby="navigation-sources-heading">
+          <h3 id="navigation-sources-heading" class="mb-2 text-xs font-semibold uppercase tracking-wide text-base-content/60">
+            Sources
+          </h3>
+          <label class="input input-sm mb-2 flex w-full items-center">
+            <span class="sr-only">Search sources</span>
+            <input
+              type="search"
+              class="grow"
+              aria-label="Search sources"
+              placeholder="Search sources"
+              value={sourceSearch()}
+              onInput={(event) => setSourceSearch(event.currentTarget.value)}
+            />
+          </label>
+          <Show
+            when={state.projectId() !== null}
+            fallback={<p class="px-2 text-xs text-base-content/60">Open a project to view its sources.</p>}
+          >
+            <ul class="menu w-full gap-1 p-0">
+              <For
+                each={recentSources()}
+                fallback={<li class="px-2 text-xs text-base-content/60">No documents loaded.</li>}
+              >
+                {(source) => (
+                  <li>
+                    <a href={withBasePath(`${projectPath()}/sources`, appBasePath)}>{source.name}</a>
+                  </li>
+                )}
+              </For>
+            </ul>
+          </Show>
+        </section>
+        <ul class="menu w-full gap-1 p-0">
         <Show when={state.projectId() !== null}>
           <li class="menu-title mt-3 text-xs">Project</li>
           <li>
@@ -90,7 +210,8 @@ export const WorkspaceNavigation: ParentComponent<{
           </li>
           <li><button type="button" disabled>Reports</button></li>
         </Show>
-      </ul>
+        </ul>
+      </div>
       <p class="px-2 py-3 text-xs leading-relaxed text-base-content/60">
         Source-grounded research with inspectable evidence.
       </p>
