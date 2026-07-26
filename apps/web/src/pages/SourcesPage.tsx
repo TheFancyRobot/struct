@@ -150,7 +150,7 @@ export const SourcesPage: Component = () => {
                       />
                       <span>Attach new sources to a project</span>
                     </label>
-                    <Show when={attachNewSources()}>
+                    <Show when={(projects()?.items.length ?? 0) > 0}>
                     <label class="form-control block">
                       <span class="label-text">Project</span>
                       <select
