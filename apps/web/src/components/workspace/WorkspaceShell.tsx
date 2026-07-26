@@ -190,7 +190,7 @@ export const WorkspaceNavigation: ParentComponent<{
           </label>
           <Show
             when={state.projectId() !== null}
-            fallback={<a class="link px-2 text-xs" href={withBasePath('/sources', appBasePath)}>Manage source library</a>}
+            fallback={<a class="link inline-flex min-h-11 items-center px-2 text-xs" href={withBasePath('/sources', appBasePath)}>Manage source library</a>}
           >
             <ul class="menu w-full gap-1 p-0">
               <For

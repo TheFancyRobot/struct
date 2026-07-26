@@ -32,7 +32,7 @@ afterAll(async () => {
 })
 
 describe('responsive workspace browser contract', () => {
-  it('exposes creation actions with project-aware source availability on desktop and mobile', async () => {
+  it('exposes creation actions with workspace-scoped source availability on desktop and mobile', async () => {
     const projectId = '11111111-1111-4111-8111-111111111111'
     const project = { id: projectId, name: 'Alpha research', createdAt: 1, updatedAt: 2 }
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
@@ -55,17 +55,19 @@ describe('responsive workspace browser contract', () => {
     await page.goto(origin)
     const navigation = page.getByRole('navigation', { name: 'Workspace navigation' })
     const addProject = navigation.getByRole('link', { name: 'Add project' })
-    const disabledAddSource = navigation.getByRole('button', { name: 'Add source' })
+    // Source registration is workspace-scoped (STEP-10-09 / BUG-0046): "Add source" is always
+    // an enabled link to the global source library, never a project-gated disabled button.
+    const addSource = navigation.getByRole('link', { name: 'Add source' })
     expect(await addProject.getAttribute('href')).toBe('/#project-create')
-    expect(await disabledAddSource.isDisabled()).toBe(true)
-    expect(await disabledAddSource.getAttribute('aria-describedby')).toBe('add-source-requirement')
-    expect(await navigation.locator('#add-source-requirement').textContent()).toBe('Open a project to view its sources.')
+    expect(await addSource.getAttribute('href')).toBe('/sources#source-import-heading')
+    expect(await navigation.getByRole('button', { name: 'Add source' }).count()).toBe(0)
+    expect(await navigation.locator('#add-source-requirement').count()).toBe(0)
     expect((await addProject.boundingBox())!.height).toBeGreaterThanOrEqual(44)
-    expect((await disabledAddSource.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    expect((await addSource.boundingBox())!.height).toBeGreaterThanOrEqual(44)
 
     await page.goto(`${origin}/projects/${projectId}`)
-    const addSource = navigation.getByRole('link', { name: 'Add source' })
-    expect(await addSource.getAttribute('href')).toBe(`/projects/${projectId}/sources#source-import-heading`)
+    // The Add source link stays pointed at the global library even with a project open.
+    expect(await addSource.getAttribute('href')).toBe('/sources#source-import-heading')
 
     await page.waitForFunction(
       ([storageKey, expectedProjectId]) => window.localStorage.getItem(storageKey) === expectedProjectId,
