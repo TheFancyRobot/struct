@@ -4,7 +4,7 @@ template_version: 2
 contract_version: 1
 title: v1 Usable Research Workspace
 phase_id: PHASE-10
-status: completed
+status: blocked
 owner: Codex
 created: '2026-07-21'
 updated: '2026-07-26'
@@ -29,6 +29,8 @@ related_bugs:
   - '[[03_Bugs/BUG-0043_workspace-navigation-lacks-project-source-and-recent-discovery-sections|BUG-0043 Workspace navigation lacks project, source, and recent discovery sections]]'
   - '[[03_Bugs/BUG-0044_navigation-discovery-sections-lack-direct-creation-actions|BUG-0044 Navigation discovery sections lack direct creation actions]]'
   - '[[03_Bugs/BUG-0045_sources-are-scoped-to-one-project-and-cannot-be-reused|BUG-0045 Sources are scoped to one project and cannot be reused]]'
+  - '[[03_Bugs/BUG-0046_global-source-import-is-blocked-by-project-selection|BUG-0046 Global source import is blocked by project selection]]'
+  - '[[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]'
 tags:
   - agent-vault
   - phase
@@ -129,6 +131,8 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - [[03_Bugs/BUG-0043_workspace-navigation-lacks-project-source-and-recent-discovery-sections|BUG-0043 Workspace navigation lacks project, source, and recent discovery sections]]
 - [[03_Bugs/BUG-0044_navigation-discovery-sections-lack-direct-creation-actions|BUG-0044 Navigation discovery sections lack direct creation actions]]
 - [[03_Bugs/BUG-0045_sources-are-scoped-to-one-project-and-cannot-be-reused|BUG-0045 Sources are scoped to one project and cannot be reused]]
+- [[03_Bugs/BUG-0046_global-source-import-is-blocked-by-project-selection|BUG-0046 Global source import is blocked by project selection]]
+- [[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps

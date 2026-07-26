@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-26._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey|STEP-10-08 Gate v1 on the Complete Browser Journey]] - status: completed - phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]
-- Active phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: completed - updated: 2026-07-26
-- Pending handoff: Phase 10 review and merge; 0 open critical bugs.
+- Current step: none - roadmap advancement is blocked by [[03_Bugs/BUG-0046_global-source-import-is-blocked-by-project-selection|BUG-0046]] and [[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047]].
+- Active phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: blocked - updated: 2026-07-26.
+- Pending handoff: implement and validate BUG-0046 and BUG-0047; do not approve or merge PR #89 until both are fixed.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -40,7 +40,7 @@ _Last refreshed: 2026-07-26._
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
 - Phase 06 is completed, reviewed, and merged through STEP-06-06.
-- Phases 07–09 are complete and merged. Phase 10 and STEP-10-01 through STEP-10-08 are complete and awaiting final review and merge.
+- Phases 07–09 are complete and merged. Phase 10 delivery is blocked by BUG-0046 and BUG-0047; do not approve or merge its documentation PR until both fixes are validated.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 - Current correction: BUG-0013 is fixed by the validated real-stack root and BASE_PATH browser journey. The v1.0 release action remains intentionally unperformed.
 
@@ -58,13 +58,13 @@ _Last refreshed: 2026-07-26._
 ## Blockers
 
 <!-- AGENT-START:blockers -->
-- No phase, step, or session notes are currently marked blocked.
+- Phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: blocked - owner: Codex - updated: 2026-07-26
 <!-- AGENT-END:blockers -->
 
 ## Open Questions
 
 - No unresolved design question remains in the completed Phase 09 work.
-- PHASE-10 has no unresolved design question. BUG-0013 is fixed; do not perform the v1.0 release action without explicit authorization.
+- PHASE-10 is blocked on BUG-0046 and BUG-0047. Phase 11 must not advance until both defects are fixed and validated; do not perform the v1.0 release action without explicit authorization.
 
 ## Critical Bugs
 
@@ -76,5 +76,5 @@ _Last refreshed: 2026-07-26._
 
 ## Next Actions
 
-- Complete root-orchestrator review and merge of the validated Phase 10 branch, then refine Phase 11 before activating STEP-11-01.
+- Implement and validate BUG-0046 and BUG-0047 in separate bug branches and PRs; only then approve or merge PR #89 and refine Phase 11 before activating STEP-11-01.
 - Do not perform the v1.0 release action without explicit authorization.
