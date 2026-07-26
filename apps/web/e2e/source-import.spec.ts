@@ -185,8 +185,10 @@ describe('source import browser path', () => {
         await importPanel.waitFor()
         await page.getByRole('heading', { name: 'Source library' }).waitFor()
         await page.getByText('No sources loaded.').waitFor()
+        const attachmentNotice = page.getByTestId('source-library-attachment-notice')
+        await attachmentNotice.waitFor()
 
-        const { importLeft, headingLeft, contentLeft } = await page.evaluate(() => {
+        const { importLeft, headingLeft, contentLeft, contentTop } = await page.evaluate(() => {
           const content = document.querySelector('main .overflow-auto')! as HTMLElement
           const panel = document.querySelector('section[aria-labelledby="source-import-heading"]')! as HTMLElement
           const heading = document.querySelector('#workspace-source-library-heading')! as HTMLElement
@@ -194,14 +196,20 @@ describe('source import browser path', () => {
             importLeft: panel.getBoundingClientRect().left,
             headingLeft: heading.getBoundingClientRect().left,
             contentLeft: content.getBoundingClientRect().left,
+            contentTop: content.getBoundingClientRect().top,
           }
         })
+        const noticeTop = (await attachmentNotice.boundingBox())!.y
 
         // The notice and the source-library heading share the same responsive content gutter.
         expect(Math.abs(importLeft - headingLeft)).toBeLessThanOrEqual(1)
         // Neither touches the workspace edge: both are inset by the gutter (16px compact, 24px desktop).
         expect(importLeft - contentLeft).toBeGreaterThanOrEqual(12)
         expect(headingLeft - contentLeft).toBeGreaterThanOrEqual(12)
+        // The attachment notice is inset from the workspace top edge by the same responsive gutter
+        // (16px compact, 24px desktop), so it cannot render flush at the central viewport edge.
+        const expectedTopInset = width === 1440 ? 24 : 16
+        expect(Math.abs((noticeTop - contentTop) - expectedTopInset)).toBeLessThanOrEqual(1)
         // Accessible feedback semantics are preserved on the import notice.
         expect(await importPanel.getAttribute('aria-labelledby')).toBe('source-import-heading')
       } finally {

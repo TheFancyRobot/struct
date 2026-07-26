@@ -115,7 +115,7 @@ export const SourcesPage: Component = () => {
   }
 
   return (
-    <section class="mx-auto max-w-4xl space-y-4 px-4 sm:px-6">
+    <section class="mx-auto max-w-4xl space-y-4 px-4 sm:px-6 pt-4 sm:pt-6">
       <Show when={libraryMode() || projectId() !== null} fallback={<p class="alert alert-error">This project is no longer available.</p>}>
         <Show when={commandError()}>{(error) => <p class="alert alert-error" role="alert">{error()}</p>}</Show>
         <Show when={catalog.error === undefined} fallback={(
@@ -139,7 +139,7 @@ export const SourcesPage: Component = () => {
                   />
                 </Show>
                 <Show when={libraryMode()}>
-                  <div class="space-y-3 rounded-box border border-base-300 bg-base-100 p-4">
+                  <div data-testid="source-library-attachment-notice" class="space-y-3 rounded-box border border-base-300 bg-base-100 p-4">
                     <label class="flex min-h-11 cursor-pointer items-center gap-3">
                       <input
                         type="checkbox"
