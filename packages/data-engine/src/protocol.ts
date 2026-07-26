@@ -20,11 +20,56 @@ export type ArtifactToken = Schema.Schema.Type<typeof ArtifactToken>
 
 export const DataEngineInput = Schema.Struct({
   ordinal: NonNegativeInteger,
-  format: Schema.Literal('json', 'jsonl', 'csv'),
+  format: Schema.Literal('json', 'jsonl', 'csv', 'tsv', 'parquet'),
   artifactDigest: ArtifactDigest,
   contentHash: Sha256Digest,
 })
 export type DataEngineInput = Schema.Schema.Type<typeof DataEngineInput>
+
+export const InspectDatasetRequest = Schema.Struct({
+  protocolVersion: Schema.Literal(DATA_ENGINE_PROTOCOL_VERSION),
+  operation: Schema.Literal('inspect'),
+  input: DataEngineInput,
+  limits: Schema.Struct({
+    maxInputBytes: PositiveInteger,
+    maxRows: PositiveInteger,
+    timeoutMs: PositiveInteger,
+  }),
+})
+export type InspectDatasetRequest =
+  Schema.Schema.Type<typeof InspectDatasetRequest>
+
+export const InspectDatasetResult = Schema.Struct({
+  protocolVersion: Schema.Literal(DATA_ENGINE_PROTOCOL_VERSION),
+  fields: Schema.Array(DatasetFieldSchema).pipe(Schema.minItems(1)),
+  rowCount: PositiveInteger,
+})
+export type InspectDatasetResult =
+  Schema.Schema.Type<typeof InspectDatasetResult>
+
+export const InspectDatasetResponse = Schema.Union(
+  Schema.Struct({ ok: Schema.Literal(true), result: InspectDatasetResult }),
+  Schema.Struct({
+    ok: Schema.Literal(false),
+    error: Schema.Struct({
+      code: Schema.Literal(
+        'authentication',
+        'protocol',
+        'invalid-input',
+        'invalid-query',
+        'not-found',
+        'handoff-not-found',
+        'lineage',
+        'resource-limit',
+        'busy',
+        'cancelled',
+        'timeout',
+        'engine',
+      ),
+      message: Schema.String,
+    }),
+  }),
+)
 
 export const MaterializeRequest = Schema.Struct({
   protocolVersion: Schema.Literal(DATA_ENGINE_PROTOCOL_VERSION),

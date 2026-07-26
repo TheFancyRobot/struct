@@ -117,7 +117,7 @@ function validateRequest(value) {
     if (
       !exactKeys(input, ['ordinal', 'format', 'artifactDigest', 'contentHash'])
       || input.ordinal !== ordinal
-      || !['json', 'jsonl', 'csv'].includes(input.format)
+      || !['json', 'jsonl', 'csv', 'tsv', 'parquet'].includes(input.format)
       || !/^[a-f0-9]{64}$/.test(input.artifactDigest)
       || input.contentHash !== `sha256:${input.artifactDigest}`
     ) {
@@ -149,6 +149,37 @@ function validateRequest(value) {
     || value.limits.timeoutMs > MAX_TIMEOUT_MS
   ) {
     throw new RequestFailure('resource-limit', 'Materialization limits exceed sidecar policy')
+  }
+  return value
+}
+
+function validateInspectRequest(value) {
+  if (!exactKeys(value, ['protocolVersion', 'operation', 'input', 'limits'])) {
+    throw new RequestFailure('protocol', 'Inspect fields do not match protocol version 1')
+  }
+  if (value.protocolVersion !== PROTOCOL_VERSION || value.operation !== 'inspect') {
+    throw new RequestFailure('protocol', 'Unsupported protocol version or operation')
+  }
+  const input = value.input
+  if (
+    !exactKeys(input, ['ordinal', 'format', 'artifactDigest', 'contentHash'])
+    || input.ordinal !== 0
+    || !['json', 'jsonl', 'csv', 'tsv', 'parquet'].includes(input.format)
+    || !/^[a-f0-9]{64}$/.test(input.artifactDigest)
+    || input.contentHash !== `sha256:${input.artifactDigest}`
+  ) {
+    throw new RequestFailure('lineage', 'Inspect input lineage is invalid')
+  }
+  if (
+    !exactKeys(value.limits, ['maxInputBytes', 'maxRows', 'timeoutMs'])
+    || !Object.values(value.limits).every(
+      (limit) => Number.isSafeInteger(limit) && limit > 0,
+    )
+    || value.limits.maxInputBytes > MAX_INPUT_BYTES
+    || value.limits.maxRows > MAX_ROWS
+    || value.limits.timeoutMs > MAX_TIMEOUT_MS
+  ) {
+    throw new RequestFailure('resource-limit', 'Inspect limits exceed sidecar policy')
   }
   return value
 }
@@ -435,8 +466,12 @@ function sourcePath(input) {
 
 function sourceSql(input, fields) {
   const path = (input.preparedPath ?? sourcePath(input)).replaceAll("'", "''")
-  if (input.format === 'csv') {
-    return `read_csv_auto('${path}', header=true, all_varchar=true, strict_mode=true)`
+  if (input.format === 'csv' || input.format === 'tsv') {
+    const delimiter = input.format === 'tsv' ? `, delim='\\t'` : ''
+    return `read_csv_auto('${path}', header=true, all_varchar=true, strict_mode=true${delimiter})`
+  }
+  if (input.format === 'parquet') {
+    return `read_parquet('${path}')`
   }
   if (fields !== undefined) {
     const columns = fields
@@ -445,6 +480,117 @@ function sourceSql(input, fields) {
     return `read_json_auto('${path}', format='auto', union_by_name=true, columns={${columns}}, maximum_object_size=16777216)`
   }
   return `read_json_auto('${path}', format='auto', union_by_name=true, maximum_object_size=16777216)`
+}
+
+function logicalType(sourceType) {
+  if (sourceType === 'BOOLEAN') return 'boolean'
+  if (/^(U?TINYINT|U?SMALLINT|U?INTEGER|U?BIGINT|HUGEINT)$/.test(sourceType)) {
+    return 'integer'
+  }
+  if (/^(DECIMAL|FLOAT|DOUBLE)/.test(sourceType)) return 'decimal'
+  if (sourceType === 'DATE') return 'date'
+  if (sourceType.startsWith('TIMESTAMP')) return 'timestamp'
+  if (sourceType === 'JSON') return 'json'
+  return 'string'
+}
+
+async function inspectDataset(request, httpRequest, httpResponse) {
+  let cancelled = httpResponse.destroyed
+  let instance
+  let connection
+  const interrupt = () => {
+    cancelled = true
+    connection?.interrupt()
+  }
+  const ensureActive = () => {
+    if (cancelled || httpRequest.aborted) {
+      throw new RequestFailure('cancelled', 'Dataset inspection was interrupted')
+    }
+  }
+  httpRequest.once('aborted', interrupt)
+  httpResponse.once('close', interrupt)
+  const timeout = setTimeout(interrupt, request.limits.timeoutMs)
+  try {
+    const path = sourcePath(request.input)
+    let metadata
+    try {
+      metadata = await stat(path)
+    } catch (error) {
+      if (error?.code === 'ENOENT') {
+        throw new RequestFailure('not-found', 'Input artifact was not found')
+      }
+      throw error
+    }
+    if (!metadata.isFile() || metadata.size > request.limits.maxInputBytes) {
+      throw new RequestFailure('resource-limit', 'Inspect input exceeds configured limit')
+    }
+    if (await hashFile(path, ensureActive) !== request.input.artifactDigest) {
+      throw new RequestFailure('lineage', 'Inspect input hash does not match catalog lineage')
+    }
+    instance = await DuckDBInstance.create(':memory:', {
+      memory_limit: MEMORY_LIMIT,
+      threads: THREADS,
+      temp_directory: join(SCRATCH_ROOT, 'tmp'),
+      allow_community_extensions: 'false',
+      allow_unsigned_extensions: 'false',
+    })
+    connection = await instance.connect()
+    await connection.run(`SET allowed_directories=['${ARTIFACT_ROOT}','${SCRATCH_ROOT}']`)
+    await connection.run('SET enable_external_access=false')
+    const prepared = await prepareExactJsonInput(request.input, {
+      snapshotId: `inspect-${request.input.artifactDigest.slice(0, 16)}`,
+      fields: [],
+    }, ensureActive)
+    try {
+      await runStructuredImport(
+        connection,
+        `CREATE TABLE inspected AS SELECT * FROM ${sourceSql(prepared)}
+         LIMIT ${request.limits.maxRows + 1}`,
+      )
+      const countReader = await connection.runAndReadAll(
+        'SELECT count(*) AS row_count FROM inspected',
+      )
+      await countReader.readAll()
+      const rowCount = Number(countReader.getRowObjectsJS()[0].row_count)
+      if (rowCount === 0) {
+        throw new RequestFailure('invalid-input', 'Structured input contains no rows')
+      }
+      if (rowCount > request.limits.maxRows) {
+        throw new RequestFailure('resource-limit', 'Input rows exceed configured limit')
+      }
+      const schemaReader = await connection.runAndReadAll("PRAGMA table_info('inspected')")
+      await schemaReader.readAll()
+      const columns = schemaReader.getRowObjectsJS()
+      if (columns.length === 0 || columns.length > 512) {
+        throw new RequestFailure('resource-limit', 'Structured input column count is invalid')
+      }
+      const fields = columns.map((column, ordinal) => {
+        const name = String(column.name)
+        const sourceType = String(column.type)
+        if (name.length === 0 || name.length > 255) {
+          throw new RequestFailure('invalid-input', 'Structured input column name is invalid')
+        }
+        return {
+          ordinal,
+          name,
+          sourceType,
+          logicalType: logicalType(sourceType),
+          nullable: !column.notnull,
+        }
+      })
+      return { protocolVersion: PROTOCOL_VERSION, fields, rowCount }
+    } finally {
+      if (prepared.preparedPath !== undefined) {
+        await rm(prepared.preparedPath, { force: true })
+      }
+    }
+  } finally {
+    clearTimeout(timeout)
+    httpRequest.off('aborted', interrupt)
+    httpResponse.off('close', interrupt)
+    connection?.disconnectSync()
+    instance?.closeSync()
+  }
 }
 
 class PreserveExactNumbers extends Transform {
@@ -499,7 +645,7 @@ class PreserveExactNumbers extends Transform {
 }
 
 async function prepareExactJsonInput(input, request, ensureActive) {
-  if (input.format === 'csv') return input
+  if (input.format !== 'json' && input.format !== 'jsonl') return input
   const directory = join(SCRATCH_ROOT, 'input')
   await mkdir(directory, { recursive: true })
   const preparedPath = join(directory, `${request.snapshotId}-${input.ordinal}.json`)
@@ -1112,7 +1258,7 @@ const server = createServer(async (request, response) => {
   }
   if (
     request.method !== 'POST'
-    || !['/v1/materialize', '/v1/query'].includes(url.pathname)
+    || !['/v1/inspect', '/v1/materialize', '/v1/query'].includes(url.pathname)
   ) {
     return fail(response, 404, 'protocol', 'Unknown operation')
   }
@@ -1121,7 +1267,9 @@ const server = createServer(async (request, response) => {
     const decoded = await body(request)
     validated = url.pathname === '/v1/query'
       ? validateQueryRequest(decoded)
-      : validateRequest(decoded)
+      : url.pathname === '/v1/inspect'
+        ? validateInspectRequest(decoded)
+        : validateRequest(decoded)
   } catch (error) {
     const code = error instanceof RequestFailure ? error.code : 'engine'
     const status = code === 'not-found'
@@ -1142,7 +1290,9 @@ const server = createServer(async (request, response) => {
   try {
     const result = url.pathname === '/v1/query'
       ? await querySnapshots(validated, request, response)
-      : await materialize(validated, request, response)
+      : url.pathname === '/v1/inspect'
+        ? await inspectDataset(validated, request, response)
+        : await materialize(validated, request, response)
     return json(response, 200, { ok: true, result })
   } catch (error) {
     const code = error instanceof RequestFailure ? error.code : 'engine'

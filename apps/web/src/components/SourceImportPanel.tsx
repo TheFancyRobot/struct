@@ -3,7 +3,7 @@ import { For, Show, createEffect, createSignal, type Component } from 'solid-js'
 import type { ProjectId, SourceImportResponse } from '@struct/domain'
 import { importBrowserSources } from '../api/sources'
 
-type ImportMode = 'files' | 'folder' | 'paste'
+type ImportMode = 'files' | 'folder' | 'paste' | 'dataset'
 
 export const SourceImportPanel: Component<{
   readonly projectId: ProjectId
@@ -16,6 +16,7 @@ export const SourceImportPanel: Component<{
   const [busy, setBusy] = createSignal(false)
   const [error, setError] = createSignal<string | null>(null)
   const [rejected, setRejected] = createSignal<SourceImportResponse['rejected']>([])
+  const [clientBatchId, setClientBatchId] = createSignal(crypto.randomUUID())
   let fileInput: HTMLInputElement | undefined
   const folderPickerSupported = typeof HTMLInputElement !== 'undefined'
     && 'webkitdirectory' in HTMLInputElement.prototype
@@ -37,11 +38,13 @@ export const SourceImportPanel: Component<{
     try {
       const result = await importBrowserSources(
         props.projectId,
+        clientBatchId(),
         mode() === 'paste'
           ? { mode: 'paste', name: pasteName(), content: pasteContent() }
-          : { mode: mode() as 'files' | 'folder', files: files() },
+          : { mode: mode() as 'files' | 'folder' | 'dataset', files: files() },
       )
       setRejected(result.rejected)
+      setClientBatchId(crypto.randomUUID())
       if (result.accepted.length > 0) {
         setFiles([])
         if (fileInput !== undefined) fileInput.value = ''
@@ -71,6 +74,9 @@ export const SourceImportPanel: Component<{
           <button type="button" class="btn btn-sm join-item" classList={{ 'btn-active': mode() === 'paste' }} onClick={() => setMode('paste')}>
             Paste
           </button>
+          <button type="button" class="btn btn-sm join-item" classList={{ 'btn-active': mode() === 'dataset' }} onClick={() => setMode('dataset')}>
+            Dataset
+          </button>
           <Show when={folderPickerSupported}>
             <button type="button" class="btn btn-sm join-item" classList={{ 'btn-active': mode() === 'folder' }} onClick={() => setMode('folder')}>
               Folder
@@ -97,6 +103,7 @@ export const SourceImportPanel: Component<{
             type="file"
             multiple
             required
+            accept={mode() === 'dataset' ? '.csv,.tsv,.json,.jsonl,.parquet' : undefined}
             ref={(input) => { fileInput = input }}
             onChange={(event) => setFiles(Array.from(event.currentTarget.files ?? []))}
           />

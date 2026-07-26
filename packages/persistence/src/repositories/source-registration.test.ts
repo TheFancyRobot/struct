@@ -46,6 +46,8 @@ const job: typeof JobQueue.Type = {
     byteLength: 12,
     sourceId,
     projectId,
+    sourceKind: 'document',
+    structuredFormat: null,
   },
   attempts: 0,
   maxAttempts: 3,
@@ -65,6 +67,8 @@ const event: typeof EventJournal.Type = {
     stagedRef: job.payload['stagedRef'],
     mediaType: 'text/markdown',
     byteLength: 12,
+    sourceKind: 'document',
+    structuredFormat: null,
   },
   cursor: 0n,
   createdAt,
@@ -415,6 +419,8 @@ describe('SourceRegistrationRepo aggregate boundary', () => {
       byteLength: 12,
       sourceId,
       projectId,
+      sourceKind: 'document',
+      structuredFormat: null,
     })
     expect(JSON.parse(String(eventInsert?.params?.[5]))).toEqual({
       sourceId,
@@ -422,6 +428,8 @@ describe('SourceRegistrationRepo aggregate boundary', () => {
       stagedRef: job.payload['stagedRef'],
       mediaType: 'text/markdown',
       byteLength: 12,
+      sourceKind: 'document',
+      structuredFormat: null,
     })
     expect(calls[0]?.query).toMatch(/FOR SHARE/i)
   })

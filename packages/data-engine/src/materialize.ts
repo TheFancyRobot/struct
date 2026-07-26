@@ -28,7 +28,7 @@ export interface MaterializationLimits {
 export interface MaterializeDatasetInput {
   readonly snapshot: typeof DatasetSnapshot.Type
   readonly schemaFamily: typeof DatasetSchemaFamily.Type
-  readonly sourceFormats: ReadonlyArray<'json' | 'jsonl' | 'csv'>
+  readonly sourceFormats: ReadonlyArray<'json' | 'jsonl' | 'csv' | 'tsv' | 'parquet'>
   readonly limits: MaterializationLimits
 }
 

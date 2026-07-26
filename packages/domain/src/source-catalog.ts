@@ -55,6 +55,7 @@ export const SourceImportAcceptedItem = Schema.Struct({
   sourceId: SourceId,
   jobId: JobQueueId,
   name: Schema.String,
+  kind: Schema.Literal('document', 'dataset'),
 })
 
 export const SourceImportRejectedItem = Schema.Struct({
@@ -63,6 +64,8 @@ export const SourceImportRejectedItem = Schema.Struct({
 })
 
 export const SourceImportResponse = Schema.Struct({
+  clientBatchId: Schema.UUID,
+  replayed: Schema.Boolean,
   accepted: Schema.Array(SourceImportAcceptedItem),
   rejected: Schema.Array(SourceImportRejectedItem),
 })

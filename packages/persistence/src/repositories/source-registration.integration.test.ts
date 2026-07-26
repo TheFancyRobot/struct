@@ -63,6 +63,8 @@ function registration(sequence: number): SourceRegistrationInput {
       byteLength: 12,
       sourceId: id,
       projectId,
+      sourceKind: 'document',
+      structuredFormat: null,
     },
     attempts: 0,
     maxAttempts: 3,
@@ -81,6 +83,8 @@ function registration(sequence: number): SourceRegistrationInput {
       stagedRef: job.payload['stagedRef'],
       mediaType: job.payload['mediaType'],
       byteLength: job.payload['byteLength'],
+      sourceKind: 'document',
+      structuredFormat: null,
     },
     cursor: 0n,
     createdAt,
@@ -453,6 +457,8 @@ describeIf('SourceRegistrationRepo aggregate boundary (PostgreSQL)', () => {
         byteLength: 12,
         sourceId: input.source.id,
         projectId,
+        sourceKind: 'document',
+        structuredFormat: null,
     })
     expect(JSON.parse(String(stored?.['event_payload']))).toEqual({
         sourceId: input.source.id,
@@ -460,6 +466,66 @@ describeIf('SourceRegistrationRepo aggregate boundary (PostgreSQL)', () => {
         stagedRef: input.job.payload['stagedRef'],
         mediaType: 'text/markdown',
         byteLength: 12,
+        sourceKind: 'document',
+        structuredFormat: null,
     })
+  })
+
+  it('replays a committed client batch from a fresh repository runtime', async () => {
+    const clientBatchId = 'a20e8400-e29b-41d4-a716-776655440050'
+    const requestHash = `sha256:${'a'.repeat(64)}` as const
+    const first = await Effect.runPromise(
+      SourceRegistrationRepo.createBatch({
+        workspaceId,
+        projectId,
+        clientBatchId,
+        requestHash,
+        registrations: [registration(50)],
+        rejected: [{ name: 'bad.exe', reason: 'unsupported-type' }],
+        createdAt,
+      }).pipe(Effect.provide(layer)),
+    )
+
+    const freshLayer = Layer.provide(
+      SourceRegistrationRepo.Default,
+      SqlClientLive(sql),
+    )
+    const replay = await Effect.runPromise(
+      SourceRegistrationRepo.createBatch({
+        workspaceId,
+        projectId,
+        clientBatchId,
+        requestHash,
+        registrations: [registration(51)],
+        rejected: [],
+        createdAt: createdAt + 1n,
+      }).pipe(Effect.provide(freshLayer)),
+    )
+
+    expect(first.replayed).toBe(false)
+    expect(replay).toEqual({ ...first, replayed: true })
+    const [counts] = await sql.unsafe(
+      `SELECT
+         (SELECT COUNT(*)::int FROM sources WHERE id = ANY($1::uuid[])) AS sources,
+         (SELECT COUNT(*)::int FROM job_queue WHERE id = ANY($2::uuid[])) AS jobs`,
+      [
+        [registration(50).source.id, registration(51).source.id],
+        [registration(50).job.id, registration(51).job.id],
+      ],
+    )
+    expect(counts).toMatchObject({ sources: 1, jobs: 1 })
+
+    const conflict = await Effect.runPromiseExit(
+      SourceRegistrationRepo.createBatch({
+        workspaceId,
+        projectId,
+        clientBatchId,
+        requestHash: `sha256:${'b'.repeat(64)}`,
+        registrations: [],
+        rejected: [],
+        createdAt,
+      }).pipe(Effect.provide(freshLayer)),
+    )
+    expect(String(conflict)).toContain('idempotency-conflict')
   })
 })

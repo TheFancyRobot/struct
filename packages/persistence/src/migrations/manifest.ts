@@ -106,4 +106,9 @@ export const migrations: readonly Migration[] = [
     upPath: new URL('./0019_user_notes.sql', import.meta.url).pathname,
     downPath: new URL('./0019_user_notes.down.sql', import.meta.url).pathname,
   },
+  {
+    name: '0020_source_import_batches',
+    upPath: new URL('./0020_source_import_batches.sql', import.meta.url).pathname,
+    downPath: new URL('./0020_source_import_batches.down.sql', import.meta.url).pathname,
+  },
 ] as const

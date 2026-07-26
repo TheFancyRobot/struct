@@ -20,6 +20,7 @@ import {
 } from '@struct/persistence'
 import {
   DataEngineClient,
+  DATA_ENGINE_PROTOCOL_VERSION,
   DataEngineProtocolError,
   DataEngineTransportError,
   DatasetQueryAuthorizationError,
@@ -40,10 +41,11 @@ import {
   ResearchToolAuthorizationError,
   ResearchToolProviderUnavailableError,
   ResearchToolSidecarUnavailableError,
+  Sha256Digest,
   SourceVersionId,
 } from '@struct/domain'
 import { LocalArtifactStore } from '@struct/source-storage'
-import { ingestTextSource } from '@struct/ingestion'
+import { ingestStructuredSource, ingestTextSource } from '@struct/ingestion'
 import { TextRetrieval } from '@struct/retrieval'
 import {
   fredRuntimeConfig,
@@ -303,6 +305,42 @@ const program = Effect.gen(function* () {
     },
     ingestion: {
       ingestTextSource: (input) => ingestTextSource({ store: storage, ...input }),
+      ingestStructuredSource: (input) =>
+        ingestStructuredSource({ store: storage, ...input }),
+    },
+    datasets: {
+      inspect: ({ contentHash, format }) =>
+        dataEngineClient.inspect({
+          protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
+          operation: 'inspect',
+          input: {
+            ordinal: 0,
+            format,
+            artifactDigest: contentHash.slice('sha256:'.length),
+            contentHash: Sha256Digest.make(contentHash),
+          },
+          limits: {
+            maxInputBytes: 64 * 1024 * 1024,
+            maxRows: 1_000_000,
+            timeoutMs: 60_000,
+          },
+        }).pipe(Effect.map((result) => result.fields)),
+      createDataset: (dataset) =>
+        DatasetCatalogRepo.createDataset(dataset).pipe(
+          Effect.provide(datasetCatalogLayer),
+        ),
+      createSchemaFamily: (family) =>
+        DatasetCatalogRepo.createSchemaFamily(family).pipe(
+          Effect.provide(datasetCatalogLayer),
+        ),
+      createSnapshot: (snapshot) =>
+        DatasetCatalogRepo.createSnapshot(snapshot).pipe(
+          Effect.provide(datasetCatalogLayer),
+        ),
+      enqueueMaterialization: (input) =>
+        DatasetMaterializationRepo.enqueue(input).pipe(
+          Effect.provide(datasetMaterializationLayer),
+        ),
     },
   }))
 

@@ -58,12 +58,21 @@ describe('source import browser path', () => {
       expect(body).toContain('name="mode"')
       expect(body).toContain('files')
       expect(body).toContain('notes.md')
+      const clientBatchId = /name="clientBatchId"\r\n\r\n([^\r\n]+)/.exec(body)?.[1]
+      if (clientBatchId === undefined) throw new Error('missing client batch ID')
       accepted = true
       await route.fulfill({
         status: 202,
         contentType: 'application/json',
         body: JSON.stringify({
-          accepted: [{ sourceId, jobId, name: 'notes.md' }],
+          clientBatchId,
+          replayed: false,
+          accepted: [{
+            sourceId,
+            jobId,
+            name: 'notes.md',
+            kind: 'document',
+          }],
           rejected: [],
         }),
       })

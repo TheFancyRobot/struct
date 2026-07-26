@@ -39,7 +39,7 @@ export function decodeSourceActivityEvent(input: unknown) {
 
 export type BrowserSourceImportInput =
   | {
-      readonly mode: 'files' | 'folder'
+      readonly mode: 'files' | 'folder' | 'dataset'
       readonly files: ReadonlyArray<File>
     }
   | {
@@ -50,9 +50,11 @@ export type BrowserSourceImportInput =
 
 export async function importBrowserSources(
   projectId: type.ProjectId,
+  clientBatchId: string,
   input: BrowserSourceImportInput,
 ): Promise<typeof SourceImportResponse.Type> {
   const form = new FormData()
+  form.set('clientBatchId', clientBatchId)
   form.set('mode', input.mode)
   if (input.mode === 'paste') {
     form.set('name', input.name)
@@ -71,7 +73,13 @@ export async function importBrowserSources(
       signal: AbortSignal.timeout(30_000),
     },
   )
-  return Schema.decodeUnknownPromise(SourceImportResponse)(await responseJson(response))
+  const decoded = await Schema.decodeUnknownPromise(SourceImportResponse)(
+    await responseJson(response),
+  )
+  if (decoded.clientBatchId !== clientBatchId) {
+    throw new Error('Source import response batch ID does not match the request')
+  }
+  return decoded
 }
 
 export async function commandSourceJob(

@@ -6,6 +6,7 @@ import {
   EventJournalId,
   ValidationError,
   AuthorizationError,
+  isSupportedDatasetUpload,
   isSupportedSourceUpload,
   normalizeBrowserRelativePath,
   type ProjectId,
@@ -14,6 +15,7 @@ import {
   type Project,
   type JobQueue,
   type EventJournal,
+  type StructuredSourceFormat,
 } from '@struct/domain'
 import type {
   SourceRegistrationEventPayload,
@@ -29,6 +31,8 @@ export interface RegisterTextSourceInput {
   readonly name: string
   readonly mediaType: string
   readonly bytes: Uint8Array
+  readonly kind?: 'document' | 'dataset'
+  readonly format?: StructuredSourceFormat
 }
 
 export interface RegisterTextSourceResult {
@@ -74,13 +78,39 @@ export const registerTextSource = (
   deps: RegisterTextSourceDeps,
 ): Effect.Effect<RegisterTextSourceResult, ValidationError | AuthorizationError, never> =>
   Effect.gen(function* () {
+    const prepared = yield* prepareSourceRegistration(input, deps)
+    return yield* deps.registration.create(prepared).pipe(
+      Effect.mapError(mapUnknown('source registration')),
+    )
+  })
+
+export const prepareSourceRegistration = (
+  input: RegisterTextSourceInput,
+  deps: Omit<RegisterTextSourceDeps, 'registration'>,
+): Effect.Effect<{
+  readonly source: typeof Source.Type
+  readonly job: typeof JobQueue.Type
+  readonly event: typeof EventJournal.Type
+}, ValidationError | AuthorizationError, never> =>
+  Effect.gen(function* () {
     if (input.bytes.byteLength > deps.maxBytes) {
       return yield* new ValidationError({ field: 'bytes', reason: 'too-large', message: 'Text source exceeds MAX_TEXT_SOURCE_BYTES' })
     }
     if (!isSafeUploadName(input.name)) {
       return yield* new ValidationError({ field: 'name', reason: 'unsafe-name', message: 'Text source name must be a simple file name' })
     }
-    if (!isSupportedSourceUpload(input.name, input.mediaType)) {
+    const kind = input.kind ?? 'document'
+    const structuredFormat = input.format ?? null
+    if (
+      kind === 'dataset'
+        ? !isSupportedDatasetUpload(
+            input.name,
+            input.mediaType,
+            structuredFormat,
+          )
+        : !isSupportedSourceUpload(input.name, input.mediaType)
+          || structuredFormat !== null
+    ) {
       return yield* new ValidationError({ field: 'mediaType', reason: 'unsupported-source-type', message: 'Source extension and media type are not supported' })
     }
 
@@ -99,7 +129,7 @@ export const registerTextSource = (
       id: sourceId,
       projectId: input.projectId,
       name: input.name,
-      kind: 'document',
+      kind,
       createdAt: now,
       updatedAt: now,
     }
@@ -110,6 +140,8 @@ export const registerTextSource = (
       byteLength: staged.byteLength,
       sourceId,
       projectId: input.projectId,
+      sourceKind: kind,
+      structuredFormat,
     } satisfies SourceRegistrationJobPayload
     const job: typeof JobQueue.Type = {
       id: deps.randomJobQueueId(),
@@ -135,11 +167,11 @@ export const registerTextSource = (
         stagedRef: staged.ref,
         mediaType,
         byteLength: staged.byteLength,
+        sourceKind: kind,
+        structuredFormat,
       } satisfies SourceRegistrationEventPayload,
       cursor: 0n,
       createdAt: now,
     }
-    return yield* deps.registration.create({ source, job, event }).pipe(
-      Effect.mapError(mapUnknown('source registration')),
-    )
+    return { source, job, event }
   })

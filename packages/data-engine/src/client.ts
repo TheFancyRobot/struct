@@ -1,12 +1,15 @@
 import { Config, Effect, Redacted, Schema } from 'effect'
 import {
   DataEngineErrorCode,
+  InspectDatasetRequest,
+  InspectDatasetResponse,
   MaterializeFailure,
   MaterializeRequest,
   MaterializeResponse,
   QueryRequest,
   QueryResponse,
   type MaterializeResult,
+  type InspectDatasetResult,
   type QueryResult,
 } from './protocol.js'
 
@@ -64,6 +67,12 @@ export interface DataEngineMaterializationClientShape {
 
 export interface DataEngineClientShape
   extends DataEngineMaterializationClientShape {
+  readonly inspect: (
+    request: typeof InspectDatasetRequest.Type,
+  ) => Effect.Effect<
+    InspectDatasetResult,
+    DataEngineTransportError | DataEngineProtocolError | DataEngineOperationError
+  >
   readonly query: (
     request: typeof QueryRequest.Type,
   ) => Effect.Effect<
@@ -142,6 +151,49 @@ export function makeDataEngineClient(
   config: DataEngineClientConfig,
   fetcher: DataEngineFetch = fetch,
 ): DataEngineClientShape {
+  const inspect = Effect.fn('DataEngineClient.inspect')(
+    function* (request: typeof InspectDatasetRequest.Type) {
+      const encoded = yield* Schema.encode(InspectDatasetRequest)(request).pipe(
+        Effect.mapError(() =>
+          new DataEngineProtocolError({ message: 'Data-engine inspect request is invalid' }),
+        ),
+      )
+      const response = yield* Effect.tryPromise({
+        try: (signal) =>
+          fetcher(`${config.baseUrl}/v1/inspect`, {
+            method: 'POST',
+            headers: {
+              authorization: `Bearer ${config.credential}`,
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify(encoded),
+            signal: AbortSignal.any([
+              signal,
+              AbortSignal.timeout(request.limits.timeoutMs),
+            ]),
+          }),
+        catch: (cause) =>
+          new DataEngineTransportError({
+            reason: reason(cause),
+            message: 'Data-engine inspect request failed',
+          }),
+      }).pipe(
+        Effect.timeoutFail({
+          duration: request.limits.timeoutMs,
+          onTimeout: () => timeoutError('Data-engine inspect request timed out'),
+        }),
+      )
+      const body = yield* readJsonBody(response, request.limits.timeoutMs)
+      const decoded = yield* Schema.decodeUnknown(InspectDatasetResponse)(body)
+        .pipe(Effect.mapError(() =>
+          new DataEngineProtocolError({
+            message: 'Data-engine inspect response did not match protocol version 1',
+          }),
+        ))
+      if (!decoded.ok) return yield* new DataEngineOperationError(decoded.error)
+      return decoded.result
+    },
+  )
   const materialize = Effect.fn('DataEngineClient.materialize')(
     function* (request: typeof MaterializeRequest.Type) {
       const encoded = yield* Schema.encode(MaterializeRequest)(request).pipe(
@@ -458,7 +510,7 @@ export function makeDataEngineClient(
       return decoded.result
     },
   )
-  return { materialize, readArtifact, query }
+  return { inspect, materialize, readArtifact, query }
 }
 
 export class DataEngineClient extends Effect.Service<DataEngineClient>()(

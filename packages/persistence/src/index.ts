@@ -131,6 +131,8 @@ export type {
   SourceRegistrationInput,
   SourceRegistrationJobPayload,
   SourceRegistrationEventPayload,
+  SourceRegistrationBatchInput,
+  SourceRegistrationBatchResult,
   SourceRegistrationResult,
   SourceRegistrationRepository,
   SourceRegistrationError,

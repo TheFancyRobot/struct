@@ -1,6 +1,8 @@
 import {
+  datasetUploadForName,
   normalizeBrowserRelativePath,
   sourceUploadMediaTypeForName,
+  type StructuredSourceFormat,
 } from '@struct/domain'
 
 export const MAX_BROWSER_SOURCE_FILES = 20
@@ -9,12 +11,18 @@ export interface BrowserSourceImportItem {
   readonly name: string
   readonly mediaType: string
   readonly bytes: Uint8Array
+  readonly kind: 'document' | 'dataset'
+  readonly format?: StructuredSourceFormat
 }
 
 export interface BrowserSourceImport {
+  readonly clientBatchId: string
   readonly items: ReadonlyArray<BrowserSourceImportItem>
   readonly rejected: ReadonlyArray<{ readonly name: string; readonly reason: string }>
 }
+
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
 
 function stringField(form: FormData, name: string): string | null {
   const value = form.get(name)
@@ -76,6 +84,10 @@ export async function decodeBrowserSourceImport(
     request,
     maxFileBytes * MAX_BROWSER_SOURCE_FILES + 65_536,
   )
+  const clientBatchId = stringField(form, 'clientBatchId')
+  if (clientBatchId === null || !uuidPattern.test(clientBatchId)) {
+    throw new Error('invalid-client-batch-id')
+  }
   const mode = stringField(form, 'mode')
   if (mode === 'paste') {
     const name = normalizeBrowserRelativePath(stringField(form, 'name'))
@@ -85,13 +97,18 @@ export async function decodeBrowserSourceImport(
     const mediaType = sourceUploadMediaTypeForName(name)
     if (bytes.byteLength === 0 || bytes.byteLength > maxFileBytes || mediaType === null) {
       return {
+        clientBatchId,
         items: [],
         rejected: [{ name, reason: bytes.byteLength === 0 ? 'empty' : mediaType === null ? 'unsupported-type' : 'too-large' }],
       }
     }
-    return { items: [{ name, mediaType, bytes }], rejected: [] }
+    return {
+      clientBatchId,
+      items: [{ name, mediaType, bytes, kind: 'document' }],
+      rejected: [],
+    }
   }
-  if (mode !== 'files' && mode !== 'folder') {
+  if (mode !== 'files' && mode !== 'folder' && mode !== 'dataset') {
     throw new Error('invalid-source-import-mode')
   }
 
@@ -117,7 +134,10 @@ export async function decodeBrowserSourceImport(
       continue
     }
     seen.add(name)
-    const mediaType = sourceUploadMediaTypeForName(name)
+    const dataset = mode === 'dataset' ? datasetUploadForName(name) : null
+    const mediaType = mode === 'dataset'
+      ? dataset?.mediaType ?? null
+      : sourceUploadMediaTypeForName(name)
     if (file.size === 0 || file.size > maxFileBytes || mediaType === null) {
       rejected.push({
         name,
@@ -135,7 +155,27 @@ export async function decodeBrowserSourceImport(
       rejected.push({ name, reason: 'size-mismatch' })
       continue
     }
-    items.push({ name, mediaType, bytes })
+    items.push({
+      name,
+      mediaType,
+      bytes,
+      kind: mode === 'dataset' ? 'dataset' : 'document',
+      ...(dataset === null ? {} : { format: dataset.format }),
+    })
   }
-  return { items, rejected }
+  return { clientBatchId, items, rejected }
+}
+
+export function hashBrowserSourceImport(
+  input: BrowserSourceImport,
+): `sha256:${string}` {
+  const items = input.items.map((item) => ({
+    name: item.name,
+    mediaType: item.mediaType,
+    kind: item.kind,
+    format: item.format ?? null,
+    contentHash: new Bun.CryptoHasher('sha256').update(item.bytes).digest('hex'),
+  }))
+  const canonical = JSON.stringify({ items, rejected: input.rejected })
+  return `sha256:${new Bun.CryptoHasher('sha256').update(canonical).digest('hex')}`
 }

@@ -10,6 +10,7 @@ import { Effect } from 'effect'
 import { makeDataEngineClient } from './client.js'
 import {
   DATA_ENGINE_PROTOCOL_VERSION,
+  type InspectDatasetRequest,
   type MaterializeRequest,
   type QueryRequest,
 } from './protocol.js'
@@ -41,6 +42,16 @@ const request: MaterializeRequest = {
     maxInputBytes: 1_024,
     maxRows: 100,
     maxOutputBytes: 1_024,
+    timeoutMs: 1_000,
+  },
+}
+const inspectRequest: InspectDatasetRequest = {
+  protocolVersion: DATA_ENGINE_PROTOCOL_VERSION,
+  operation: 'inspect',
+  input: request.inputs[0]!,
+  limits: {
+    maxInputBytes: 1_024,
+    maxRows: 100,
     timeoutMs: 1_000,
   },
 }
@@ -91,6 +102,38 @@ function delayedResponse(
 }
 
 describe('DataEngineClient', () => {
+  it('authenticates and decodes structured schema inspection', async () => {
+    let requestedUrl = ''
+    const client = makeDataEngineClient({
+      baseUrl: 'http://data-engine',
+      credential: 'test-credential-value',
+    }, async (url) => {
+      requestedUrl = String(url)
+      return Response.json({
+        ok: true,
+        result: {
+          protocolVersion: '1',
+          fields: [{
+            ordinal: 0,
+            name: 'value',
+            sourceType: 'BIGINT',
+            logicalType: 'integer',
+            nullable: false,
+          }],
+          rowCount: 2,
+        },
+      })
+    })
+
+    const result = await Effect.runPromise(client.inspect(inspectRequest))
+
+    expect(requestedUrl).toBe('http://data-engine/v1/inspect')
+    expect(result.fields[0]).toMatchObject({
+      name: 'value',
+      logicalType: 'integer',
+    })
+  })
+
   it('authenticates and decodes a versioned materialization result', async () => {
     const calls: RequestInit[] = []
     const fetcher = async (_url: string | URL | Request, init?: RequestInit) => {

@@ -21,6 +21,7 @@ const CatalogRow = Schema.Struct({
   media_type: Schema.NullOr(Schema.String),
   latest_version_id: Schema.NullOr(Schema.UUID),
   latest_version: Schema.NullOr(Integer),
+  materialized: Schema.Boolean,
   updated_at: DateToNumber,
   job_id: Schema.NullOr(Schema.UUID),
   job_status: Schema.NullOr(JobStatus),
@@ -84,6 +85,16 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
                       NULLIF(job.payload->>'mediaType', '') AS media_type,
                       version.id AS latest_version_id,
                       version.version AS latest_version,
+                      CASE
+                        WHEN source.kind <> 'dataset' THEN TRUE
+                        ELSE EXISTS (
+                          SELECT 1
+                          FROM dataset_snapshot_sources lineage
+                          JOIN dataset_materializations materialization
+                            ON materialization.snapshot_id = lineage.snapshot_id
+                          WHERE lineage.source_version_id = version.id
+                        )
+                      END AS materialized,
                       GREATEST(
                         source.updated_at,
                         COALESCE(job.updated_at, source.updated_at),
@@ -143,8 +154,10 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
                   maxAttempts: row.job_max_attempts,
                   updatedAt: row.job_updated_at,
                 }
-            const readiness = row.latest_version_id !== null
+            const readiness = row.latest_version_id !== null && row.materialized
               ? 'ready'
+              : row.latest_version_id !== null
+                ? 'processing'
               : row.job_status === 'failed'
                 ? 'failed'
                 : row.job_status === 'cancelled'

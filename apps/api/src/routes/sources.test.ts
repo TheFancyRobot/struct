@@ -66,14 +66,18 @@ describe('registerTextSource', () => {
       'name',
       'projectId',
       'sourceId',
+      'sourceKind',
       'stagedRef',
+      'structuredFormat',
     ])
     expect(Object.keys(result.event.payload).sort()).toEqual([
       'byteLength',
       'jobId',
       'mediaType',
       'sourceId',
+      'sourceKind',
       'stagedRef',
+      'structuredFormat',
     ])
   })
 
