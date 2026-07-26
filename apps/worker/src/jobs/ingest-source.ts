@@ -117,6 +117,11 @@ interface IngestionPayload {
   readonly projectId: import('@struct/domain').ProjectId | null
   readonly sourceKind: 'document' | 'dataset'
   readonly structuredFormat: StructuredSourceFormat | null
+  readonly materializeExistingVersion?: {
+    readonly id: typeof SourceVersionId.Type
+    readonly artifactRef: ArtifactRef
+    readonly contentHash: `sha256:${string}`
+  }
 }
 
 class IngestionLeaseHeartbeatError
@@ -199,6 +204,7 @@ function decodePayload(
   const projectId = payload['projectId']
   const sourceKind = payload['sourceKind'] ?? 'document'
   const structuredFormat = payload['structuredFormat'] ?? null
+  const materializeExistingVersion = payload['materializeExistingVersion']
   if (!isCanonicalStagedArtifactRef(stagedRef)) {
     return Effect.fail(new ValidationError({ field: 'payload.stagedRef', reason: 'invalid', message: 'Ingestion payload stagedRef is invalid' }))
   }
@@ -226,6 +232,42 @@ function decodePayload(
               message: 'Ingestion payload projectId is invalid',
             }),
         })
+    const existing = materializeExistingVersion === undefined
+      ? undefined
+      : yield* Effect.try({
+          try: () => {
+            const candidate = materializeExistingVersion as Record<string, unknown>
+            if (
+              typeof materializeExistingVersion !== 'object'
+              || materializeExistingVersion === null
+              || Array.isArray(materializeExistingVersion)
+              || typeof candidate['id'] !== 'string'
+              || typeof candidate['artifactRef'] !== 'string'
+              || typeof candidate['contentHash'] !== 'string'
+              || !/^artifact:\/\/sha256\/[a-f0-9]{64}$/.test(candidate['artifactRef'])
+              || !/^sha256:[a-f0-9]{64}$/.test(candidate['contentHash'])
+            ) {
+              throw new Error('invalid existing source version')
+            }
+            return {
+              id: Schema.decodeUnknownSync(SourceVersionId)(candidate['id']),
+              artifactRef: candidate['artifactRef'] as ArtifactRef,
+              contentHash: candidate['contentHash'] as `sha256:${string}`,
+            }
+          },
+          catch: () => new ValidationError({
+            field: 'payload.materializeExistingVersion',
+            reason: 'invalid',
+            message: 'Ingestion payload existing source version is invalid',
+          }),
+        })
+    if (existing !== undefined && sourceKind !== 'dataset') {
+      return yield* new ValidationError({
+        field: 'payload.materializeExistingVersion',
+        reason: 'invalid',
+        message: 'Only dataset attachments may materialize an existing source version',
+      })
+    }
     return {
       stagedRef: stagedRef as StagedArtifactRef,
       name,
@@ -233,6 +275,7 @@ function decodePayload(
       projectId: decodedProjectId,
       sourceKind,
       structuredFormat: structuredFormat as StructuredSourceFormat | null,
+      ...(existing === undefined ? {} : { materializeExistingVersion: existing }),
     }
   })
 }
@@ -318,7 +361,9 @@ function completeDataset(
       contentHash: artifactResult.contentHash,
       format: payload.structuredFormat,
     })
-    const datasetId = DatasetId.make(deterministicUuid(job.entityId, 'dataset'))
+    const datasetId = DatasetId.make(
+      deterministicUuid(`${job.entityId}:${payload.projectId}`, 'dataset'),
+    )
     const schemaHash = Sha256Digest.make(
       `sha256:${new Bun.CryptoHasher('sha256')
         .update(`${JSON.stringify(fields)}\n`)
@@ -328,7 +373,7 @@ function completeDataset(
       deterministicUuid(datasetId, schemaHash),
     )
     const snapshotId = DatasetSnapshotId.make(
-      deterministicUuid(sourceVersion.id, 'snapshot'),
+      deterministicUuid(`${sourceVersion.id}:${payload.projectId}`, 'snapshot'),
     )
     yield* deps.datasets.createDataset({
       id: datasetId,
@@ -384,25 +429,42 @@ function completeJob(
   payload: IngestionPayload,
 ): Effect.Effect<void, unknown, never> {
   return Effect.gen(function* () {
-    const artifactResult = payload.sourceKind === 'dataset'
-      ? yield* (
-          deps.ingestion.ingestStructuredSource?.(payload)
-          ?? Effect.fail(new ValidationError({
-            field: 'dataset',
-            reason: 'dataset-pipeline-unavailable',
-            message: 'Dataset ingestion pipeline is unavailable',
-          }))
-        )
-      : yield* deps.ingestion.ingestTextSource(payload)
+    const artifactResult = payload.materializeExistingVersion !== undefined
+      ? {
+          artifactRef: payload.materializeExistingVersion.artifactRef,
+          contentHash: payload.materializeExistingVersion.contentHash,
+          byteLength: 0,
+        }
+      : payload.sourceKind === 'dataset'
+        ? yield* (
+            deps.ingestion.ingestStructuredSource?.(payload)
+            ?? Effect.fail(new ValidationError({
+              field: 'dataset',
+              reason: 'dataset-pipeline-unavailable',
+              message: 'Dataset ingestion pipeline is unavailable',
+            }))
+          )
+        : yield* deps.ingestion.ingestTextSource(payload)
     const sourceArtifactRef = payload.sourceKind === 'dataset'
       ? (artifactResult as WorkerStructuredIngestionResult).artifactRef
       : (artifactResult as WorkerIngestionResult).manifestRef
     const existing = yield* deps.sourceVersions.findBySourceId(job.entityId as SourceId)
-    const reusableVersion = job.attempts > 1
-      ? existing.find((version) =>
-          version.artifactRef === sourceArtifactRef
-          && version.contentHash === artifactResult.contentHash)
-      : undefined
+    const reusableVersion = payload.materializeExistingVersion !== undefined
+      ? existing.find((version) => version.id === payload.materializeExistingVersion?.id
+        && version.artifactRef === sourceArtifactRef
+        && version.contentHash === artifactResult.contentHash)
+      : job.attempts > 1
+        ? existing.find((version) =>
+            version.artifactRef === sourceArtifactRef
+            && version.contentHash === artifactResult.contentHash)
+        : undefined
+    if (payload.materializeExistingVersion !== undefined && reusableVersion === undefined) {
+      return yield* new ValidationError({
+        field: 'payload.materializeExistingVersion',
+        reason: 'missing',
+        message: 'Existing source version was not found for dataset attachment',
+      })
+    }
     const sourceVersion = reusableVersion ?? (yield* Effect.gen(function* () {
       const nextVersion = existing.reduce((max, version) => Math.max(max, version.version), 0) + 1
       const candidate: typeof SourceVersion.Type = {

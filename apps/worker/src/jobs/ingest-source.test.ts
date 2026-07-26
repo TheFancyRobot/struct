@@ -435,6 +435,82 @@ describe('processOneIngestionJob', () => {
     }
   })
 
+  it('materializes a global dataset from its immutable version after project attachment', async () => {
+    const base = deps()
+    const created: unknown[] = []
+    const existing = {
+      id: sourceVersionId,
+      sourceId,
+      version: 1,
+      artifactRef: 'artifact://sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      contentHash: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      createdAt: 0n,
+    }
+    const testDeps: IngestionWorkerTestDeps = {
+      ...base,
+      jobs: {
+        ...base.jobs,
+        claimNextIngestionJob: () => Effect.succeed(Option.some({
+          id: jobId,
+          workspaceId,
+          entityType: 'ingestion',
+          entityId: sourceId,
+          status: 'in-progress' as const,
+          payload: {
+            stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/rows.csv',
+            name: 'rows.csv',
+            mediaType: 'text/csv',
+            projectId,
+            sourceKind: 'dataset',
+            structuredFormat: 'csv',
+            materializeExistingVersion: {
+              id: sourceVersionId,
+              artifactRef: existing.artifactRef,
+              contentHash: existing.contentHash,
+            },
+          },
+          attempts: 1,
+          maxAttempts: 3,
+          createdAt: 0n,
+          updatedAt: 0n,
+        })),
+      },
+      sourceVersions: {
+        ...base.sourceVersions,
+        findBySourceId: () => Effect.succeed([existing]),
+      },
+      ingestion: {
+        ...base.ingestion,
+        ingestStructuredSource: () => Effect.die('attachment replay must use the immutable artifact'),
+      },
+      datasets: {
+        inspect: () => Effect.succeed([{
+          ordinal: 0,
+          name: 'value',
+          sourceType: 'VARCHAR',
+          logicalType: 'string',
+          nullable: true,
+        }]),
+        createDataset: (dataset) => {
+          created.push(dataset)
+          return Effect.void
+        },
+        createSchemaFamily: () => Effect.void,
+        createSnapshot: () => Effect.void,
+        enqueueMaterialization: () => Effect.void,
+      },
+    }
+
+    await Effect.runPromise(processOneIngestionJob(testDeps))
+
+    expect(testDeps.calls.versions).toEqual([])
+    expect(created[0]).toMatchObject({ projectId })
+    expect(testDeps.calls.events).toEqual([
+      'dataset-materialization-enqueued',
+      'ingestion-completed',
+    ])
+  })
+
   it('creates the next immutable version number without mutating existing SourceVersions', async () => {
     const base = deps()
     const testDeps: IngestionWorkerTestDeps = {

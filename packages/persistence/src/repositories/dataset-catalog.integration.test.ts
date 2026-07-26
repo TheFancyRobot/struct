@@ -26,6 +26,7 @@ const workspaceId = WorkspaceId.make('720e8400-e29b-41d4-a716-446655440000')
 const projectId = ProjectId.make('720e8400-e29b-41d4-a716-446655440001')
 const foreignWorkspaceId = WorkspaceId.make('720e8400-e29b-41d4-a716-446655440002')
 const foreignProjectId = ProjectId.make('720e8400-e29b-41d4-a716-446655440003')
+const attachedProjectId = ProjectId.make('720e8400-e29b-41d4-a716-446655440013')
 const sourceId = SourceId.make('720e8400-e29b-41d4-a716-446655440004')
 const sourceVersionId = SourceVersionId.make('720e8400-e29b-41d4-a716-446655440005')
 const foreignSourceId = SourceId.make('720e8400-e29b-41d4-a716-446655440006')
@@ -35,6 +36,11 @@ const familyId = DatasetSchemaFamilyId.make('720e8400-e29b-41d4-a716-44665544000
 const firstSnapshotId = DatasetSnapshotId.make('720e8400-e29b-41d4-a716-446655440010')
 const secondSnapshotId = DatasetSnapshotId.make('720e8400-e29b-41d4-a716-446655440011')
 const failedSnapshotId = DatasetSnapshotId.make('720e8400-e29b-41d4-a716-446655440012')
+const globalSourceId = SourceId.make('720e8400-e29b-41d4-a716-446655440014')
+const globalSourceVersionId = SourceVersionId.make('720e8400-e29b-41d4-a716-446655440015')
+const attachedDatasetId = DatasetId.make('720e8400-e29b-41d4-a716-446655440016')
+const attachedFamilyId = DatasetSchemaFamilyId.make('720e8400-e29b-41d4-a716-446655440017')
+const attachedSnapshotId = DatasetSnapshotId.make('720e8400-e29b-41d4-a716-446655440018')
 const sourceHash = Sha256Digest.make(`sha256:${'a'.repeat(64)}`)
 const schemaHash = Sha256Digest.make(`sha256:${'b'.repeat(64)}`)
 const firstSnapshotHash = Sha256Digest.make(`sha256:${'c'.repeat(64)}`)
@@ -106,13 +112,18 @@ describeIf('DatasetCatalogRepo (PostgreSQL)', () => {
     )
     await sql.unsafe(
       `INSERT INTO projects (id, workspace_id, name)
-       VALUES ($1, $2, 'Catalog'), ($3, $4, 'Foreign')`,
-      [projectId, workspaceId, foreignProjectId, foreignWorkspaceId],
+       VALUES ($1, $2, 'Catalog'), ($3, $4, 'Foreign'), ($5, $2, 'Attached')`,
+      [projectId, workspaceId, foreignProjectId, foreignWorkspaceId, attachedProjectId],
     )
     await sql.unsafe(
       `INSERT INTO sources (id, project_id, name, kind)
        VALUES ($1, $2, 'Rows', 'dataset'), ($3, $4, 'Foreign rows', 'dataset')`,
       [sourceId, projectId, foreignSourceId, foreignProjectId],
+    )
+    await sql.unsafe(
+      `INSERT INTO sources (id, workspace_id, project_id, name, kind)
+       VALUES ($1, $2, NULL, 'Global rows', 'dataset')`,
+      [globalSourceId, workspaceId],
     )
     await sql.unsafe(
       `INSERT INTO source_versions (id, source_id, version, artifact_ref, content_hash)
@@ -125,6 +136,21 @@ describeIf('DatasetCatalogRepo (PostgreSQL)', () => {
         `artifact://sha256/${'a'.repeat(64)}`,
         sourceHash,
       ],
+    )
+    await sql.unsafe(
+      `INSERT INTO source_versions (id, source_id, version, artifact_ref, content_hash)
+       VALUES ($1, $2, 1, $3, $4)`,
+      [
+        globalSourceVersionId,
+        globalSourceId,
+        `artifact://sha256/${'a'.repeat(64)}`,
+        sourceHash,
+      ],
+    )
+    await sql.unsafe(
+      `INSERT INTO project_sources (workspace_id, project_id, source_id)
+       VALUES ($1, $2, $3)`,
+      [workspaceId, attachedProjectId, globalSourceId],
     )
   })
 
@@ -237,6 +263,39 @@ describeIf('DatasetCatalogRepo (PostgreSQL)', () => {
       catch: () => 'immutable-update-rejected',
     }))
     expect(Exit.isFailure(immutableUpdate)).toBe(true)
+  })
+
+  it('creates a project dataset snapshot from an attached global source version', async () => {
+    const attachedDataset: DatasetAsset = {
+      ...dataset,
+      id: attachedDatasetId,
+      projectId: attachedProjectId,
+      name: 'Global rows',
+    }
+    const attachedFamily: DatasetSchemaFamily = {
+      ...family,
+      id: attachedFamilyId,
+      datasetId: attachedDatasetId,
+      projectId: attachedProjectId,
+    }
+    const attachedSnapshot: DatasetSnapshot = {
+      ...firstSnapshot,
+      id: attachedSnapshotId,
+      datasetId: attachedDatasetId,
+      projectId: attachedProjectId,
+      schemaFamilyId: attachedFamilyId,
+      sources: [{
+        ordinal: 0,
+        sourceId: globalSourceId,
+        sourceVersionId: globalSourceVersionId,
+        contentHash: sourceHash,
+      }],
+    }
+
+    await run(DatasetCatalogRepo.createDataset(attachedDataset))
+    await run(DatasetCatalogRepo.createSchemaFamily(attachedFamily))
+    expect((await run(DatasetCatalogRepo.createSnapshot(attachedSnapshot))).value)
+      .toEqual(attachedSnapshot)
   })
 
   it('rejects foreign-workspace lineage and rolls back the parent snapshot', async () => {

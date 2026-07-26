@@ -240,6 +240,11 @@ describeIf('single text source ingestion real DB integration', () => {
       [workspaceSourceVersionId],
     )
     expect(queued).toMatchObject({ project_id: projectId, status: 'pending' })
+    const catalogBeforeReindex = await Effect.runPromise(
+      SourceCatalogRepo.list(workspaceId, projectId).pipe(Effect.provide(sourceCatalogLayer)),
+    )
+    expect(catalogBeforeReindex.items.find((item) => item.sourceId === workspaceSourceId))
+      .toMatchObject({ readiness: 'processing' })
 
     await Effect.runPromise(processOneSourceTextReindex({
       staleAfterMs: 300_000,
@@ -265,6 +270,11 @@ describeIf('single text source ingestion real DB integration', () => {
     }).pipe(Effect.provide(retrievalLayer)))
     expect(result.evidence).toHaveLength(1)
     expect(result.evidence[0]?.excerpt).toContain('marigold')
+    const catalogAfterReindex = await Effect.runPromise(
+      SourceCatalogRepo.list(workspaceId, projectId).pipe(Effect.provide(sourceCatalogLayer)),
+    )
+    expect(catalogAfterReindex.items.find((item) => item.sourceId === workspaceSourceId))
+      .toMatchObject({ readiness: 'ready' })
   })
 
   it('fences stale ingestion attempts from events and every terminal transition', async () => {
