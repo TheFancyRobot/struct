@@ -36,45 +36,45 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Summary
 
 - Source import notice ignores the source library content gutter.
-- Related notes: none linked yet.
+- Related notes: Phase 10 source catalog/import, workspace shell, responsive behavior, frontend styling, and related source navigation fixes.
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- On the global source-library screen, the “Create a project before importing sources” notice reaches the workspace edge while the heading and empty state are inset, making the feedback surface visually misaligned.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- The notice uses the same responsive source-library content gutter as the heading and list: 24px on desktop, 16px on compact widths, with the existing 8px spacing rhythm between adjacent elements.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Open the source library without a selected project.
+2. Inspect the prerequisite notice at the top of the central workspace.
+3. Observe that its left and right edges do not align with the source-library heading and content.
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- Affects the source-library empty state, import prerequisite feedback, responsive central workspace layout, visual consistency, and accessible reading flow.
 
 ## Suspected Root Cause
 
-- Record current theories and assumptions.
+- The notice is rendered outside the source-library content wrapper or lacks the wrapper’s responsive horizontal padding.
 
 ## Confirmed Root Cause
 
-- Record the proven cause and decisive evidence.
+- Pending code inspection. The supplied desktop screenshot shows the notice at the workspace edge while adjacent source-library content is inset.
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- No functional workaround is required; the defect is visual. Users can continue, but the misalignment weakens hierarchy and makes the notice appear detached from its screen.
 
 ## Permanent Fix Plan
 
-- Describe the intended durable fix.
+- Render the notice within the same max-width/content-gutter wrapper as the source-library content. Preserve semantic alert/accessible feedback behavior and avoid changing touch-target spacing.
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
+- Add visual/browser coverage at desktop and compact breakpoints verifying the alert aligns to the source-library gutter, does not touch viewport/workspace edges, and retains readable contrast and accessible announcement semantics.
 
 ## Related Notes
 
@@ -93,4 +93,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-26 - Reported.
+- 2026-07-26 - Screenshot evidence and UI/UX spacing recommendation recorded.
 <!-- AGENT-END:bug-timeline -->

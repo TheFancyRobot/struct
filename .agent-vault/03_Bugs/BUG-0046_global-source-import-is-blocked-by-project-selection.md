@@ -37,45 +37,45 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Summary
 
 - Global source import is blocked by project selection.
-- Related notes: none linked yet.
+- Related notes: Phase 10 source catalog/import, workspace shell, source lineage, and frontend navigation decisions.
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- In the source library with no project selected, the UI displays “Create a project before importing sources” and hides the import controls. A user cannot add a workspace-global source until creating a project.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- The global source library always exposes source import. When a project is selected, the import flow offers “add to this project” enabled by default; without a project, it creates an unattached global source.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Open `/sources` before selecting or creating a project.
+2. Choose “Add source” from the sidebar.
+3. Observe the project prerequisite notice instead of global import controls.
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- Affects the global source library, sidebar “Add source” action, import API contract, project source view, source search/selection, and source attachment behavior.
 
 ## Suspected Root Cause
 
-- Record current theories and assumptions.
+- The source-library page reuses a project-scoped import panel and treats its selected project as a required prerequisite, despite sources now being workspace-owned.
 
 ## Confirmed Root Cause
 
-- Record the proven cause and decisive evidence.
+- Pending implementation investigation. The screenshot confirms the UI gate remains after workspace-owned source support was introduced.
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- Create a throwaway project before importing, then attach the source where needed. This leaves unnecessary projects and obscures the global-source model.
 
 ## Permanent Fix Plan
 
-- Describe the intended durable fix.
+- Separate global source import from project attachment. Provide global and project source tabs when a project is open; both tabs can add a source globally, with an optional project attachment defaulted on only for the selected project.
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
+- Cover import with no project, import with project attachment enabled by default, global-source search and selection, project-tab filtering to attached sources only, and attachment toggling after import.
 
 ## Related Notes
 
@@ -95,4 +95,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-26 - Reported.
+- 2026-07-26 - Reproduction and intended global/project tab behavior documented.
 <!-- AGENT-END:bug-timeline -->
