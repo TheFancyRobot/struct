@@ -15,6 +15,7 @@ related_sessions:
   - '[[05_Sessions/2026-07-23-124442-build-unified-three-pane-workspace-shell-openai-codex-gpt-5-4|SESSION-2026-07-23-124442 BUG-0013 workspace-shell remediation session]]'
 related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
+  - '[[03_Bugs/BUG-0042_center-workspace-is-fragmented-by-redundant-title-chrome-and-card-framing|BUG-0042 Center workspace is fragmented by redundant title chrome and card framing]]'
 tags:
   - agent-vault
   - step

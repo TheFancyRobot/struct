@@ -108,12 +108,12 @@ export const ConversationWorkspace: ParentComponent<{
 }> = (props) => {
   const state = useWorkspaceState()
   return (
-    <main class="flex min-h-0 min-w-0 flex-1 flex-col bg-base-200">
-      <header class="flex min-h-14 items-center gap-2 border-b border-base-300 bg-base-100 px-3">
+    <main class="relative flex min-h-0 min-w-0 flex-1 flex-col bg-base-100">
+      <div class="z-20 flex min-h-11 items-center gap-2 px-1 md:absolute md:inset-x-0 md:top-0 md:pointer-events-none">
         <button
           ref={props.navigationToggleRef}
           type="button"
-          class="btn btn-ghost btn-sm md:hidden"
+          class="btn btn-ghost btn-sm md:hidden md:pointer-events-auto"
           aria-label="Open workspace navigation"
           onClick={(event) => props.onOpenNavigation(event.currentTarget)}
         >
@@ -123,17 +123,17 @@ export const ConversationWorkspace: ParentComponent<{
           <button
             ref={props.navigationToggleRef}
             type="button"
-            class="btn btn-ghost btn-sm hidden md:inline-flex"
+            class="btn btn-ghost btn-sm hidden md:inline-flex md:pointer-events-auto"
             aria-label="Open workspace navigation"
             onClick={(event) => props.onOpenNavigation(event.currentTarget)}
           >
             Navigation
           </button>
         </Show>
-        <span class="min-w-0 flex-1 truncate text-sm font-semibold">Research workspace</span>
+        <span class="flex-1" />
         <button
           type="button"
-          class="btn btn-ghost btn-sm"
+          class="btn btn-ghost btn-sm md:pointer-events-auto"
           aria-label={`Switch to ${props.theme === 'struct-light' ? 'dark' : 'light'} theme`}
           onClick={props.onToggleTheme}
         >
@@ -142,7 +142,7 @@ export const ConversationWorkspace: ParentComponent<{
         <button
           ref={props.evidenceToggleRef}
           type="button"
-          class="btn btn-ghost btn-sm lg:hidden"
+          class="btn btn-ghost btn-sm md:pointer-events-auto lg:hidden"
           aria-label="Open evidence"
           onClick={(event) => props.onOpenEvidence(event.currentTarget)}
         >
@@ -152,15 +152,15 @@ export const ConversationWorkspace: ParentComponent<{
           <button
             ref={props.evidenceToggleRef}
             type="button"
-            class="btn btn-ghost btn-sm hidden lg:inline-flex"
+            class="btn btn-ghost btn-sm hidden md:pointer-events-auto lg:inline-flex"
             aria-label="Open evidence"
             onClick={(event) => props.onOpenEvidence(event.currentTarget)}
           >
             Evidence
           </button>
         </Show>
-      </header>
-      <div class="min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-4">
+      </div>
+      <div class="min-h-0 min-w-0 flex-1 overflow-auto">
         {props.children}
       </div>
     </main>
