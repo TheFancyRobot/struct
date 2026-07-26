@@ -67,7 +67,7 @@ export const ProjectSwitcher: Component<ProjectSwitcherProps> = (props) => {
         </nav>
       </Show>
 
-      <form class="space-y-3" onSubmit={props.onSubmit}>
+      <form id="project-create" class="space-y-3" onSubmit={props.onSubmit}>
         <label class="flex flex-col gap-2">
           <span class="label-text font-medium">Project name</span>
           <input

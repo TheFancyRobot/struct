@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars -- Babel does not mark Solid JSX imports as used. */
-import { useNavigate, useParams } from '@solidjs/router'
+import { useLocation, useNavigate, useParams } from '@solidjs/router'
 import {
   Match,
   Show,
@@ -79,6 +79,7 @@ async function createAndNavigate(
 }
 
 export const HomePage: Component = () => {
+  const location = useLocation()
   const navigate = useNavigate()
   const [enteredName, setEnteredName] = createSignal('')
   const [creating, setCreating] = createSignal(false)
@@ -128,6 +129,12 @@ export const HomePage: Component = () => {
     const pendingCreate = readPendingProjectCreateState(pendingProjectCreateStorage())
     if (pendingCreate !== null) {
       setEnteredName(pendingCreate.name)
+    }
+
+    if (location.hash === '#project-create') {
+      setCheckingCache(false)
+      queueMicrotask(() => document.querySelector<HTMLInputElement>('#project-create input')?.focus())
+      return
     }
 
     const currentCachedProjectId = window.localStorage.getItem(LAST_PROJECT_ID_KEY)
