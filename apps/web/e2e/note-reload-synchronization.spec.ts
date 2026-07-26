@@ -1,6 +1,7 @@
+/* eslint-disable no-unused-vars -- Imported Playwright types are used only by TypeScript. */
 import { expect, it } from 'bun:test'
-import { chromium } from 'playwright'
-import { startAppServer, stopAppServer } from './support/app-server'
+import { chromium, type Browser, type Page } from 'playwright'
+import { startAppServer, stopAppServer, type AppServerProcess } from './support/app-server'
 import {
   isExpectedRequestAbort,
   waitForNoteSaveAndRefresh,

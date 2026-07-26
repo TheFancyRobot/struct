@@ -60,6 +60,16 @@ it('accepts only intentional request aborts', () => {
     'PATCH',
     `http://127.0.0.1:4187/struct/api/projects/${projectId}/notes/${noteId}`,
   )).toBe(false)
+  expect(isExpectedRequestAbort(
+    'net::ERR_ABORTED',
+    'GET',
+    'http://127.0.0.1:4187/struct/api/events',
+  )).toBe(false)
+  expect(isExpectedRequestAbort(
+    'net::ERR_ABORTED',
+    'GET',
+    `http://127.0.0.1:4187/struct/api/projects/${projectId}/notes/events`,
+  )).toBe(false)
 })
 
 it('identifies project note collection refreshes across deployments', () => {

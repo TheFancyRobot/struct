@@ -17,7 +17,7 @@ export function isExpectedRequestAbort(
 ): boolean {
   return failure === 'net::ERR_ABORTED'
     && requestMethod === 'GET'
-    && (/\/source-activity\b/.test(requestUrl) || /\/events\b/.test(requestUrl))
+    && /\/api\/projects\/[^/]+\/(?:source-activity|runs\/[^/]+\/events)$/.test(new URL(requestUrl).pathname)
 }
 
 export function isProjectNotesCollectionRequest(
