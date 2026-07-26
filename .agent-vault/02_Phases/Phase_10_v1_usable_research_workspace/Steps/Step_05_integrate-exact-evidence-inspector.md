@@ -5,10 +5,10 @@ contract_version: 1
 title: Integrate Exact Evidence Inspector
 step_id: STEP-10-05
 phase: '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]'
-status: planned
-owner: ''
+status: completed
+owner: OpenAI Codex
 created: '2026-07-21'
-updated: '2026-07-23'
+updated: '2026-07-26'
 depends_on:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_04_deliver-source-grounded-conversation|STEP-10-04 Deliver Source Grounded Conversation]]'
 related_sessions:
@@ -21,7 +21,7 @@ tags:
 context_id: SESSION-2026-07-23-141855
 active_session_id: 05_Sessions/2026-07-23-141855-integrate-exact-evidence-inspector-openai-codex-gpt-5-6-sol-fallback
 context_status: completed
-context_summary: Advance [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_05_integrate-exact-evidence-inspector|STEP-10-05 Integrate Exact Evidence Inspector]].
+context_summary: Exact document and deterministic dataset citations open in the workspace evidence pane with complete persisted provenance and explicit failure states.
 ---
 
 # Step 05 - Integrate Exact Evidence Inspector

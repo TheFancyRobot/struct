@@ -185,12 +185,15 @@ describe('source-grounded conversation browser path', () => {
       if (pathname.endsWith(`/evidence/document/${citationId}`)) {
         return json({
           kind: 'document',
+          validation: 'validated',
           evidence: {
             id: citationId,
             runId: firstRunId,
             sourceVersionId,
             sourceName: 'ready.md',
             sourceVersion: 1,
+            originalContentHash: sha('a'),
+            normalizedContentHash: sha('b'),
             locator: 'lines:1-1',
             contextLines: [{
               lineNumber: 1,
@@ -204,6 +207,7 @@ describe('source-grounded conversation browser path', () => {
       if (pathname.endsWith(`/evidence/dataset/${datasetCitationId}`)) {
         return json({
           kind: 'dataset',
+          validation: 'validated',
           evidence: {
             citation: datasetCitation,
             snapshot: {

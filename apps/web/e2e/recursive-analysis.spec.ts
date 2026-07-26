@@ -316,6 +316,8 @@ describe('recursive analysis browser workflow', () => {
           sourceVersionId,
           sourceName: 'support-operations.md',
           sourceVersion: 3,
+          originalContentHash: `sha256:${'a'.repeat(64)}`,
+          normalizedContentHash: `sha256:${'b'.repeat(64)}`,
           locator: 'document:lines:12-14',
           contextLines: [{
             lineNumber: 12,

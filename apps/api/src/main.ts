@@ -1338,7 +1338,11 @@ const server = Effect.gen(function* () {
                   message: 'Evidence not found',
                 })
               }
-              return { kind: 'document' as const, evidence }
+              return {
+                kind: 'document' as const,
+                validation: 'validated' as const,
+                evidence,
+              }
             }
 
             const citationId = yield* Schema.decodeUnknown(DatasetCitationId)(
@@ -1362,7 +1366,11 @@ const server = Effect.gen(function* () {
               Effect.provide(datasetQueryEvidenceLayer),
               Effect.flatMap(Schema.encode(DatasetCitationEvidence)),
             )
-            return { kind: 'dataset' as const, evidence }
+            return {
+              kind: 'dataset' as const,
+              validation: 'validated' as const,
+              evidence,
+            }
           }),
         ))
         const result = await Runtime.runPromiseExit(effectRuntime)(program)

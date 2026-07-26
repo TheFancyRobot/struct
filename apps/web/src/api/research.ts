@@ -28,13 +28,30 @@ const StartedResearch = Schema.Struct({
   status: ResearchStatus,
 })
 const EvidenceDetail = Schema.Union(
-  Schema.Struct({ kind: Schema.Literal('document'), evidence: CitationDetail }),
+  Schema.Struct({
+    kind: Schema.Literal('document'),
+    validation: Schema.Literal('validated'),
+    evidence: CitationDetail,
+  }),
   Schema.Struct({
     kind: Schema.Literal('dataset'),
+    validation: Schema.Literal('validated'),
     evidence: DatasetCitationEvidence,
   }),
 )
 export type EvidenceDetail = Schema.Schema.Type<typeof EvidenceDetail>
+
+export type EvidenceFailure = 'missing' | 'invalid' | 'unavailable'
+
+export class EvidenceFetchError extends Error {
+  constructor(readonly kind: EvidenceFailure) {
+    super(kind === 'missing'
+      ? 'This evidence is no longer available.'
+      : kind === 'invalid'
+        ? 'This evidence no longer matches its immutable source.'
+        : 'Evidence could not be loaded. Try again.')
+  }
+}
 
 async function researchJson(response: Response): Promise<unknown> {
   const body = await response.json()
@@ -126,21 +143,24 @@ export async function fetchEvidence(
   kind: 'document' | 'dataset',
   evidenceId: string,
 ): Promise<EvidenceDetail> {
-  const response = await fetch(
-    apiPath(
-      `/projects/${projectId}/research/${threadId}/runs/${runId}`
-      + `/evidence/${kind}/${evidenceId}`,
-      appBasePath,
-    ),
-    { signal: AbortSignal.timeout(10_000) },
-  )
+  let response: Response
+  try {
+    response = await fetch(
+      apiPath(
+        `/projects/${projectId}/research/${threadId}/runs/${runId}`
+        + `/evidence/${kind}/${evidenceId}`,
+        appBasePath,
+      ),
+      { signal: AbortSignal.timeout(10_000) },
+    )
+  } catch {
+    throw new EvidenceFetchError('unavailable')
+  }
   if (!response.ok) {
-    throw new Error(
+    throw new EvidenceFetchError(
       response.status === 404
-        ? 'This evidence is no longer available.'
-        : response.status === 409
-          ? 'This evidence no longer matches its immutable source.'
-          : 'Evidence could not be loaded. Try again.',
+        ? 'missing'
+        : response.status === 409 ? 'invalid' : 'unavailable',
     )
   }
   return Schema.decodeUnknownPromise(EvidenceDetail)(await response.json())

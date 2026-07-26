@@ -386,6 +386,8 @@ async function installApi(page: Page, options: {
         sourceVersionId,
         sourceName: 'customer-success-review.md',
         sourceVersion: 4,
+        originalContentHash: `sha256:${'a'.repeat(64)}`,
+        normalizedContentHash: `sha256:${'b'.repeat(64)}`,
         locator: 'lines:118-123',
         contextLines: [{
           lineNumber: 118,

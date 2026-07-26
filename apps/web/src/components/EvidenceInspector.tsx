@@ -13,16 +13,30 @@ import type {
   ResearchRunId,
   ResearchThreadId,
 } from '@struct/domain'
-import { fetchEvidence, type EvidenceDetail } from '../api/research'
+import {
+  EvidenceFetchError,
+  fetchEvidence,
+  type EvidenceDetail,
+} from '../api/research'
 import type { EvidenceSelection } from './evidence-selection'
 
-const DocumentEvidence: Component<{ readonly evidence: CitationDetail }> = (props) => (
+export const DocumentEvidence: Component<{
+  readonly evidence: CitationDetail
+}> = (props) => (
   <article class="space-y-3">
     <h3 class="font-semibold">{props.evidence.sourceName}</h3>
     <p class="break-anywhere text-xs text-base-content/60">
       Immutable version {props.evidence.sourceVersion} · {props.evidence.sourceVersionId}
     </p>
     <code class="block break-anywhere text-xs">{props.evidence.locator}</code>
+    <dl class="space-y-1 break-anywhere text-xs">
+      <dt class="font-semibold">Original content hash</dt>
+      <dd>{props.evidence.originalContentHash}</dd>
+      <dt class="font-semibold">Normalized content hash</dt>
+      <dd>{props.evidence.normalizedContentHash}</dd>
+      <dt class="font-semibold">Cited lines</dt>
+      <dd>{props.evidence.startLine}–{props.evidence.endLine}</dd>
+    </dl>
     <pre class="overflow-x-auto whitespace-pre-wrap rounded-field bg-neutral p-3 text-xs text-neutral-content">
       <code>
         <For each={props.evidence.contextLines}>
@@ -44,7 +58,7 @@ const DocumentEvidence: Component<{ readonly evidence: CitationDetail }> = (prop
   </article>
 )
 
-const DatasetEvidence: Component<{
+export const DatasetEvidence: Component<{
   readonly evidence: DatasetCitationEvidence
 }> = (props) => (
   <article class="space-y-3">
@@ -71,19 +85,38 @@ const DatasetEvidence: Component<{
       </table>
     </div>
     <dl class="space-y-1 break-anywhere text-xs">
+      <dt class="font-semibold">Query result snapshot</dt>
+      <dd>{props.evidence.citation.queryResultSnapshotId}</dd>
+      <dt class="font-semibold">Dataset</dt>
+      <dd>{props.evidence.citation.datasetId}</dd>
       <dt class="font-semibold">Dataset snapshot</dt>
       <dd>{props.evidence.citation.datasetSnapshotId}</dd>
+      <dt class="font-semibold">Request hash</dt>
+      <dd>{props.evidence.snapshot.requestHash}</dd>
       <dt class="font-semibold">Schema hash</dt>
       <dd>{props.evidence.citation.schemaHash}</dd>
       <dt class="font-semibold">Result hash</dt>
       <dd>{props.evidence.citation.resultHash}</dd>
+      <dt class="font-semibold">Result artifact hash</dt>
+      <dd>{props.evidence.citation.resultArtifactHash}</dd>
+      <dt class="font-semibold">Parquet digest</dt>
+      <dd>{props.evidence.citation.parquetDigest}</dd>
       <dt class="font-semibold">Engine</dt>
-      <dd>{props.evidence.snapshot.engineVersion}</dd>
+      <dd>
+        {props.evidence.snapshot.engineVersion} · protocol {props.evidence.snapshot.protocolVersion}
+      </dd>
+      <dt class="font-semibold">Engine config hash</dt>
+      <dd>{props.evidence.snapshot.engineConfigHash}</dd>
+      <dt class="font-semibold">Selected columns</dt>
+      <dd>{props.evidence.citation.selectedColumns.join(', ')}</dd>
       <dt class="font-semibold">Rows</dt>
       <dd>
         {props.evidence.citation.rowStart}–{props.evidence.citation.rowEndExclusive}
+        {' · '}{props.evidence.snapshot.rowCount} persisted
         {props.evidence.snapshot.truncated ? ' · truncated' : ''}
       </dd>
+      <dt class="font-semibold">Executed at</dt>
+      <dd>{String(props.evidence.snapshot.executedAt)}</dd>
     </dl>
   </article>
 )
@@ -116,14 +149,17 @@ export const EvidenceInspector: Component<{
   return (
     <div class="flex min-h-0 flex-1 flex-col">
       <header class="flex min-h-11 items-center justify-between gap-2">
-        <h2
-          id="evidence-heading"
-          ref={props.headingRef}
-          tabindex="-1"
-          class="truncate px-2 text-sm font-semibold"
-        >
-          Evidence
-        </h2>
+        <div class="min-w-0 px-2">
+          <h2
+            id="evidence-heading"
+            ref={props.headingRef}
+            tabindex="-1"
+            class="truncate text-sm font-semibold"
+          >
+            Evidence
+          </h2>
+          <p class="text-xs text-success">Validated exact evidence</p>
+        </div>
         <button
           type="button"
           class="btn btn-ghost btn-sm"
@@ -136,7 +172,16 @@ export const EvidenceInspector: Component<{
       <div class="min-h-0 flex-1 overflow-y-auto p-2">
         <Switch>
           <Match when={detail.error}>
-            <div role="alert" class="alert alert-error items-start">
+            <div
+              role="alert"
+              class="alert items-start"
+              classList={{
+                'alert-warning': detail.error instanceof EvidenceFetchError
+                  && detail.error.kind !== 'unavailable',
+                'alert-error': !(detail.error instanceof EvidenceFetchError)
+                  || detail.error.kind === 'unavailable',
+              }}
+            >
               <span>{detail.error instanceof Error
                 ? detail.error.message
                 : 'Evidence could not be loaded.'}</span>
