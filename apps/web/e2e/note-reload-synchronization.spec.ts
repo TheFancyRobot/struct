@@ -1,25 +1,10 @@
 import { expect, it } from 'bun:test'
 import { chromium } from 'playwright'
 import { startAppServer, stopAppServer } from './support/app-server'
-
-function isExpectedRequestAbort(
-  failure: string,
-  requestMethod: string,
-  requestUrl: string,
-): boolean {
-  return failure === 'net::ERR_ABORTED'
-    && requestMethod === 'GET'
-    && (/\/source-activity\b/.test(requestUrl) || /\/events\b/.test(requestUrl))
-}
-
-function isProjectNotesCollectionRequest(
-  requestMethod: string,
-  requestUrl: string,
-  projectId: string,
-): boolean {
-  return requestMethod === 'GET'
-    && new RegExp(`/api/projects/${projectId}/notes$`, 'i').test(new URL(requestUrl).pathname)
-}
+import {
+  isExpectedRequestAbort,
+  waitForNoteSaveAndRefresh,
+} from './support/note-save'
 
 it('waits for the BASE_PATH notes refresh to finish before reloading', async () => {
   const projectId = '33333333-3333-4333-8333-333333333333'
@@ -33,83 +18,76 @@ it('waits for the BASE_PATH notes refresh to finish before reloading', async () 
   let revision = 1
   let releaseNotesRefresh: (() => void) | undefined
   const notesRefreshStarted = Promise.withResolvers<void>()
-  const web = await startAppServer(4188, { BASE_PATH: '/struct', BASE_URL: '/struct/' })
-  const browser = await chromium.launch({ headless: true })
-  const page = await browser.newPage()
-  const note = () => ({
-    id: noteId,
-    workspaceId,
-    projectId,
-    authorId: workspaceId,
-    origin: {
-      threadId,
-      runId,
-      citations: [{ kind: 'document', id: citationId, sourceVersionId: '99999999-9999-4999-8999-999999999999', locator: 'lines:1-1' }],
-    },
-    current: {
-      revision,
-      title,
-      body: 'Body text',
-      authorId: workspaceId,
-      contentHash: `sha256:${'a'.repeat(64)}`,
-      createdAt: 1,
-    },
-    archived: false,
-    createdAt: 1,
-    updatedAt: 1,
-  })
-
-  page.on('requestfailed', (request) => {
-    const failure = request.failure()?.errorText ?? 'failed'
-    const url = request.url()
-    if (!isExpectedRequestAbort(failure, request.method(), url)) {
-      requestFailures.push(`${request.method()} ${url} ${failure}`)
-    }
-  })
-  await page.route(`**/api/projects/${projectId}/notes`, async (route) => {
-    if (route.request().method() !== 'GET') {
-      await route.fallback()
-      return
-    }
-    if (revision > 1) {
-      notesRefreshStarted.resolve()
-      await new Promise<void>((resolve) => {
-        releaseNotesRefresh = resolve
-      })
-    }
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify([note()]),
-    })
-  })
-  await page.route(`**/api/projects/${projectId}/notes/${noteId}`, async (route) => {
-    if (route.request().method() === 'PATCH') {
-      title = 'Acme renewal follow-up'
-      revision = 2
-    }
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(note()),
-    })
-  })
+  let web: AppServerProcess | undefined
+  let browser: Browser | undefined
+  let page: Page | undefined
 
   try {
+    web = await startAppServer(4188, { BASE_PATH: '/struct', BASE_URL: '/struct/' })
+    browser = await chromium.launch({ headless: true })
+    page = await browser.newPage()
+    const note = () => ({
+      id: noteId,
+      workspaceId,
+      projectId,
+      authorId: workspaceId,
+      origin: {
+        threadId,
+        runId,
+        citations: [{ kind: 'document', id: citationId, sourceVersionId: '99999999-9999-4999-8999-999999999999', locator: 'lines:1-1' }],
+      },
+      current: {
+        revision,
+        title,
+        body: 'Body text',
+        authorId: workspaceId,
+        contentHash: `sha256:${'a'.repeat(64)}`,
+        createdAt: 1,
+      },
+      archived: false,
+      createdAt: 1,
+      updatedAt: 1,
+    })
+
+    page.on('requestfailed', (request) => {
+      const failure = request.failure()?.errorText ?? 'failed'
+      const url = request.url()
+      if (!isExpectedRequestAbort(failure, request.method(), url)) {
+        requestFailures.push(`${request.method()} ${url} ${failure}`)
+      }
+    })
+    await page.route(`**/api/projects/${projectId}/notes`, async (route) => {
+      if (route.request().method() !== 'GET') {
+        await route.fallback()
+        return
+      }
+      if (revision > 1) {
+        notesRefreshStarted.resolve()
+        await new Promise<void>((resolve) => {
+          releaseNotesRefresh = resolve
+        })
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([note()]),
+      })
+    })
+    await page.route(`**/api/projects/${projectId}/notes/${noteId}`, async (route) => {
+      if (route.request().method() === 'PATCH') {
+        title = 'Acme renewal follow-up'
+        revision = 2
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(note()),
+      })
+    })
+
     await page.goto(`http://127.0.0.1:4188/struct/projects/${projectId}/notes/${noteId}`)
     await page.getByLabel('Title').waitFor()
-    let noteUpdateCompleted = false
-    const noteUpdate = page.waitForResponse((response) => {
-      const matches = response.request().method() === 'PATCH'
-        && new RegExp(`/api/projects/${projectId}/notes/${noteId}$`, 'i').test(new URL(response.url()).pathname)
-      if (!matches || !response.ok()) return false
-      noteUpdateCompleted = true
-      return true
-    })
-    const notesRefresh = page.waitForResponse((response) =>
-      noteUpdateCompleted
-      && response.ok()
-      && isProjectNotesCollectionRequest(response.request().method(), response.url(), projectId))
+    const { noteUpdate, notesRefresh } = waitForNoteSaveAndRefresh(page, projectId, noteId)
     await page.getByLabel('Title').fill('Acme renewal follow-up')
     await noteUpdate
     await page.getByRole('status').filter({ hasText: 'Saved' }).waitFor()
@@ -122,8 +100,8 @@ it('waits for the BASE_PATH notes refresh to finish before reloading', async () 
     expect(requestFailures).toEqual([])
   } finally {
     releaseNotesRefresh?.()
-    await page.close()
-    await browser.close()
+    await page?.close()
+    await browser?.close()
     await stopAppServer(web)
   }
 })

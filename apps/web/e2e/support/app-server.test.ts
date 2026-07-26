@@ -187,6 +187,56 @@ describe('isolated production web lifecycle', () => {
     }
   })
 
+  it('reruns dependency verification after stack fallback refreshes the environment', async () => {
+    const calls: string[] = []
+    const dependencyChecks: Readonly<Record<string, string>>[] = []
+
+    const environment = await prepareRealStackEnvironment(4194, {
+      startDependencyContainers: async () => {
+        calls.push('dependency start')
+      },
+      runCommand: async (name, _command, _cwd, environment) => {
+        calls.push(name)
+        if (name === 'dependency check') {
+          dependencyChecks.push(environment)
+          if (dependencyChecks.length === 1) {
+            throw new Error('dependency check failed (1)')
+          }
+        }
+      },
+      resolveDataEngineToken: async () => {
+        calls.push('resolve token')
+        return calls.filter((call) => call === 'resolve token').length === 1
+          ? 'stale-data-engine-token'
+          : 'fresh-data-engine-token'
+      },
+      resetDatabase: async () => {
+        calls.push('reset database')
+      },
+    })
+
+    expect(calls).toEqual([
+      'dependency start',
+      'resolve token',
+      'dependency check',
+      'dependency stack',
+      'resolve token',
+      'dependency check',
+      'reset database',
+    ])
+    expect(dependencyChecks).toEqual([
+      {
+        DATABASE_URL: 'postgres://struct:struct@127.0.0.1:5432/struct',
+        DATA_ENGINE_TOKEN: 'stale-data-engine-token',
+      },
+      {
+        DATABASE_URL: 'postgres://struct:struct@127.0.0.1:5432/struct',
+        DATA_ENGINE_TOKEN: 'fresh-data-engine-token',
+      },
+    ])
+    expect(environment['DATA_ENGINE_TOKEN']).toBe('fresh-data-engine-token')
+  })
+
   it('keeps bootstrap failures diagnosable when stack fallback also fails', async () => {
     await expect(prepareRealStackEnvironment(4194, {
       startDependencyContainers: async () => {

@@ -324,6 +324,12 @@ export async function prepareRealStackEnvironment(
       ...dependencyEnvironment,
       DATA_ENGINE_TOKEN: await readToken(),
     }
+    await run(
+      'dependency check',
+      ['bun', 'run', 'ops', 'database:verify'],
+      repositoryRoot,
+      dependencyEnvironment,
+    )
   }
 
   const environment = realStackEnvironment(port, dependencyEnvironment['DATA_ENGINE_TOKEN'])
