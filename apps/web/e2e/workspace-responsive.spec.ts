@@ -32,6 +32,79 @@ afterAll(async () => {
 })
 
 describe('responsive workspace browser contract', () => {
+  it('filters projects and current-project documents while hiding recents in a project', async () => {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
+    const projectId = '11111111-1111-4111-8111-111111111111'
+    const otherProjectId = '22222222-2222-4222-8222-222222222222'
+    const project = { id: projectId, name: 'Alpha research', createdAt: 1, updatedAt: 2 }
+    const otherProject = { id: otherProjectId, name: 'Beta notebook', createdAt: 1, updatedAt: 1 }
+    await page.addInitScript((id) => {
+      window.localStorage.removeItem('struct:last-project-id')
+      window.localStorage.setItem('struct:recent-project-ids', JSON.stringify([id]))
+    }, projectId)
+    await page.route('**/api/projects', (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ items: [project, otherProject], nextCursor: null }),
+    }))
+    await page.route(`**/api/projects/${projectId}`, (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(project),
+    }))
+    await page.route(`**/api/projects/${projectId}/sources`, (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        cursor: '0',
+        items: [
+          {
+            sourceId: '33333333-3333-4333-8333-333333333333',
+            name: 'Market brief.md',
+            kind: 'document',
+            mediaType: 'text/markdown',
+            latestVersionId: null,
+            latestVersion: null,
+            readiness: 'ready',
+            updatedAt: 20,
+            job: null,
+          },
+          {
+            sourceId: '44444444-4444-4444-8444-444444444444',
+            name: 'Metrics.csv',
+            kind: 'dataset',
+            mediaType: 'text/csv',
+            latestVersionId: null,
+            latestVersion: null,
+            readiness: 'ready',
+            updatedAt: 30,
+            job: null,
+          },
+        ],
+      }),
+    }))
+
+    await page.goto(origin)
+    const navigation = page.getByRole('navigation', { name: 'Workspace navigation' })
+    await navigation.getByRole('heading', { name: 'Recents' }).waitFor()
+    await navigation.getByLabel('Search projects').fill('beta')
+    const projectSection = navigation.getByRole('region', { name: 'Projects' })
+    expect(await projectSection.getByRole('link', { name: 'Alpha research' }).count()).toBe(0)
+    expect(await projectSection.getByRole('link', { name: 'Beta notebook' }).count()).toBe(1)
+
+    await page.goto(`${origin}/projects/${projectId}`)
+    expect(await navigation.getByRole('heading', { name: 'Recents' }).count()).toBe(0)
+    await navigation.getByRole('link', { name: 'Market brief.md' }).waitFor()
+    expect(await navigation.getByRole('link', { name: 'Metrics.csv' }).count()).toBe(0)
+    await page.goto(`${origin}/projects/${projectId}/sources`)
+    const currentLinks = navigation.locator('a[aria-current="page"]')
+    expect(await currentLinks.count()).toBe(1)
+    expect(await currentLinks.textContent()).toBe('Sources')
+    await navigation.getByLabel('Search sources').fill('missing')
+    expect(await navigation.getByRole('link', { name: 'Market brief.md' }).count()).toBe(0)
+    await page.close()
+  })
+
   it('keeps the focused project name input separated from its action', async () => {
     const page = await browser.newPage({ viewport: { width: 375, height: 844 } })
     await openWorkspace(page, 'struct-light')
