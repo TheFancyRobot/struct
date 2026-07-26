@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Source import notice ignores the source library content gutter
 bug_id: BUG-0047
-status: new
+status: fixed
 severity: sev-3
 category: logic
 reported_on: '2026-07-26'
-fixed_on: ''
-owner: bug-0047-vertical-notice
+fixed_on: '2026-07-26'
+owner: bug-0047-vertical-implementer
 created: '2026-07-26'
 updated: '2026-07-26'
 related_notes:
@@ -65,6 +65,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - Pending code inspection. The supplied desktop screenshot shows the notice at the workspace edge while adjacent source-library content is inset.
 - Confirmed 2026-07-26 (supersedes "Pending" above). The source-library content wrapper in `apps/web/src/pages/SourcesPage.tsx` was `<section class="mx-auto max-w-4xl space-y-4">` with no responsive horizontal padding. The import notice (`SourceImportPanel` card and the "Attach new sources to a project" card) and the bare "Source library" heading/list were all direct children of that unpadded wrapper, so on compact workspace widths they sat flush against the workspace edge with no shared content gutter. The bare heading/list lacked any inset, while the cards' content was visually inset by their own `p-4`, so the heading and the cards did not share a common left gutter. The root cause is the missing wrapper-level responsive horizontal padding, not a per-element defect.
 - Reopened 2026-07-26. Live browser inspection found the global source-library attachment notice (`div.space-y-3.rounded-box`) at `top: 0` within `main .overflow-auto`. The prior fix added only `px-4 sm:px-6`; the shared `SourcesPage` wrapper still lacks responsive top padding, so its first child remains flush with the central viewport edge.
+- Resolved 2026-07-26 (vertical, supersedes the reopened note). The shared `SourcesPage` wrapper had horizontal gutter (`px-4 sm:px-6`) but no top padding. In library mode (`/sources`), the attachment notice `div.space-y-3.rounded-box` is the wrapper's first child, and the scroll container `main .overflow-auto` (`<div class="min-h-0 min-w-0 flex-1 overflow-auto">` in `WorkspaceShell.tsx`) has no padding/border, so the first child rendered at `top: 0` of the central viewport edge. Root cause: missing wrapper-level responsive top padding, mirroring the horizontal gutter that already exists. One shared guard in the wrapper fixes it for all children.
 
 ## Workaround
 
@@ -78,12 +79,14 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
   - `apps/web/src/pages/SourcesPage.tsx` — added `px-4 sm:px-6` to the source-library content wrapper (one-line class change).
   - `apps/web/e2e/source-import.spec.ts` — added browser regression coverage at desktop (1440px) and compact (375px) breakpoints.
 - Execution plan committed at `docs/plans/2026-07-26-source-library-notice-top-inset.md`: first add a failing responsive browser assertion for the attachment notice's top inset at 375px and 1440px; then add only `pt-4 sm:pt-6` to the shared `SourcesPage` wrapper; finally validate focused Playwright, web typecheck, and vault integrity before closing this reopened bug.
+- Completed 2026-07-26 (vertical). Added `pt-4 sm:pt-6` to the existing shared `SourcesPage` wrapper, now `mx-auto max-w-4xl space-y-4 px-4 sm:px-6 pt-4 sm:pt-6`. The attachment notice (first child) is now inset 16px on compact and 24px at `sm` (640px+) from the workspace top edge, matching the established horizontal gutter convention. Vertical spacing (`space-y-4`) and accessible semantics unchanged. Changed files: `apps/web/src/pages/SourcesPage.tsx` (one class token added to existing wrapper), `apps/web/e2e/source-import.spec.ts` (top-inset assertion added to the existing global-library browser test).
 
 ## Regression Coverage Needed
 
 - Add visual/browser coverage at desktop and compact breakpoints verifying the alert aligns to the source-library gutter, does not touch viewport/workspace edges, and retains readable contrast and accessible announcement semantics.
 - Added 2026-07-26. New Playwright test "aligns the source-library notice and content to the shared responsive gutter at desktop and compact widths" in `apps/web/e2e/source-import.spec.ts`. It loads the global source library (`/sources`) with mocked empty workspace catalog at 1440px and 375px and asserts: (1) the import notice (`section[aria-labelledby="source-import-heading"]`) and the "Source library" heading share the same left edge (gutter alignment, `|Δx| ≤ 1`); (2) both are inset from the workspace scroll-container edge by at least the gutter (`≥ 12px`, failing at 0 when unpadded); (3) the import notice retains `aria-labelledby="source-import-heading"` (accessible feedback semantics preserved).
 - Validation run 2026-07-26: `apps/web` typecheck clean (`tsc --noEmit` exit 0); web unit tests (excluding `e2e/`) 77 pass / 0 fail; `e2e/source-import.spec.ts` 4 pass / 0 fail including the new gutter test at both breakpoints. The new test was verified to fail without the fix (`importLeft - contentLeft` = 0) and pass with it, confirming it guards the regression.
+- Extended 2026-07-26 (vertical). The existing "aligns the source-library notice and content to the shared responsive gutter at desktop and compact widths" test now also locates `main .overflow-auto div.space-y-3.rounded-box` and asserts `|noticeTop - contentTop - expectedTopInset| ≤ 1` with `expectedTopInset = width === 1440 ? 24 : 16`. Verified RED before the fix (1440px: offset 0, diff 24) and GREEN after (both widths pass). Validation run 2026-07-26: `e2e/source-import.spec.ts` 4 pass / 0 fail; `@struct/web` typecheck exit 0.
 
 ## Related Notes
 
@@ -105,3 +108,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-07-26 - Screenshot evidence and UI/UX spacing recommendation recorded.
 <!-- AGENT-END:bug-timeline -->
 - 2026-07-26 — Fixed by adding the responsive `px-4 sm:px-6` content gutter to the source-library wrapper in `apps/web/src/pages/SourcesPage.tsx`, aligning the import notice and source-library heading/list to a shared 16px/24px gutter. Browser regression coverage added at 1440px and 375px; typecheck, unit tests, and the source-import e2e suite pass.
+- 2026-07-26 — Reopened: live browser inspection found the global attachment notice at `top: 0` within `main .overflow-auto`; prior `px-4 sm:px-6` fix gave only horizontal inset, the wrapper still lacked responsive top padding.
+- 2026-07-26 — Fixed (vertical). Extended the 375px/1440px global-library browser test to assert the attachment notice card is inset from `main .overflow-auto` by exactly 16px/24px (verified RED: `noticeTop - contentTop` = 0, diff 24 > 1). Added only `pt-4 sm:pt-6` to the existing shared `SourcesPage` wrapper (now `mx-auto max-w-4xl space-y-4 px-4 sm:px-6 pt-4 sm:pt-6`). Rerun: focused `e2e/source-import.spec.ts` 4 pass / 0 fail at both widths; web typecheck exit 0. No components, variables, or per-card spacing added.
