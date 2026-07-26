@@ -34,6 +34,7 @@ related_bugs:
   - '[[03_Bugs/BUG-0048_workspace-source-attachments-do-not-enqueue-text-indexing|BUG-0048 Workspace source attachments do not enqueue text indexing]]'
   - '[[03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets|BUG-0049 Global dataset attachments did not materialize project datasets]]'
   - '[[03_Bugs/BUG-0050_workspace-responsive-e2e-test-retains-obsolete-project-gated-source-action-contract|BUG-0050 Workspace responsive e2e test retains obsolete project-gated source action contract]]'
+  - '[[03_Bugs/BUG-0051_manage-source-library-navigation-link-misses-the-44px-touch-target-minimum|BUG-0051 Manage source library navigation link misses the 44px touch-target minimum]]'
 tags:
   - agent-vault
   - phase
@@ -139,6 +140,7 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - [[03_Bugs/BUG-0048_workspace-source-attachments-do-not-enqueue-text-indexing|BUG-0048 Workspace source attachments do not enqueue text indexing]]
 - [[03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets|BUG-0049 Global dataset attachments did not materialize project datasets]]
 - [[03_Bugs/BUG-0050_workspace-responsive-e2e-test-retains-obsolete-project-gated-source-action-contract|BUG-0050 Workspace responsive e2e test retains obsolete project-gated source action contract]]
+- [[03_Bugs/BUG-0051_manage-source-library-navigation-link-misses-the-44px-touch-target-minimum|BUG-0051 Manage source library navigation link misses the 44px touch-target minimum]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps
