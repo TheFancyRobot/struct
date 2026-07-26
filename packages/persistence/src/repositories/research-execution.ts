@@ -570,7 +570,22 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
                JOIN projects p ON p.id = s.project_id
                WHERE p.id = $1
                  AND p.workspace_id = $2
-                 AND sv.id = ANY($3::uuid[])`,
+                 AND sv.id = ANY($3::uuid[])
+                 AND sv.version = (
+                   SELECT MAX(candidate.version)
+                   FROM source_versions candidate
+                   WHERE candidate.source_id = s.id
+                 )
+                 AND (
+                   s.kind <> 'dataset'
+                   OR EXISTS (
+                     SELECT 1
+                     FROM dataset_snapshot_sources lineage
+                     JOIN dataset_materializations materialization
+                       ON materialization.snapshot_id = lineage.snapshot_id
+                     WHERE lineage.source_version_id = sv.id
+                   )
+                 )`,
               [input.projectId, input.workspaceId, input.sourceVersionIds],
             )
             if (Number(authorized[0]?.['count']) !== input.sourceVersionIds.length) {

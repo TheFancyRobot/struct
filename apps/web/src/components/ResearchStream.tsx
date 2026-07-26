@@ -30,6 +30,7 @@ import {
 import { createNote } from '../api/notes'
 import { RecursiveRunTimeline } from './RecursiveRunTimeline'
 import { PartialFindingsPanel } from './PartialFindingsPanel'
+import { appendResearchEvent } from './conversation-state'
 import { evidenceSelection } from './evidence-selection'
 import { mergeRecursiveRead } from './recursive-progress-state'
 import { useWorkspaceState } from './workspace/workspace-state'
@@ -180,8 +181,9 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
     () => apiPath(`/projects/${props.projectId}/runs/${props.runId}/events`, appBasePath),
     Schema.decodeUnknownSync(ResearchEvent),
     (event) => {
-      if (state.events.some((existing) => existing.cursor === event.cursor)) return
-      setState('events', (events) => [...events, event])
+      const events = appendResearchEvent(state.events, event)
+      if (events === state.events) return
+      setState('events', events)
       applyRecursiveEvent(event)
     },
     [
