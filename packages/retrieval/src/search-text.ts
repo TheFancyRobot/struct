@@ -546,10 +546,14 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
                SELECT sv.id, $4
                FROM source_versions sv
                JOIN sources s ON s.id = sv.source_id
-               JOIN projects p ON p.id = s.project_id
               WHERE sv.id = $3
-                 AND p.id = $2
-                 AND p.workspace_id = $1
+                 AND s.workspace_id = $1
+                 AND EXISTS (
+                   SELECT 1 FROM project_sources attached
+                   WHERE attached.workspace_id = $1
+                     AND attached.project_id = $2
+                     AND attached.source_id = s.id
+                 )
                ON CONFLICT (source_version_id)
                DO UPDATE SET content = source_text_index.content
                WHERE source_text_index.content = EXCLUDED.content
@@ -667,10 +671,14 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
               `SELECT COUNT(DISTINCT sv.id)::int AS ready_count
                FROM source_versions sv
                JOIN sources s ON s.id = sv.source_id
-               JOIN projects p ON p.id = s.project_id
                JOIN source_text_index sti ON sti.source_version_id = sv.id
-               WHERE p.workspace_id = $1
-                 AND p.id = $2
+               WHERE s.workspace_id = $1
+                 AND EXISTS (
+                   SELECT 1 FROM project_sources attached
+                   WHERE attached.workspace_id = $1
+                     AND attached.project_id = $2
+                     AND attached.source_id = s.id
+                 )
                  AND sv.id = ANY($3::uuid[])`,
               [decoded.workspaceId, decoded.projectId, decoded.sourceVersionIds],
             )
@@ -705,7 +713,6 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
              FROM source_text_index sti
              JOIN source_versions sv ON sv.id = sti.source_version_id
              JOIN sources s ON s.id = sv.source_id
-             JOIN projects p ON p.id = s.project_id
              CROSS JOIN search_query
              LEFT JOIN LATERAL (
                SELECT MIN(line_number)::int AS match_line,
@@ -780,8 +787,13 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
                WHERE source_lines.forward_location <= ($6::int + 1) / 2
                   OR source_lines.reverse_location <= $6::int / 2
              ) matched_lines ON TRUE
-             WHERE p.workspace_id = $1
-               AND p.id = $2
+             WHERE s.workspace_id = $1
+               AND EXISTS (
+                 SELECT 1 FROM project_sources attached
+                 WHERE attached.workspace_id = $1
+                   AND attached.project_id = $2
+                   AND attached.source_id = s.id
+               )
                AND sti.source_version_id = ANY($3::uuid[])
                AND sti.search_vector @@ search_query.query
              ORDER BY rank DESC, source_version_id ASC
@@ -925,9 +937,13 @@ export class TextRetrieval extends Effect.Service<TextRetrieval>()('TextRetrieva
                          ON sti.source_version_id = $3
                        JOIN source_versions sv ON sv.id = sti.source_version_id
                        JOIN sources s ON s.id = sv.source_id
-                       JOIN projects p ON p.id = s.project_id
-                       WHERE p.workspace_id = $4
-                         AND p.id = $5
+                       WHERE s.workspace_id = $4
+                         AND EXISTS (
+                           SELECT 1 FROM project_sources attached
+                           WHERE attached.workspace_id = $4
+                             AND attached.project_id = $5
+                             AND attached.source_id = s.id
+                         )
                          AND to_tsvector(
                            'english',
                            substring(

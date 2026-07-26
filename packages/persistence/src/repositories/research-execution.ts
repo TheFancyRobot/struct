@@ -567,9 +567,13 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
               `SELECT COUNT(*)::int AS count
                FROM source_versions sv
                JOIN sources s ON s.id = sv.source_id
-               JOIN projects p ON p.id = s.project_id
-               WHERE p.id = $1
-                 AND p.workspace_id = $2
+               WHERE s.workspace_id = $2
+                 AND EXISTS (
+                   SELECT 1 FROM project_sources attached
+                   WHERE attached.workspace_id = $2
+                     AND attached.project_id = $1
+                     AND attached.source_id = s.id
+                 )
                  AND sv.id = ANY($3::uuid[])
                  AND sv.version = (
                    SELECT MAX(candidate.version)
@@ -1040,9 +1044,13 @@ export class ResearchExecutionRepo extends Effect.Service<ResearchExecutionRepo>
               `SELECT COUNT(DISTINCT sv.id)::int AS count
                FROM source_versions sv
                JOIN sources s ON s.id = sv.source_id
-               JOIN projects p ON p.id = s.project_id
-               WHERE p.id = $1
-                 AND p.workspace_id = $2
+               WHERE s.workspace_id = $2
+                 AND EXISTS (
+                   SELECT 1 FROM project_sources attached
+                   WHERE attached.workspace_id = $2
+                     AND attached.project_id = $1
+                     AND attached.source_id = s.id
+                 )
                  AND sv.id = ANY($3::uuid[])`,
               [
                 sourceScope.projectId,

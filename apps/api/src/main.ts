@@ -695,6 +695,54 @@ const server = Effect.gen(function* () {
       }
 
       const sourceRoute = /^\/api\/projects\/([^/]+)\/sources$/.exec(url.pathname)
+      if (url.pathname === '/api/sources' && req.method === 'GET') {
+        const exit = await Runtime.runPromiseExit(effectRuntime)(
+          SourceCatalogRepo.list(identity.workspaceId, null).pipe(
+            Effect.provide(sourceCatalogLayer),
+          ),
+        )
+        return exit._tag === 'Failure'
+          ? jsonResponse({ error: 'SourceCatalogUnavailable' }, 503)
+          : jsonResponse(exit.value)
+      }
+
+      const sourceAttachmentRoute =
+        /^\/api\/projects\/([^/]+)\/sources\/([^/]+)$/.exec(url.pathname)
+      if (
+        sourceAttachmentRoute !== null
+        && (req.method === 'PUT' || req.method === 'DELETE')
+      ) {
+        const scope = Effect.try({
+          try: () => ({
+            projectId: Schema.decodeUnknownSync(ProjectId)(sourceAttachmentRoute[1]),
+            sourceId: Schema.decodeUnknownSync(SourceId)(sourceAttachmentRoute[2]),
+          }),
+          catch: () => new ValidationError({
+            field: 'sourceAttachment',
+            reason: 'invalid-scope',
+            message: 'Source attachment scope is invalid',
+          }),
+        })
+        const exit = await Runtime.runPromiseExit(effectRuntime)(
+          scope.pipe(Effect.flatMap(({ projectId, sourceId }) =>
+            SourceCatalogRepo.setAttached(
+              identity.workspaceId,
+              projectId,
+              sourceId,
+              req.method === 'PUT',
+            ).pipe(Effect.provide(sourceCatalogLayer)))),
+        )
+        if (exit._tag === 'Failure') {
+          const failure = Option.getOrUndefined(Cause.failureOption(exit.cause))
+          return failure instanceof ValidationError
+            ? jsonResponse({ error: 'InvalidSourceAttachmentScope' }, 400)
+            : jsonResponse({ error: 'SourceAttachmentUnavailable' }, 503)
+        }
+        return exit.value
+          ? new Response(null, { status: 204 })
+          : jsonResponse({ error: 'ResourceNotFound' }, 404)
+      }
+
       if (sourceRoute !== null && req.method === 'GET') {
         const projectId = Schema.decodeUnknownSync(ProjectId)(sourceRoute[1])
         const exit = await Runtime.runPromiseExit(effectRuntime)(
@@ -1516,10 +1564,14 @@ const server = Effect.gen(function* () {
                 `SELECT version.id, version.artifact_ref
                  FROM source_versions version
                  JOIN sources source ON source.id = version.source_id
-                 JOIN projects project ON project.id = source.project_id
                  WHERE version.id = ANY($1::uuid[])
-                   AND source.project_id = $2
-                   AND project.workspace_id = $3`,
+                   AND source.workspace_id = $3
+                   AND EXISTS (
+                     SELECT 1 FROM project_sources attached
+                     WHERE attached.workspace_id = $3
+                       AND attached.project_id = $2
+                       AND attached.source_id = source.id
+                   )`,
                 [
                   [...report.sourceVersionIds],
                   report.projectId,

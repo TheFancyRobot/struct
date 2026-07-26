@@ -30,6 +30,7 @@ function item(status: 'pending' | 'in-progress' | 'completed' | 'failed' | 'canc
       maxAttempts: 3,
       updatedAt: 1_700_000_000_000,
     },
+    projectIds: [],
   }
 }
 

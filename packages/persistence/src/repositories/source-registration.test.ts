@@ -114,11 +114,11 @@ function rowFor(query: string, params?: readonly unknown[]): readonly Record<str
   if (query.includes('INSERT INTO sources')) {
     return [{
       id: params?.[0],
-      project_id: params?.[1],
-      name: params?.[2],
-      kind: params?.[3],
-      created_at: new Date(Number(params?.[4])),
-      updated_at: new Date(Number(params?.[5])),
+      project_id: params?.[2],
+      name: params?.[3],
+      kind: params?.[4],
+      created_at: new Date(Number(params?.[5])),
+      updated_at: new Date(Number(params?.[6])),
     }]
   }
   if (query.includes('INSERT INTO job_queue')) {
@@ -404,7 +404,7 @@ describe('SourceRegistrationRepo aggregate boundary', () => {
     const sourceInsert = calls.find(({ query }) => query.includes('INSERT INTO sources'))
     const jobInsert = calls.find(({ query }) => query.includes('INSERT INTO job_queue'))
     const eventInsert = calls.find(({ query }) => query.includes('INSERT INTO event_journal'))
-    expect(sourceInsert?.params?.[1]).toBe(projectId)
+    expect(sourceInsert?.params?.slice(1, 3)).toEqual([workspaceId, projectId])
     expect(jobInsert?.params?.slice(1, 4)).toEqual([workspaceId, 'ingestion', sourceId])
     expect(eventInsert?.params?.slice(1, 5)).toEqual([
       workspaceId,

@@ -507,9 +507,14 @@ export class DurableArtifactsRepo
                      SELECT $1, version.id, $3
                      FROM source_versions version
                      JOIN sources source ON source.id = version.source_id
-                     JOIN projects project ON project.id = source.project_id
-                     WHERE version.id = $2 AND source.project_id = $4
-                       AND project.workspace_id = $5`,
+                     WHERE version.id = $2
+                       AND source.workspace_id = $5
+                       AND EXISTS (
+                         SELECT 1 FROM project_sources attached
+                         WHERE attached.workspace_id = $5
+                           AND attached.project_id = $4
+                           AND attached.source_id = source.id
+                       )`,
                     [
                       finding.id,
                       sourceVersionId,

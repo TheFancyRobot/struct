@@ -535,12 +535,16 @@ export class DatasetCatalogRepo extends Effect.Service<DatasetCatalogRepo>()(
                             version.content_hash
                      FROM source_versions version
                      JOIN sources source ON source.id = version.source_id
-                     JOIN projects project ON project.id = source.project_id
                      WHERE version.id = $6
                        AND version.source_id = $7
                        AND version.content_hash = $8
-                       AND source.project_id = $4
-                       AND project.workspace_id = $3
+                       AND source.workspace_id = $3
+                       AND EXISTS (
+                         SELECT 1 FROM project_sources attached
+                         WHERE attached.workspace_id = $3
+                           AND attached.project_id = $4
+                           AND attached.source_id = source.id
+                       )
                      RETURNING snapshot_id`,
                     [
                       snapshot.id,
@@ -698,9 +702,13 @@ export class DatasetCatalogRepo extends Effect.Service<DatasetCatalogRepo>()(
                FROM unnest($3::uuid[]) WITH ORDINALITY selected(id, ordinality)
                JOIN source_versions version ON version.id = selected.id
                JOIN sources source ON source.id = version.source_id
-               JOIN projects project ON project.id = source.project_id
-               WHERE source.project_id = $2
-                 AND project.workspace_id = $1
+               WHERE source.workspace_id = $1
+                 AND EXISTS (
+                   SELECT 1 FROM project_sources attached
+                   WHERE attached.workspace_id = $1
+                     AND attached.project_id = $2
+                     AND attached.source_id = source.id
+                 )
                ORDER BY selected.ordinality`,
               [workspaceId, projectId, sourceVersionIds],
             )
@@ -712,9 +720,8 @@ export class DatasetCatalogRepo extends Effect.Service<DatasetCatalogRepo>()(
                  FROM dataset_snapshots snapshot
                  JOIN dataset_snapshot_sources selected_source
                    ON selected_source.snapshot_id = snapshot.id
-                  AND selected_source.source_version_id = ANY($3::uuid[])
+                  AND selected_source.source_version_id = ANY($2::uuid[])
                  WHERE snapshot.workspace_id = $1
-                   AND snapshot.project_id = $2
                  GROUP BY snapshot.id, snapshot.dataset_id, snapshot.version
                  HAVING COUNT(*) = (
                    SELECT COUNT(*)
@@ -737,9 +744,9 @@ export class DatasetCatalogRepo extends Effect.Service<DatasetCatalogRepo>()(
                JOIN dataset_snapshot_sources lineage
                  ON lineage.snapshot_id = latest.id
                GROUP BY latest.dataset_id, latest.id
-               ORDER BY MIN(array_position($3::uuid[], lineage.source_version_id)),
+               ORDER BY MIN(array_position($2::uuid[], lineage.source_version_id)),
                         latest.dataset_id`,
-              [workspaceId, projectId, sourceVersionIds],
+              [workspaceId, sourceVersionIds],
             )
             return { sources, datasets }
           }),

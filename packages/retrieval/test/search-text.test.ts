@@ -61,7 +61,7 @@ describe('TextRetrieval', () => {
     expect(calls[0]?.query).toMatch(/source_text_index/)
     expect(calls[0]?.query).not.toMatch(/source_text_reindex_jobs/)
     expect(calls[1]?.query).toMatch(/websearch_to_tsquery/)
-    expect(calls[1]?.query).toMatch(/JOIN projects/)
+    expect(calls[1]?.query).toMatch(/FROM project_sources attached/)
     expect(calls[1]?.query).toMatch(/source_version_id = ANY/)
     expect(calls[1]?.query).toMatch(/WITH ORDINALITY/)
     expect(calls[1]?.query).toMatch(/LEFT JOIN LATERAL/)
@@ -145,7 +145,7 @@ describe('TextRetrieval', () => {
       }).pipe(Effect.provide(layer)),
     )
 
-    expect(calls.join('\n')).toMatch(/JOIN projects/)
+    expect(calls.join('\n')).toMatch(/FROM project_sources attached/)
     expect(calls.join('\n')).toMatch(/DO UPDATE SET content = source_text_index\.content/)
     expect(calls.join('\n')).toMatch(/source_text_index\.content = EXCLUDED\.content/)
     expect(calls.join('\n')).toMatch(/UPDATE source_text_reindex_jobs/)
@@ -710,7 +710,7 @@ describe('TextRetrieval', () => {
           excerpt.includes('alpha omega'))
         return supported === -1 ? [] : [{ candidate_number: supported + 1 }]
       }
-      if (query.includes('SELECT 1')) {
+      if (query.includes('substring(')) {
         return String(params?.[0]).includes('alpha omega') ? [{ supported: 1 }] : []
       }
       return [{
@@ -772,7 +772,7 @@ describe('TextRetrieval', () => {
             : [])
       }
       if (query.includes('AS candidates(excerpt, candidate_number)')) return []
-      if (query.includes('SELECT 1')) {
+      if (query.includes('substring(')) {
         return String(params?.[0]).includes('alpha\nomega')
           ? [{ supported: 1 }]
           : []

@@ -2,7 +2,9 @@
 import { useParams } from '@solidjs/router'
 import { Schema } from 'effect'
 import {
+  For,
   Show,
+  createEffect,
   createMemo,
   createResource,
   createSignal,
@@ -13,8 +15,11 @@ import {
   commandSourceJob,
   decodeSourceActivityEvent,
   fetchSourceCatalog,
+  fetchWorkspaceSourceCatalog,
+  setProjectSourceAttached,
   sourceActivityUrl,
 } from '../api/sources'
+import { fetchProjects } from '../api/projects'
 import { BackgroundActivityTray } from '../components/BackgroundActivityTray'
 import { SourceCatalogList } from '../components/SourceCatalogList'
 import { SourceImportPanel } from '../components/SourceImportPanel'
@@ -60,11 +65,24 @@ export const SourcesPage: Component = () => {
   const params = useParams()
   const projectId = createMemo(() =>
     Schema.is(ProjectId)(params.projectId) ? params.projectId : null)
+  const libraryMode = createMemo(() => params.projectId === undefined)
+  const [projects] = createResource(fetchProjects)
+  const [selectedProjectId, setSelectedProjectId] = createSignal<typeof ProjectId.Type | null>(null)
   const [catalog, { refetch }] = createResource(
-    projectId,
-    (id) => id === null ? null : fetchSourceCatalog(id),
+    () => libraryMode() ? 'workspace' : projectId(),
+    (scope) => scope === 'workspace'
+      ? fetchWorkspaceSourceCatalog()
+      : scope === null || !Schema.is(ProjectId)(scope)
+        ? null
+        : fetchSourceCatalog(scope),
   )
   const [commandError, setCommandError] = createSignal<string>()
+
+  createEffect(() => {
+    if (selectedProjectId() === null) {
+      setSelectedProjectId(projects()?.items[0]?.id ?? null)
+    }
+  })
 
   const control = async (
     item: SourceCatalog['items'][number],
@@ -80,9 +98,24 @@ export const SourcesPage: Component = () => {
     }
   }
 
+  const setAttached = async (
+    sourceId: SourceCatalog['items'][number]['sourceId'],
+    attached: boolean,
+  ) => {
+    const selected = selectedProjectId()
+    if (selected === null) return
+    try {
+      await setProjectSourceAttached(selected, sourceId, attached)
+      setCommandError(undefined)
+      await refetch()
+    } catch {
+      setCommandError('The project source selection could not be updated. Try again.')
+    }
+  }
+
   return (
     <section class="mx-auto max-w-4xl space-y-4">
-      <Show when={projectId() !== null} fallback={<p class="alert alert-error">This project is no longer available.</p>}>
+      <Show when={libraryMode() || projectId() !== null} fallback={<p class="alert alert-error">This project is no longer available.</p>}>
         <Show when={commandError()}>{(error) => <p class="alert alert-error" role="alert">{error()}</p>}</Show>
         <Show when={catalog.error === undefined} fallback={(
           <section class="alert alert-error gap-3" role="alert">
@@ -93,20 +126,64 @@ export const SourcesPage: Component = () => {
           <Show when={catalog() ?? undefined} fallback={<p class="rounded-box border border-base-300 bg-base-100 p-4" role="status">Loading sources…</p>}>
             {(loaded) => (
               <>
-                <SourceActivitySubscription
-                  projectId={projectId()!}
-                  cursor={loaded().cursor}
-                  onEvent={() => void refetch()}
-                />
-                <BackgroundActivityTray
-                  items={loaded().items}
-                  onCommand={(item, command) => void control(item, command)}
-                />
-                <SourceImportPanel
-                  projectId={projectId()!}
-                  onAccepted={() => void refetch()}
-                />
-                <SourceCatalogList items={loaded().items} />
+                <Show when={!libraryMode() && projectId() !== null}>
+                  <SourceActivitySubscription
+                    projectId={projectId()!}
+                    cursor={loaded().cursor}
+                    onEvent={() => void refetch()}
+                  />
+                  <BackgroundActivityTray
+                    items={loaded().items}
+                    onCommand={(item, command) => void control(item, command)}
+                  />
+                </Show>
+                <Show when={!libraryMode() || selectedProjectId() !== null} fallback={(
+                  <p class="alert alert-info">Create a project before importing sources.</p>
+                )}>
+                  <Show when={libraryMode()}>
+                    <label class="form-control block">
+                      <span class="label-text">Attach new sources to</span>
+                      <select
+                        class="select select-bordered mt-1 w-full"
+                        aria-label="Project for new sources"
+                        value={selectedProjectId() ?? ''}
+                        onChange={(event) => setSelectedProjectId(ProjectId.make(event.currentTarget.value))}
+                      >
+                        <For each={projects()?.items ?? []}>
+                          {(project) => <option value={project.id}>{project.name}</option>}
+                        </For>
+                      </select>
+                    </label>
+                  </Show>
+                  <SourceImportPanel
+                    projectId={(projectId() ?? selectedProjectId())!}
+                    onAccepted={() => void refetch()}
+                  />
+                </Show>
+                <Show when={libraryMode()} fallback={<SourceCatalogList items={loaded().items} />}>
+                  <section aria-labelledby="workspace-source-library-heading">
+                    <h2 id="workspace-source-library-heading" class="mb-3 text-lg font-semibold">Source library</h2>
+                    <ul class="space-y-2">
+                      <For each={loaded().items} fallback={<li class="text-sm text-base-content/60">No sources loaded.</li>}>
+                        {(source) => (
+                          <li class="flex min-h-11 items-center justify-between gap-3 border-b border-base-300 py-2">
+                            <span class="min-w-0 truncate">{source.name}</span>
+                            <label class="flex min-h-11 cursor-pointer items-center gap-2 text-sm">
+                              <input
+                                type="checkbox"
+                                class="checkbox checkbox-sm"
+                                disabled={selectedProjectId() === null}
+                                checked={selectedProjectId() !== null && source.projectIds.includes(selectedProjectId()!)}
+                                onChange={(event) => void setAttached(source.sourceId, event.currentTarget.checked)}
+                              />
+                              Use in project
+                            </label>
+                          </li>
+                        )}
+                      </For>
+                    </ul>
+                  </section>
+                </Show>
               </>
             )}
           </Show>

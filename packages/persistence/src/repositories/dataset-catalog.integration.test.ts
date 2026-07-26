@@ -94,6 +94,10 @@ describeIf('DatasetCatalogRepo (PostgreSQL)', () => {
     if (!DATABASE_URL) return
     sql = postgres(DATABASE_URL, { max: 4, idle_timeout: 5 })
     layer = Layer.provide(DatasetCatalogRepo.Default, SqlClientLive(sql))
+    await sql.unsafe(
+      'DELETE FROM dataset_snapshot_sources WHERE workspace_id = ANY($1::uuid[])',
+      [[workspaceId, foreignWorkspaceId]],
+    )
     await sql.unsafe('DELETE FROM workspaces WHERE id = ANY($1::uuid[])', [[workspaceId, foreignWorkspaceId]])
     await sql.unsafe(
       `INSERT INTO workspaces (id, name)
@@ -126,6 +130,10 @@ describeIf('DatasetCatalogRepo (PostgreSQL)', () => {
 
   afterAll(async () => {
     if (!sql) return
+    await sql.unsafe(
+      'DELETE FROM dataset_snapshot_sources WHERE workspace_id = ANY($1::uuid[])',
+      [[workspaceId, foreignWorkspaceId]],
+    )
     await sql.unsafe('DELETE FROM workspaces WHERE id = ANY($1::uuid[])', [[workspaceId, foreignWorkspaceId]])
     await sql.end()
   })
