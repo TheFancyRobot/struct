@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Source import notice ignores the source library content gutter
 bug_id: BUG-0047
-status: fixed
+status: new
 severity: sev-3
 category: logic
 reported_on: '2026-07-26'
-fixed_on: '2026-07-26'
-owner: bug-0047-attempt-1
+fixed_on: ''
+owner: bug-0047-vertical-notice
 created: '2026-07-26'
 updated: '2026-07-26'
 related_notes:
@@ -64,6 +64,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 - Pending code inspection. The supplied desktop screenshot shows the notice at the workspace edge while adjacent source-library content is inset.
 - Confirmed 2026-07-26 (supersedes "Pending" above). The source-library content wrapper in `apps/web/src/pages/SourcesPage.tsx` was `<section class="mx-auto max-w-4xl space-y-4">` with no responsive horizontal padding. The import notice (`SourceImportPanel` card and the "Attach new sources to a project" card) and the bare "Source library" heading/list were all direct children of that unpadded wrapper, so on compact workspace widths they sat flush against the workspace edge with no shared content gutter. The bare heading/list lacked any inset, while the cards' content was visually inset by their own `p-4`, so the heading and the cards did not share a common left gutter. The root cause is the missing wrapper-level responsive horizontal padding, not a per-element defect.
+- Reopened 2026-07-26. Live browser inspection found the global source-library attachment notice (`div.space-y-3.rounded-box`) at `top: 0` within `main .overflow-auto`. The prior fix added only `px-4 sm:px-6`; the shared `SourcesPage` wrapper still lacks responsive top padding, so its first child remains flush with the central viewport edge.
 
 ## Workaround
 
@@ -76,6 +77,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - Changed files:
   - `apps/web/src/pages/SourcesPage.tsx` — added `px-4 sm:px-6` to the source-library content wrapper (one-line class change).
   - `apps/web/e2e/source-import.spec.ts` — added browser regression coverage at desktop (1440px) and compact (375px) breakpoints.
+- Execution plan committed at `docs/plans/2026-07-26-source-library-notice-top-inset.md`: first add a failing responsive browser assertion for the attachment notice's top inset at 375px and 1440px; then add only `pt-4 sm:pt-6` to the shared `SourcesPage` wrapper; finally validate focused Playwright, web typecheck, and vault integrity before closing this reopened bug.
 
 ## Regression Coverage Needed
 
