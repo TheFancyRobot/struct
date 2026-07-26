@@ -56,10 +56,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-21
-- Next action: Read [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_03_deliver-source-catalog-and-non-blocking-import/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_03_deliver-source-catalog-and-non-blocking-import/Validation_Plan|Validation Plan]].
+- Status: completed
+- Current owner: OpenAI Codex GPT-5.6-sol
+- Last touched: 2026-07-26
+- Next action: Root orchestration may advance after review and merge.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -70,11 +70,8 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 
 <!-- AGENT-START:step-session-history -->
 - 2026-07-23 - [[05_Sessions/2026-07-23-131531-deliver-source-catalog-and-non-blocking-import-openai-codex-gpt-5-4|SESSION-2026-07-23-131531 BUG-0013 source-import remediation session]] - Completed BUG-0013 remediation using this planned step as technical reference only.
-- 2026-07-26 - [[05_Sessions/2026-07-26-063333-deliver-source-catalog-and-non-blocking-import-openai-codex-gpt-5-6-sol|SESSION-2026-07-26-063333 OpenAI Codex GPT-5.6-sol session for Deliver Source Catalog and Non Blocking Import]] - Session created.
+- 2026-07-26 - [[05_Sessions/2026-07-26-063333-deliver-source-catalog-and-non-blocking-import-openai-codex-gpt-5-6-sol|SESSION-2026-07-26-063333 OpenAI Codex GPT-5.6-sol session for Deliver Source Catalog and Non Blocking Import]] - Completed durable batch replay and structured dataset import/materialization.
 <!-- AGENT-END:step-session-history -->
-- 2026-07-26 verification attempt (`phase10-step03-attempt1`): existing source catalog, bounded file/folder/paste import, durable activity replay, and scoped cancel/retry coverage passed. STEP-10-03 remains planned because structured dataset import/materialization and durable batch idempotency are still explicitly deferred.
-- 2026-07-26 retry audit (phase10-step03-attempt2): confirmed the browser import POST currently routes every item through document ingestion (`registerTextSource` → `SourceRegistrationRepo` → `processOneIngestionJob`) and does not read an `Idempotency-Key`. The existing dataset path begins separately at `DatasetCatalogRepo` / `DatasetMaterializationRepo.enqueue` and accepts only JSON/JSONL/CSV protocol formats. Focused tests remained green (18 passed), but structured CSV/TSV/JSON/JSONL/Parquet import-to-materialization and durable client-batch replay remain unimplemented; step must not be marked complete.
-- 2026-07-26 attempt 3: a provisional validator/format-contract patch was validated but discarded because the POST route still sends dataset items through document registration. No durable `(workspace, project, clientBatchId)` aggregate or post-ingestion dataset catalog/snapshot/materialization composition exists. Step remains planned.
 
 ## Related Notes
 
