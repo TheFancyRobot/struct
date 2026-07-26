@@ -311,9 +311,12 @@ describeIf('ResearchProjectionRepo integration', () => {
       rowEndExclusive: 1,
     })
     expect(citation.content).toBe('Normalized before\nLaunch is July 18.\nAfter')
+    expect(citation.originalContentHash).toBe(`sha256:${'a'.repeat(64)}`)
+    expect(citation.normalizedContentHash).toBe('sha256:normalized-projection')
     expect(lineCitation.content).toBe(
       'Text index must not satisfy a document locator.',
     )
+    expect(lineCitation.normalizedContentHash).toBe('sha256:missing-document')
     expect(Exit.isFailure(missingDocumentCitation)).toBe(true)
   })
 

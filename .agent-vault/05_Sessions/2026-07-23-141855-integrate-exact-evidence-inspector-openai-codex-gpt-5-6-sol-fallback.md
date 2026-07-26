@@ -26,7 +26,7 @@ related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
 related_decisions: []
 created: '2026-07-23'
-updated: '2026-07-23'
+updated: '2026-07-26'
 tags:
   - agent-vault
   - session
@@ -55,6 +55,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 14:32 - Reused the existing document citation projection, immutable dataset citation reopen validator, and durable run-to-dataset linkage in one project/thread/run-scoped evidence read.
 - 14:36 - Wired document and dataset citation triggers into the existing right pane with `?evidence=` history, Back restoration, focus on open, close/Escape focus return, and text-only source rendering.
 - 14:39 - Focused API, web, browser, type, build, boundary, docs, secrets, and diff checks passed.
+- 2026-07-26 - Revalidated the existing run-scoped evidence flow, added persisted original/normalized document hashes, exposed the already-persisted deterministic query provenance, and preserved missing/invalid/unavailable web states.
+- 2026-07-26 - Added focused inspector/client regressions and re-ran document, dataset, conversation, and legacy citation browser paths.
 
 ## Findings
 
@@ -102,6 +104,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Root independent verification: API auth-boundary coverage, focused API/web/evidence tests, browser document+dataset evidence regression, typecheck, lint, import boundaries, docs, secrets, frozen install, sequential `bun run test`, and sequential `bun run test:integration`.
 - Result: passed — 954 unit tests, 117 integration tests, browser checks, and all repository gates; 3 intentional skips in each full suite.
 - Root found and corrected an SSR test regression: router hooks inside the reusable workspace shell invoked client-only router code under `renderToString`. Router query state now stays in `App`, with the smallest evidence values passed to the shell; the shell SSR test and browser evidence flow pass.
+- 2026-07-26 - Passed focused domain/persistence/API/web tests, 7 persistence integration tests, 18 focused web tests, conversation browser evidence flow (2 tests), legacy citation/report browser flows (16 tests), all affected package typechecks, web production build, repository lint, and import/boundary checks.
 
 ## Bugs Encountered
 

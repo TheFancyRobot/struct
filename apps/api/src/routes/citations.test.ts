@@ -23,6 +23,8 @@ describe('getCitationDetail', () => {
         sourceVersionId: 'c50e8400-e29b-41d4-a716-446655440005',
         sourceName: 'launch.txt',
         sourceVersion: 1,
+        originalContentHash: 'sha256:original',
+        normalizedContentHash: 'sha256:normalized',
         locator: 'lines:2-2',
         content: 'Before\nLaunch is July 18.\nAfter',
       }),
@@ -33,6 +35,8 @@ describe('getCitationDetail', () => {
       segments: [{ text: 'Launch is July 18.', cited: true }],
     })
     expect(detail.sourceName).toBe('launch.txt')
+    expect(detail.originalContentHash).toBe('sha256:original')
+    expect(detail.normalizedContentHash).toBe('sha256:normalized')
   })
 
   it('preserves an exact character locator on a long source line', async () => {
@@ -46,6 +50,8 @@ describe('getCitationDetail', () => {
         sourceVersionId: 'c50e8400-e29b-41d4-a716-446655440005',
         sourceName: 'launch.txt',
         sourceVersion: 1,
+        originalContentHash: 'sha256:original',
+        normalizedContentHash: 'sha256:normalized',
         locator: 'line:1,chars:8-13',
         content: 'Before launch after',
       }),
@@ -74,6 +80,8 @@ describe('getCitationDetail', () => {
         sourceVersionId: 'c50e8400-e29b-41d4-a716-446655440005',
         sourceName: 'launch.md',
         sourceVersion: 2,
+        originalContentHash: 'sha256:original',
+        normalizedContentHash: 'sha256:normalized',
         locator: [
           'document:section:Launch%20date',
           'paragraph:1',
@@ -104,6 +112,8 @@ describe('getCitationDetail', () => {
         sourceVersionId: 'c50e8400-e29b-41d4-a716-446655440005',
         sourceName: 'launch.md',
         sourceVersion: 1,
+        originalContentHash: 'sha256:original',
+        normalizedContentHash: 'sha256:normalized',
         locator: 'document:paragraph:1,chars:0-6,bytes:0-5',
         content: 'café launch',
       }),
@@ -128,6 +138,8 @@ describe('getCitationDetail', () => {
         sourceVersionId: 'c50e8400-e29b-41d4-a716-446655440005',
         sourceName: 'large.md',
         sourceVersion: 1,
+        originalContentHash: 'sha256:original',
+        normalizedContentHash: 'sha256:normalized',
         locator: [
           'document:paragraph:1',
           `chars:${charStart}-${charEnd}`,
@@ -157,6 +169,8 @@ describe('getCitationDetail', () => {
         sourceVersionId: 'c50e8400-e29b-41d4-a716-446655440005',
         sourceName: 'multi-line.md',
         sourceVersion: 1,
+        originalContentHash: 'sha256:original',
+        normalizedContentHash: 'sha256:normalized',
         locator: [
           'document:section:Evidence',
           `chars:${charStart}-${charEnd}`,
@@ -189,6 +203,8 @@ describe('getCitationDetail', () => {
         sourceVersionId: 'c50e8400-e29b-41d4-a716-446655440005',
         sourceName: 'multi-paragraph.md',
         sourceVersion: 1,
+        originalContentHash: 'sha256:original',
+        normalizedContentHash: 'sha256:normalized',
         locator: `document:chars:${charStart}-${charEnd},bytes:${encoder.encode(content.slice(0, charStart)).byteLength}-${encoder.encode(content.slice(0, charEnd)).byteLength}`,
         content,
       }),
@@ -212,6 +228,8 @@ describe('getCitationDetail', () => {
         sourceVersionId: 'c50e8400-e29b-41d4-a716-446655440005',
         sourceName: 'launch.txt',
         sourceVersion: 1,
+        originalContentHash: 'sha256:original',
+        normalizedContentHash: 'sha256:normalized',
         locator: 'lines:9-9',
         content: 'Only one line',
       }),
@@ -232,6 +250,8 @@ describe('getCitationDetail', () => {
         sourceVersionId: 'c50e8400-e29b-41d4-a716-446655440005',
         sourceName: 'launch.txt',
         sourceVersion: 1,
+        originalContentHash: 'sha256:original',
+        normalizedContentHash: 'sha256:normalized',
         locator: 'lines:2-2;lines:6-6',
         content: [
           'Before',

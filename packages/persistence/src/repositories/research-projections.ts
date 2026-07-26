@@ -23,6 +23,8 @@ export interface CitationSourceProjection {
   readonly sourceVersionId: string
   readonly sourceName: string
   readonly sourceVersion: number
+  readonly originalContentHash: string
+  readonly normalizedContentHash: string
   readonly locator: string
   readonly content: string
 }
@@ -247,6 +249,12 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
                       citation.locator,
                       source.name AS source_name,
                       version.version AS source_version,
+                      version.content_hash AS original_content_hash,
+                      CASE
+                        WHEN citation.locator LIKE 'document:%'
+                          THEN document.content_hash
+                        ELSE version.content_hash
+                      END AS normalized_content_hash,
                       CASE
                         WHEN citation.locator LIKE 'document:%'
                           THEN document.normalized_text
@@ -290,6 +298,8 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
             || typeof row['source_version_id'] !== 'string'
             || typeof row['source_name'] !== 'string'
             || typeof row['source_version'] !== 'number'
+            || typeof row['original_content_hash'] !== 'string'
+            || typeof row['normalized_content_hash'] !== 'string'
             || typeof row['locator'] !== 'string'
             || typeof row['content'] !== 'string'
           ) {
@@ -305,6 +315,8 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
             sourceVersionId: row['source_version_id'],
             sourceName: row['source_name'],
             sourceVersion: row['source_version'],
+            originalContentHash: row['original_content_hash'],
+            normalizedContentHash: row['normalized_content_hash'],
             locator: row['locator'],
             content: row['content'],
           } satisfies CitationSourceProjection

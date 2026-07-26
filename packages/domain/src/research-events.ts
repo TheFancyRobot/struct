@@ -163,6 +163,8 @@ export const CitationDetail = Schema.Struct({
   sourceVersionId: SourceVersionId,
   sourceName: Schema.String,
   sourceVersion: Schema.Number.pipe(Schema.int(), Schema.positive()),
+  originalContentHash: Schema.String.pipe(Schema.minLength(1)),
+  normalizedContentHash: Schema.String.pipe(Schema.minLength(1)),
   locator: Schema.String,
   contextLines: Schema.Array(Schema.Struct({
     lineNumber: Schema.Number.pipe(Schema.int(), Schema.positive()),

@@ -100,12 +100,15 @@ describe('walking-skeleton browser path', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             kind: 'document',
+            validation: 'validated',
             evidence: {
               id: citationId,
               runId,
               sourceVersionId,
               sourceName: 'walking-skeleton.txt',
               sourceVersion: 1,
+              originalContentHash: `sha256:${'a'.repeat(64)}`,
+              normalizedContentHash: `sha256:${'b'.repeat(64)}`,
               locator: 'lines 1-1',
               contextLines: [{
                 lineNumber: 1,

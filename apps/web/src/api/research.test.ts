@@ -11,6 +11,7 @@ import {
 } from '@struct/domain'
 import {
   cancelResearchRun,
+  EvidenceFetchError,
   fetchCitation,
   fetchEvidence,
   fetchRecursiveAnalysis,
@@ -98,6 +99,35 @@ describe('fetchEvidence', () => {
         + `/evidence/dataset/${datasetCitationId}`,
       ),
     ])
+  })
+
+  for (const [status, kind] of [
+    [404, 'missing'],
+    [409, 'invalid'],
+    [503, 'unavailable'],
+  ] as const) {
+    it(`preserves the ${kind} evidence state`, async () => {
+      globalThis.fetch = Object.assign(
+        async () => new Response('', { status }),
+        { preconnect: originalFetch.preconnect },
+      )
+
+      try {
+        await fetchEvidence(projectId, threadId, runId, 'document', citationId)
+        throw new Error('Expected evidence loading to fail')
+      } catch (error) {
+        expect(error).toBeInstanceOf(EvidenceFetchError)
+        expect((error as EvidenceFetchError).kind).toBe(kind)
+      }
+    })
+  }
+
+  it('normalizes network failures as unavailable evidence', async () => {
+    rejectFetchWith(new TypeError('Network unavailable'))
+
+    await expect(
+      fetchEvidence(projectId, threadId, runId, 'document', citationId),
+    ).rejects.toMatchObject({ kind: 'unavailable' })
   })
 })
 

@@ -359,6 +359,8 @@ export const getCitationDetail = (
       sourceVersionId: citation.sourceVersionId,
       sourceName: citation.sourceName,
       sourceVersion: citation.sourceVersion,
+      originalContentHash: citation.originalContentHash,
+      normalizedContentHash: citation.normalizedContentHash,
       locator: citation.locator,
       contextLines: resolved.contextLines,
       startLine: resolved.startLine,
