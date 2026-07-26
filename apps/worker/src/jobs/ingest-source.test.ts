@@ -253,6 +253,40 @@ describe('classifyIngestionFailure', () => {
 })
 
 describe('processOneIngestionJob', () => {
+  it('ingests an unattached workspace source without a project-scoped text index', async () => {
+    const base = deps()
+    const testDeps = deps({
+      jobs: {
+        ...base.jobs,
+        claimNextIngestionJob: () => Effect.succeed(Option.some({
+          id: jobId,
+          workspaceId,
+          entityType: 'ingestion',
+          entityId: sourceId,
+          status: 'in-progress' as const,
+          payload: {
+            stagedRef: 'staged://850e8400-e29b-41d4-a716-446655440100/notes.md',
+            name: 'notes.md',
+            mediaType: 'text/markdown',
+            byteLength: 10,
+            projectId: null,
+          },
+          attempts: 1,
+          maxAttempts: 3,
+          createdAt: 0n,
+          updatedAt: 0n,
+        })),
+      },
+    })
+
+    const result = await Effect.runPromise(processOneIngestionJob(testDeps))
+
+    expect(result.processed).toBe(true)
+    expect(base.calls.completed).toEqual([jobId])
+    expect(testDeps.calls.indexedInputs).toEqual([])
+    expect(testDeps.calls.versions).toHaveLength(1)
+  })
+
   it('claims one job, ingests artifacts, creates SourceVersion only after artifacts exist, emits events, and completes the job', async () => {
     const testDeps = deps()
 

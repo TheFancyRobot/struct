@@ -17,6 +17,8 @@ export interface BrowserSourceImportItem {
 
 export interface BrowserSourceImport {
   readonly clientBatchId: string
+  readonly formProjectId: string | null
+  readonly attachToProject: boolean
   readonly items: ReadonlyArray<BrowserSourceImportItem>
   readonly rejected: ReadonlyArray<{ readonly name: string; readonly reason: string }>
 }
@@ -88,6 +90,8 @@ export async function decodeBrowserSourceImport(
   if (clientBatchId === null || !uuidPattern.test(clientBatchId)) {
     throw new Error('invalid-client-batch-id')
   }
+  const formProjectId = stringField(form, 'projectId')
+  const attachToProject = stringField(form, 'attachToProject') !== 'false'
   const mode = stringField(form, 'mode')
   if (mode === 'paste') {
     const name = normalizeBrowserRelativePath(stringField(form, 'name'))
@@ -98,12 +102,16 @@ export async function decodeBrowserSourceImport(
     if (bytes.byteLength === 0 || bytes.byteLength > maxFileBytes || mediaType === null) {
       return {
         clientBatchId,
+        formProjectId,
+        attachToProject,
         items: [],
         rejected: [{ name, reason: bytes.byteLength === 0 ? 'empty' : mediaType === null ? 'unsupported-type' : 'too-large' }],
       }
     }
     return {
       clientBatchId,
+      formProjectId,
+      attachToProject,
       items: [{ name, mediaType, bytes, kind: 'document' }],
       rejected: [],
     }
@@ -163,7 +171,7 @@ export async function decodeBrowserSourceImport(
       ...(dataset === null ? {} : { format: dataset.format }),
     })
   }
-  return { clientBatchId, items, rejected }
+  return { clientBatchId, formProjectId, attachToProject, items, rejected }
 }
 
 export function hashBrowserSourceImport(
@@ -176,6 +184,11 @@ export function hashBrowserSourceImport(
     format: item.format ?? null,
     contentHash: new Bun.CryptoHasher('sha256').update(item.bytes).digest('hex'),
   }))
-  const canonical = JSON.stringify({ items, rejected: input.rejected })
+  const canonical = JSON.stringify({
+    projectId: input.formProjectId,
+    attachToProject: input.attachToProject,
+    items,
+    rejected: input.rejected,
+  })
   return `sha256:${new Bun.CryptoHasher('sha256').update(canonical).digest('hex')}`
 }

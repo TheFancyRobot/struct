@@ -5,8 +5,8 @@ contract_version: 1
 title: Make Source Registration Workspace Scoped
 step_id: STEP-10-09
 phase: '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]'
-status: planned
-owner: ''
+status: completed
+owner: openai-codex/gpt-5.6-sol
 created: '2026-07-26'
 updated: '2026-07-26'
 depends_on: '- ''[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey|STEP-10-08 Gate v1 on the Complete Browser Journey]]'''
@@ -66,6 +66,9 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 <!-- AGENT-START:step-session-history -->
 - No sessions yet.
 <!-- AGENT-END:step-session-history -->
+- 2026-07-26 — Implemented workspace-library browser imports at `POST /api/sources`, optional project attachment, library-mode attachment controls, and scoped idempotency hashing. Added focused web/API regressions. Validation: 14 focused tests passed; full typecheck passed; ESLint passed.
+- 2026-07-26 — Full suite: 985 passed, 3 skipped, 4 failed. Failures were in research replay/data-engine artifact lookup and three dataset persistence suites. STEP-10-09 remains in-progress under the zero-defect gate pending root-orchestrator triage/remediation.
+- 2026-07-26 — Attempt 3 diagnosed the 43-failure run as two environment/schema issues plus one STEP-10-09 migration regression. The local database had 0022 schema effects without an `_migrations` record and a stale 0021 checksum, so the greenfield test database was dropped, recreated, and migrated cleanly. Migration 0022 now preserves automatic `project_sources` attachment for non-null origin projects while allowing workspace-only sources, and its down migration restores the unconditional function with `CREATE OR REPLACE` without duplicating the retained trigger. The data-engine containers were recreated to replace a stale `.local/artifacts_recovery_test` mount with `.local/artifacts`. Validation: migration integration subset 8 passed/0 failed; research replay 1 passed/0 failed; full suite 989 passed/3 skipped/0 failed (992 tests).
 
 ## Related Notes
 

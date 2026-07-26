@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Global source import is blocked by project selection
 bug_id: BUG-0046
-status: new
+status: fixed
 severity: sev-3
 category: logic
 reported_on: '2026-07-26'
-fixed_on: ''
-owner: ''
+fixed_on: '2026-07-26'
+owner: openai-codex/gpt-5.6-sol
 created: '2026-07-26'
 updated: '2026-07-26'
 related_notes: |-
@@ -65,6 +65,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Confirmed Root Cause
 
 - Pending implementation investigation. The screenshot confirms the UI gate remains after workspace-owned source support was introduced.
+- The web import client and API route encoded project selection in the URL, and batch registration always inserted `project_sources`, conflating ingestion context with catalog attachment.
 
 ## Workaround
 
@@ -98,3 +99,6 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-07-26 - Reported.
 - 2026-07-26 - Reproduction and intended global/project tab behavior documented.
 <!-- AGENT-END:bug-timeline -->
+- 2026-07-26 — Fixed by adding workspace-library imports with optional attachment, preserving a bounded ingestion context, and adding focused regression coverage.
+- 2026-07-26 — Root verification correction: removed the first-project ingestion fallback and made source registration genuinely workspace-scoped. Zero-project API, PostgreSQL persistence/replay, and worker ingestion regressions pass; no hidden project is required.
+- 2026-07-26 — Attempt 3 regression audit found migration 0022 had removed the legacy source-to-project attachment trigger, breaking project-scoped source fixtures and 37 downstream PostgreSQL tests. The migration now keeps the trigger and conditionally attaches only when `project_id` is non-null; its down migration cleanly restores unconditional attachment. After recreating the inconsistent greenfield database and correcting the stale data-engine artifact mount, the complete suite passed: 989 passed, 3 skipped, 0 failed.

@@ -6,7 +6,8 @@ import { importBrowserSources } from '../api/sources'
 type ImportMode = 'files' | 'folder' | 'paste' | 'dataset'
 
 export const SourceImportPanel: Component<{
-  readonly projectId: ProjectId
+  readonly projectId: ProjectId | null
+  readonly attachToProject?: boolean
   readonly onAccepted: (result: SourceImportResponse) => void
 }> = (props) => {
   const [mode, setMode] = createSignal<ImportMode>('files')
@@ -42,6 +43,7 @@ export const SourceImportPanel: Component<{
         mode() === 'paste'
           ? { mode: 'paste', name: pasteName(), content: pasteContent() }
           : { mode: mode() as 'files' | 'folder' | 'dataset', files: files() },
+        props.attachToProject ?? props.projectId !== null,
       )
       setRejected(result.rejected)
       setClientBatchId(crypto.randomUUID())

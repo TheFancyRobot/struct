@@ -1,6 +1,15 @@
 # Outcome
 
 - Record the final result, validation performed, and explicit follow-up here.
+- Removed the workspace import route's first-project lookup. Registration,
+  persistence, replay, and ingestion now accept an unattached source with
+  `projectId: null`; no hidden or fallback project is created.
+- Migration 0022 makes source origin and import-batch project scope nullable,
+  makes batch ownership workspace-scoped, and removes automatic origin-project
+  attachment.
+- Regression coverage proves API registration, PostgreSQL persistence/replay,
+  and worker ingestion in a workspace with zero projects.
+- Validation: 44 focused tests, full TypeScript typecheck, and ESLint passed.
 
 ## Related Notes
 

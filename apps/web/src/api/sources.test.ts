@@ -39,6 +39,29 @@ describe('source import api client', () => {
     })
   })
 
+  it('imports into the workspace library without requiring a project', async () => {
+    let request: [string, FormData] | undefined
+    globalThis.fetch = Object.assign(async (input: RequestInfo | URL, init?: RequestInit) => {
+      request = [typeof input === 'string' ? input : input.toString(), init?.body as FormData]
+      return new Response(JSON.stringify({
+        clientBatchId,
+        replayed: false,
+        accepted: [],
+        rejected: [],
+      }), { status: 200, headers: { 'content-type': 'application/json' } })
+    }, { preconnect: originalFetch.preconnect })
+
+    await importBrowserSources(null, clientBatchId, {
+      mode: 'paste',
+      name: 'workspace.md',
+      content: 'workspace source',
+    }, false)
+
+    expect(request?.[0]).toBe('/api/sources')
+    expect(request?.[1].get('projectId')).toBeNull()
+    expect(request?.[1].get('attachToProject')).toBe('false')
+  })
+
   it('loads the workspace library and attaches one source without reimporting it', async () => {
     const requests: Array<[string, string]> = []
     globalThis.fetch = Object.assign(async (input: RequestInfo | URL, init?: RequestInit) => {

@@ -71,13 +71,16 @@ export type BrowserSourceImportInput =
     }
 
 export async function importBrowserSources(
-  projectId: type.ProjectId,
+  projectId: type.ProjectId | null,
   clientBatchId: string,
   input: BrowserSourceImportInput,
+  attachToProject = projectId !== null,
 ): Promise<typeof SourceImportResponse.Type> {
   const form = new FormData()
   form.set('clientBatchId', clientBatchId)
   form.set('mode', input.mode)
+  form.set('attachToProject', String(attachToProject))
+  if (projectId !== null) form.set('projectId', projectId)
   if (input.mode === 'paste') {
     form.set('name', input.name)
     form.set('content', input.content)
@@ -88,7 +91,7 @@ export async function importBrowserSources(
     }
   }
   const response = await fetch(
-    apiPath(`/projects/${projectId}/sources`, appBasePath),
+    apiPath(projectId === null ? '/sources' : `/projects/${projectId}/sources`, appBasePath),
     {
       method: 'POST',
       body: form,

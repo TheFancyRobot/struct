@@ -23,6 +23,7 @@ const describeIf = DATABASE_URL ? describe : describe.skip
 
 const workspaceId = WorkspaceId.make('a20e8400-e29b-41d4-a716-446655440000')
 const foreignWorkspaceId = WorkspaceId.make('a20e8400-e29b-41d4-a716-446655440001')
+const emptyWorkspaceId = WorkspaceId.make('a20e8400-e29b-41d4-a716-446655440004')
 const projectId = ProjectId.make('a20e8400-e29b-41d4-a716-446655440002')
 const foreignProjectId = ProjectId.make('a20e8400-e29b-41d4-a716-446655440003')
 const createdAt = 1_768_435_200_000n
@@ -92,6 +93,20 @@ function registration(sequence: number): SourceRegistrationInput {
   return { source, job, event }
 }
 
+function workspaceRegistration(sequence: number): SourceRegistrationInput {
+  const input = registration(sequence)
+  return {
+    ...input,
+    source: { ...input.source, projectId: null },
+    job: {
+      ...input.job,
+      workspaceId: emptyWorkspaceId,
+      payload: { ...input.job.payload, projectId: null },
+    },
+    event: { ...input.event, workspaceId: emptyWorkspaceId },
+  }
+}
+
 function withStagedRef(
   input: SourceRegistrationInput,
   stagedRef: string,
@@ -112,11 +127,11 @@ function withStagedRef(
 async function cleanup(sql: postgresTypes.Sql): Promise<void> {
   await sql.unsafe(
     `DELETE FROM event_journal WHERE workspace_id = ANY($1::uuid[])`,
-    [[workspaceId, foreignWorkspaceId]],
+    [[workspaceId, foreignWorkspaceId, emptyWorkspaceId]],
   )
   await sql.unsafe(
     `DELETE FROM job_queue WHERE workspace_id = ANY($1::uuid[])`,
-    [[workspaceId, foreignWorkspaceId]],
+    [[workspaceId, foreignWorkspaceId, emptyWorkspaceId]],
   )
   await sql.unsafe(
     `DELETE FROM sources WHERE project_id = ANY($1::uuid[])`,
@@ -128,7 +143,7 @@ async function cleanup(sql: postgresTypes.Sql): Promise<void> {
   )
   await sql.unsafe(
     `DELETE FROM workspaces WHERE id = ANY($1::uuid[])`,
-    [[workspaceId, foreignWorkspaceId]],
+    [[workspaceId, foreignWorkspaceId, emptyWorkspaceId]],
   )
 }
 
@@ -141,8 +156,9 @@ describeIf('SourceRegistrationRepo aggregate boundary (PostgreSQL)', () => {
     sql = postgres(DATABASE_URL, { max: 1, idle_timeout: 5 })
     await cleanup(sql)
     await sql.unsafe(
-      `INSERT INTO workspaces (id, name) VALUES ($1, 'Registration Workspace'), ($2, 'Foreign Workspace')`,
-      [workspaceId, foreignWorkspaceId],
+      `INSERT INTO workspaces (id, name)
+       VALUES ($1, 'Registration Workspace'), ($2, 'Foreign Workspace'), ($3, 'Empty Workspace')`,
+      [workspaceId, foreignWorkspaceId, emptyWorkspaceId],
     )
     await sql.unsafe(
       `INSERT INTO projects (id, workspace_id, name)
@@ -157,6 +173,46 @@ describeIf('SourceRegistrationRepo aggregate boundary (PostgreSQL)', () => {
       await cleanup(sql)
       await sql.end()
     }
+  })
+
+  it('persists and replays an unattached source in a workspace with no projects', async () => {
+    const input = workspaceRegistration(9)
+    const clientBatchId = 'a20e8400-e29b-41d4-a716-776655440009'
+    const requestHash = `sha256:${'9'.repeat(64)}` as const
+
+    const first = await Effect.runPromise(SourceRegistrationRepo.createBatch({
+      workspaceId: emptyWorkspaceId,
+      projectId: null,
+      attachToProject: false,
+      clientBatchId,
+      requestHash,
+      registrations: [input],
+      rejected: [],
+      createdAt,
+    }).pipe(Effect.provide(layer)))
+    const replay = await Effect.runPromise(SourceRegistrationRepo.createBatch({
+      workspaceId: emptyWorkspaceId,
+      projectId: null,
+      attachToProject: false,
+      clientBatchId,
+      requestHash,
+      registrations: [workspaceRegistration(8)],
+      rejected: [],
+      createdAt,
+    }).pipe(Effect.provide(layer)))
+
+    expect(first.replayed).toBe(false)
+    expect(replay).toEqual({ ...first, replayed: true })
+    const [stored] = await sql.unsafe(
+      `SELECT workspace_id, project_id
+       FROM sources
+       WHERE id = $1`,
+      [input.source.id],
+    )
+    expect(stored).toMatchObject({
+      workspace_id: emptyWorkspaceId,
+      project_id: null,
+    })
   })
 
   it('rejects cross-scope and forged aggregates without persisting partial rows', async () => {

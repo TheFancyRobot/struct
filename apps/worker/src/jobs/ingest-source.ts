@@ -114,7 +114,7 @@ interface IngestionPayload {
   readonly stagedRef: StagedArtifactRef
   readonly name: string
   readonly mediaType: string
-  readonly projectId: import('@struct/domain').ProjectId
+  readonly projectId: import('@struct/domain').ProjectId | null
   readonly sourceKind: 'document' | 'dataset'
   readonly structuredFormat: StructuredSourceFormat | null
 }
@@ -215,15 +215,17 @@ function decodePayload(
     return Effect.fail(new ValidationError({ field: 'payload', reason: 'invalid', message: 'Ingestion payload is missing source metadata' }))
   }
   return Effect.gen(function* () {
-    const decodedProjectId = yield* Effect.try({
-      try: () => Schema.decodeUnknownSync(ProjectId)(projectId),
-      catch: () =>
-        new ValidationError({
-          field: 'payload.projectId',
-          reason: 'invalid',
-          message: 'Ingestion payload projectId is invalid',
-        }),
-    })
+    const decodedProjectId = projectId === null
+      ? null
+      : yield* Effect.try({
+          try: () => Schema.decodeUnknownSync(ProjectId)(projectId),
+          catch: () =>
+            new ValidationError({
+              field: 'payload.projectId',
+              reason: 'invalid',
+              message: 'Ingestion payload projectId is invalid',
+            }),
+        })
     return {
       stagedRef: stagedRef as StagedArtifactRef,
       name,
@@ -295,11 +297,12 @@ function completeDataset(
   sourceVersion: typeof SourceVersion.Type,
   artifactResult: WorkerStructuredIngestionResult,
 ): Effect.Effect<{
-  readonly datasetId: typeof DatasetId.Type
-  readonly snapshotId: typeof DatasetSnapshotId.Type
-  readonly materializationJobId: typeof import('@struct/domain').JobQueueId.Type
+  readonly datasetId?: typeof DatasetId.Type
+  readonly snapshotId?: typeof DatasetSnapshotId.Type
+  readonly materializationJobId?: typeof import('@struct/domain').JobQueueId.Type
 }, unknown, never> {
   return Effect.gen(function* () {
+    if (payload.projectId === null) return {}
     if (
       deps.datasets === undefined
       || payload.structuredFormat === null
@@ -436,12 +439,14 @@ function completeJob(
       }
     } else {
       const document = artifactResult as WorkerIngestionResult
-      yield* deps.textIndex.indexText({
-        workspaceId: job.workspaceId,
-        projectId: payload.projectId,
-        sourceVersionId: sourceVersion.id,
-        content: document.normalizedText,
-      })
+      if (payload.projectId !== null) {
+        yield* deps.textIndex.indexText({
+          workspaceId: job.workspaceId,
+          projectId: payload.projectId,
+          sourceVersionId: sourceVersion.id,
+          content: document.normalizedText,
+        })
+      }
       yield* appendOwnedEvent(deps, job, 'file-processed', {
         sourceVersionId: sourceVersion.id,
         manifestRef: sourceVersion.artifactRef,

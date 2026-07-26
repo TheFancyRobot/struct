@@ -72,6 +72,7 @@ export interface SourceRegistrationRepository {
 export interface SourceRegistrationBatchInput {
   readonly workspaceId: typeof JobQueue.Type['workspaceId']
   readonly projectId: typeof Source.Type['projectId']
+  readonly attachToProject?: boolean
   readonly clientBatchId: string
   readonly requestHash: `sha256:${string}`
   readonly registrations: ReadonlyArray<SourceRegistrationInput>
@@ -221,8 +222,9 @@ function validateRegistrationAggregate(
   const checks: ReadonlyArray<readonly [boolean, string]> = [
     [typeof input.source.id === 'string' && uuidPattern.test(input.source.id), 'source.id'],
     [
-      typeof input.source.projectId === 'string'
-      && uuidPattern.test(input.source.projectId),
+      input.source.projectId === null
+      || (typeof input.source.projectId === 'string'
+        && uuidPattern.test(input.source.projectId)),
       'source.projectId',
     ],
     [isSafeSourceName(input.source.name), 'source.name'],
@@ -461,8 +463,12 @@ export class SourceRegistrationRepo extends Effect.Service<SourceRegistrationRep
                    request_hash, response, created_at
                  )
                  SELECT $1, $2, $3, $4, NULL, to_timestamp($5 / 1000.0)
-                 FROM projects
-                 WHERE workspace_id = $1 AND id = $2
+                 WHERE $2::uuid IS NULL
+                    OR EXISTS (
+                      SELECT 1
+                      FROM projects
+                      WHERE workspace_id = $1 AND id = $2
+                    )
                  ON CONFLICT DO NOTHING
                  RETURNING client_batch_id`,
                 [
@@ -478,7 +484,7 @@ export class SourceRegistrationRepo extends Effect.Service<SourceRegistrationRep
                   `SELECT request_hash, response
                    FROM source_import_batches
                    WHERE workspace_id = $1
-                     AND project_id = $2
+                     AND project_id IS NOT DISTINCT FROM $2
                      AND client_batch_id = $3`,
                   [input.workspaceId, input.projectId, input.clientBatchId],
                 )
@@ -536,13 +542,15 @@ export class SourceRegistrationRepo extends Effect.Service<SourceRegistrationRep
                     Number(registration.source.updatedAt),
                   ],
                 )
-                await transaction.unsafe(
-                  `INSERT INTO project_sources (
-                     workspace_id, project_id, source_id
-                   ) VALUES ($1, $2, $3)
-                   ON CONFLICT DO NOTHING`,
-                  [input.workspaceId, input.projectId, registration.source.id],
-                )
+                if (input.attachToProject !== false && input.projectId !== null) {
+                  await transaction.unsafe(
+                    `INSERT INTO project_sources (
+                       workspace_id, project_id, source_id
+                     ) VALUES ($1, $2, $3)
+                     ON CONFLICT DO NOTHING`,
+                    [input.workspaceId, input.projectId, registration.source.id],
+                  )
+                }
                 await transaction.unsafe(
                   `INSERT INTO job_queue (
                      id, workspace_id, entity_type, entity_id, status,
@@ -596,7 +604,7 @@ export class SourceRegistrationRepo extends Effect.Service<SourceRegistrationRep
                 `UPDATE source_import_batches
                  SET response = $4::jsonb
                  WHERE workspace_id = $1
-                   AND project_id = $2
+                   AND project_id IS NOT DISTINCT FROM $2
                    AND client_batch_id = $3`,
                 [
                   input.workspaceId,

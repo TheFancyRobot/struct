@@ -824,7 +824,10 @@ const server = Effect.gen(function* () {
           : jsonResponse({ error: 'SourceJobNotFound' }, 404)
       }
 
-      if (sourceRoute !== null && req.method === 'POST') {
+      if (
+        (sourceRoute !== null || url.pathname === '/api/sources')
+        && req.method === 'POST'
+      ) {
         const program = Effect.gen(function* () {
           const parsed = yield* Effect.tryPromise({
             try: () => decodeBrowserSourceImport(req, maxBytes),
@@ -834,13 +837,18 @@ const server = Effect.gen(function* () {
               message: 'Invalid browser source import',
             }),
           })
-          const projectId = yield* Schema.decodeUnknown(ProjectId)(sourceRoute[1])
+          const requestedProjectId = sourceRoute === null
+            ? parsed.formProjectId
+            : sourceRoute[1]
+          const projectId = requestedProjectId === null
+            ? null
+            : yield* Schema.decodeUnknown(ProjectId)(requestedProjectId)
           const prepared = yield* Effect.forEach(parsed.items, (item) =>
             Effect.either(withWalkingSliceSpan(
                 'command',
                 {
                   workspaceId: identity.workspaceId,
-                  projectId,
+                  ...(projectId === null ? {} : { projectId }),
                 },
                 Effect.gen(function* () {
                   return yield* prepareSourceRegistration({
@@ -880,6 +888,7 @@ const server = Effect.gen(function* () {
           const response = yield* SourceRegistrationRepo.createBatch({
             workspaceId: identity.workspaceId,
             projectId,
+            attachToProject: parsed.attachToProject,
             clientBatchId: parsed.clientBatchId,
             requestHash: hashBrowserSourceImport(parsed),
             registrations: prepared.flatMap((result) =>
@@ -893,7 +902,7 @@ const server = Effect.gen(function* () {
                 event: 'source.registration.accepted',
                 identity: {
                   workspaceId: identity.workspaceId,
-                  projectId,
+                  ...(projectId === null ? {} : { projectId }),
                   sourceId: accepted.sourceId,
                   jobId: accepted.jobId,
                 },
