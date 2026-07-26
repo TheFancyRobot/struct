@@ -133,6 +133,8 @@ describe('walking-skeleton browser path', () => {
     expect(await citationLink.evaluate((element) => element === document.activeElement))
       .toBe(true)
     await page.keyboard.press('Enter')
+    expect(await page.getByRole('complementary', { name: 'Evidence' }).count())
+      .toBe(1)
     expect(await page.getByRole('heading', { name: 'walking-skeleton.txt' }).textContent())
       .toBe('walking-skeleton.txt')
     expect(await page.locator('span.bg-warning\\/40').textContent())
