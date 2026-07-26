@@ -101,6 +101,19 @@ describe('Repository Row Decoders (typed decode)', () => {
       expect(result.kind).toBe('document')
     })
 
+    it('decodes a workspace-library source without a project', async () => {
+      const ts = new Date('2024-03-01T00:00:00Z')
+      const result = await Effect.runPromise(decodeSourceRow({
+        id: '550e8400-e29b-41d4-a716-446655440002',
+        project_id: null,
+        name: 'workspace.md',
+        kind: 'document',
+        created_at: ts,
+        updated_at: ts,
+      }))
+      expect(result.projectId).toBeNull()
+    })
+
     it('fails on invalid source kind', async () => {
       const ts = new Date('2024-03-01T00:00:00Z')
       const row = {

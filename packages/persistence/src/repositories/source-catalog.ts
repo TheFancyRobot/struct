@@ -313,23 +313,41 @@ export class SourceCatalogRepo extends Effect.Service<SourceCatalogRepo>()(
         return yield* Effect.tryPromise({
           try: async () => {
             if (attached) {
-              const rows = await sql.unsafe(
-                `INSERT INTO project_sources (workspace_id, project_id, source_id)
-                 SELECT $1, project.id, source.id
-                 FROM projects project
-                 JOIN sources source ON source.id = $3 AND source.workspace_id = $1
-                 WHERE project.id = $2 AND project.workspace_id = $1
-                 ON CONFLICT DO NOTHING
-                 RETURNING source_id`,
-                [workspaceId, projectId, sourceId],
-              )
-              if (rows.length > 0) return true
-              const existing = await sql.unsafe(
-                `SELECT 1 FROM project_sources
-                 WHERE workspace_id = $1 AND project_id = $2 AND source_id = $3`,
-                [workspaceId, projectId, sourceId],
-              )
-              return existing.length === 1
+              return sql.transaction(async (transaction) => {
+                await transaction.unsafe(
+                  `INSERT INTO project_sources (workspace_id, project_id, source_id)
+                   SELECT $1, project.id, source.id
+                   FROM projects project
+                   JOIN sources source ON source.id = $3 AND source.workspace_id = $1
+                   WHERE project.id = $2 AND project.workspace_id = $1
+                   ON CONFLICT DO NOTHING`,
+                  [workspaceId, projectId, sourceId],
+                )
+                const existing = await transaction.unsafe(
+                  `SELECT 1 FROM project_sources
+                   WHERE workspace_id = $1 AND project_id = $2 AND source_id = $3`,
+                  [workspaceId, projectId, sourceId],
+                )
+                if (existing.length !== 1) return false
+                await transaction.unsafe(
+                  `INSERT INTO source_text_reindex_jobs (
+                     source_version_id,
+                     workspace_id,
+                     project_id,
+                     artifact_ref,
+                     content_hash
+                   )
+                   SELECT version.id, source.workspace_id, $2,
+                          version.artifact_ref, version.content_hash
+                   FROM source_versions version
+                   JOIN sources source ON source.id = version.source_id
+                   WHERE source.id = $3
+                     AND source.workspace_id = $1
+                   ON CONFLICT (source_version_id) DO NOTHING`,
+                  [workspaceId, projectId, sourceId],
+                )
+                return true
+              })
             }
             const rows = await sql.unsafe(
               `DELETE FROM project_sources attached

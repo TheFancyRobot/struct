@@ -62,7 +62,7 @@ const ProjectRowSchema = Schema.Struct({
 
 const SourceRowSchema = Schema.Struct({
   id: Schema.UUID,
-  project_id: Schema.UUID,
+  project_id: Schema.NullOr(Schema.UUID),
   name: Schema.String,
   kind: Schema.Union(
     Schema.Literal('document'),
@@ -242,7 +242,7 @@ export function decodeProjectRow(row: ProjectRow): Effect.Effect<typeof Domain.P
  */
 export interface SourceRow {
   id: string
-  project_id: string
+  project_id: string | null
   name: string
   kind: string
   created_at: Date
