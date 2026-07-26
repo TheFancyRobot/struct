@@ -25,7 +25,7 @@ export const ProjectSwitcher: Component<ProjectSwitcherProps> = (props) => {
 
   return (
     <section
-      class="space-y-6 rounded-box border border-base-300 bg-base-100 p-4 shadow-sm sm:p-6"
+      class="space-y-6 p-4 sm:p-6"
       aria-busy={props.projectListState === 'loading'}
     >
       <header class="space-y-2">

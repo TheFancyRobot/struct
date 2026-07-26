@@ -50,6 +50,33 @@ describe('responsive workspace browser contract', () => {
     await page.close()
   })
 
+  it('renders the center as one unframed workspace surface', async () => {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
+    await openWorkspace(page, 'struct-light')
+
+    expect(await page.getByText('Research workspace', { exact: true }).count()).toBe(0)
+    const surface = await page.evaluate(() => {
+      const main = document.querySelector('main')!
+      const content = main.lastElementChild as HTMLElement
+      const project = content.querySelector('section')!
+      const mainBox = main.getBoundingClientRect()
+      const contentBox = content.getBoundingClientRect()
+      const projectStyle = getComputedStyle(project)
+      return {
+        contentInset: {
+          x: contentBox.x - mainBox.x,
+          y: contentBox.y - mainBox.y,
+        },
+        projectBorderWidth: projectStyle.borderWidth,
+        projectBackground: projectStyle.backgroundColor,
+      }
+    })
+    expect(surface.contentInset).toEqual({ x: 0, y: 0 })
+    expect(surface.projectBorderWidth).toBe('0px')
+    expect(surface.projectBackground).toBe('rgba(0, 0, 0, 0)')
+    await page.close()
+  })
+
   it('keeps one ordered, overflow-free shell at every target width and theme', async () => {
     for (const width of [375, 768, 1024, 1440]) {
       for (const theme of ['struct-light', 'struct-dark'] as const) {
