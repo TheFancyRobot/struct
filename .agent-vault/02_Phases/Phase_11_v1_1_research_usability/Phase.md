@@ -9,7 +9,7 @@ owner: ''
 created: '2026-07-17'
 updated: '2026-07-26'
 depends_on:
-  - '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]]'
+  - '[[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]]'
 related_architecture:
   - '[[01_Architecture/System_Overview|System Overview]]'
   - '[[01_Architecture/Domain_Model|Domain Model]]'
@@ -67,7 +67,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Linear Context
 
 <!-- AGENT-START:phase-linear-context -->
-- Previous phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]]
+- Previous phase: [[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]]
 - Current phase status: blocked by [[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]
 - Next phase: [[02_Phases/Phase_12_v1_2_additional_sources/Phase|PHASE-12 v1.2 Additional Sources]]
 <!-- AGENT-END:phase-linear-context -->

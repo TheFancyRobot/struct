@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-26._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_01_improve-research-search-navigation-and-command-ux|STEP-11-01 Improve Research Search Navigation and Command UX]] - status: planned - phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]
-- Active phase: [[02_Phases/Phase_12_v1_2_additional_sources/Phase|PHASE-12 v1.2 Additional Sources]] - status: planned - updated: 2026-07-17
-- Also active: 17 more additional steps, 5 open critical bugs.
+- Current step: [[02_Phases/Phase_10B_brand_implementation/Steps/Step_02_add-brand-svg-assets-and-logo-placement|STEP-10B-02 Add Brand SVG Assets and Logo Placement]] - status: planned - phase: [[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]]
+- Active phase: [[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]] - status: planned - updated: 2026-07-26
+- Also active: 21 more additional steps, 5 open critical bugs.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
