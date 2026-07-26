@@ -10,6 +10,17 @@ const uploadRules = [
 
 export type SourceUploadMediaType = typeof uploadRules[number]['mediaType']
 
+const datasetUploadRules = [
+  { extension: '.csv', mediaType: 'text/csv', format: 'csv' },
+  { extension: '.tsv', mediaType: 'text/tab-separated-values', format: 'tsv' },
+  { extension: '.json', mediaType: 'application/json', format: 'json' },
+  { extension: '.jsonl', mediaType: 'application/x-ndjson', format: 'jsonl' },
+  { extension: '.parquet', mediaType: 'application/vnd.apache.parquet', format: 'parquet' },
+] as const
+
+export type DatasetUploadMediaType = typeof datasetUploadRules[number]['mediaType']
+export type StructuredSourceFormat = typeof datasetUploadRules[number]['format']
+
 export function isSupportedSourceUpload(
   name: unknown,
   mediaType: unknown,
@@ -29,6 +40,34 @@ export function sourceUploadMediaTypeForName(
   return uploadRules.find((rule) =>
     rule.extensions.some((extension) => lowerName.endsWith(extension)),
   )?.mediaType ?? null
+}
+
+export function datasetUploadForName(
+  name: string,
+): {
+  readonly mediaType: DatasetUploadMediaType
+  readonly format: StructuredSourceFormat
+} | null {
+  const lowerName = name.toLowerCase()
+  const rule = datasetUploadRules.find(({ extension }) =>
+    lowerName.endsWith(extension))
+  return rule === undefined
+    ? null
+    : { mediaType: rule.mediaType, format: rule.format }
+}
+
+export function isSupportedDatasetUpload(
+  name: unknown,
+  mediaType: unknown,
+  format: unknown,
+): mediaType is DatasetUploadMediaType {
+  if (
+    typeof name !== 'string'
+    || typeof mediaType !== 'string'
+    || typeof format !== 'string'
+  ) return false
+  const rule = datasetUploadForName(name)
+  return rule?.mediaType === mediaType && rule.format === format
 }
 
 export function normalizeBrowserRelativePath(value: unknown): string | null {

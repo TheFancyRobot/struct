@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'bun:test'
 import { decodeBrowserSourceImport } from './browser-source-import'
 
+const clientBatchId = 'b50e8400-e29b-41d4-a716-446655440010'
+
+function form(): FormData {
+  const value = new FormData()
+  value.set('clientBatchId', clientBatchId)
+  return value
+}
+
 function request(form: FormData): Request {
   return new Request('http://localhost/api/projects/project/sources', {
     method: 'POST',
@@ -10,33 +18,34 @@ function request(form: FormData): Request {
 
 describe('decodeBrowserSourceImport', () => {
   it('accepts bounded multiple files through native multipart form data', async () => {
-    const form = new FormData()
-    form.set('mode', 'files')
-    form.append('files', new File(['alpha'], 'alpha.md', { type: 'text/markdown' }))
-    form.append('files', new File(['beta'], 'beta.txt', { type: 'text/plain' }))
+    const input = form()
+    input.set('mode', 'files')
+    input.append('files', new File(['alpha'], 'alpha.md', { type: 'text/markdown' }))
+    input.append('files', new File(['beta'], 'beta.txt', { type: 'text/plain' }))
 
-    const result = await decodeBrowserSourceImport(request(form), 1024)
+    const result = await decodeBrowserSourceImport(request(input), 1024)
 
+    expect(result.clientBatchId).toBe(clientBatchId)
     expect(result.rejected).toEqual([])
-    expect(result.items.map((item) => [item.name, item.mediaType, item.bytes.byteLength])).toEqual([
-      ['alpha.md', 'text/markdown', 5],
-      ['beta.txt', 'text/plain', 4],
+    expect(result.items.map((item) => [item.name, item.mediaType, item.kind, item.bytes.byteLength])).toEqual([
+      ['alpha.md', 'text/markdown', 'document', 5],
+      ['beta.txt', 'text/plain', 'document', 4],
     ])
   })
 
   it('preserves safe folder-relative paths and independently rejects unsafe or duplicate entries', async () => {
-    const form = new FormData()
-    form.set('mode', 'folder')
-    form.set('paths', JSON.stringify([
+    const input = form()
+    input.set('mode', 'folder')
+    input.set('paths', JSON.stringify([
       'folder/alpha.md',
       '../secret.md',
       'folder/alpha.md',
     ]))
-    form.append('files', new File(['alpha'], 'alpha.md'))
-    form.append('files', new File(['secret'], 'secret.md'))
-    form.append('files', new File(['duplicate'], 'duplicate.md'))
+    input.append('files', new File(['alpha'], 'alpha.md'))
+    input.append('files', new File(['secret'], 'secret.md'))
+    input.append('files', new File(['duplicate'], 'duplicate.md'))
 
-    const result = await decodeBrowserSourceImport(request(form), 1024)
+    const result = await decodeBrowserSourceImport(request(input), 1024)
 
     expect(result.items.map((item) => item.name)).toEqual(['folder/alpha.md'])
     expect(result.rejected).toEqual([
@@ -46,7 +55,7 @@ describe('decodeBrowserSourceImport', () => {
   })
 
   it('accepts named pasted Markdown and rejects empty input without staging', async () => {
-    const accepted = new FormData()
+    const accepted = form()
     accepted.set('mode', 'paste')
     accepted.set('name', 'notes.md')
     accepted.set('content', '# Notes')
@@ -56,12 +65,38 @@ describe('decodeBrowserSourceImport', () => {
       mediaType: 'text/markdown',
     })
 
-    const empty = new FormData()
+    const empty = form()
     empty.set('mode', 'paste')
     empty.set('name', 'notes.md')
     empty.set('content', '')
     expect((await decodeBrowserSourceImport(request(empty), 1024)).rejected).toEqual([
       { name: 'notes.md', reason: 'empty' },
     ])
+  })
+
+  it('keeps every supported structured format explicitly in the dataset path', async () => {
+    const input = form()
+    input.set('mode', 'dataset')
+    for (const name of [
+      'rows.csv',
+      'rows.tsv',
+      'rows.json',
+      'rows.jsonl',
+      'rows.parquet',
+    ]) {
+      input.append('files', new File(['rows'], name))
+    }
+
+    const result = await decodeBrowserSourceImport(request(input), 1024)
+
+    expect(result.rejected).toEqual([])
+    expect(result.items.map(({ name, kind, format }) => [name, kind, format]))
+      .toEqual([
+        ['rows.csv', 'dataset', 'csv'],
+        ['rows.tsv', 'dataset', 'tsv'],
+        ['rows.json', 'dataset', 'json'],
+        ['rows.jsonl', 'dataset', 'jsonl'],
+        ['rows.parquet', 'dataset', 'parquet'],
+      ])
   })
 })

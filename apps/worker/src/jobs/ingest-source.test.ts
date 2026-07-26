@@ -273,6 +273,92 @@ describe('processOneIngestionJob', () => {
     expect(JSON.stringify(testDeps.calls.events)).not.toContain('/Users/')
   })
 
+  it('composes every structured format into an immutable dataset snapshot and materialization job', async () => {
+    const formats = [
+      ['csv', 'rows.csv', 'text/csv'],
+      ['tsv', 'rows.tsv', 'text/tab-separated-values'],
+      ['json', 'rows.json', 'application/json'],
+      ['jsonl', 'rows.jsonl', 'application/x-ndjson'],
+      ['parquet', 'rows.parquet', 'application/vnd.apache.parquet'],
+    ] as const
+
+    for (const [format, name, mediaType] of formats) {
+      const base = deps()
+      const created: string[] = []
+      const enqueued: unknown[] = []
+      const testDeps: IngestionWorkerTestDeps = {
+        ...base,
+        jobs: {
+          ...base.jobs,
+          claimNextIngestionJob: () => Effect.succeed(Option.some({
+            id: jobId,
+            workspaceId,
+            entityType: 'ingestion',
+            entityId: sourceId,
+            status: 'in-progress' as const,
+            payload: {
+              stagedRef: `staged://850e8400-e29b-41d4-a716-446655440100/${name}`,
+              name,
+              mediaType,
+              byteLength: 10,
+              projectId,
+              sourceKind: 'dataset',
+              structuredFormat: format,
+            },
+            attempts: 1,
+            maxAttempts: 3,
+            createdAt: 0n,
+            updatedAt: 0n,
+          })),
+        },
+        ingestion: {
+          ...base.ingestion,
+          ingestStructuredSource: () => Effect.succeed({
+            artifactRef: 'artifact://sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            contentHash: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            byteLength: 10,
+          }),
+        },
+        datasets: {
+          inspect: () => Effect.succeed([{
+            ordinal: 0,
+            name: 'value',
+            sourceType: 'VARCHAR',
+            logicalType: 'string',
+            nullable: true,
+          }]),
+          createDataset: () => {
+            created.push('dataset')
+            return Effect.void
+          },
+          createSchemaFamily: () => {
+            created.push('family')
+            return Effect.void
+          },
+          createSnapshot: () => {
+            created.push('snapshot')
+            return Effect.void
+          },
+          enqueueMaterialization: (input) => {
+            enqueued.push(input)
+            return Effect.void
+          },
+        },
+      }
+
+      await Effect.runPromise(processOneIngestionJob(testDeps))
+
+      expect(created).toEqual(['dataset', 'family', 'snapshot'])
+      expect(enqueued).toHaveLength(1)
+      expect(enqueued[0]).toMatchObject({ sourceFormats: [format] })
+      expect(testDeps.calls.indexedInputs).toEqual([])
+      expect(testDeps.calls.events).toEqual([
+        'dataset-materialization-enqueued',
+        'ingestion-completed',
+      ])
+    }
+  })
+
   it('creates the next immutable version number without mutating existing SourceVersions', async () => {
     const base = deps()
     const testDeps: IngestionWorkerTestDeps = {

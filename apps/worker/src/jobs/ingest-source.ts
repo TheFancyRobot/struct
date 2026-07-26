@@ -4,14 +4,22 @@ import {
   withWalkingSliceSpan,
 } from '@struct/observability'
 import {
+  DatasetId,
+  DatasetSchemaFamilyId,
+  DatasetSnapshotId,
   EventJournalId,
   isCanonicalStagedArtifactRef,
+  isSupportedDatasetUpload,
+  JobQueueId,
   ProjectId,
+  Sha256Digest,
   SourceVersionId,
   ValidationError,
+  type DatasetFieldSchema,
   type JobQueue,
   type SourceId,
   type SourceVersion,
+  type StructuredSourceFormat,
 } from '@struct/domain'
 import {
   IngestionJobOwnershipLostError,
@@ -26,6 +34,12 @@ export interface WorkerIngestionResult {
   readonly contentHash: `sha256:${string}`
   readonly byteLength: number
   readonly normalizedText: string
+}
+
+export interface WorkerStructuredIngestionResult {
+  readonly artifactRef: ArtifactRef
+  readonly contentHash: `sha256:${string}`
+  readonly byteLength: number
 }
 
 type EventJournalType = typeof import('@struct/domain').EventJournal.Type
@@ -61,6 +75,26 @@ export interface IngestionWorkerDeps {
   }
   readonly ingestion: {
     readonly ingestTextSource: (input: { readonly stagedRef: StagedArtifactRef; readonly name: string; readonly mediaType: string }) => Effect.Effect<WorkerIngestionResult, unknown, never>
+    readonly ingestStructuredSource?: (input: { readonly stagedRef: StagedArtifactRef; readonly name: string; readonly mediaType: string }) => Effect.Effect<WorkerStructuredIngestionResult, unknown, never>
+  }
+  readonly datasets?: {
+    readonly inspect: (input: {
+      readonly artifactRef: ArtifactRef
+      readonly contentHash: `sha256:${string}`
+      readonly format: StructuredSourceFormat
+    }) => Effect.Effect<ReadonlyArray<DatasetFieldSchema>, unknown, never>
+    readonly createDataset: (
+      dataset: import('@struct/domain').DatasetAsset,
+    ) => Effect.Effect<unknown, unknown, never>
+    readonly createSchemaFamily: (
+      family: import('@struct/domain').DatasetSchemaFamily,
+    ) => Effect.Effect<unknown, unknown, never>
+    readonly createSnapshot: (
+      snapshot: import('@struct/domain').DatasetSnapshot,
+    ) => Effect.Effect<unknown, unknown, never>
+    readonly enqueueMaterialization: (
+      input: import('@struct/persistence').DatasetMaterializationEnqueueInput,
+    ) => Effect.Effect<unknown, unknown, never>
   }
   readonly calls?: {
     readonly events: string[]
@@ -81,6 +115,8 @@ interface IngestionPayload {
   readonly name: string
   readonly mediaType: string
   readonly projectId: import('@struct/domain').ProjectId
+  readonly sourceKind: 'document' | 'dataset'
+  readonly structuredFormat: StructuredSourceFormat | null
 }
 
 class IngestionLeaseHeartbeatError
@@ -161,10 +197,21 @@ function decodePayload(
   const name = payload['name']
   const mediaType = payload['mediaType']
   const projectId = payload['projectId']
+  const sourceKind = payload['sourceKind'] ?? 'document'
+  const structuredFormat = payload['structuredFormat'] ?? null
   if (!isCanonicalStagedArtifactRef(stagedRef)) {
     return Effect.fail(new ValidationError({ field: 'payload.stagedRef', reason: 'invalid', message: 'Ingestion payload stagedRef is invalid' }))
   }
-  if (typeof name !== 'string' || typeof mediaType !== 'string') {
+  if (
+    typeof name !== 'string'
+    || typeof mediaType !== 'string'
+    || (sourceKind !== 'document' && sourceKind !== 'dataset')
+    || (
+      sourceKind === 'dataset'
+      && !isSupportedDatasetUpload(name, mediaType, structuredFormat)
+    )
+    || (sourceKind === 'document' && structuredFormat !== null)
+  ) {
     return Effect.fail(new ValidationError({ field: 'payload', reason: 'invalid', message: 'Ingestion payload is missing source metadata' }))
   }
   return Effect.gen(function* () {
@@ -182,6 +229,8 @@ function decodePayload(
       name,
       mediaType,
       projectId: decodedProjectId,
+      sourceKind,
+      structuredFormat: structuredFormat as StructuredSourceFormat | null,
     }
   })
 }
@@ -232,16 +281,124 @@ function appendOwnedEvent(
   return deps.jobs.appendInProgressEvent(job, makeEvent(deps, job, eventType, payload))
 }
 
+function deterministicUuid(seed: string, purpose: string): string {
+  const digest = new Bun.CryptoHasher('sha256')
+    .update(`${seed}\0${purpose}`)
+    .digest('hex')
+  return `${digest.slice(0, 8)}-${digest.slice(8, 12)}-5${digest.slice(13, 16)}-a${digest.slice(17, 20)}-${digest.slice(20, 32)}`
+}
+
+function completeDataset(
+  deps: IngestionWorkerDeps,
+  job: typeof JobQueue.Type,
+  payload: IngestionPayload,
+  sourceVersion: typeof SourceVersion.Type,
+  artifactResult: WorkerStructuredIngestionResult,
+): Effect.Effect<{
+  readonly datasetId: typeof DatasetId.Type
+  readonly snapshotId: typeof DatasetSnapshotId.Type
+  readonly materializationJobId: typeof import('@struct/domain').JobQueueId.Type
+}, unknown, never> {
+  return Effect.gen(function* () {
+    if (
+      deps.datasets === undefined
+      || payload.structuredFormat === null
+    ) {
+      return yield* new ValidationError({
+        field: 'dataset',
+        reason: 'dataset-pipeline-unavailable',
+        message: 'Dataset ingestion pipeline is unavailable',
+      })
+    }
+    const fields = yield* deps.datasets.inspect({
+      artifactRef: artifactResult.artifactRef,
+      contentHash: artifactResult.contentHash,
+      format: payload.structuredFormat,
+    })
+    const datasetId = DatasetId.make(deterministicUuid(job.entityId, 'dataset'))
+    const schemaHash = Sha256Digest.make(
+      `sha256:${new Bun.CryptoHasher('sha256')
+        .update(`${JSON.stringify(fields)}\n`)
+        .digest('hex')}`,
+    )
+    const familyId = DatasetSchemaFamilyId.make(
+      deterministicUuid(datasetId, schemaHash),
+    )
+    const snapshotId = DatasetSnapshotId.make(
+      deterministicUuid(sourceVersion.id, 'snapshot'),
+    )
+    yield* deps.datasets.createDataset({
+      id: datasetId,
+      workspaceId: job.workspaceId,
+      projectId: payload.projectId,
+      name: payload.name,
+      lifecycleStatus: 'active',
+      createdAt: sourceVersion.createdAt,
+    })
+    yield* deps.datasets.createSchemaFamily({
+      id: familyId,
+      datasetId,
+      workspaceId: job.workspaceId,
+      projectId: payload.projectId,
+      schemaHash,
+      fields: [...fields],
+      createdAt: sourceVersion.createdAt,
+    })
+    yield* deps.datasets.createSnapshot({
+      id: snapshotId,
+      datasetId,
+      workspaceId: job.workspaceId,
+      projectId: payload.projectId,
+      version: 1,
+      schemaFamilyId: familyId,
+      previousSnapshotId: Option.none(),
+      contentHash: Sha256Digest.make(artifactResult.contentHash),
+      sources: [{
+        ordinal: 0,
+        sourceId: job.entityId as SourceId,
+        sourceVersionId: sourceVersion.id,
+        contentHash: Sha256Digest.make(artifactResult.contentHash),
+      }],
+      createdAt: sourceVersion.createdAt,
+    })
+    const materializationId = JobQueueId.make(
+      deterministicUuid(snapshotId, 'materialization'),
+    )
+    yield* deps.datasets.enqueueMaterialization({
+      jobId: materializationId,
+      workspaceId: job.workspaceId,
+      snapshotId,
+      sourceFormats: [payload.structuredFormat],
+      maxAttempts: 3,
+    })
+    return { datasetId, snapshotId, materializationJobId: materializationId }
+  })
+}
+
 function completeJob(
   deps: IngestionWorkerDeps,
   job: typeof JobQueue.Type,
   payload: IngestionPayload,
 ): Effect.Effect<void, unknown, never> {
   return Effect.gen(function* () {
-    const artifactResult = yield* deps.ingestion.ingestTextSource(payload)
+    const artifactResult = payload.sourceKind === 'dataset'
+      ? yield* (
+          deps.ingestion.ingestStructuredSource?.(payload)
+          ?? Effect.fail(new ValidationError({
+            field: 'dataset',
+            reason: 'dataset-pipeline-unavailable',
+            message: 'Dataset ingestion pipeline is unavailable',
+          }))
+        )
+      : yield* deps.ingestion.ingestTextSource(payload)
+    const sourceArtifactRef = payload.sourceKind === 'dataset'
+      ? (artifactResult as WorkerStructuredIngestionResult).artifactRef
+      : (artifactResult as WorkerIngestionResult).manifestRef
     const existing = yield* deps.sourceVersions.findBySourceId(job.entityId as SourceId)
     const reusableVersion = job.attempts > 1
-      ? existing.find((version) => version.artifactRef === artifactResult.manifestRef && version.contentHash === artifactResult.contentHash)
+      ? existing.find((version) =>
+          version.artifactRef === sourceArtifactRef
+          && version.contentHash === artifactResult.contentHash)
       : undefined
     const sourceVersion = reusableVersion ?? (yield* Effect.gen(function* () {
       const nextVersion = existing.reduce((max, version) => Math.max(max, version.version), 0) + 1
@@ -249,29 +406,60 @@ function completeJob(
         id: deps.randomSourceVersionId(),
         sourceId: job.entityId as SourceId,
         version: nextVersion,
-        artifactRef: artifactResult.manifestRef,
+        artifactRef: sourceArtifactRef,
         contentHash: artifactResult.contentHash,
         createdAt: deps.now(),
       }
       return yield* deps.sourceVersions.createForIngestionAttempt(job, candidate)
     }))
-    yield* deps.textIndex.indexText({
-      workspaceId: job.workspaceId,
-      projectId: payload.projectId,
-      sourceVersionId: sourceVersion.id,
-      content: artifactResult.normalizedText,
-    })
-    yield* appendOwnedEvent(deps, job, 'file-processed', {
-      sourceVersionId: sourceVersion.id,
-      manifestRef: sourceVersion.artifactRef,
-      contentHash: artifactResult.contentHash,
-      byteLength: artifactResult.byteLength,
-    })
-    const completionEvent = makeEvent(deps, job, 'ingestion-completed', {
-      sourceVersionId: sourceVersion.id,
-      manifestRef: artifactResult.manifestRef,
-      contentHash: artifactResult.contentHash,
-    })
+    let completionPayload: Record<string, unknown>
+    if (payload.sourceKind === 'dataset') {
+      const dataset = yield* completeDataset(
+        deps,
+        job,
+        payload,
+        sourceVersion,
+        artifactResult as WorkerStructuredIngestionResult,
+      )
+      yield* appendOwnedEvent(deps, job, 'dataset-materialization-enqueued', {
+        sourceVersionId: sourceVersion.id,
+        artifactRef: sourceVersion.artifactRef,
+        contentHash: artifactResult.contentHash,
+        byteLength: artifactResult.byteLength,
+        ...dataset,
+      })
+      completionPayload = {
+        sourceVersionId: sourceVersion.id,
+        artifactRef: sourceVersion.artifactRef,
+        contentHash: artifactResult.contentHash,
+        ...dataset,
+      }
+    } else {
+      const document = artifactResult as WorkerIngestionResult
+      yield* deps.textIndex.indexText({
+        workspaceId: job.workspaceId,
+        projectId: payload.projectId,
+        sourceVersionId: sourceVersion.id,
+        content: document.normalizedText,
+      })
+      yield* appendOwnedEvent(deps, job, 'file-processed', {
+        sourceVersionId: sourceVersion.id,
+        manifestRef: sourceVersion.artifactRef,
+        contentHash: document.contentHash,
+        byteLength: document.byteLength,
+      })
+      completionPayload = {
+        sourceVersionId: sourceVersion.id,
+        manifestRef: document.manifestRef,
+        contentHash: document.contentHash,
+      }
+    }
+    const completionEvent = makeEvent(
+      deps,
+      job,
+      'ingestion-completed',
+      completionPayload,
+    )
     yield* deps.jobs.markCompleted(job, completionEvent)
   })
 }

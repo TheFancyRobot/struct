@@ -85,8 +85,13 @@ import {
   isPublicApiRequest,
 } from './auth'
 import { projectRoute } from './routes/projects'
-import { registerTextSource } from './routes/sources'
-import { decodeBrowserSourceImport } from './routes/browser-source-import'
+import {
+  prepareSourceRegistration,
+} from './routes/sources'
+import {
+  decodeBrowserSourceImport,
+  hashBrowserSourceImport,
+} from './routes/browser-source-import'
 import {
   loadSourceCatalog,
   sourceActivityResponse,
@@ -766,16 +771,15 @@ const server = Effect.gen(function* () {
             }),
           })
           const projectId = yield* Schema.decodeUnknown(ProjectId)(sourceRoute[1])
-          const results = yield* Effect.forEach(parsed.items, (item) =>
-            Effect.either(Effect.gen(function* () {
-              const registered = yield* withWalkingSliceSpan(
+          const prepared = yield* Effect.forEach(parsed.items, (item) =>
+            Effect.either(withWalkingSliceSpan(
                 'command',
                 {
                   workspaceId: identity.workspaceId,
                   projectId,
                 },
                 Effect.gen(function* () {
-                  const registered = yield* registerTextSource({
+                  return yield* prepareSourceRegistration({
                     workspaceId: identity.workspaceId,
                     projectId,
                     ...item,
@@ -793,58 +797,45 @@ const server = Effect.gen(function* () {
                           Effect.provide(projectLayer),
                         ),
                     },
-                    registration: {
-                      create: (input) =>
-                        SourceRegistrationRepo.create(input).pipe(
-                          Effect.provide(registrationLayer),
-                        ),
-                    },
                     storage,
                   })
-                  yield* Effect.annotateCurrentSpan({
-                    'struct.source.id': registered.source.id,
-                    'struct.job.id': registered.job.id,
-                  })
-                  return registered
                 }),
-              )
-              yield* Effect.annotateCurrentSpan({
-                'struct.source.id': registered.source.id,
-                'struct.job.id': registered.job.id,
-              })
+              )))
+          const rejected = [
+            ...parsed.rejected,
+            ...prepared.flatMap((result, index) =>
+              result._tag === 'Left'
+                ? [{
+                    name: parsed.items[index]!.name,
+                    reason: result.left instanceof ValidationError
+                      ? result.left.reason
+                      : 'registration-failed',
+                  }]
+                : []),
+          ]
+          const response = yield* SourceRegistrationRepo.createBatch({
+            workspaceId: identity.workspaceId,
+            projectId,
+            clientBatchId: parsed.clientBatchId,
+            requestHash: hashBrowserSourceImport(parsed),
+            registrations: prepared.flatMap((result) =>
+              result._tag === 'Right' ? [result.right] : []),
+            rejected,
+            createdAt: BigInt(Date.now()),
+          }).pipe(Effect.provide(registrationLayer))
+          yield* Effect.forEach(response.accepted, (accepted) =>
+            Effect.gen(function* () {
               yield* logWalkingSlice({
                 event: 'source.registration.accepted',
                 identity: {
                   workspaceId: identity.workspaceId,
                   projectId,
-                  sourceId: registered.source.id,
-                  jobId: registered.job.id,
+                  sourceId: accepted.sourceId,
+                  jobId: accepted.jobId,
                 },
               })
-              return registered
-            })))
-          return {
-            accepted: results.flatMap((result, index) =>
-              result._tag === 'Right'
-                ? [{
-                    sourceId: result.right.source.id,
-                    jobId: result.right.job.id,
-                    name: parsed.items[index]!.name,
-                  }]
-                : []),
-            rejected: [
-              ...parsed.rejected,
-              ...results.flatMap((result, index) =>
-                result._tag === 'Left'
-                  ? [{
-                      name: parsed.items[index]!.name,
-                      reason: result.left instanceof ValidationError
-                        ? result.left.reason
-                        : 'registration-failed',
-                    }]
-                  : []),
-            ],
-          }
+            }))
+          return response
         })
 
         const exit = await Runtime.runPromiseExit(effectRuntime)(program)

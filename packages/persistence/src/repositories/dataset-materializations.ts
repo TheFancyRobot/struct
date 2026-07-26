@@ -30,7 +30,9 @@ export const DatasetMaterializationJob = Schema.Struct({
   attempt: PositiveInteger,
   maxAttempts: PositiveInteger,
   leaseToken: Schema.UUID,
-  sourceFormats: Schema.Array(Schema.Literal('json', 'jsonl', 'csv')),
+  sourceFormats: Schema.Array(
+    Schema.Literal('json', 'jsonl', 'csv', 'tsv', 'parquet'),
+  ),
 })
 export type DatasetMaterializationJob =
   Schema.Schema.Type<typeof DatasetMaterializationJob>
@@ -55,7 +57,7 @@ export const DatasetMaterializationEnqueueInput = Schema.Struct({
   workspaceId: WorkspaceId,
   snapshotId: DatasetSnapshotId,
   sourceFormats: Schema.Array(
-    Schema.Literal('json', 'jsonl', 'csv'),
+    Schema.Literal('json', 'jsonl', 'csv', 'tsv', 'parquet'),
   ).pipe(Schema.minItems(1)),
   maxAttempts: PositiveInteger,
 })

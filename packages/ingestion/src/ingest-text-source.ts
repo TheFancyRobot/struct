@@ -43,12 +43,54 @@ export interface IngestTextSourceResult {
   readonly normalizedText: string
 }
 
+export interface IngestStructuredSourceResult {
+  readonly artifactRef: ArtifactRef
+  readonly contentHash: `sha256:${string}`
+  readonly byteLength: number
+}
+
 const textDecoder = new TextDecoder('utf-8', { fatal: true })
 const textEncoder = new TextEncoder()
 const MAX_MANIFEST_FRAGMENTS = 10_000
 
 const hashBytes = (bytes: Uint8Array): `sha256:${string}` =>
   `sha256:${createHash('sha256').update(bytes).digest('hex')}`
+
+export const ingestStructuredSource = (input: {
+  readonly store: ArtifactStoreShape
+  readonly stagedRef: StagedArtifactRef
+  readonly mediaType: string
+  readonly maxBytes?: number
+}) =>
+  Effect.gen(function* () {
+    const staged = yield* input.store.readStagedObject(input.stagedRef).pipe(
+      Effect.mapError((error) =>
+        new IngestionFailureError({
+          reason: error._tag,
+          message: 'Staged artifact could not be read',
+        })),
+    )
+    if (input.maxBytes !== undefined && staged.byteLength > input.maxBytes) {
+      return yield* new IngestionFailureError({
+        reason: 'source-too-large',
+        message: 'Structured source exceeds the configured size limit',
+      })
+    }
+    const artifact = yield* input.store.writeObject(staged.bytes, {
+      mediaType: input.mediaType,
+    }).pipe(
+      Effect.mapError((error) =>
+        new IngestionFailureError({
+          reason: error._tag,
+          message: 'Structured source artifact could not be stored',
+        })),
+    )
+    return {
+      artifactRef: artifact.ref,
+      contentHash: artifact.hash,
+      byteLength: artifact.byteLength,
+    }
+  })
 
 export const normalizeTextBytes = (bytes: Uint8Array): Effect.Effect<NormalizedText, IngestionFailureError, never> =>
   Effect.try({
