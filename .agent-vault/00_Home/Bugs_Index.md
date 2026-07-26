@@ -29,8 +29,8 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 <!-- AGENT-START:bugs-index -->
 _Last rebuilt: 2026-07-26._
 
-- Notes indexed: 38
-- Status summary: fixed (38)
+- Notes indexed: 39
+- Status summary: fixed (39)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -48,6 +48,7 @@ _Last rebuilt: 2026-07-26._
 | BUG-0047 | [Source import notice ignores the source library content gutter](../03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0050 | [Workspace responsive e2e test retains obsolete project-gated source action contract](../03_Bugs/BUG-0050_workspace-responsive-e2e-test-retains-obsolete-project-gated-source-action-contract.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0051 | [Manage source library navigation link misses the 44px touch-target minimum](../03_Bugs/BUG-0051_manage-source-library-navigation-link-misses-the-44px-touch-target-minimum.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
+| BUG-0052 | [Directory source import rejects a local canonical corpus with HTTP 413](../03_Bugs/BUG-0052_directory-source-import-rejects-a-local-canonical-corpus-with-http-413.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0039 | [Recursive evaluation setup timeout is too short under full-suite load](../03_Bugs/BUG-0039_recursive-evaluation-setup-timeout-is-too-short-under-full-suite-load.md) | fixed | sev-3 | 2026-07-25 | 2026-07-25 | - |
 | BUG-0037 | [Root dev command does not propagate environment to workspace apps](../03_Bugs/BUG-0037_root-dev-command-does-not-propagate-environment-to-workspace-apps.md) | fixed | sev-3 | 2026-07-24 | 2026-07-24 | - |
 | BUG-0033 | [E2E project lifecycle cache test asserts a nonexistent level-two project heading](../03_Bugs/BUG-0033_e2e-project-lifecycle-cache-test-asserts-a-nonexistent-level-two-project-heading.md) | fixed | sev-3 | 2026-07-23 | 2026-07-23 | - |

@@ -41,6 +41,6 @@ export const artifactStorageRootConfig = Config.string('ARTIFACT_STORAGE_ROOT').
 
 /** Maximum bytes accepted for one walking-slice text source. */
 export const maxTextSourceBytesConfig = Config.number('MAX_TEXT_SOURCE_BYTES').pipe(
-  Config.withDefault(1_048_576),
+  Config.withDefault(268_435_456),
   Config.validate(positive('MAX_TEXT_SOURCE_BYTES')),
 )

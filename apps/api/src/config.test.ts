@@ -106,7 +106,7 @@ describe('API upload staging config', () => {
     )
 
     expect(root).toBe('./.local/artifacts')
-    expect(maxBytes).toBe(1048576)
+    expect(maxBytes).toBe(268435456)
   })
 
   it('rejects non-positive MAX_TEXT_SOURCE_BYTES values', async () => {

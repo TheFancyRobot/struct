@@ -4,11 +4,11 @@ template_version: 2
 contract_version: 1
 title: Directory source import rejects a local canonical corpus with HTTP 413
 bug_id: BUG-0052
-status: new
+status: fixed
 severity: sev-3
 category: logic
 reported_on: '2026-07-26'
-fixed_on: ''
+fixed_on: '2026-07-26'
 owner: ''
 created: '2026-07-26'
 updated: '2026-07-26'
@@ -60,14 +60,14 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Workaround
 
-- Set `MAX_TEXT_SOURCE_BYTES=268435456` (256 MiB) in the environment before starting `apps/api`. This raises both the per-file ceiling and the multipart batch body limit (`20 * 256 MiB + 65,536`).
-- Risk: the env override is undocumented and not persisted across deployments.
+- No longer needed — the default has been raised to 256 MiB.
 
 ## Permanent Fix Plan
 
-- Raise `MAX_TEXT_SOURCE_BYTES` default from 1,048,576 to 268,435,456 (256 MiB) in `apps/api/src/config.ts`.
-- Verify the multipart batch body limit scales correctly (`20 * maxBytes + 65,536`).
-- Document the limit in the source import UI and user-facing docs.
+- Raise `MAX_TEXT_SOURCE_BYTES` default from 1,048,576 to 268,435,456 (256 MiB) in `apps/api/src/config.ts`. ✅ Done.
+- Raise `DEFAULT_MAX_TEXT_SOURCE_BYTES` in `packages/ingestion/src/file-classifier.ts` to match. ✅ Done.
+- Update `apps/web/e2e/support/app-server.ts` and `apps/api/src/config.test.ts` to reflect the new default. ✅ Done.
+- The multipart batch body limit scales automatically (`20 * maxBytes + 65,536`).
 
 ## Regression Coverage Needed
 
@@ -85,5 +85,6 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-26 - Reported.
-- 2026-07-26 — Product requirement accepted: large browser source files are non-negotiable. Approved target: 256 MiB per file and per multipart request; implementation intentionally deferred.
+- 2026-07-26 — Product requirement accepted: large browser source files are non-negotiable. Approved target: 256 MiB per file and per multipart request.
+- 2026-07-26 — Fixed: `MAX_TEXT_SOURCE_BYTES` default raised to 268,435,456 (256 MiB) in config, file-classifier, e2e support, and config test.
 <!-- AGENT-END:bug-timeline -->
