@@ -205,7 +205,7 @@ async function runReleaseJourney(
       await page.getByText('Contact the account owner.').waitFor()
 
       await page.setViewportSize({ width: 1440, height: 900 })
-      for (const checkbox of await page.getByRole('checkbox').all()) {
+      for (const checkbox of await sources.getByRole('checkbox').all()) {
         await checkbox.uncheck()
       }
       await page.getByRole('checkbox', { name: 'renewal-accounts.csv' }).check()

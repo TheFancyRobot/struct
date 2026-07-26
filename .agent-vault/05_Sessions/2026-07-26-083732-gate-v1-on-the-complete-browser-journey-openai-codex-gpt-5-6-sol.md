@@ -22,7 +22,8 @@ context:
     section: Context Handoff
   last_action:
     type: completed
-related_bugs: []
+related_bugs:
+  - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
 related_decisions: []
 created: '2026-07-26'
 updated: '2026-07-26'
@@ -76,19 +77,16 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Changed Paths
 
 <!-- AGENT-START:session-changed-paths -->
-- None yet.
-<!-- AGENT-END:session-changed-paths -->
 - `apps/web/e2e/workspace-release.spec.ts` - one explicit bounded browser/context/page lifecycle for both isolated real-stack deployments.
 - Attempt-1 remediation retained in the working tree across `apps/web/e2e/support/`, SSE lifecycle coverage, deterministic dataset query persistence/coverage, data-engine integration coverage, and development-process lifecycle coverage.
 - `packages/evaluation/results/v1-evaluation-campaign-v1.json` and `docs/benchmarks/v1-evaluation-campaign.md` - regenerated canonical campaign evidence.
+- `apps/web/e2e/support/app-server.ts`, `apps/web/e2e/support/app-server.test.ts`, and `apps/web/e2e/workspace-release.spec.ts` - review remediation for bounded command/build lifecycles, bind-collision recovery, no-egress assertions, and source-scoped selection.
+- Phase 10, Active Context, and this session note - reconciled completion metadata.
+<!-- AGENT-END:session-changed-paths -->
 
 ## Validation Run
 
 <!-- AGENT-START:session-validation-run -->
-- Command: not run yet
-- Result: not run
-- Notes:
-<!-- AGENT-END:session-validation-run -->
 - Command: `bun --bun eslint apps/web/e2e/workspace-release.spec.ts --max-warnings 0` and `bun --bun tsc --noEmit --project apps/web/tsconfig.json`
 - Result: passed.
 - Command: `bun test --timeout 60000 --max-concurrency 1 apps/web/e2e/workspace-release.spec.ts`
@@ -99,13 +97,19 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Result: 23 gates passed, 0 failed criteria; report SHA-256 `801de1f3059eb911d1616bfffca73826474a5b7bbce7f34050a221acc7972396`.
 - Command: `bun run v1:evaluate`
 - Result: independent canonical check passed the same 23 gates, zero failed criteria, and exact report SHA-256.
+- Command: `bun test --timeout 60000 --max-concurrency 1 apps/web/e2e/support/app-server.test.ts`
+- Result: 11 pass, 0 fail, 39 assertions.
+- Command: `bun test --timeout 120000 --max-concurrency 1 apps/web/e2e/workspace-release.spec.ts`
+- Result: 2 pass, 0 fail, 19 assertions; root and BASE_PATH journeys passed in 31.38s.
+- Command: focused ESLint with ignored-test warnings suppressed, web TypeScript no-emit check, and Agent Vault doctor.
+- Result: passed; Vault checked 261 notes with zero errors or warnings.
+<!-- AGENT-END:session-validation-run -->
 
 ## Bugs Encountered
 
 <!-- AGENT-START:session-bugs-encountered -->
-- None.
-<!-- AGENT-END:session-bugs-encountered -->
 - BUG-0013 is fixed with the complete real-stack browser journey and canonical campaign evidence. No confirmed defect remains open.
+<!-- AGENT-END:session-bugs-encountered -->
 
 ## Decisions Made or Updated
 
@@ -116,11 +120,10 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Follow-Up Work
 
 <!-- AGENT-START:session-follow-up-work -->
-- [ ] Continue [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey|STEP-10-08 Gate v1 on the Complete Browser Journey]].
-<!-- AGENT-END:session-follow-up-work -->
 - [x] Complete STEP-10-08 and PHASE-10.
 - [ ] Root orchestrator reviews and publishes the step branch.
 - [ ] Stop immediately before the v1.0 release action.
+<!-- AGENT-END:session-follow-up-work -->
 
 ## Completion Summary
 

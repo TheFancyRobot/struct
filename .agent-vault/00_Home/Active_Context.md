@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-26._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_01_improve-research-search-navigation-and-command-ux|STEP-11-01 Improve Research Search Navigation and Command UX]] - status: planned - phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]
-- Active phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|PHASE-11 v1.1 Research Usability]] - status: planned - updated: 2026-07-21
-- Also active: 17 more additional steps, 3 open critical bugs.
+- Current step: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey|STEP-10-08 Gate v1 on the Complete Browser Journey]] - status: completed - phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]
+- Active phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: completed - updated: 2026-07-26
+- Pending handoff: Phase 10 review and merge; 0 open critical bugs.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -40,9 +40,9 @@ _Last refreshed: 2026-07-26._
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
 - Phase 06 is completed, reviewed, and merged through STEP-06-06.
-- Phases 07–09 are complete and merged. BUG-0035's real-stack browser journey remediation passed final validation; the tag and GitHub release action remain intentionally unperformed.
+- Phases 07–09 are complete and merged. Phase 10 and STEP-10-01 through STEP-10-08 are complete and awaiting final review and merge.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
-- Current correction: BUG-0035 replaced fixture-backed browser evidence with a validated real-stack journey. PHASE-10 remains technical reference only; the v1.0 release action is still intentionally unperformed.
+- Current correction: BUG-0013 is fixed by the validated real-stack root and BASE_PATH browser journey. The v1.0 release action remains intentionally unperformed.
 
 ## Out Of Scope Right Now
 
@@ -64,7 +64,7 @@ _Last refreshed: 2026-07-26._
 ## Open Questions
 
 - No unresolved design question remains in the completed Phase 09 work.
-- PHASE-10 refinement has no unresolved design question. BUG-0035 is fixed; do not perform the v1.0 release action without explicit authorization.
+- PHASE-10 has no unresolved design question. BUG-0013 is fixed; do not perform the v1.0 release action without explicit authorization.
 
 ## Critical Bugs
 
@@ -76,5 +76,5 @@ _Last refreshed: 2026-07-26._
 
 ## Next Actions
 
-- Commit and review the validated BUG-0035 remediation branch.
+- Complete root-orchestrator review and merge of the validated Phase 10 branch, then refine Phase 11 before activating STEP-11-01.
 - Do not perform the v1.0 release action without explicit authorization.

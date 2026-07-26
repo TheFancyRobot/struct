@@ -27,6 +27,8 @@ const readinessMaxWaitMs = 30_000
 const readinessProbeTimeoutMs = 1_000
 const readinessRetryIntervalMs = 100
 const commandMaxWaitMs = 20_000
+const buildMaxWaitMs = 60_000
+const dockerPortBindMaxAttempts = 3
 const processLogDrainTimeoutMs = 1_000
 
 export interface CapturedProcess {
@@ -53,6 +55,7 @@ export interface IsolatedDataEngine {
   readonly containerName: string
   readonly gatewayName: string
   readonly networkName: string
+  readonly port: number
 }
 
 function uniqueDistRoot(port: number, environment: Readonly<Record<string, string>>): string {
@@ -101,20 +104,30 @@ async function runCommand(
   command: ReadonlyArray<string>,
   cwd: string,
   environment: Readonly<Record<string, string>>,
+  maxWaitMs = commandMaxWaitMs,
 ): Promise<void> {
   const child = spawnCapturedProcess(name, command, cwd, environment)
-  const exitCode = await Promise.race([
-    child.process.exited,
-    Bun.sleep(commandMaxWaitMs).then(() => undefined),
-  ])
-  if (exitCode === undefined) {
+  const timedOut = Symbol('command timed out')
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  let exitCode: number | typeof timedOut
+  try {
+    exitCode = await Promise.race([
+      child.process.exited,
+      new Promise<typeof timedOut>((resolveTimeout) => {
+        timeout = setTimeout(() => resolveTimeout(timedOut), maxWaitMs)
+      }),
+    ])
+  } finally {
+    if (timeout !== undefined) clearTimeout(timeout)
+  }
+  if (exitCode === timedOut) {
     await stopServerProcess(child.process)
     const logs = await Promise.race([
       child.logs.catch(() => ''),
       Bun.sleep(processLogDrainTimeoutMs).then(() => ''),
     ])
     throw new Error(
-      `${name} timed out after ${commandMaxWaitMs}ms${logs ? `\n${logs}` : ''}`,
+      `${name} timed out after ${maxWaitMs}ms${logs ? `\n${logs}` : ''}`,
     )
   }
   if (exitCode !== 0) {
@@ -195,24 +208,13 @@ async function resetDatabase(environment: Readonly<Record<string, string>>): Pro
 
 async function buildApp(distRoot: string, environment: Readonly<Record<string, string>>) {
   mkdirSync(resolve(webRoot, distRoot), { recursive: true })
-  for (let attempt = 1; attempt <= 2; attempt += 1) {
-    try {
-      await runCommand(
-        'web build',
-        ['bun', '--bun', 'vite', 'build', '--outDir', distRoot],
-        webRoot,
-        environment,
-      )
-      return
-    } catch (error) {
-      if (
-        attempt === 2
-        || !errorMessage(error).startsWith('web build timed out after ')
-      ) {
-        throw error
-      }
-    }
-  }
+  await runCommand(
+    'web build',
+    ['bun', '--bun', 'vite', 'build', '--outDir', distRoot],
+    webRoot,
+    environment,
+    buildMaxWaitMs,
+  )
 }
 
 async function stopServerProcess(server: AppServerChildProcess): Promise<void> {
@@ -459,6 +461,12 @@ export function isolatedDataEngineRunCommand(
   ]
 }
 
+export function isolatedDataEngineNetworkCreateCommand(
+  networkName: string,
+): ReadonlyArray<string> {
+  return ['docker', 'network', 'create', '--internal', networkName]
+}
+
 export function isolatedDataEngineGatewayRunCommand(
   gatewayName: string,
   port: number,
@@ -505,6 +513,53 @@ async function runBestEffort(command: ReadonlyArray<string>): Promise<void> {
   await child.exited
 }
 
+export interface IsolatedDataEngineGatewayDependencies {
+  readonly availableLoopbackPort?: () => Promise<number>
+  readonly removeGateway?: (gatewayName: string) => Promise<void>
+  readonly runCommand?: (
+    name: string,
+    command: ReadonlyArray<string>,
+    cwd: string,
+    environment: Readonly<Record<string, string>>,
+  ) => Promise<void>
+}
+
+function isDockerPortBindFailure(error: unknown): boolean {
+  return /address already in use|port is already allocated|failed to bind host port|bind for .* failed/i
+    .test(errorMessage(error))
+}
+
+export async function startIsolatedDataEngineGateway(
+  gatewayName: string,
+  initialPort: number,
+  token: string,
+  dependencies: IsolatedDataEngineGatewayDependencies = {},
+): Promise<number> {
+  const run = dependencies.runCommand ?? runCommand
+  const allocatePort = dependencies.availableLoopbackPort ?? availableLoopbackPort
+  const removeGateway = dependencies.removeGateway
+    ?? ((name: string) => runBestEffort(['docker', 'rm', '--force', name]))
+  let port = initialPort
+  for (let attempt = 1; attempt <= dockerPortBindMaxAttempts; attempt += 1) {
+    try {
+      await run(
+        'isolated data-engine gateway',
+        isolatedDataEngineGatewayRunCommand(gatewayName, port, token),
+        repositoryRoot,
+        {},
+      )
+      return port
+    } catch (error) {
+      if (attempt === dockerPortBindMaxAttempts || !isDockerPortBindFailure(error)) {
+        throw error
+      }
+      await removeGateway(gatewayName)
+      port = await allocatePort()
+    }
+  }
+  throw new Error('Unreachable isolated data-engine gateway retry state')
+}
+
 async function stopIsolatedDataEngine(
   dataEngine: IsolatedDataEngine | undefined,
 ): Promise<void> {
@@ -523,11 +578,12 @@ async function startIsolatedDataEngine(
     containerName: `struct-e2e-data-engine-${suffix}`,
     gatewayName: `struct-e2e-data-engine-gateway-${suffix}`,
     networkName: `struct-e2e-data-engine-${suffix}`,
+    port,
   }
   try {
     await runCommand(
       'isolated data-engine network',
-      ['docker', 'network', 'create', '--internal', dataEngine.networkName],
+      isolatedDataEngineNetworkCreateCommand(dataEngine.networkName),
       repositoryRoot,
       {},
     )
@@ -541,15 +597,10 @@ async function startIsolatedDataEngine(
       repositoryRoot,
       {},
     )
-    await runCommand(
-      'isolated data-engine gateway',
-      isolatedDataEngineGatewayRunCommand(
-        dataEngine.gatewayName,
-        port,
-        token,
-      ),
-      repositoryRoot,
-      {},
+    dataEngine.port = await startIsolatedDataEngineGateway(
+      dataEngine.gatewayName,
+      dataEngine.port,
+      token,
     )
     await runCommand(
       'isolated data-engine gateway network',
@@ -557,7 +608,7 @@ async function startIsolatedDataEngine(
       repositoryRoot,
       {},
     )
-    const origin = `http://127.0.0.1:${port}/healthz`
+    const origin = `http://127.0.0.1:${dataEngine.port}/healthz`
     const deadline = Date.now() + readinessMaxWaitMs
     while (Date.now() < deadline) {
       try {
@@ -633,11 +684,15 @@ export async function startRealAppStack(port: number): Promise<RealAppStackProce
   let worker: CapturedProcess | undefined
   let web: AppServerProcess | undefined
   try {
-    const environment = await prepareRealStackEnvironment(port)
+    let environment = await prepareRealStackEnvironment(port)
     dataEngine = await startIsolatedDataEngine(
       Number(new URL(environment['DATA_ENGINE_URL']!).port),
       environment['DATA_ENGINE_TOKEN']!,
     )
+    environment = {
+      ...environment,
+      DATA_ENGINE_URL: `http://127.0.0.1:${dataEngine.port}`,
+    }
     api = spawnCapturedProcess('API', ['bun', 'src/main.ts'], apiRoot, environment)
     await waitForReady(api, `${environment['API_ORIGIN']}/readyz`)
     worker = spawnCapturedProcess('worker', ['bun', 'src/main.ts'], workerRoot, environment)

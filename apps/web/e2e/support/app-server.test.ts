@@ -4,10 +4,12 @@ import { createServer as createHttpServer } from 'node:http'
 import { resolve } from 'node:path'
 import {
   isolatedDataEngineGatewayRunCommand,
+  isolatedDataEngineNetworkCreateCommand,
   isolatedDataEngineRunCommand,
   prepareRealStackEnvironment,
   startAppServer,
   startDependencyContainers,
+  startIsolatedDataEngineGateway,
   stopAppServer,
   waitForReady,
   type CapturedProcess,
@@ -48,16 +50,79 @@ describe('isolated production web lifecycle', () => {
       4195,
       'test-data-engine-token',
     )
+    const network = isolatedDataEngineNetworkCreateCommand(
+      'struct-e2e-data-engine-test',
+    )
 
     expect(command).toContain('--rm')
     expect(command).toContain('--read-only')
     expect(command).toContain('no-new-privileges:true')
+    expect(command).not.toContain('--publish')
+    expect(command[command.indexOf('--network') + 1]).toBe(
+      'struct-e2e-data-engine-test',
+    )
     expect(command).toContain(
       `type=bind,source=${resolve(repositoryRoot, '.local/e2e/workspace-release-artifacts')},target=/artifacts,readonly`,
     )
     expect(command).toContain('data-engine')
+    expect(network).toEqual([
+      'docker',
+      'network',
+      'create',
+      '--internal',
+      'struct-e2e-data-engine-test',
+    ])
     expect(gateway).toContain('127.0.0.1:4195:4300')
     expect(gateway).toContain('gateway.mjs')
+  })
+
+  it('retries only Docker gateway bind failures with fresh ports and a bounded attempt count', async () => {
+    const attemptedPorts: string[] = []
+    const removedGateways: string[] = []
+    const availablePorts = [4196, 4197]
+
+    await expect(startIsolatedDataEngineGateway(
+      'struct-e2e-data-engine-gateway-test',
+      4195,
+      'test-data-engine-token',
+      {
+        availableLoopbackPort: async () => availablePorts.shift()!,
+        removeGateway: async (gatewayName) => {
+          removedGateways.push(gatewayName)
+        },
+        runCommand: async (_name, command) => {
+          attemptedPorts.push(command[command.indexOf('--publish') + 1]!)
+          throw new Error('Bind for 127.0.0.1 failed: port is already allocated')
+        },
+      },
+    )).rejects.toThrow('port is already allocated')
+
+    expect(attemptedPorts).toEqual([
+      '127.0.0.1:4195:4300',
+      '127.0.0.1:4196:4300',
+      '127.0.0.1:4197:4300',
+    ])
+    expect(removedGateways).toEqual([
+      'struct-e2e-data-engine-gateway-test',
+      'struct-e2e-data-engine-gateway-test',
+    ])
+
+    let allocated = false
+    await expect(startIsolatedDataEngineGateway(
+      'struct-e2e-data-engine-gateway-test',
+      4195,
+      'test-data-engine-token',
+      {
+        availableLoopbackPort: async () => {
+          allocated = true
+          return 4196
+        },
+        runCommand: async () => {
+          throw new Error('Docker image is unavailable')
+        },
+      },
+    )).rejects.toThrow('Docker image is unavailable')
+    expect(allocated).toBe(false)
   })
 
   it('removes the exact generated bundle when the server stops', async () => {
