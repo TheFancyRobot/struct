@@ -583,5 +583,19 @@ describeIf('SourceRegistrationRepo aggregate boundary (PostgreSQL)', () => {
       }).pipe(Effect.provide(freshLayer)),
     )
     expect(String(conflict)).toContain('idempotency-conflict')
+
+    const crossScopeConflict = await Effect.runPromiseExit(
+      SourceRegistrationRepo.createBatch({
+        workspaceId,
+        projectId: null,
+        attachToProject: false,
+        clientBatchId,
+        requestHash,
+        registrations: [],
+        rejected: [],
+        createdAt,
+      }).pipe(Effect.provide(freshLayer)),
+    )
+    expect(String(crossScopeConflict)).toContain('idempotency-conflict')
   })
 })

@@ -491,12 +491,11 @@ export class SourceRegistrationRepo extends Effect.Service<SourceRegistrationRep
               )
               if (claimed.length === 0) {
                 const existing = await transaction.unsafe(
-                  `SELECT request_hash, response
+                  `SELECT project_id, request_hash, response
                    FROM source_import_batches
                    WHERE workspace_id = $1
-                     AND project_id IS NOT DISTINCT FROM $2
-                     AND client_batch_id = $3`,
-                  [input.workspaceId, input.projectId, input.clientBatchId],
+                     AND client_batch_id = $2`,
+                  [input.workspaceId, input.clientBatchId],
                 )
                 const row = existing[0]
                 if (row === undefined) {
@@ -504,7 +503,11 @@ export class SourceRegistrationRepo extends Effect.Service<SourceRegistrationRep
                     'source-registration-project-workspace-mismatch',
                   )
                 }
-                if (row['request_hash'] !== input.requestHash) {
+                if (
+                  row['request_hash'] !== input.requestHash
+                  || (row['project_id'] === null ? null : String(row['project_id']))
+                    !== input.projectId
+                ) {
                   throw new SourceRegistrationBatchConflictError()
                 }
                 const response = typeof row['response'] === 'string'
@@ -612,13 +615,11 @@ export class SourceRegistrationRepo extends Effect.Service<SourceRegistrationRep
               }
               await transaction.unsafe(
                 `UPDATE source_import_batches
-                 SET response = $4::jsonb
+                 SET response = $3::jsonb
                  WHERE workspace_id = $1
-                   AND project_id IS NOT DISTINCT FROM $2
-                   AND client_batch_id = $3`,
+                   AND client_batch_id = $2`,
                 [
                   input.workspaceId,
-                  input.projectId,
                   input.clientBatchId,
                   JSON.stringify(response),
                 ],
