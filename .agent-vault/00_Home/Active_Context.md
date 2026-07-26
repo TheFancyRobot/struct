@@ -21,9 +21,9 @@ Keep this note short and current.
 <!-- AGENT-START:current-focus -->
 _Last refreshed: 2026-07-26._
 - Session in progress: none.
-- Current step: [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_01_improve-research-search-navigation-and-command-ux|STEP-11-01 Improve Research Search Navigation and Command UX]] - status: planned - phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]
-- Active phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|PHASE-11 v1.1 Research Usability]] - status: planned - updated: 2026-07-21
-- Also active: 17 more additional steps, 3 open critical bugs.
+- Current step: none - roadmap advancement is blocked by [[03_Bugs/BUG-0046_global-source-import-is-blocked-by-project-selection|BUG-0046]] and [[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047]].
+- Active phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: blocked - updated: 2026-07-26.
+- Pending handoff: implement and validate BUG-0046 and BUG-0047; do not approve or merge PR #89 until both are fixed.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -58,7 +58,7 @@ _Last refreshed: 2026-07-26._
 ## Blockers
 
 <!-- AGENT-START:blockers -->
-- No phase, step, or session notes are currently marked blocked.
+- Phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: blocked - owner: Codex - updated: 2026-07-26
 <!-- AGENT-END:blockers -->
 
 ## Open Questions
