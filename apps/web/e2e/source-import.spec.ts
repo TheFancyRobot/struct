@@ -164,4 +164,46 @@ describe('source import browser path', () => {
     expect(await page.getByRole('button', { name: 'Retry' }).count()).toBe(1)
     await page.close()
   })
+
+  it('aligns the source-library notice and content to the shared responsive gutter at desktop and compact widths', async () => {
+    for (const width of [1440, 375] as const) {
+      const page = await browser.newPage({ viewport: { width, height: 900 } })
+      await page.route('**/api/projects', (route) => route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ items: [], nextCursor: null }),
+      }))
+      await page.route('**/api/sources', (route) => route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ cursor: '0', items: [] }),
+      }))
+
+      await page.goto(`${origin}/sources`)
+      const importPanel = page.locator('section[aria-labelledby="source-import-heading"]')
+      await importPanel.waitFor()
+      await page.getByRole('heading', { name: 'Source library' }).waitFor()
+      await page.getByText('No sources loaded.').waitFor()
+
+      const { importLeft, headingLeft, contentLeft } = await page.evaluate(() => {
+        const content = document.querySelector('main .overflow-auto')! as HTMLElement
+        const panel = document.querySelector('section[aria-labelledby="source-import-heading"]')! as HTMLElement
+        const heading = document.querySelector('#workspace-source-library-heading')! as HTMLElement
+        return {
+          importLeft: panel.getBoundingClientRect().left,
+          headingLeft: heading.getBoundingClientRect().left,
+          contentLeft: content.getBoundingClientRect().left,
+        }
+      })
+
+      // The notice and the source-library heading share the same responsive content gutter.
+      expect(Math.abs(importLeft - headingLeft)).toBeLessThanOrEqual(1)
+      // Neither touches the workspace edge: both are inset by the gutter (16px compact, 24px desktop).
+      expect(importLeft - contentLeft).toBeGreaterThanOrEqual(12)
+      expect(headingLeft - contentLeft).toBeGreaterThanOrEqual(12)
+      // Accessible feedback semantics are preserved on the import notice.
+      expect(await importPanel.getAttribute('aria-labelledby')).toBe('source-import-heading')
+      await page.close()
+    }
+  })
 })
