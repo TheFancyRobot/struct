@@ -26,10 +26,11 @@ related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
 related_decisions: []
 created: '2026-07-23'
-updated: '2026-07-23'
+updated: '2026-07-26'
 tags:
   - agent-vault
   - session
+context_status: completed
 ---
 
 # BUG-0013 workspace-shell remediation session
@@ -86,6 +87,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Six refreshed `docs/demos/report-workspace/*.png` screenshots.
 - Active Context, BUG-0013, and this remediation session record.
 <!-- AGENT-END:session-changed-paths -->
+- 2026-07-26 STEP-10-02 completion verification: `apps/web/src/components/workspace/WorkspaceShell.tsx`, `apps/web/e2e/walking-skeleton.spec.ts`, and bounded STEP-10-02/session vault notes.
 
 ## Validation Run
 
@@ -100,6 +102,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Root verification: typecheck, lint, import boundaries, 936 passing repository tests, build, docs lint, secrets scan, frozen install, and `git diff --check` passed.
 - Root browser verification: 30/30 focused shell, project-lifecycle, walking-skeleton, recursive-analysis, and notebook/report tests passed.
 <!-- AGENT-END:session-validation-run -->
+- 2026-07-26 STEP-10-02 completion verification PASS: focused workspace tests (3), focused shell/walking-skeleton browser tests (8), broader shell/walking-skeleton/recursive/notebook browser suite (19), web TypeScript and changed-file ESLint, repository typecheck/lint/import boundaries, 963 repository tests passing with 3 documented skips, all production builds, docs lint, and secrets scan.
 
 ## Bugs Encountered
 
@@ -124,3 +127,4 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Completion Summary
 
 - Unified three-pane workspace shell implemented and validated. No known confirmed defect remains in this unit; BUG-0013 remains open because later browser-workflow units are not implemented.
+- 2026-07-26 — STEP-10-02 is completed with mirrored `context_status: completed`; focused and repository-wide validation found no remaining confirmed defect in the step.

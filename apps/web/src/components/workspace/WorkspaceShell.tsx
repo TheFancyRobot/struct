@@ -172,10 +172,7 @@ const EmptyEvidenceInspector: ParentComponent<{
   readonly onCloseSheet: () => void
   readonly onCollapse: () => void
 }> = (props) => (
-  <aside
-    aria-labelledby="evidence-heading"
-    class="flex h-full min-h-0 flex-col border-l border-base-300 bg-base-100 p-3"
-  >
+  <div class="flex h-full min-h-0 flex-col border-l border-base-300 bg-base-100 p-3">
     <div class="flex min-h-11 items-center justify-between gap-2">
       <h2
         id="evidence-heading"
@@ -207,7 +204,7 @@ const EmptyEvidenceInspector: ParentComponent<{
         Select a citation to inspect its exact source context.
       </p>
     </div>
-  </aside>
+  </div>
 )
 
 export const WorkspaceShell: ParentComponent<{
@@ -361,7 +358,8 @@ export const WorkspaceShell: ParentComponent<{
           onClick={closeEvidenceSheet}
         />
       </Show>
-      <section
+      <aside
+        aria-labelledby="evidence-heading"
         class="fixed inset-y-0 right-0 z-40 w-[min(24rem,90vw)] translate-x-full invisible transition-transform duration-200 lg:static lg:z-auto lg:w-80 lg:translate-x-0 lg:visible"
         classList={{
           'translate-x-0 visible': state.evidenceSheetOpen(),
@@ -390,7 +388,7 @@ export const WorkspaceShell: ParentComponent<{
             onClose={closeEvidence}
           />
         </Show>
-      </section>
+      </aside>
     </div>
   )
 }
