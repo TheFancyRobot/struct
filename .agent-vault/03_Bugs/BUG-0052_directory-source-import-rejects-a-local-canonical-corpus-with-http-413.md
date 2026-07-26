@@ -30,25 +30,28 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- Importing a local directory containing a 162 MiB `canonical.jsonl` file via the browser source import UI returns HTTP 413 (Payload Too Large) before any ingestion begins. The file is silently rejected; no progress indicator, no partial result, no actionable error message reaches the user.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- The browser should accept the `canonical.jsonl` file, upload it via bounded multipart staging, and the API should ingest it successfully. The approved product requirement is 256 MiB per file and per multipart request.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Start the local development stack (`apps/api` + `apps/web`).
+2. Open the workspace in a browser, navigate to the global source library.
+3. Click "Add Source" → select a local directory containing a single `canonical.jsonl` file of ~162 MiB.
+4. Observe: the API returns HTTP 413 before ingestion. No source record is created.
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- Affects any user importing large text sources (corpus files, JSONL dumps) via the browser source import UI.
+- `apps/api` (config + import handler) and `apps/web` (source import UI) are both in scope.
+- No data loss — the rejection happens before any durable state is written.
 
 ## Suspected Root Cause
 
-- Record current theories and assumptions.
+- `MAX_TEXT_SOURCE_BYTES` default (1,048,576) is too small for real corpus files. The multipart batch body limit (`20 * maxBytes + 65,536`) compounds the problem.
 
 ## Confirmed Root Cause
 
@@ -57,15 +60,19 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- Set `MAX_TEXT_SOURCE_BYTES=268435456` (256 MiB) in the environment before starting `apps/api`. This raises both the per-file ceiling and the multipart batch body limit (`20 * 256 MiB + 65,536`).
+- Risk: the env override is undocumented and not persisted across deployments.
 
 ## Permanent Fix Plan
 
-- Describe the intended durable fix.
+- Raise `MAX_TEXT_SOURCE_BYTES` default from 1,048,576 to 268,435,456 (256 MiB) in `apps/api/src/config.ts`.
+- Verify the multipart batch body limit scales correctly (`20 * maxBytes + 65,536`).
+- Document the limit in the source import UI and user-facing docs.
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
+- Add an integration test in `apps/api` that uploads a file at or near the 256 MiB limit and asserts HTTP 200.
+- Add a browser-level test (or manual verification) that imports a large local directory through the source import UI without HTTP 413.
 
 ## Related Notes
 

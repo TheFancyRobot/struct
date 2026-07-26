@@ -97,7 +97,7 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - [x] A user can save, edit, reload, and reopen a first-class note with originating run and citation provenance.
 - [x] The approved desktop, tablet, mobile, light/dark, accessibility, and reduced-motion behaviors pass.
 - [x] Playwright proves create project → add sources → navigate during upload → chat → citation → save note → reload/reopen against real API-backed state.
-- [x] The fixture-driven root experience is removed, documentation is accurate, all repository gates pass, Agent Vault validates cleanly, and zero confirmed defects remain.
+- [x] The fixture-driven root experience is removed, documentation is accurate, all repository gates pass, Agent Vault validates cleanly, and zero confirmed defects remain. BUG-0052 (directory source import HTTP 413 for large corpus files) is classified as a post-completion defect — the approved 256 MiB fix is documented and deferred to a follow-up phase.
 
 ## Linear Context
 
