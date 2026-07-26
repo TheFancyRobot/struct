@@ -1,0 +1,19 @@
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 120" role="img" aria-labelledby="title desc">
+    <title id="title">Struct favicon</title>
+<desc id="desc">The compact Struct symbol for browser tabs and bookmarks.</desc>
+
+  <g>
+  <rect x="6" y="12" width="24" height="18" rx="4" fill="#E2E8F0"/>
+  <rect x="36" y="12" width="24" height="18" rx="4" fill="#2563EB"/>
+  <rect x="66" y="12" width="24" height="18" rx="4" fill="#38BDF8"/>
+  <rect x="6" y="38" width="24" height="18" rx="4" fill="#E2E8F0"/>
+  <rect x="36" y="38" width="24" height="18" rx="4" fill="#8B5CF6"/>
+  <rect x="66" y="38" width="24" height="18" rx="4" fill="#E2E8F0"/>
+  <rect x="6" y="64" width="24" height="18" rx="4" fill="#E2E8F0"/>
+  <rect x="36" y="64" width="24" height="18" rx="4" fill="#E2E8F0"/>
+  <rect x="66" y="64" width="24" height="18" rx="4" fill="#8B5CF6"/>
+  <rect x="6" y="90" width="24" height="18" rx="4" fill="#F97316"/>
+  <rect x="36" y="90" width="24" height="18" rx="4" fill="#F97316"/>
+  <rect x="66" y="90" width="24" height="18" rx="4" fill="#E2E8F0"/>
+</g>
+  </svg>

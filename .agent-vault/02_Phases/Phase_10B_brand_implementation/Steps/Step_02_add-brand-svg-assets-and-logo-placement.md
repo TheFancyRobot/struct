@@ -5,13 +5,14 @@ contract_version: 1
 title: Add Brand SVG Assets and Logo Placement
 step_id: STEP-10B-02
 phase: '[[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]]'
-status: planned
+status: completed
 owner: ''
 created: '2026-07-26'
 updated: '2026-07-26'
 depends_on:
   - '[[02_Phases/Phase_10B_brand_implementation/Steps/Step_01_integrate-brand-theme-tokens-and-typography|STEP-10B-01]]'
-related_sessions: []
+related_sessions:
+  - '[[05_Sessions/2026-07-26-234502-add-brand-svg-assets-and-logo-placement-step-10b-02|SESSION-2026-07-26-234502 step-10b-02 session for Add Brand SVG Assets and Logo Placement]]'
 related_bugs: []
 related_notes:
   - '[[01_Architecture/System_Overview|System Overview]]'
@@ -19,6 +20,10 @@ related_notes:
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-26-234502
+active_session_id: 05_Sessions/2026-07-26-234502-add-brand-svg-assets-and-logo-placement-step-10b-02
+context_status: active
+context_summary: Advance [[02_Phases/Phase_10B_brand_implementation/Steps/Step_02_add-brand-svg-assets-and-logo-placement|STEP-10B-02 Add Brand SVG Assets and Logo Placement]].
 ---
 
 # Step 02 - Add Brand SVG Assets and Logo Placement
@@ -52,10 +57,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-01-23
-- Next action: Create inline SVG SolidJS components for all 18 brand assets in `apps/web/src/components/icons/`, add the compact lockup to `WorkspaceShell.tsx` navigation, add favicon link to `index.html`.
+- Status: completed
+- Current owner: step-10b-02
+- Last touched: 2026-07-26
+- Next action: STEP-10B-03 may consume the new icon components. Pre-existing e2e strict-mode failures (duplicate nav/main project links) triage separately.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
@@ -70,5 +75,6 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-26 - [[05_Sessions/2026-07-26-234502-add-brand-svg-assets-and-logo-placement-step-10b-02|SESSION-2026-07-26-234502 step-10b-02 session for Add Brand SVG Assets and Logo Placement]] - Session created.
+- 2026-07-26 - SESSION-2026-07-26-234502 completed. 18 inline SVG components in `apps/web/src/components/icons/index.tsx`; compact lockup (StructIconCssVariables + StructWordmarkCurrentColor, single `role="img" aria-label="Struct"`) at top-left of WorkspaceNavigation; favicon `struct-favicon.svg` in `apps/web/public/` + base-path-aware `<link>` in `index.html`. tsc clean, build green, workspace-shell unit test passes. 18 pre-existing e2e failures proven independent by revert-test-restore.
 <!-- AGENT-END:step-session-history -->
