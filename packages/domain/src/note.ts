@@ -3,6 +3,7 @@ import {
   CitationId,
   DatasetCitationId,
   DatasetSnapshotId,
+  EventJournalId,
   NoteId,
   ProjectId,
   QueryResultSnapshotId,
@@ -26,6 +27,8 @@ const Body = SafeText.pipe(
       || 'note body exceeds 262144 UTF-8 bytes'),
 )
 const Digest = Schema.String.pipe(Schema.pattern(/^sha256:[0-9a-f]{64}$/))
+export const DEFAULT_NOTE_PAGE_SIZE = 25
+export const MAX_NOTE_PAGE_SIZE = 50
 
 export const NoteCitation = Schema.Union(
   Schema.Struct({
@@ -46,6 +49,7 @@ export type NoteCitation = Schema.Schema.Type<typeof NoteCitation>
 export const NoteOrigin = Schema.Struct({
   threadId: ResearchThreadId,
   runId: ResearchRunId,
+  answerId: EventJournalId,
   citations: Schema.Array(NoteCitation).pipe(Schema.minItems(1), Schema.maxItems(80)),
 })
 export type NoteOrigin = Schema.Schema.Type<typeof NoteOrigin>
@@ -72,6 +76,57 @@ export const Note = Schema.Struct({
   updatedAt: Schema.BigIntFromNumber,
 })
 export type Note = Schema.Schema.Type<typeof Note>
+
+const NoteListCursorEnvelope = Schema.Struct({
+  updatedAt: Schema.NumberFromString.pipe(
+    Schema.int(),
+    Schema.nonNegative(),
+  ),
+  id: NoteId,
+})
+
+function decodeNoteListCursorValue(value: string) {
+  const separator = value.indexOf(':')
+  return Schema.decodeUnknownSync(NoteListCursorEnvelope)({
+    updatedAt: value.slice(0, separator),
+    id: value.slice(separator + 1),
+  })
+}
+
+export const NoteListCursor = Schema.String.pipe(
+  Schema.minLength(1),
+  Schema.maxLength(80),
+  Schema.filter((value) => {
+    try {
+      const decoded = decodeNoteListCursorValue(value)
+      return `${decoded.updatedAt}:${decoded.id}` === value
+        || 'must be a canonical note list cursor'
+    } catch {
+      return 'must be a canonical note list cursor'
+    }
+  }),
+)
+export type NoteListCursor = Schema.Schema.Type<typeof NoteListCursor>
+
+export function decodeNoteListCursor(value: NoteListCursor) {
+  return decodeNoteListCursorValue(value)
+}
+
+export function encodeNoteListCursor(note: Note): NoteListCursor {
+  return `${note.updatedAt}:${note.id}` as NoteListCursor
+}
+
+export const NoteListPage = Schema.Struct({
+  items: Schema.Array(Note).pipe(Schema.maxItems(MAX_NOTE_PAGE_SIZE)),
+  nextCursor: Schema.NullOr(NoteListCursor),
+})
+export type NoteListPage = Schema.Schema.Type<typeof NoteListPage>
+
+export const NoteRevisionPage = Schema.Struct({
+  items: Schema.Array(NoteRevision).pipe(Schema.maxItems(MAX_NOTE_PAGE_SIZE)),
+  nextCursor: Schema.NullOr(Schema.Number.pipe(Schema.int(), Schema.positive())),
+})
+export type NoteRevisionPage = Schema.Schema.Type<typeof NoteRevisionPage>
 
 export const CreateNoteRequest = Schema.Struct({
   title: Title,

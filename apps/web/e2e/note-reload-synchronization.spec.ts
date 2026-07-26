@@ -35,6 +35,7 @@ it('waits for the BASE_PATH notes refresh to finish before reloading', async () 
       origin: {
         threadId,
         runId,
+        answerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
         citations: [{ kind: 'document', id: citationId, sourceVersionId: '99999999-9999-4999-8999-999999999999', locator: 'lines:1-1' }],
       },
       current: {
@@ -71,7 +72,7 @@ it('waits for the BASE_PATH notes refresh to finish before reloading', async () 
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([note()]),
+        body: JSON.stringify({ items: [note()], nextCursor: null }),
       })
     })
     await page.route(`**/api/projects/${projectId}/notes/${noteId}`, async (route) => {

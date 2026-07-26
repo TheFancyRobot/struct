@@ -3,6 +3,8 @@ import { Schema } from 'effect'
 import {
   Note,
   NoteId,
+  NoteListPage,
+  NoteRevisionPage,
   type NoteOrigin,
   type ProjectId,
 } from '@struct/domain'
@@ -51,13 +53,32 @@ function decode(body: unknown) {
   return Schema.decodeUnknownPromise(Note)(body)
 }
 
-export async function fetchNotes(projectId: ProjectId) {
-  const body = await request(`/projects/${projectId}/notes`)
-  return Schema.decodeUnknownPromise(Schema.Array(Note))(body)
+export async function fetchNotes(projectId: ProjectId, archived = false) {
+  const body = await request(
+    `/projects/${projectId}/notes${archived ? '?archived=true' : ''}`,
+  )
+  return Schema.decodeUnknownPromise(NoteListPage)(body)
 }
 
-export async function fetchNote(projectId: ProjectId, noteId: NoteId) {
-  return decode(await request(`/projects/${projectId}/notes/${noteId}`))
+export async function fetchNoteRevisions(
+  projectId: ProjectId,
+  noteId: NoteId,
+  before?: number,
+) {
+  const suffix = before === undefined ? '' : `?before=${before}`
+  return Schema.decodeUnknownPromise(NoteRevisionPage)(
+    await request(`/projects/${projectId}/notes/${noteId}/revisions${suffix}`),
+  )
+}
+
+export async function fetchNote(
+  projectId: ProjectId,
+  noteId: NoteId,
+  archived = false,
+) {
+  return decode(await request(
+    `/projects/${projectId}/notes/${noteId}${archived ? '?archived=true' : ''}`,
+  ))
 }
 
 export async function createNote(input: {
@@ -97,4 +118,23 @@ export async function updateNote(input: {
       expectedRevision: input.expectedRevision,
     }),
   }))
+}
+
+export async function archiveNote(input: {
+  readonly projectId: ProjectId
+  readonly noteId: NoteId
+  readonly archived: boolean
+  readonly expectedRevision: number
+}) {
+  return decode(await request(
+    `/projects/${input.projectId}/notes/${input.noteId}/archive`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        archived: input.archived,
+        expectedRevision: input.expectedRevision,
+      }),
+    },
+  ))
 }

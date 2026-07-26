@@ -3,6 +3,8 @@ import {
   Note,
   NoteId,
   NoteOrigin,
+  decodeNoteListCursor,
+  encodeNoteListCursor,
   type ProjectId,
   type WorkspaceId,
 } from '@struct/domain'
@@ -122,6 +124,13 @@ async function validateOrigin(
      FROM research_runs rr
      JOIN research_threads rt ON rt.id = rr.thread_id
      JOIN projects p ON p.id = rt.project_id
+     JOIN event_journal e
+       ON e.id = $5 AND e.workspace_id = p.workspace_id
+       AND e.entity_type = 'research' AND e.entity_id = rr.id
+       AND e.event_type IN (
+         'research-completed',
+         'recursive-result-progress-committed'
+       )
      WHERE rr.id = $1 AND rt.id = $2
        AND p.id = $3 AND p.workspace_id = $4
        AND rr.status IN ('completed', 'partial')`,
@@ -130,6 +139,7 @@ async function validateOrigin(
       input.origin.threadId,
       input.projectId,
       input.workspaceId,
+      input.origin.answerId,
     ],
   )
   if (runs.length !== 1) {
@@ -257,18 +267,82 @@ function repository(sql: import('../sql-client.js').SqlClientShape) {
         )
         return find(tx, input.workspaceId, input.projectId, input.id)
       })),
-    list: (workspaceId: Workspace, projectId: Project, archived = false) =>
+    list: (
+      workspaceId: Workspace,
+      projectId: Project,
+      archived: boolean,
+      limit: number,
+      cursor?: string | null,
+    ) =>
       query('list', async () => {
+        const pageSize = Math.max(1, Math.min(limit, 50))
+        const decoded = cursor == null
+          ? null
+          : decodeNoteListCursor(cursor as Parameters<typeof decodeNoteListCursor>[0])
+        const params: Array<string | number | boolean> = [
+          workspaceId,
+          projectId,
+          archived,
+        ]
+        const boundary = decoded === null
+          ? ''
+          : ` AND (
+              n.updated_at < to_timestamp($4 / 1000.0)
+              OR (n.updated_at = to_timestamp($4 / 1000.0) AND n.id < $5)
+            )`
+        if (decoded !== null) params.push(Number(decoded.updatedAt), decoded.id)
+        params.push(pageSize + 1)
         const rows = await sql.unsafe(
           `${NOTE_SELECT}
            WHERE n.workspace_id = $1 AND n.project_id = $2 AND n.archived = $3
-           ORDER BY n.updated_at DESC, n.id DESC LIMIT 100`,
-          [workspaceId, projectId, archived],
+           ${boundary}
+           ORDER BY n.updated_at DESC, n.id DESC
+           LIMIT $${params.length}`,
+          params,
         )
-        return Promise.all(rows.map(decodeNoteRow))
+        const notes = await Promise.all(rows.map(decodeNoteRow))
+        return {
+          items: notes.slice(0, pageSize),
+          nextCursor: notes.length > pageSize
+            ? encodeNoteListCursor(notes[pageSize - 1]!)
+            : null,
+        }
       }),
     find: (workspaceId: Workspace, projectId: Project, noteId: Id) =>
       query('find', () => find(sql, workspaceId, projectId, noteId)),
+    listRevisions: (
+      workspaceId: Workspace,
+      projectId: Project,
+      noteId: Id,
+      limit: number,
+      before?: number | null,
+    ) => query('listRevisions', async () => {
+      const pageSize = Math.max(1, Math.min(limit, 50))
+      const rows = await sql.unsafe(
+        `SELECT r.*
+         FROM note_revisions r
+         JOIN notes n ON n.id = r.note_id
+         WHERE n.id = $1 AND n.workspace_id = $2 AND n.project_id = $3
+           AND ($4::integer IS NULL OR r.revision < $4)
+         ORDER BY r.revision DESC LIMIT $5`,
+        [noteId, workspaceId, projectId, before ?? null, pageSize + 1],
+      )
+      const revisions = await Promise.all(rows.map((row) =>
+        Schema.decodeUnknownPromise(Note.fields.current)({
+          revision: Number(row['revision']),
+          title: row['title'],
+          body: row['body'],
+          authorId: row['author_id'],
+          contentHash: row['content_hash'],
+          createdAt: Number(asTime(row['created_at'])),
+        })))
+      return {
+        items: revisions.slice(0, pageSize),
+        nextCursor: revisions.length > pageSize
+          ? revisions[pageSize - 1]!.revision
+          : null,
+      }
+    }),
     update: (input: UpdateNoteInput) => query('update', () =>
       sql.transaction(async (tx) => {
         await tx.unsafe(
@@ -340,25 +414,49 @@ function repository(sql: import('../sql-client.js').SqlClientShape) {
       workspaceId: Workspace,
       projectId: Project,
       noteId: Id,
+      authorId: Workspace,
       archived: boolean,
       expectedRevision: number,
       now: bigint,
-    ) => query('archive', async () => {
-      const rows = await sql.unsafe(
-        `UPDATE notes SET archived = $1, updated_at = to_timestamp($2 / 1000.0)
-         WHERE id = $3 AND workspace_id = $4 AND project_id = $5
-           AND current_revision = $6 RETURNING id`,
-        [archived, Number(now), noteId, workspaceId, projectId, expectedRevision],
-      )
-      if (rows.length !== 1) {
-        const current = await find(sql, workspaceId, projectId, noteId)
-        throw new NoteConflictError({
-          currentRevision: current.current.revision,
-          message: 'Note revision is stale',
-        })
-      }
-      return find(sql, workspaceId, projectId, noteId)
-    }),
+    ) => query('archive', () =>
+      sql.transaction(async (tx) => {
+        await tx.unsafe(
+          `SELECT id FROM notes
+           WHERE id = $1 AND workspace_id = $2 AND project_id = $3
+           FOR UPDATE`,
+          [noteId, workspaceId, projectId],
+        )
+        const current = await find(tx, workspaceId, projectId, noteId)
+        if (current.current.revision !== expectedRevision) {
+          throw new NoteConflictError({
+            currentRevision: current.current.revision,
+            message: 'Note revision is stale',
+          })
+        }
+        if (current.archived === archived) return current
+        const revision = expectedRevision + 1
+        await tx.unsafe(
+          `INSERT INTO note_revisions (
+             note_id, revision, title, body, author_id, content_hash, created_at
+           ) VALUES ($1, $2, $3, $4, $5, $6, to_timestamp($7 / 1000.0))`,
+          [
+            noteId,
+            revision,
+            current.current.title,
+            current.current.body,
+            authorId,
+            current.current.contentHash,
+            Number(now),
+          ],
+        )
+        await tx.unsafe(
+          `UPDATE notes SET archived = $1, current_revision = $2,
+             updated_at = to_timestamp($3 / 1000.0)
+           WHERE id = $4 AND workspace_id = $5 AND project_id = $6`,
+          [archived, revision, Number(now), noteId, workspaceId, projectId],
+        )
+        return find(tx, workspaceId, projectId, noteId)
+      })),
   }
 }
 

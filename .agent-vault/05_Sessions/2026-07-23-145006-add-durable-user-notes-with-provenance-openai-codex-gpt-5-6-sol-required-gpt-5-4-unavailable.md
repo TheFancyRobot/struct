@@ -25,7 +25,7 @@ context:
 related_bugs: '[''[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'']'
 related_decisions: []
 created: '2026-07-23'
-updated: '2026-07-23'
+updated: '2026-07-26'
 tags:
   - agent-vault
   - session
@@ -53,12 +53,15 @@ Use one note per meaningful work session. Record chronology, validation, and han
 <!-- AGENT-END:session-execution-log -->
 - 14:52 - Implemented the bounded BUG-0013 durable-note remediation using STEP-10-06 as technical reference only; Phase 10 and STEP-10-06 remain planned/inactive.
 - 14:53 - Added immutable origin provenance, append-only revisions, idempotent creation, optimistic concurrency, project/auth scoping, Save as note, Notes navigation/editor, and exact Evidence Inspector links.
+- 2026-07-26 - Verified the existing Note flow end to end and corrected answer identity, provenance authorization, archive concurrency, deterministic pagination, autosave debounce/in-flight edit safety, scoped draft recovery, conflict copy, retry, and archive/restore behavior.
+- 2026-07-26 attempt 2 - Completed recursive durable-partial/complete Save-as-note support with a deterministic, provenance-safe body projection and no new domain semantics or dependencies.
 
 ## Findings
 
 - Record important facts learned during the session.
 - The authenticated API currently exposes workspace identity as the only durable author identity, so note authorship truthfully records that identity instead of inventing a user principal.
 - Existing research-completed document/dataset citation contracts contain the immutable IDs and locators needed for Note origin; no new evidence abstraction was added.
+- Recursive committed results intentionally expose structured findings rather than a synthesized answer. Note bodies therefore project only committed status/coverage, verbatim claims and caveats; the committing event ID and every committed citation remain the immutable origin. No citation or body content is truncated to satisfy Note limits.
 
 ## Context Handoff
 
@@ -76,6 +79,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Persistence: migrations `0019_user_notes*`, manifest, `repositories/notes.ts`, repository/package barrels, migration test.
 - API: `apps/api/src/routes/notes.ts`, `notes.test.ts`, `main.ts`.
 - Web: `apps/web/src/api/notes.ts`, `components/NotesPanel.tsx`, `components/ResearchStream.tsx`, `components/workspace/WorkspaceShell.tsx`, `pages/NotesPage.tsx`, `index.tsx`.
+- 2026-07-26 remediation: `packages/domain/src/note.ts`, `note.test.ts`; `packages/persistence/src/repositories/notes.ts`; `apps/api/src/routes/notes.ts`, `notes.test.ts`, `main.ts`; `apps/web/src/api/notes.ts`, `components/NotesPanel.tsx`, `components/ResearchStream.tsx`, `e2e/note-reload-synchronization.spec.ts`.
 
 ## Validation Run
 
@@ -91,6 +95,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Root independent validation: typecheck, lint, import boundaries, web build, docs lint, secrets scan, frozen install, focused domain/migration/API tests, sequential `bun run test`, and sequential `bun run test:integration`.
 - Result: passed — 958 unit tests and 117 integration tests, with 3 intentional skips in each full suite.
 - Root fixed a stale-editor save regression: refresh the note resource before clearing the dirty flag, so a successful autosave cannot rehydrate the previous revision over the user's text.
+- 2026-07-26 focused validation: 12/12 note domain, migration, API, note-save support, and BASE_PATH reload tests passed; `bun run typecheck`, `bun run lint`, and `bun run --filter @struct/web build` passed.
+- 2026-07-26 attempt 2 focused validation: recursive progress projection/component tests 5/5 passed; web typecheck passed; focused ESLint passed with zero warnings; import/boundary lint passed; web production build passed.
 
 ## Bugs Encountered
 
@@ -114,3 +120,4 @@ Use one note per meaningful work session. Record chronology, validation, and han
 
 - State what finished, what remains, and whether handoff is clean.
 - Clean handoff: durable user notes are implemented as a distinct model with immutable evidence origin and editable append-only revisions. No report/editor redesign or new dependency was added.
+- 2026-07-26: Legacy completed-answer Note flow is implementation-complete and focused-green. The existing recursive durable-partial result surface still has no Save-as-note action; its result is a finding collection rather than an answer and needs an approved canonical note-body projection before it can satisfy the durable-partial clause without inventing provenance.
