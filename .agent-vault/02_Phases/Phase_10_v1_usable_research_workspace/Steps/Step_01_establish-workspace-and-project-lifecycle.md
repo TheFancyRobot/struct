@@ -5,10 +5,10 @@ contract_version: 1
 title: Establish Workspace and Project Lifecycle
 step_id: STEP-10-01
 phase: '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]'
-status: planned
-owner: ''
+status: completed
+owner: phase10-step01-attempt1
 created: '2026-07-21'
-updated: '2026-07-23'
+updated: '2026-07-26'
 depends_on:
   - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_06_publish-v1-documentation-accessibility-and-release-checklist|STEP-09-06 Publish v1 Documentation Accessibility and Release Checklist]]'
 related_sessions:
@@ -22,8 +22,8 @@ tags:
   - step
 context_id: SESSION-2026-07-23-044455
 active_session_id: 05_Sessions/2026-07-23-044455-establish-workspace-and-project-lifecycle-codex
-context_status: active
-context_summary: Advance [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle|STEP-10-01 Establish Workspace and Project Lifecycle]].
+context_status: completed
+context_summary: Verified the existing workspace/project lifecycle end to end; all focused and repository-wide gates pass with no product-code changes required.
 ---
 
 # Step 01 - Establish Workspace and Project Lifecycle
@@ -58,10 +58,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
-- Current owner:
-- Last touched: 2026-07-21
-- Next action: Do not start this roadmap step while BUG-0013 remains confirmed; use its brief and validation plan only as technical reference for a tracked bug-remediation unit.
+- Status: completed
+- Current owner: phase10-step01-attempt1
+- Last touched: 2026-07-26
+- Next action: Root orchestration may advance to STEP-10-02 after git review and independent verification.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

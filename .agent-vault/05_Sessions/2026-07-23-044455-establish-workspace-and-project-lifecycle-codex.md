@@ -5,33 +5,34 @@ contract_version: 1
 title: Codex session for Establish Workspace and Project Lifecycle
 session_id: SESSION-2026-07-23-044455
 date: '2026-07-23'
-status: in-progress
+status: completed
 owner: Codex
 branch: fix/BUG-0013-project-lifecycle
 phase: '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]'
 context:
   context_id: SESSION-2026-07-23-044455
-  status: active
-  updated_at: '2026-07-23T04:44:55.994Z'
+  status: completed
+  updated_at: '2026-07-26T05:26:17Z'
   current_focus:
-    summary: Advance [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle|STEP-10-01 Establish Workspace and Project Lifecycle]].
+    summary: Verified and completed [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle|STEP-10-01 Establish Workspace and Project Lifecycle]].
     target: '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle|STEP-10-01 Establish Workspace and Project Lifecycle]]'
   resume_target:
     type: step
     target: '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle|STEP-10-01 Establish Workspace and Project Lifecycle]]'
     section: Context Handoff
   last_action:
-    type: saved
+    type: completed
 related_bugs: |2-
 
     - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
     - '[[03_Bugs/BUG-0032_e2e-build-artifacts-break-canonical-lint-gate|BUG-0032 E2E build artifacts break canonical lint gate]]'
 related_decisions: []
 created: '2026-07-23'
-updated: '2026-07-23'
+updated: '2026-07-26'
 tags:
   - agent-vault
   - session
+summary: Verified the existing workspace/project lifecycle end to end; all focused and repository-wide gates pass with no product-code changes required.
 ---
 
 # Codex session for Establish Workspace and Project Lifecycle
@@ -57,6 +58,8 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - 04:45 - Verified checkout of `fix/BUG-0013-project-lifecycle`, the exact branch for PR #61, before editing.
 - 04:47 - Addressed the four unresolved PR #61 findings: malformed route IDs, malformed cached IDs, duplicate vault bug identifier, and Unicode-aware project-name limits.
 - 04:50 - Restored a branch-consistent local runtime after the previous PR #62 sidecar/database state caused unrelated integration failures; full validation then passed.
+- 2026-07-26 - Re-executed STEP-10-01 against the current repository. The complete domain, persistence, API, web, migration, and browser lifecycle slice already existed; no product-code edit was needed.
+- 2026-07-26 - Restored four lockfile-pinned packages with `bun install --frozen-lockfile` after the local `node_modules` graph lacked `@effect/ai`; typecheck then passed without source changes.
 
 ## Findings
 
@@ -66,6 +69,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 
 - Use this as the single canonical prose section for prepared context, resume notes, and handoff summaries tied to the current effective context.
 - Keep durable conclusions promoted into phase, bug, decision, or architecture notes when they outlive the session.
+- STEP-10-01 is complete. Existing project lifecycle behavior satisfies the refined contract; STEP-10-02 may proceed subject to root orchestration, git review, and independent vault verification.
 
 ## Changed Paths
 
@@ -74,6 +78,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - `packages/domain/src/project-lifecycle.{ts,test.ts}` for Unicode-aware project-name limits.
 - The renamed `BUG-0032` vault note and its index/reference links.
 <!-- AGENT-END:session-changed-paths -->
+- No product source files changed. Bounded vault completion evidence was added to this session, the step index, `Implementation_Notes.md`, and `Outcome.md`.
 
 ## Validation Run
 
@@ -83,6 +88,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - Full repository suite after branch-consistent PostgreSQL/sidecar reset: 933 passed, 3 skipped, 0 failed.
 - Scope: 933 is the final full-repository run, so it includes tests beyond the earlier targeted/PR validation totals.
 <!-- AGENT-END:session-validation-run -->
+- Focused lifecycle: domain 6 pass; persistence 10 pass; API/auth 14 pass; web 16 pass; browser E2E 11 pass; focused web build passed.
+- Repository gates: typecheck, lint, import boundaries, docs lint, secrets scan, and full build passed.
+- Full tests: 963 pass, 3 skip, 0 fail. Integration tests: 118 pass, 3 skip, 0 fail.
 
 ## Bugs Encountered
 
