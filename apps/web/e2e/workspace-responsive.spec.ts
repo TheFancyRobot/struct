@@ -32,6 +32,24 @@ afterAll(async () => {
 })
 
 describe('responsive workspace browser contract', () => {
+  it('keeps the focused project name input separated from its action', async () => {
+    const page = await browser.newPage({ viewport: { width: 375, height: 844 } })
+    await openWorkspace(page, 'struct-light')
+
+    const input = page.getByLabel('Project name')
+    const action = page.getByRole('button', { name: 'Create project' })
+    await input.focus()
+
+    const [inputBox, actionBox] = await Promise.all([
+      input.boundingBox(),
+      action.boundingBox(),
+    ])
+    expect(inputBox).not.toBeNull()
+    expect(actionBox).not.toBeNull()
+    expect(actionBox!.y - (inputBox!.y + inputBox!.height)).toBeGreaterThanOrEqual(8)
+    await page.close()
+  })
+
   it('keeps one ordered, overflow-free shell at every target width and theme', async () => {
     for (const width of [375, 768, 1024, 1440]) {
       for (const theme of ['struct-light', 'struct-dark'] as const) {
