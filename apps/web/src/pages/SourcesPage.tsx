@@ -139,7 +139,7 @@ export const SourcesPage: Component = () => {
                   />
                 </Show>
                 <Show when={libraryMode()}>
-                  <div class="space-y-3 rounded-box border border-base-300 bg-base-100 p-4">
+                  <div data-testid="source-library-attachment-notice" class="space-y-3 rounded-box border border-base-300 bg-base-100 p-4">
                     <label class="flex min-h-11 cursor-pointer items-center gap-3">
                       <input
                         type="checkbox"

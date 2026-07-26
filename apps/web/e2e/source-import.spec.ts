@@ -185,22 +185,21 @@ describe('source import browser path', () => {
         await importPanel.waitFor()
         await page.getByRole('heading', { name: 'Source library' }).waitFor()
         await page.getByText('No sources loaded.').waitFor()
-        const attachmentNotice = page.locator('div.space-y-3.rounded-box')
+        const attachmentNotice = page.getByTestId('source-library-attachment-notice')
         await attachmentNotice.waitFor()
 
-        const { importLeft, headingLeft, contentLeft, noticeTop, contentTop } = await page.evaluate(() => {
+        const { importLeft, headingLeft, contentLeft, contentTop } = await page.evaluate(() => {
           const content = document.querySelector('main .overflow-auto')! as HTMLElement
           const panel = document.querySelector('section[aria-labelledby="source-import-heading"]')! as HTMLElement
           const heading = document.querySelector('#workspace-source-library-heading')! as HTMLElement
-          const notice = document.querySelector('main .overflow-auto div.space-y-3.rounded-box')! as HTMLElement
           return {
             importLeft: panel.getBoundingClientRect().left,
             headingLeft: heading.getBoundingClientRect().left,
             contentLeft: content.getBoundingClientRect().left,
-            noticeTop: notice.getBoundingClientRect().top,
             contentTop: content.getBoundingClientRect().top,
           }
         })
+        const noticeTop = (await attachmentNotice.boundingBox())!.y
 
         // The notice and the source-library heading share the same responsive content gutter.
         expect(Math.abs(importLeft - headingLeft)).toBeLessThanOrEqual(1)
