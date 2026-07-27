@@ -665,9 +665,10 @@ export async function startAppServer(
 ): Promise<AppServerProcess> {
   const origin = `http://127.0.0.1:${port}`
   const distRoot = uniqueDistRoot(port, environment)
-  const stubApi = environment['API_ORIGIN'] === undefined ? startStubApiOrigin() : undefined
+  let stubApi: Bun.Server<undefined> | undefined
   let server: AppServerChildProcess | undefined
   try {
+    stubApi = environment['API_ORIGIN'] === undefined ? startStubApiOrigin() : undefined
     await buildApp(distRoot, environment)
     server = Bun.spawn(['bun', 'src/server.ts'], {
       cwd: webRoot,
