@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Pre-existing e2e infra defects surface as failures independent of brand phase
 bug_id: BUG-0053
-status: new
+status: fixed
 severity: sev-3
 category: logic
 reported_on: '2026-07-27'
-fixed_on: ''
-owner: ''
+fixed_on: '2026-07-27'
+owner: bug-0053
 created: '2026-07-27'
 updated: '2026-07-27'
 related_notes:
@@ -99,3 +99,5 @@ Root causes: A = `startAppServer` never starts/points at an API, so un-mocked `/
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-27 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-07-27 - Fixed by bug-0053. A: `startAppServer` now starts an in-process stub `API_ORIGIN` (ephemeral port 0) returning `200 {"items":[],"nextCursor":null}` for `GET /api/projects` and `200 {"items":[],"cursor":"0"}` for `GET /api/projects/:id/sources`, `404` otherwise; `page.route` mocks still take precedence. Skipped when the caller passes `API_ORIGIN` (e.g. `startRealAppStack`). B: scoped the 3 `project-lifecycle` link locators to `getByRole('navigation', { name: 'Projects', exact: true })` (the `ProjectSwitcher` nav the tests assert on). C: reassigned colliding ports — `source-import` 4180→4201, `note-reload` 4188→4203 (left `workspace-responsive` 4180 and `workspace-release` API 4188, now disjoint). D: stub uses ephemeral port 0 (cannot collide) and is released via `server.stop(true)` in both `stopAppServer` and the error path; web-server teardown (SIGTERM→SIGKILL→await exit) already releases ports.
+- 2026-07-27 - Validated: `mixed-source-report` 5/5, `recursive-analysis` 6/6 (A); `project-lifecycle` 11/11 (B); `source-import` 4/4 (4201), `note-reload` 1/1 (4203), `workspace-responsive` 7/7 (4180), `workspace-release` 2/2 real-stack (C); `app-server.test` 11/11 incl. "releases its port after shutdown" (D); no regression: `walking-skeleton` 5/5, `notebook-report` 5/5, `conversation` 2/2, `workspace-accessibility` 2/2. `app-server.ts` typechecks clean.

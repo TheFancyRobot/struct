@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { chromium } from 'playwright'
 import { startAppServer, stopAppServer } from './support/app-server'
 
-const origin = 'http://127.0.0.1:4180'
+const origin = 'http://127.0.0.1:4201'
 const projectId = 'c50e8400-e29b-41d4-a716-446655440001'
 const sourceId = 'c50e8400-e29b-41d4-a716-446655440002'
 const jobId = 'c50e8400-e29b-41d4-a716-446655440003'
@@ -11,7 +11,7 @@ let browser: Awaited<ReturnType<typeof chromium.launch>>
 let web: Awaited<ReturnType<typeof startAppServer>>
 
 beforeAll(async () => {
-  web = await startAppServer(4180)
+  web = await startAppServer(4201)
   browser = await chromium.launch({ headless: true })
 })
 

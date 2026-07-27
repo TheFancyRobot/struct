@@ -24,7 +24,7 @@ it('waits for the BASE_PATH notes refresh to finish before reloading', async () 
   let page: Page | undefined
 
   try {
-    web = await startAppServer(4188, { BASE_PATH: '/struct', BASE_URL: '/struct/' })
+    web = await startAppServer(4203, { BASE_PATH: '/struct', BASE_URL: '/struct/' })
     browser = await chromium.launch({ headless: true })
     page = await browser.newPage()
     const note = () => ({
@@ -87,7 +87,7 @@ it('waits for the BASE_PATH notes refresh to finish before reloading', async () 
       })
     })
 
-    await page.goto(`http://127.0.0.1:4188/struct/projects/${projectId}/notes/${noteId}`)
+    await page.goto(`http://127.0.0.1:4203/struct/projects/${projectId}/notes/${noteId}`)
     await page.getByLabel('Title').waitFor()
     await page.getByRole('link', { name: 'Saved note' }).waitFor()
     const { noteUpdate, notesRefresh } = waitForNoteSaveAndRefresh(page, projectId, noteId)
