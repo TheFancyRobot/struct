@@ -7,7 +7,7 @@ phase_id: PHASE-10B
 status: planned
 owner: ''
 created: '2026-07-26'
-updated: '2026-07-26'
+updated: '2026-07-27'
 depends_on:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]]'
 related_architecture:
@@ -16,7 +16,8 @@ related_architecture:
 related_decisions:
   - '[[04_Decisions/DEC-0013_use-tailwind-css-and-daisyui-with-a-custom-theme-for-frontend-styling|DEC-0013 Use Tailwind CSS and DaisyUI with a Custom Theme for Frontend Styling]]'
   - '[[04_Decisions/DEC-0014_use-solidjs-vite-8-and-solid-router-for-frontend-runtime|DEC-0014 Use SolidJS Vite 8 and Solid Router for Frontend Runtime]]'
-related_bugs: []
+related_bugs:
+  - '[[03_Bugs/BUG-0053_pre-existing-e2e-infra-defects-surface-as-failures-independent-of-brand-phase|BUG-0053 Pre-existing e2e infra defects surface as failures independent of brand phase]]'
 tags:
   - agent-vault
   - phase
@@ -106,6 +107,7 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 
 <!-- AGENT-START:phase-related-bugs -->
 - No phase-specific bugs.
+- [[03_Bugs/BUG-0053_pre-existing-e2e-infra-defects-surface-as-failures-independent-of-brand-phase|BUG-0053 Pre-existing e2e infra defects surface as failures independent of brand phase]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps

@@ -11,6 +11,7 @@
   default: true;
   color-scheme: light;
 
+  --root-bg: var(--struct-background);
   --color-primary: var(--struct-primary);
   --color-primary-content: var(--struct-primary-foreground);
   --color-secondary: var(--struct-muted);
@@ -46,6 +47,7 @@
   name: "struct-dark";
   color-scheme: dark;
 
+  --root-bg: var(--struct-background);
   --color-primary: var(--struct-primary);
   --color-primary-content: var(--struct-primary-foreground);
   --color-secondary: var(--struct-muted);

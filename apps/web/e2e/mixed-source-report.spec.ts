@@ -124,10 +124,10 @@ describe('mixed-source report browser workflow', () => {
           heading: getComputedStyle(document.querySelector('.mixed-report-header h2')!).color,
         }))
         expect(surfaces.html).toBe(
-          theme === 'light' ? 'rgb(243, 243, 239)' : 'rgb(25, 31, 42)',
+          theme === 'light' ? 'rgb(248, 250, 252)' : 'rgb(2, 6, 23)',
         )
         expect(surfaces.heading).toBe(
-          theme === 'light' ? 'rgb(32, 36, 44)' : 'rgb(237, 240, 245)',
+          theme === 'light' ? 'rgb(15, 23, 42)' : 'rgb(226, 232, 240)',
         )
         expect(surfaces.shell).not.toBe('rgba(0, 0, 0, 0)')
         expect(surfaces.report).not.toBe('rgba(0, 0, 0, 0)')

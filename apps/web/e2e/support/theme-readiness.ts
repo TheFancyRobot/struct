@@ -13,7 +13,8 @@ export async function waitForThemeStyles(
     },
     {
       expectedTheme: `struct-${theme}`,
-      expectedBackground: theme === 'light' ? 'rgb(243, 243, 239)' : 'rgb(25, 31, 42)',
+      // html background = DaisyUI --root-bg = --struct-background (brand page bg).
+      expectedBackground: theme === 'light' ? 'rgb(248, 250, 252)' : 'rgb(2, 6, 23)',
     },
     { timeout: 15_000 },
   )

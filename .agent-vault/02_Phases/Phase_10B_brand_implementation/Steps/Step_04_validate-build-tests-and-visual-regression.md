@@ -5,20 +5,25 @@ contract_version: 1
 title: Validate Build Tests and Visual Regression
 step_id: STEP-10B-04
 phase: '[[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]]'
-status: completed
+status: in_progress
 owner: ''
 created: '2026-07-26'
-updated: '2026-07-26'
+updated: '2026-07-27'
 depends_on:
   - '[[02_Phases/Phase_10B_brand_implementation/Steps/Step_03_migrate-components-to-semantic-brand-tokens|STEP-10B-03]]'
-related_sessions: []
-related_bugs: []
+related_sessions:
+  - '[[05_Sessions/2026-07-27-005747-validate-build-tests-and-visual-regression|SESSION-2026-07-27-005747 Session for Validate Build Tests and Visual Regression]]'
+related_bugs: '[[03_Bugs/BUG-0053_pre-existing-e2e-infra-defects-surface-as-failures-independent-of-brand-phase|BUG-0053]]'
 related_notes:
   - '[[01_Architecture/System_Overview|System Overview]]'
   - '[[01_Architecture/Code_Map|Code Map]]'
 tags:
   - agent-vault
   - step
+context_id: SESSION-2026-07-27-005747
+active_session_id: 05_Sessions/2026-07-27-005747-validate-build-tests-and-visual-regression
+context_status: active
+context_summary: Advance [[02_Phases/Phase_10B_brand_implementation/Steps/Step_04_validate-build-tests-and-visual-regression|STEP-10B-04 Validate Build Tests and Visual Regression]].
 ---
 
 # Step 04 - Validate Build Tests and Visual Regression
@@ -65,5 +70,6 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Session History
 
 <!-- AGENT-START:step-session-history -->
-- No sessions yet.
+- 2026-07-27 - [[05_Sessions/2026-07-27-005747-validate-build-tests-and-visual-regression|SESSION-2026-07-27-005747 Session for Validate Build Tests and Visual Regression]] - Session created.
 <!-- AGENT-END:step-session-history -->
+- 2026-07-27 - [[05_Sessions/2026-07-27-005747-validate-build-tests-and-visual-regression|SESSION-2026-07-27-005747]]: brand-rendering fix (`--root-bg`), stale e2e color-literal updates, visual-regression test (workspace dashboard, both themes), acceptance verified. Full e2e gate blocked by pre-existing [[03_Bugs/BUG-0053_pre-existing-e2e-infra-defects-surface-as-failures-independent-of-brand-phase|BUG-0053]] (not brand-caused).
