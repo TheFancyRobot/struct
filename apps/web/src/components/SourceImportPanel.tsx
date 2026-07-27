@@ -115,19 +115,18 @@ export const SourceImportPanel: Component<{
             </p>
           </Show>
         </Show>
+        <Show when={error() !== null}>
+          <p class="alert alert-error text-sm" role="alert">{error()}</p>
+        </Show>
+        <Show when={rejected().length > 0}>
+          <ul class="space-y-1 text-sm text-error" aria-live="polite">
+            <For each={rejected()}>{(item) => <li>{item.name}: {item.reason}</li>}</For>
+          </ul>
+        </Show>
         <button class="btn btn-primary btn-sm" type="submit" disabled={busy()}>
           {busy() ? 'Accepting…' : 'Add sources'}
         </button>
       </form>
-
-      <Show when={error() !== null}>
-        <p class="alert alert-error mt-3 text-sm" role="alert">{error()}</p>
-      </Show>
-      <Show when={rejected().length > 0}>
-        <ul class="mt-3 space-y-1 text-sm text-error" aria-live="polite">
-          <For each={rejected()}>{(item) => <li>{item.name}: {item.reason}</li>}</For>
-        </ul>
-      </Show>
     </section>
   )
 }

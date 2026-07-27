@@ -29,17 +29,18 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 <!-- AGENT-START:bugs-index -->
 _Last rebuilt: 2026-07-27._
 
-- Notes indexed: 40
-- Status summary: new (1), fixed (39)
+- Notes indexed: 41
+- Status summary: fixed (41)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
-| BUG-0053 | [Pre-existing e2e infra defects surface as failures independent of brand phase](../03_Bugs/BUG-0053_pre-existing-e2e-infra-defects-surface-as-failures-independent-of-brand-phase.md) | new | sev-3 | 2026-07-27 | - | - |
 | BUG-0049 | [Global dataset attachments did not materialize project datasets](../03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets.md) | fixed | sev-1 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0013 | [v1 UI lacks core research workflows](../03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows.md) | fixed | sev-1 | 2026-07-21 | 2026-07-26 | - |
 | BUG-0048 | [Workspace source attachments do not enqueue text indexing](../03_Bugs/BUG-0048_workspace-source-attachments-do-not-enqueue-text-indexing.md) | fixed | sev-2 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0038 | [Research replay loses durable job ownership before cancellation verification](../03_Bugs/BUG-0038_research-replay-loses-durable-job-ownership-before-cancellation-verification.md) | fixed | sev-2 | 2026-07-25 | 2026-07-25 | - |
 | BUG-0040 | [API workspace bootstrap prevents health checks during database outages](../03_Bugs/BUG-0040_api-workspace-bootstrap-prevents-health-checks-during-database-outages.md) | fixed | sev-2 | 2026-07-24 | 2026-07-25 | - |
+| BUG-0053 | [Pre-existing e2e infra defects surface as failures independent of brand phase](../03_Bugs/BUG-0053_pre-existing-e2e-infra-defects-surface-as-failures-independent-of-brand-phase.md) | fixed | sev-3 | 2026-07-27 | 2026-07-27 | - |
+| BUG-0054 | [Error toast position inconsistent between add source and add project screens](../03_Bugs/BUG-0054_error-toast-position-inconsistent-between-add-source-and-add-project-screens.md) | fixed | sev-3 | 2026-07-27 | 2026-07-27 | - |
 | BUG-0041 | [Project creation controls overlap when the name field is focused](../03_Bugs/BUG-0041_project-creation-controls-overlap-when-the-name-field-is-focused.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0042 | [Center workspace is fragmented by redundant title chrome and card framing](../03_Bugs/BUG-0042_center-workspace-is-fragmented-by-redundant-title-chrome-and-card-framing.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0043 | [Workspace navigation lacks project, source, and recent discovery sections](../03_Bugs/BUG-0043_workspace-navigation-lacks-project-source-and-recent-discovery-sections.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
