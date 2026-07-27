@@ -217,4 +217,56 @@ describe('source import browser path', () => {
       }
     }
   })
+
+  it('renders the source import error toast above the submit button inside the form, matching the add-project screen', async () => {
+    const page = await browser.newPage()
+    await page.route(`**/api/projects/${projectId}/sources`, async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ cursor: '0', items: [] }),
+        })
+        return
+      }
+      await route.fulfill({
+        status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'SourceImportUnavailable' }) })
+    })
+    await page.route(`**/api/projects/${projectId}/source-activity**`, async (route) => {
+      await route.fulfill({ status: 200, contentType: 'text/event-stream', body: ': heartbeat\n\n' })
+    })
+
+    await page.goto(`${origin}/projects/${projectId}/sources`)
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'notes.md',
+      mimeType: 'text/markdown',
+      buffer: Buffer.from('# Notes'),
+    })
+    await page.locator('section[aria-labelledby="source-import-heading"]')
+      .getByRole('button', { name: 'Add sources' })
+      .click()
+    const error = page.locator('section[aria-labelledby="source-import-heading"]')
+      .getByRole('alert')
+      .filter({ hasText: 'Sources could not be accepted' })
+    await error.waitFor()
+
+    const { errorBottom, buttonTop, errorInsideForm } = await page.evaluate(() => {
+      const panel = document.querySelector('section[aria-labelledby="source-import-heading"]')!
+      const alert = Array.from(panel.querySelectorAll('[role="alert"]'))
+        .find((element) => element.textContent?.includes('Sources could not be accepted'))!
+      const button = panel.querySelector('button[type="submit"]')!
+      const form = button.closest('form')!
+      return {
+        errorBottom: alert.getBoundingClientRect().bottom,
+        buttonTop: button.getBoundingClientRect().top,
+        errorInsideForm: form.contains(alert),
+      }
+    })
+    // The error toast shares the add-project screen's canonical position: inside the form,
+    // above the submit button, so the feedback precedes the retry action.
+    expect(errorInsideForm).toBe(true)
+    expect(errorBottom).toBeLessThanOrEqual(buttonTop)
+
+    await page.close()
+  })
 })
