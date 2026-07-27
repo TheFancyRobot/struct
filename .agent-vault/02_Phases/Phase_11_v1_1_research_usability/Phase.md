@@ -4,10 +4,10 @@ template_version: 2
 contract_version: 1
 title: v1.1 Research Usability
 phase_id: PHASE-11
-status: blocked
+status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-26'
+updated: '2026-07-27'
 depends_on:
   - '[[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]]'
 related_architecture:
