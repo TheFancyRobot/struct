@@ -271,4 +271,44 @@ describe('source import browser path', () => {
       await page.close()
     }
   })
+
+  it('renders the add-source form fields and options even when the source catalog cannot be loaded', async () => {
+    const page = await browser.newPage()
+    try {
+      await page.route(`**/api/projects/${projectId}/sources`, async (route) => {
+        if (route.request().method() === 'GET') {
+          await route.fulfill({
+            status: 503,
+            contentType: 'application/json',
+            body: JSON.stringify({ error: 'SourceCatalogUnavailable' }),
+          })
+          return
+        }
+        await route.fulfill({
+          status: 202, contentType: 'application/json',
+          body: JSON.stringify({ clientBatchId: 'c0000000-0000-0000-0000-000000000001', replayed: false, accepted: [], rejected: [] }) })
+      })
+      await page.route(`**/api/projects/${projectId}/source-activity**`, async (route) => {
+        await route.fulfill({ status: 200, contentType: 'text/event-stream', body: ': heartbeat\n\n' })
+      })
+
+      await page.goto(`${origin}/projects/${projectId}/sources`)
+      const panel = page.locator('section[aria-labelledby="source-import-heading"]')
+      await panel.waitFor()
+
+      // The catalog failure surfaces as a non-blocking banner with a retry, not as a
+      // full-page replacement that hides the form.
+      await page.getByRole('alert').filter({ hasText: 'Sources could not be loaded.' }).waitFor()
+      expect(await page.getByRole('button', { name: 'Retry' }).count()).toBe(1)
+
+      // Every expected field and option still renders alongside the error.
+      expect(await page.locator('input[type="file"]').count()).toBe(1)
+      expect(await panel.getByRole('button', { name: 'Files' }).count()).toBe(1)
+      expect(await panel.getByRole('button', { name: 'Paste' }).count()).toBe(1)
+      expect(await panel.getByRole('button', { name: 'Dataset' }).count()).toBe(1)
+      expect(await panel.getByRole('button', { name: 'Add sources' }).count()).toBe(1)
+    } finally {
+      await page.close()
+    }
+  })
 })

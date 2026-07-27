@@ -118,89 +118,89 @@ export const SourcesPage: Component = () => {
     <section class="mx-auto max-w-4xl space-y-4 px-4 sm:px-6 pt-4 sm:pt-6">
       <Show when={libraryMode() || projectId() !== null} fallback={<p class="alert alert-error">This project is no longer available.</p>}>
         <Show when={commandError()}>{(error) => <p class="alert alert-error" role="alert">{error()}</p>}</Show>
+        <Show when={libraryMode()}>
+          <div data-testid="source-library-attachment-notice" class="space-y-3 rounded-box border border-base-300 bg-base-100 p-4">
+            <label class="flex min-h-11 cursor-pointer items-center gap-3">
+              <input
+                type="checkbox"
+                class="checkbox checkbox-sm"
+                checked={attachNewSources()}
+                disabled={selectedProjectId() === null}
+                onChange={(event) => setAttachNewSources(event.currentTarget.checked)}
+              />
+              <span>Attach new sources to a project</span>
+            </label>
+            <Show when={(projects()?.items.length ?? 0) > 0}>
+            <label class="form-control block">
+              <span class="label-text">Project</span>
+              <select
+                class="select select-bordered mt-1 w-full"
+                aria-label="Project for new sources"
+                value={selectedProjectId() ?? ''}
+                onChange={(event) => setSelectedProjectId(ProjectId.make(event.currentTarget.value))}
+              >
+                <For each={projects()?.items ?? []}>
+                  {(project) => <option value={project.id}>{project.name}</option>}
+                </For>
+              </select>
+            </label>
+            </Show>
+          </div>
+        </Show>
+        <SourceImportPanel
+          projectId={libraryMode()
+            ? attachNewSources() ? selectedProjectId() : null
+            : projectId()}
+          attachToProject={!libraryMode() || attachNewSources()}
+          onAccepted={() => void refetch()}
+        />
         <Show when={catalog.error === undefined} fallback={(
           <section class="alert alert-error gap-3" role="alert">
             <span>Sources could not be loaded.</span>
             <button type="button" class="btn btn-sm" onClick={() => void refetch()}>Retry</button>
           </section>
         )}>
-          <Show when={catalog() ?? undefined} fallback={<p class="rounded-box border border-base-300 bg-base-100 p-4" role="status">Loading sources…</p>}>
-            {(loaded) => (
-              <>
-                <Show when={!libraryMode() && projectId() !== null}>
-                  <SourceActivitySubscription
-                    projectId={projectId()!}
-                    cursor={loaded().cursor}
-                    onEvent={() => void refetch()}
-                  />
-                  <BackgroundActivityTray
-                    items={loaded().items}
-                    onCommand={(item, command) => void control(item, command)}
-                  />
-                </Show>
-                <Show when={libraryMode()}>
-                  <div data-testid="source-library-attachment-notice" class="space-y-3 rounded-box border border-base-300 bg-base-100 p-4">
-                    <label class="flex min-h-11 cursor-pointer items-center gap-3">
-                      <input
-                        type="checkbox"
-                        class="checkbox checkbox-sm"
-                        checked={attachNewSources()}
-                        disabled={selectedProjectId() === null}
-                        onChange={(event) => setAttachNewSources(event.currentTarget.checked)}
-                      />
-                      <span>Attach new sources to a project</span>
-                    </label>
-                    <Show when={(projects()?.items.length ?? 0) > 0}>
-                    <label class="form-control block">
-                      <span class="label-text">Project</span>
-                      <select
-                        class="select select-bordered mt-1 w-full"
-                        aria-label="Project for new sources"
-                        value={selectedProjectId() ?? ''}
-                        onChange={(event) => setSelectedProjectId(ProjectId.make(event.currentTarget.value))}
-                      >
-                        <For each={projects()?.items ?? []}>
-                          {(project) => <option value={project.id}>{project.name}</option>}
-                        </For>
-                      </select>
-                    </label>
-                    </Show>
-                  </div>
-                </Show>
-                <SourceImportPanel
-                  projectId={libraryMode()
-                    ? attachNewSources() ? selectedProjectId() : null
-                    : projectId()}
-                  attachToProject={!libraryMode() || attachNewSources()}
-                  onAccepted={() => void refetch()}
+        <Show when={catalog() ?? undefined} fallback={<p class="rounded-box border border-base-300 bg-base-100 p-4" role="status">Loading sources…</p>}>
+          {(loaded) => (
+            <>
+              <Show when={!libraryMode() && projectId() !== null}>
+                <SourceActivitySubscription
+                  projectId={projectId()!}
+                  cursor={loaded().cursor}
+                  onEvent={() => void refetch()}
                 />
-                <Show when={libraryMode()} fallback={<SourceCatalogList items={loaded().items} />}>
-                  <section aria-labelledby="workspace-source-library-heading">
-                    <h2 id="workspace-source-library-heading" class="mb-3 text-lg font-semibold">Source library</h2>
-                    <ul class="space-y-2">
-                      <For each={loaded().items} fallback={<li class="text-sm text-base-content/60">No sources loaded.</li>}>
-                        {(source) => (
-                          <li class="flex min-h-11 items-center justify-between gap-3 border-b border-base-300 py-2">
-                            <span class="min-w-0 truncate">{source.name}</span>
-                            <label class="flex min-h-11 cursor-pointer items-center gap-2 text-sm">
-                              <input
-                                type="checkbox"
-                                class="checkbox checkbox-sm"
-                                disabled={selectedProjectId() === null}
-                                checked={selectedProjectId() !== null && source.projectIds.includes(selectedProjectId()!)}
-                                onChange={(event) => void setAttached(source.sourceId, event.currentTarget.checked)}
-                              />
-                              Use in project
-                            </label>
-                          </li>
-                        )}
-                      </For>
-                    </ul>
-                  </section>
-                </Show>
-              </>
-            )}
-          </Show>
+                <BackgroundActivityTray
+                  items={loaded().items}
+                  onCommand={(item, command) => void control(item, command)}
+                />
+              </Show>
+              <Show when={libraryMode()} fallback={<SourceCatalogList items={loaded().items} />}>
+                <section aria-labelledby="workspace-source-library-heading">
+                  <h2 id="workspace-source-library-heading" class="mb-3 text-lg font-semibold">Source library</h2>
+                  <ul class="space-y-2">
+                    <For each={loaded().items} fallback={<li class="text-sm text-base-content/60">No sources loaded.</li>}>
+                      {(source) => (
+                        <li class="flex min-h-11 items-center justify-between gap-3 border-b border-base-300 py-2">
+                          <span class="min-w-0 truncate">{source.name}</span>
+                          <label class="flex min-h-11 cursor-pointer items-center gap-2 text-sm">
+                            <input
+                              type="checkbox"
+                              class="checkbox checkbox-sm"
+                              disabled={selectedProjectId() === null}
+                              checked={selectedProjectId() !== null && source.projectIds.includes(selectedProjectId()!)}
+                              onChange={(event) => void setAttached(source.sourceId, event.currentTarget.checked)}
+                            />
+                            Use in project
+                          </label>
+                        </li>
+                      )}
+                    </For>
+                  </ul>
+                </section>
+              </Show>
+            </>
+          )}
+        </Show>
         </Show>
       </Show>
     </section>

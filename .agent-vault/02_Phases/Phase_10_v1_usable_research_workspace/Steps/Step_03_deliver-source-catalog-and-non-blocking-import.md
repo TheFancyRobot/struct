@@ -17,6 +17,7 @@ related_sessions:
 related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
   - '[[03_Bugs/BUG-0045_sources-are-scoped-to-one-project-and-cannot-be-reused|BUG-0045 Sources are scoped to one project and cannot be reused]]'
+  - '[[03_Bugs/BUG-0055_add-source-view-shows-only-error-and-no-fields-or-options|BUG-0055 Add source view shows only error and no fields or options]]'
 tags:
   - agent-vault
   - step
