@@ -82,7 +82,7 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - Requires the completed Phase 02–08 ingestion, retrieval, research, evidence, and artifact capabilities.
 - Requires Phase 09 authentication, workspace isolation, deployment, evaluation, and accessibility foundations.
 - BUG-0012 DaisyUI remediation is treated as the styling baseline and must remain green.
-- The phase blocks [[02_Phases/Phase_11_v1_1_research_usability/Phase|PHASE-11 v1.1 Research Usability]].
+- The phase blocks [[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]].
 
 ## Acceptance Criteria
 
@@ -104,7 +104,7 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]]
 - Current phase status: completed
-- Next phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]
+- Next phase: [[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]]
 <!-- AGENT-END:phase-linear-context -->
 
 ## Related Architecture

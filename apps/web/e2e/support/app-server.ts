@@ -40,6 +40,7 @@ export interface CapturedProcess {
 export interface AppServerProcess {
   readonly distRoot: string
   readonly process: AppServerChildProcess
+  readonly stubApi?: Bun.Server<undefined>
 }
 
 export interface RealAppStackProcess {
@@ -634,14 +635,40 @@ async function startIsolatedDataEngine(
   }
 }
 
+function startStubApiOrigin(): Bun.Server<undefined> {
+  return Bun.serve({
+    port: 0,
+    hostname: '127.0.0.1',
+    fetch(request) {
+      const url = new URL(request.url)
+      if (request.method === 'GET' && url.pathname === '/api/projects') {
+        return new Response('{"items":[],"nextCursor":null}', {
+          headers: { 'content-type': 'application/json' },
+        })
+      }
+      if (request.method === 'GET' && /^\/api\/projects\/[^/]+\/sources$/.test(url.pathname)) {
+        return new Response('{"items":[],"cursor":"0"}', {
+          headers: { 'content-type': 'application/json' },
+        })
+      }
+      return new Response('{"error":"NotFound"}', {
+        status: 404,
+        headers: { 'content-type': 'application/json' },
+      })
+    },
+  })
+}
+
 export async function startAppServer(
   port: number,
   environment: Readonly<Record<string, string>> = {},
 ): Promise<AppServerProcess> {
   const origin = `http://127.0.0.1:${port}`
   const distRoot = uniqueDistRoot(port, environment)
+  let stubApi: Bun.Server<undefined> | undefined
   let server: AppServerChildProcess | undefined
   try {
+    stubApi = environment['API_ORIGIN'] === undefined ? startStubApiOrigin() : undefined
     await buildApp(distRoot, environment)
     server = Bun.spawn(['bun', 'src/server.ts'], {
       cwd: webRoot,
@@ -651,6 +678,7 @@ export async function startAppServer(
         API_AUTH_TOKEN: e2eApiAuthToken,
         DIST_ROOT: distRoot,
         ...environment,
+        ...(stubApi !== undefined ? { API_ORIGIN: `http://127.0.0.1:${stubApi.port}` } : {}),
       },
       stdout: 'ignore',
       stderr: 'ignore',
@@ -661,7 +689,7 @@ export async function startAppServer(
       }
       try {
         if ((await fetch(origin)).ok) {
-          return { distRoot, process: server }
+          return { distRoot, process: server, stubApi }
         }
       } catch {
         // The built app server is still starting.
@@ -673,6 +701,7 @@ export async function startAppServer(
     if (server !== undefined) {
       await stopServerProcess(server)
     }
+    stubApi?.stop(true)
     removeDistRoot(distRoot)
     throw error
   }
@@ -718,6 +747,7 @@ export async function startRealAppStack(port: number): Promise<RealAppStackProce
 export async function stopAppServer(server: AppServerProcess | undefined): Promise<void> {
   if (server === undefined) return
   await stopServerProcess(server.process)
+  await server.stubApi?.stop(true)
   removeDistRoot(server.distRoot)
 }
 

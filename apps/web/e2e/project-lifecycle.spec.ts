@@ -102,7 +102,7 @@ describe('project lifecycle browser path', () => {
     expect(await page.getByText('Create your first project').count()).toBe(0)
 
     releaseList()
-    await page.getByRole('link', { name: 'Café roadmap' }).waitFor()
+    await page.getByRole('navigation', { name: 'Projects', exact: true }).getByRole('link', { name: 'Café roadmap' }).waitFor()
     await page.close()
   })
 
@@ -399,7 +399,7 @@ describe('project lifecycle browser path', () => {
     expect(await page.evaluate(() => window.localStorage.getItem('struct:last-project-id')))
       .toBe(alphaProject.id)
 
-    await page.getByRole('link', { name: betaProject.name }).click()
+    await page.getByRole('navigation', { name: 'Projects', exact: true }).getByRole('link', { name: betaProject.name }).click()
     await page.waitForURL(`**/projects/${betaProjectId}`)
     await page.getByRole('heading', { level: 1, name: betaProject.name }).waitFor()
     expect(await page.evaluate(() => window.localStorage.getItem('struct:last-project-id')))
@@ -553,7 +553,7 @@ describe('project lifecycle browser path', () => {
     expect(await page.evaluate(() => window.localStorage.getItem('struct:last-project-id')))
       .toBeNull()
 
-    await page.getByRole('link', { name: 'Café roadmap' }).click()
+    await page.getByRole('navigation', { name: 'Projects', exact: true }).getByRole('link', { name: 'Café roadmap' }).click()
     await page.waitForURL(`**/struct/projects/${projectId}`)
     await page.getByRole('heading', { level: 1, name: 'Café roadmap' }).waitFor()
     await page.close()

@@ -1,4 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { mkdir } from 'node:fs/promises'
+import path from 'node:path'
 import { chromium } from 'playwright'
 import { startAppServer, stopAppServer } from './support/app-server'
 import { waitForThemeStyles } from './support/theme-readiness'
@@ -159,5 +161,69 @@ describe('workspace accessibility browser contract', () => {
     await page.getByRole('heading', { name: 'Accessible project' }).waitFor()
     await waitForThemeStyles(page, 'dark')
     await page.close()
+  })
+
+  it('captures workspace dashboard screenshots and brand contrast in both themes', async () => {
+    const screenshotRoot = path.resolve(
+      new URL('../../..', import.meta.url).pathname,
+      'docs/demos/workspace-brand',
+    )
+    await mkdir(screenshotRoot, { recursive: true })
+    for (const theme of ['light', 'dark'] as const) {
+      const page = await browser.newPage({
+        viewport: { width: 1440, height: 900 },
+        reducedMotion: 'reduce',
+      })
+      await page.addInitScript((selected) => {
+        window.localStorage.setItem(
+          'struct-theme',
+          selected === 'dark' ? 'struct-dark' : 'struct-light',
+        )
+      }, theme)
+      await installApi(page)
+      await page.goto(`${origin}/projects/${projectId}`)
+      await page.getByRole('heading', { name: 'Accessible project' }).waitFor()
+      await waitForThemeStyles(page, theme)
+
+      // Brand lockup sits in the top-left corner of the workspace navigation.
+      const lockup = page.getByLabel('Workspace navigation', { exact: true })
+        .getByRole('img', { name: 'Struct' })
+      await lockup.waitFor({ state: 'visible' })
+      const box = await lockup.boundingBox()
+      expect(box).not.toBeNull()
+      expect(box!.x).toBeLessThan(120)
+      expect(box!.y).toBeLessThan(120)
+
+      // Brand readability: workspace text on its surface meets AA contrast.
+      const contrast = await page.locator('.app-shell').evaluate((root) => {
+        const channel = (value: number) => {
+          const normalized = value / 255
+          return normalized <= 0.04045
+            ? normalized / 12.92
+            : ((normalized + 0.055) / 1.055) ** 2.4
+        }
+        const luminance = (value: string) => {
+          const channels = value.match(/[\d.]+/g)?.slice(0, 3).map(Number) ?? []
+          if (channels.length !== 3) throw new Error(`Unsupported color: ${value}`)
+          return 0.2126 * channel(channels[0]!)
+            + 0.7152 * channel(channels[1]!)
+            + 0.0722 * channel(channels[2]!)
+        }
+        const ratio = (foreground: string, background: string) => {
+          const lighter = Math.max(luminance(foreground), luminance(background))
+          const darker = Math.min(luminance(foreground), luminance(background))
+          return (lighter + 0.05) / (darker + 0.05)
+        }
+        const style = getComputedStyle(root)
+        return ratio(style.color, style.backgroundColor)
+      })
+      expect(contrast).toBeGreaterThanOrEqual(4.5)
+
+      await page.screenshot({
+        path: path.join(screenshotRoot, `workspace-${theme}.png`),
+        fullPage: false,
+      })
+      await page.close()
+    }
   })
 })

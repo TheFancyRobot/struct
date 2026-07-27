@@ -287,7 +287,7 @@ describe('recursive analysis browser workflow', () => {
           .toBe(`struct-${theme}`)
         expect(await page.locator('html').evaluate(
           (element) => getComputedStyle(element).backgroundColor,
-        )).toBe(theme === 'light' ? 'rgb(243, 243, 239)' : 'rgb(25, 31, 42)')
+        )).toBe(theme === 'light' ? 'rgb(248, 250, 252)' : 'rgb(2, 6, 23)')
         await assertNoOverflow(page)
         await page.screenshot({
           path: `${screenshotRoot}/${width}-${theme}.png`,

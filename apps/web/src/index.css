@@ -1,5 +1,5 @@
-@import "@fontsource-variable/manrope";
-@import "@fontsource/ibm-plex-mono";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
 @import "tailwindcss";
 
 @plugin "daisyui" {
@@ -11,26 +11,27 @@
   default: true;
   color-scheme: light;
 
-  --color-primary: #2457d6;
-  --color-primary-content: #ffffff;
-  --color-secondary: #52647f;
-  --color-secondary-content: #ffffff;
-  --color-accent: #0f766e;
-  --color-accent-content: #ffffff;
-  --color-neutral: #202632;
-  --color-neutral-content: #f7f8fa;
-  --color-base-100: #fbfbfa;
-  --color-base-200: #f3f3ef;
-  --color-base-300: #deded7;
-  --color-base-content: #20242c;
-  --color-info: #2563eb;
-  --color-info-content: #ffffff;
-  --color-success: #16745a;
-  --color-success-content: #ffffff;
-  --color-warning: #b8660b;
-  --color-warning-content: #ffffff;
-  --color-error: #be334a;
-  --color-error-content: #ffffff;
+  --root-bg: var(--struct-background);
+  --color-primary: var(--struct-primary);
+  --color-primary-content: var(--struct-primary-foreground);
+  --color-secondary: var(--struct-muted);
+  --color-secondary-content: var(--struct-surface);
+  --color-accent: var(--struct-accent);
+  --color-accent-content: var(--struct-accent-foreground);
+  --color-neutral: var(--struct-foreground);
+  --color-neutral-content: var(--struct-surface);
+  --color-base-100: var(--struct-surface);
+  --color-base-200: var(--struct-surface-muted);
+  --color-base-300: var(--struct-border);
+  --color-base-content: var(--struct-foreground);
+  --color-info: var(--struct-primary);
+  --color-info-content: var(--struct-primary-foreground);
+  --color-success: var(--struct-accent-strong);
+  --color-success-content: var(--struct-surface);
+  --color-warning: var(--struct-highlight-strong);
+  --color-warning-content: var(--struct-surface);
+  --color-error: var(--struct-danger);
+  --color-error-content: var(--struct-danger-foreground);
 
   --radius-selector: 999px;
   --radius-field: 0.625rem;
@@ -46,26 +47,27 @@
   name: "struct-dark";
   color-scheme: dark;
 
-  --color-primary: #86a8ff;
-  --color-primary-content: #0b1735;
-  --color-secondary: #a9b5c9;
-  --color-secondary-content: #111827;
-  --color-accent: #5dc9bd;
-  --color-accent-content: #082521;
-  --color-neutral: #dfe6f1;
-  --color-neutral-content: #141a24;
-  --color-base-100: #12161e;
-  --color-base-200: #191f2a;
-  --color-base-300: #303847;
-  --color-base-content: #edf0f5;
-  --color-info: #8bb3ff;
-  --color-info-content: #0c1c3f;
-  --color-success: #5fc4a2;
-  --color-success-content: #08261d;
-  --color-warning: #e1a457;
-  --color-warning-content: #2d1905;
-  --color-error: #f08a9b;
-  --color-error-content: #350711;
+  --root-bg: var(--struct-background);
+  --color-primary: var(--struct-primary);
+  --color-primary-content: var(--struct-primary-foreground);
+  --color-secondary: var(--struct-muted);
+  --color-secondary-content: var(--struct-surface);
+  --color-accent: var(--struct-accent);
+  --color-accent-content: var(--struct-accent-foreground);
+  --color-neutral: var(--struct-foreground);
+  --color-neutral-content: var(--struct-surface);
+  --color-base-100: var(--struct-surface);
+  --color-base-200: var(--struct-surface-muted);
+  --color-base-300: var(--struct-border);
+  --color-base-content: var(--struct-foreground);
+  --color-info: var(--struct-primary);
+  --color-info-content: var(--struct-primary-foreground);
+  --color-success: var(--struct-accent-strong);
+  --color-success-content: var(--struct-surface);
+  --color-warning: var(--struct-highlight-strong);
+  --color-warning-content: var(--struct-surface);
+  --color-error: var(--struct-danger);
+  --color-error-content: var(--struct-danger-foreground);
 
   --radius-selector: 999px;
   --radius-field: 0.625rem;
@@ -77,14 +79,102 @@
   --noise: 0;
 }
 
+/*
+ * Struct brand tokens — single source of truth.
+ * `:root` holds the light-mode values; `[data-theme="struct-dark"]` overrides
+ * them for dark mode. DaisyUI theme blocks above reference these via var().
+ * Values are copied from .brand/struct-theme.css (reference-only, not imported).
+ */
+:root {
+  --struct-background: #f8fafc;
+  --struct-surface: #ffffff;
+  --struct-surface-muted: #f1f5f9;
+  --struct-surface-elevated: #ffffff;
+  --struct-foreground: #0f172a;
+  --struct-muted: #475569;
+  --struct-subtle: #64748b;
+  --struct-border: #cbd5e1;
+  --struct-border-strong: #94a3b8;
+
+  --struct-primary: #2563eb;
+  --struct-primary-hover: #1d4ed8;
+  --struct-primary-subtle: #dbeafe;
+  --struct-primary-foreground: #ffffff;
+
+  --struct-accent: #14b8a6;
+  --struct-accent-strong: #0f766e;
+  --struct-accent-subtle: #ccfbf1;
+  --struct-accent-foreground: #0f172a;
+
+  --struct-highlight: #f59e0b;
+  --struct-highlight-strong: #b45309;
+  --struct-highlight-subtle: #fef3c7;
+  --struct-highlight-foreground: #0f172a;
+
+  --struct-danger: #b91c1c;
+  --struct-danger-subtle: #fee2e2;
+  --struct-danger-foreground: #ffffff;
+
+  --struct-ring: #2563eb;
+  --struct-overlay: rgb(2 6 23 / 0.48);
+
+  /* Signature-mark colors: violet and orange are logo / data-viz colors,
+     not default interactive-control colors. */
+  --struct-logo-neutral: #e2e8f0;
+  --struct-logo-blue: #2563eb;
+  --struct-logo-sky: #38bdf8;
+  --struct-logo-violet: #8b5cf6;
+  --struct-logo-warm: #f97316;
+}
+
+[data-theme="struct-dark"] {
+  --struct-background: #020617;
+  --struct-surface: #0f172a;
+  --struct-surface-muted: #1e293b;
+  --struct-surface-elevated: #111c2e;
+  --struct-foreground: #e2e8f0;
+  --struct-muted: #94a3b8;
+  --struct-subtle: #64748b;
+  --struct-border: #334155;
+  --struct-border-strong: #475569;
+
+  --struct-primary: #60a5fa;
+  --struct-primary-hover: #93c5fd;
+  --struct-primary-subtle: #172554;
+  --struct-primary-foreground: #020617;
+
+  --struct-accent: #2dd4bf;
+  --struct-accent-strong: #5eead4;
+  --struct-accent-subtle: #134e4a;
+  --struct-accent-foreground: #020617;
+
+  --struct-highlight: #fbbf24;
+  --struct-highlight-strong: #fde68a;
+  --struct-highlight-subtle: #78350f;
+  --struct-highlight-foreground: #020617;
+
+  --struct-danger: #f87171;
+  --struct-danger-subtle: #450a0a;
+  --struct-danger-foreground: #020617;
+
+  --struct-ring: #60a5fa;
+  --struct-overlay: rgb(2 6 23 / 0.72);
+
+  --struct-logo-neutral: #334155;
+  --struct-logo-blue: #60a5fa;
+  --struct-logo-sky: #38bdf8;
+  --struct-logo-violet: #a78bfa;
+  --struct-logo-warm: #fbbf24;
+}
+
 @theme {
-  --font-sans: "Manrope Variable", sans-serif;
-  --font-mono: "IBM Plex Mono", monospace;
+  --font-sans: "Inter Variable", sans-serif;
+  --font-mono: "JetBrains Mono Variable", monospace;
 }
 
 html {
   min-width: 320px;
-  background: var(--color-base-200);
+  background: var(--struct-background);
   color-scheme: light dark;
   scroll-behavior: smooth;
 }
@@ -92,7 +182,7 @@ html {
 body {
   min-width: 320px;
   margin: 0;
-  background: var(--color-base-200);
+  background: var(--struct-background);
   font-family: var(--font-sans);
   font-size: 1rem;
   line-height: 1.55;

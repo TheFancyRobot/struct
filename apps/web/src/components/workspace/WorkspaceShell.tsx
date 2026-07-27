@@ -21,6 +21,7 @@ import { fetchProjects } from '../../api/projects'
 import { fetchSourceCatalog } from '../../api/sources'
 import { EvidenceInspector as EvidenceDetailInspector } from '../EvidenceInspector'
 import { parseEvidenceSelection } from '../evidence-selection'
+import { StructIconCssVariables, StructWordmarkCurrentColor } from '../icons'
 import { useWorkspaceState } from './workspace-state'
 
 type Theme = 'struct-light' | 'struct-dark'
@@ -91,6 +92,10 @@ export const WorkspaceNavigation: ParentComponent<{
       aria-label="Workspace navigation"
       class="flex h-full min-h-0 flex-col border-r border-base-300 bg-base-100 p-3"
     >
+      <div class="flex items-center gap-2 px-1 pb-2 pt-0.5" role="img" aria-label="Struct">
+        <StructIconCssVariables class="h-7 w-auto shrink-0" aria-hidden="true" />
+        <StructWordmarkCurrentColor class="h-6 w-auto shrink-0" aria-hidden="true" />
+      </div>
       <div class="flex min-h-11 items-center justify-between gap-2">
         <h2 ref={props.headingRef} tabindex="-1" class="truncate px-2 text-sm font-semibold">
           Workspace
