@@ -56,22 +56,6 @@ describe('source import components', () => {
     expect(html).not.toContain('Create a project')
   })
 
-  it('keeps the error toast above the submit button inside the form, matching the add-project screen', () => {
-    const html = renderToString(() => (
-      <SourceImportPanel projectId={projectId} onAccepted={() => undefined} />
-    ))
-
-    // The submit button is the last child of the form, so the error/rejected feedback
-    // can only render above the action — the canonical position shared with ProjectSwitcher.
-    expect(html).toMatch(/Add sources<\/button>\s*<\/form>/)
-    // No error toast is rendered as a sibling after the form (the old inconsistent position).
-    const formClose = html.lastIndexOf('</form>')
-    const sectionClose = html.lastIndexOf('</section>')
-    expect(formClose).toBeGreaterThan(-1)
-    expect(sectionClose).toBeGreaterThan(formClose)
-    expect(html.slice(formClose, sectionClose)).not.toContain('alert-error')
-  })
-
   it('keeps failed work actionable without hiding successful source history', () => {
     const html = renderToString(() => (
       <BackgroundActivityTray

@@ -68,9 +68,8 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Regression Coverage Needed
 
-- Added a focused component test in `apps/web/src/components/source-import-panel.test.tsx` asserting the submit button is the last child of the form (`/Add sources<\/button>\s*<\/form>/`) and no `alert-error` renders as a sibling after `</form>`.
-- Added an e2e test in `apps/web/e2e/source-import.spec.ts` that triggers a real HTTP 500 import failure and asserts the error toast is inside the form and its bottom edge is at or above the submit button's top edge — the same canonical position as the add-project screen.
-- Validation: `bun test --preload ./apps/web/test/solid-test-preload.ts --max-concurrency 1 ./apps/web/src/components/source-import-panel.test.tsx ./apps/web/src/components/project-switcher.test.tsx` — 8 pass, 0 fail.
+- Added an e2e test in `apps/web/e2e/source-import.spec.ts` that triggers a real HTTP 500 import failure and asserts the error toast is inside the form and its bottom edge is at or above the submit button's top edge — the same canonical position as the add-project screen. The page is closed in `finally` so failed assertions cannot leak browser resources.
+- Validation: `bun test --preload ./apps/web/test/solid-test-preload.ts --max-concurrency 1 ./apps/web/src/components/source-import-panel.test.tsx ./apps/web/src/components/project-switcher.test.tsx` — 7 pass, 0 fail.
 - Validation: `bun test --timeout 180000 --max-concurrency 1 ./apps/web/e2e/source-import.spec.ts` — 5 pass, 0 fail (incl. new regression test).
 - Validation: `bun test --timeout 180000 --max-concurrency 1 ./apps/web/e2e/project-lifecycle.spec.ts` — 11 pass, 0 fail (add-project error path unaffected).
 - Validation: `bun test --timeout 180000 --max-concurrency 1 ./apps/web/e2e/workspace-responsive.spec.ts` — 7 pass, 0 fail.
@@ -91,5 +90,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-27 - Reported.
 - 2026-07-27 - Root cause confirmed: `SourceImportPanel` rendered error/rejected feedback after the form, diverging from the `ProjectSwitcher`/`ConversationPanel` above-action convention.
-- 2026-07-27 - Fixed by moving the feedback `Show` blocks inside the form, above the submit button; added component and e2e regression coverage; all focused validation passed.
+- 2026-07-27 - Fixed by moving the feedback `Show` blocks inside the form, above the submit button; added e2e regression coverage; all focused validation passed.
 <!-- AGENT-END:bug-timeline -->
