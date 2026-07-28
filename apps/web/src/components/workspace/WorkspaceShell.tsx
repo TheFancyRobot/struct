@@ -314,10 +314,10 @@ export const ConversationWorkspace: ParentComponent<{
           </button>
         </Show>
       </div>
-      {/* No compensating top padding: the floating top bar is transparent +
-          pointer-events-none and the theme toggle lives in the sidebar, so
-          top-of-content alerts are never obscured while the content keeps its
-          16/24px gutter (see source-import e2e). Adding pt here regresses it. */}
+      {/* No compensating top padding: the desktop theme toggle lives in the
+          sidebar instead of this floating bar, so it cannot compete with
+          top-of-content alerts. Preserve the established 16/24px content
+          gutter (see source-import e2e); adding padding here regresses it. */}
       <div class="min-h-0 min-w-0 flex-1 overflow-auto">
         {props.children}
       </div>

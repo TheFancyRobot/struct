@@ -73,14 +73,13 @@ describe('workspace shell', () => {
     expect(html).toContain('btn btn-ghost btn-sm md:hidden" ' + toggleLabel)
   })
 
-  // BUG-0056: the floating top bar is transparent (no background,
-  // pointer-events-none except its buttons) and the desktop theme toggle lives
-  // in the sidebar, so top-of-content alerts are never obscured and never cover
-  // the toggle. The scrollable content therefore keeps its responsive gutter
+  // BUG-0056: the desktop theme toggle lives in the sidebar rather than the
+  // floating top bar, so top-of-content alerts cannot cover or visually compete
+  // with that control. The scrollable content keeps its responsive gutter
   // (16/24px from the scroll container top): NO compensating top padding is
   // added to the scroll container — that would inflate the content's top inset
-  // (see source-import e2e) without preventing any real overlap.
-  it('keeps the content gutter intact and prevents top-bar/alert overlap without compensating padding', () => {
+  // (see source-import e2e) without improving the theme-control placement.
+  it('keeps the content gutter intact while separating the desktop theme control from alerts', () => {
     const html = renderToString(() => (
       <WorkspaceStateProvider projectId="project-a">
         <WorkspaceShell
@@ -93,8 +92,7 @@ describe('workspace shell', () => {
       </WorkspaceStateProvider>
     ))
 
-    // The floating top bar is transparent and click-through except its buttons,
-    // so it cannot visually obscure or block top-of-content alerts.
+    // Preserve the existing transparent, click-through floating-bar contract.
     expect(html).toContain('md:absolute md:inset-x-0 md:top-0 md:pointer-events-none')
     // The scrollable content keeps its responsive gutter contract (16/24px from
     // the scroll container top): no compensating top padding is added here.
