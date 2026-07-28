@@ -56,6 +56,11 @@ describe('workspace shell', () => {
     const toggleLabel = 'aria-label="Switch to dark theme"'
     const mainStart = html.indexOf('<main')
     expect(mainStart).toBeGreaterThan(-1)
+    expect((html.match(/aria-label="Switch to dark theme"/g) ?? [])).toHaveLength(2)
+    expect((html.slice(0, mainStart).match(/aria-label="Switch to dark theme"/g) ?? []))
+      .toHaveLength(1)
+    expect((html.slice(mainStart).match(/aria-label="Switch to dark theme"/g) ?? []))
+      .toHaveLength(1)
 
     // Desktop toggle: in the sidebar (before <main>), shown only at md+ via
     // hidden ... md:flex, so it never competes with the floating top-bar nav.

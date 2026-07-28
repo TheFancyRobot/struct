@@ -4,10 +4,10 @@ template_version: 2
 contract_version: 1
 title: v1 Usable Research Workspace
 phase_id: PHASE-10
-status: blocked
+status: completed
 owner: Codex
 created: '2026-07-21'
-updated: '2026-07-27'
+updated: '2026-07-28'
 depends_on:
   - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]]'
 related_architecture:

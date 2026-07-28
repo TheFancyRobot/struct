@@ -30,29 +30,30 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
-- After BUG-0057 fixed Bun reaping Playwright Chromium, the full E2E suite passed 71/72 tests.
-- `workspace-release.spec.ts` real-stack journey at line 249 timed out at its 120-second test budget under full-suite Docker cold-start contention.
-- The same workspace-release spec passes in isolation (2/2, ~30.8 seconds).
-- Root cause and fix the lifecycle/readiness/per-test budget issue without skipping coverage or merely inflating a global timeout.
+- After the initial BUG-0057 preload experiment, the historical single-process full E2E run passed 71/72 tests.
+- `workspace-release.spec.ts` timed out during its real-stack journey only after preceding E2E files; the same spec passed alone in about 31 seconds.
+- Application evidence showed ingestion, indexing, and persistence had completed before the browser journey stalled.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- The real-stack root and BASE_PATH workspace journey must pass in the complete E2E command as reliably as it does alone.
+- Harness lifecycle state from earlier specs must not consume the release journey's test budget or terminate its browser.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Build the web application and ensure the release-test Docker dependencies are available.
+2. Run `workspace-accessibility.spec.ts` followed by `workspace-release.spec.ts` in one Bun test process.
+3. Observe `killed 1 dangling process` and the workspace-release journey timing out despite successful application-side ingestion and persistence.
+4. Run the two files in separate Bun processes and observe accessibility pass 2/2 and workspace-release pass 2/2 in about 31 seconds.
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- Affected the root E2E release gate and its real-stack browser journey in local/CI validation.
+- Did not indicate a production ingestion, indexing, persistence, Docker readiness, or application workflow defect.
 
 ## Suspected Root Cause
 
-- Record current theories and assumptions.
+- Docker cold-start contention and a too-small journey budget were initially suspected because the failure appeared late in the full suite. Timing and application instrumentation disproved that hypothesis and redirected investigation to cross-file process lifecycle state.
 
 ## Confirmed Root Cause
 
@@ -61,7 +62,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- Running `workspace-release.spec.ts` alone or launching it in a fresh Bun process after earlier specs avoided the timeout. The permanent test command now applies that isolation automatically.
 
 ## Permanent Fix Plan
 
@@ -70,7 +71,6 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
 - `bun run test:e2e` is the regression: all 72 E2E tests across browser specs and support tests must pass when each file is launched in a fresh Bun process.
 - Validation on 2026-07-28: 72/72 passed, including mixed-source-report 5/5 and workspace-release 2/2 in 30.62s.
 
