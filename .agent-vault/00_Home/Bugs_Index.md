@@ -29,11 +29,12 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 <!-- AGENT-START:bugs-index -->
 _Last rebuilt: 2026-07-28._
 
-- Notes indexed: 45
-- Status summary: fixed (45)
+- Notes indexed: 46
+- Status summary: fixed (46)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
+| BUG-0059 | [standard local dev stack stages source uploads outside the worker artifact root](../03_Bugs/BUG-0059_standard-local-dev-stack-stages-source-uploads-outside-the-worker-artifact-root.md) | fixed | sev-1 | 2026-07-28 | 2026-07-28 | - |
 | BUG-0049 | [Global dataset attachments did not materialize project datasets](../03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets.md) | fixed | sev-1 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0013 | [v1 UI lacks core research workflows](../03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows.md) | fixed | sev-1 | 2026-07-21 | 2026-07-26 | - |
 | BUG-0048 | [Workspace source attachments do not enqueue text indexing](../03_Bugs/BUG-0048_workspace-source-attachments-do-not-enqueue-text-indexing.md) | fixed | sev-2 | 2026-07-26 | 2026-07-26 | - |
