@@ -36,12 +36,11 @@ describe('workspace shell', () => {
     expect((html.match(/aria-current="page"/g) ?? [])).toHaveLength(1)
   })
 
-  // BUG-0056: the desktop theme toggle lives in the sidebar (out of the
-  // floating top bar) so content-level error alerts can never cover it; the
-  // mobile toggle stays in the in-flow top bar (which is never absolute on
-  // mobile, so no overlap is possible). Each breakpoint shows exactly one
-  // toggle via the md:hidden / hidden md:flex classes.
-  it('renders exactly one theme toggle per breakpoint: sidebar on desktop, top bar on mobile', () => {
+  // BUG-0056: with navigation expanded, the desktop theme toggle lives in the
+  // sidebar (out of the floating top bar); the mobile toggle stays in the
+  // in-flow top bar. Each breakpoint shows exactly one toggle via md:hidden /
+  // hidden md:flex. Browser coverage exercises the collapsed desktop fallback.
+  it('renders one expanded-state theme toggle per breakpoint: sidebar on desktop, top bar on mobile', () => {
     const html = renderToString(() => (
       <WorkspaceStateProvider projectId="project-a">
         <WorkspaceShell
@@ -66,16 +65,15 @@ describe('workspace shell', () => {
     expect(html).toContain('btn btn-ghost btn-sm hidden w-full justify-start md:flex" ' + toggleLabel)
     expect(html).toContain('Dark theme')
 
-    // Mobile toggle: in the top bar (inside <main>), hidden at md+ (md:hidden)
-    // so the floating absolute top bar never carries the toggle on desktop.
+    // Mobile toggle: in the top bar (inside <main>), hidden at md+ (md:hidden).
+    // The conditional collapsed-navigation fallback is absent in this state.
     const topBarToggle = html.indexOf(toggleLabel, mainStart)
     expect(topBarToggle).toBeGreaterThan(mainStart)
     expect(html).toContain('btn btn-ghost btn-sm md:hidden" ' + toggleLabel)
   })
 
-  // BUG-0056: the desktop theme toggle lives in the sidebar rather than the
-  // floating top bar, so top-of-content alerts cannot cover or visually compete
-  // with that control. The scrollable content keeps its responsive gutter
+  // BUG-0056: the primary desktop theme toggle lives in the sidebar rather than
+  // the floating top bar. The scrollable content keeps its responsive gutter
   // (16/24px from the scroll container top): NO compensating top padding is
   // added to the scroll container — that would inflate the content's top inset
   // (see source-import e2e) without improving the theme-control placement.

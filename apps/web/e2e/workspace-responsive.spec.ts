@@ -266,14 +266,26 @@ describe('responsive workspace browser contract', () => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
     await openWorkspace(page, 'struct-light')
 
+    const visibleThemeControlCount = () => page
+      .getByRole('button', { name: /Switch to (?:dark|light) theme/ })
+      .evaluateAll((elements) => elements.filter((element) => {
+        const bounds = element.getBoundingClientRect()
+        const style = window.getComputedStyle(element)
+        return bounds.width > 0 && bounds.height > 0
+          && style.display !== 'none' && style.visibility !== 'hidden'
+      }).length)
+
+    expect(await visibleThemeControlCount()).toBe(1)
     await page.getByRole('button', { name: 'Collapse workspace navigation' }).click()
     const navigationOpener = page.getByRole('button', { name: 'Open workspace navigation' })
     await navigationOpener.waitFor()
+    expect(await visibleThemeControlCount()).toBe(1)
     expect(await page.getByRole('complementary', { name: 'Evidence' }).isVisible()).toBe(true)
     await navigationOpener.click()
     expect(await page.getByRole('heading', { name: 'Workspace' }).evaluate(
       (element) => element === document.activeElement,
     )).toBe(true)
+    expect(await visibleThemeControlCount()).toBe(1)
 
     await page.getByRole('button', { name: 'Collapse evidence' }).click()
     const evidenceOpener = page.getByRole('button', { name: 'Open evidence' })

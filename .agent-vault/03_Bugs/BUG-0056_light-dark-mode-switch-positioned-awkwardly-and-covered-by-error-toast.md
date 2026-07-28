@@ -82,10 +82,11 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Permanent Fix Plan
 
-- Place a desktop-only theme toggle (`hidden ... md:flex`) at the bottom of `WorkspaceNavigation`, above the footer tagline.
+- Place the primary desktop-only theme toggle (`hidden ... md:flex`) at the bottom of `WorkspaceNavigation`, above the footer tagline.
+- When desktop navigation is collapsed, expose one conditional desktop fallback in the floating bar so the theme control remains reachable; remove it again when the pane reopens.
 - Keep a mobile-only toggle (`md:hidden`) in the in-flow top bar so it remains reachable without opening the navigation sheet.
 - Preserve the transparent, click-through desktop top bar and add no compensating padding to the scroll container; padding would break the established 16/24px content gutter and zero content-inset contracts.
-- Regression tests in `workspace-shell.test.tsx` assert exactly one toggle per breakpoint, the correct placement, the transparent bar contract, and absence of the rejected `md:pt-11` padding.
+- Unit tests assert the default breakpoint placement and gutter contract; `workspace-responsive.spec.ts` asserts exactly one visible theme control before collapse, while collapsed, and after restoration.
 
 ## Regression Coverage Needed
 
@@ -113,3 +114,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-END:bug-timeline -->
 - 2026-07-27 - Fixed by bug0056-a1: added `md:pt-11` compensating content padding under the `md:absolute` top bar (resolves error-toast overlap at desktop) and split the theme toggle by breakpoint (desktop sidebar `hidden md:flex`, mobile top bar `md:hidden`) so the desktop toggle no longer competes with primary nav and the mobile toggle stays reachable without the nav sheet. Regression tests added to `workspace-shell.test.tsx`.
 - 2026-07-27 - Revised by bug0056-a2 (retry): attempt 1's `md:pt-11` on the scroll container was a redundant AND harmful fix. Root cause of the regression: `source-import.spec.ts:212` measures `noticeTop - contentTop` where `contentTop` is that scroll container's border-box top; the 44px padding lives inside the border box, so it inflated the notice's top inset by exactly +44px (24->68 at desktop), breaking the 16/24px content gutter contract. The padding was also unnecessary: the reported overlap was the theme toggle sitting on alerts, which attempt 1 already fixed by moving the toggle to the sidebar; the floating top bar is transparent (`md:pointer-events-none`, no background) and empty by default at desktop, so it cannot visually obscure or block top-of-content alerts. Fix: removed `md:pt-11` from the scroll container in `WorkspaceShell.tsx` (overlap stays prevented by the transparent floating bar + sidebar toggle placement; `workspace-responsive` contentInset.y===0 contract preserved). Updated `workspace-shell.test.tsx` regression test to assert the gutter is kept intact (no compensating scroll-container padding) and the floating top bar stays transparent. Validated: source-import e2e (6 pass, incl. the previously-failing inset test), workspace-responsive e2e (7 pass), workspace-accessibility e2e (2 pass), web unit suite (76 pass), typecheck, lint, vault doctor clean.
+- 2026-07-28 - Review remediation: verified that collapsing desktop navigation hid the sidebar control while the top-bar control remained mobile-only. Added a conditional desktop fallback and browser regression coverage proving exactly one visible theme control before, during, and after navigation collapse.

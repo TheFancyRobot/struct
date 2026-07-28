@@ -285,6 +285,16 @@ export const ConversationWorkspace: ParentComponent<{
           </button>
         </Show>
         <span class="flex-1" />
+        <Show when={state.navigationCollapsed()}>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm hidden md:inline-flex md:pointer-events-auto"
+            aria-label={`Switch to ${props.theme === 'struct-light' ? 'dark' : 'light'} theme`}
+            onClick={props.onToggleTheme}
+          >
+            {props.theme === 'struct-light' ? 'Dark' : 'Light'} theme
+          </button>
+        </Show>
         <button
           type="button"
           class="btn btn-ghost btn-sm md:hidden"
@@ -314,10 +324,10 @@ export const ConversationWorkspace: ParentComponent<{
           </button>
         </Show>
       </div>
-      {/* No compensating top padding: the desktop theme toggle lives in the
-          sidebar instead of this floating bar, so it cannot compete with
-          top-of-content alerts. Preserve the established 16/24px content
-          gutter (see source-import e2e); adding padding here regresses it. */}
+      {/* No compensating top padding: the primary desktop theme toggle lives
+          in the sidebar; the floating bar exposes a fallback only while that
+          pane is collapsed. Preserve the established 16/24px content gutter
+          (see source-import e2e); adding padding here regresses it. */}
       <div class="min-h-0 min-w-0 flex-1 overflow-auto">
         {props.children}
       </div>
