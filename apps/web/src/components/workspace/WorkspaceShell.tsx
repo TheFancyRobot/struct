@@ -48,6 +48,8 @@ export const WorkspaceNavigation: ParentComponent<{
   readonly headingRef: (element: HTMLHeadingElement) => void
   readonly onCloseSheet: () => void
   readonly onCollapse: () => void
+  readonly theme: Theme
+  readonly onToggleTheme: () => void
 }> = (props) => {
   const state = useWorkspaceState()
   const [projectSearch, setProjectSearch] = createSignal('')
@@ -233,6 +235,16 @@ export const WorkspaceNavigation: ParentComponent<{
         </Show>
         </ul>
       </div>
+      <div class="border-t border-base-300 px-2 py-2">
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm hidden w-full justify-start md:flex"
+          aria-label={`Switch to ${props.theme === 'struct-light' ? 'dark' : 'light'} theme`}
+          onClick={props.onToggleTheme}
+        >
+          {props.theme === 'struct-light' ? 'Dark' : 'Light'} theme
+        </button>
+      </div>
       <p class="px-2 py-3 text-xs leading-relaxed text-base-content/60">
         Source-grounded research with inspectable evidence.
       </p>
@@ -275,7 +287,7 @@ export const ConversationWorkspace: ParentComponent<{
         <span class="flex-1" />
         <button
           type="button"
-          class="btn btn-ghost btn-sm md:pointer-events-auto"
+          class="btn btn-ghost btn-sm md:hidden"
           aria-label={`Switch to ${props.theme === 'struct-light' ? 'dark' : 'light'} theme`}
           onClick={props.onToggleTheme}
         >
@@ -302,6 +314,10 @@ export const ConversationWorkspace: ParentComponent<{
           </button>
         </Show>
       </div>
+      {/* No compensating top padding: the floating top bar is transparent +
+          pointer-events-none and the theme toggle lives in the sidebar, so
+          top-of-content alerts are never obscured while the content keeps its
+          16/24px gutter (see source-import e2e). Adding pt here regresses it. */}
       <div class="min-h-0 min-w-0 flex-1 overflow-auto">
         {props.children}
       </div>
@@ -472,6 +488,8 @@ export const WorkspaceShell: ParentComponent<{
       >
       <WorkspaceNavigation
         currentPathname={props.currentPathname}
+        theme={props.theme}
+        onToggleTheme={props.onToggleTheme}
           headingRef={(element) => { navigationHeading = element }}
           onCloseSheet={closeNavigationSheet}
           onCollapse={() => {

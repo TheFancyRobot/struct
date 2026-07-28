@@ -7,7 +7,7 @@ phase_id: PHASE-10
 status: blocked
 owner: Codex
 created: '2026-07-21'
-updated: '2026-07-26'
+updated: '2026-07-27'
 depends_on:
   - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]]'
 related_architecture:
@@ -21,6 +21,7 @@ related_decisions:
   - '[[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009 Sandbox Filesystem Roots and Allowlist Read-Only SQL]]'
   - '[[04_Decisions/DEC-0013_use-tailwind-css-and-daisyui-with-a-custom-theme-for-frontend-styling|DEC-0013 Use Tailwind CSS and DaisyUI with a Custom Theme for Frontend Styling]]'
   - '[[04_Decisions/DEC-0014_use-solidjs-vite-8-and-solid-router-for-frontend-runtime|DEC-0014 Use SolidJS Vite 8 and Solid Router for Frontend Runtime]]'
+  - '[[04_Decisions/DEC-0024_require-full-browser-coverage-and-design-consistency-audit-before-phase-11|DEC-0024 require full browser coverage and design consistency audit before phase 11]]'
 related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
   - '[[03_Bugs/BUG-0018_vite-proxy-regression-test-does-not-typecheck|BUG-0018 Vite proxy regression test does not typecheck]]'
@@ -36,6 +37,8 @@ related_bugs:
   - '[[03_Bugs/BUG-0050_workspace-responsive-e2e-test-retains-obsolete-project-gated-source-action-contract|BUG-0050 Workspace responsive e2e test retains obsolete project-gated source action contract]]'
   - '[[03_Bugs/BUG-0051_manage-source-library-navigation-link-misses-the-44px-touch-target-minimum|BUG-0051 Manage source library navigation link misses the 44px touch-target minimum]]'
   - '[[03_Bugs/BUG-0052_directory-source-import-rejects-a-local-canonical-corpus-with-http-413|BUG-0052 Directory source import rejects a local canonical corpus with HTTP 413]]'
+  - '[[03_Bugs/BUG-0057_full-e2e-suite-leaks-process-state-before-mixed-source-report-tests|BUG-0057 full e2e suite leaks process state before mixed-source report tests]]'
+  - '[[03_Bugs/BUG-0058_workspace-release-e2e-times-out-under-full-suite-docker-cold-start-contention|BUG-0058 workspace release e2e times out under full-suite docker cold-start contention]]'
 tags:
   - agent-vault
   - phase
@@ -124,6 +127,7 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - [[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009 Sandbox Filesystem Roots and Allowlist Read-Only SQL]]
 - [[04_Decisions/DEC-0013_use-tailwind-css-and-daisyui-with-a-custom-theme-for-frontend-styling|DEC-0013 Use Tailwind CSS and DaisyUI with a Custom Theme for Frontend Styling]]
 - [[04_Decisions/DEC-0014_use-solidjs-vite-8-and-solid-router-for-frontend-runtime|DEC-0014 Use SolidJS Vite 8 and Solid Router for Frontend Runtime]]
+- [[04_Decisions/DEC-0024_require-full-browser-coverage-and-design-consistency-audit-before-phase-11|DEC-0024 require full browser coverage and design consistency audit before phase 11]]
 <!-- AGENT-END:phase-related-decisions -->
 
 ## Related Bugs
@@ -143,6 +147,8 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - [[03_Bugs/BUG-0050_workspace-responsive-e2e-test-retains-obsolete-project-gated-source-action-contract|BUG-0050 Workspace responsive e2e test retains obsolete project-gated source action contract]]
 - [[03_Bugs/BUG-0051_manage-source-library-navigation-link-misses-the-44px-touch-target-minimum|BUG-0051 Manage source library navigation link misses the 44px touch-target minimum]]
 - [[03_Bugs/BUG-0052_directory-source-import-rejects-a-local-canonical-corpus-with-http-413|BUG-0052 Directory source import rejects a local canonical corpus with HTTP 413]]
+- [[03_Bugs/BUG-0057_full-e2e-suite-leaks-process-state-before-mixed-source-report-tests|BUG-0057 full e2e suite leaks process state before mixed-source report tests]]
+- [[03_Bugs/BUG-0058_workspace-release-e2e-times-out-under-full-suite-docker-cold-start-contention|BUG-0058 workspace release e2e times out under full-suite docker cold-start contention]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps
