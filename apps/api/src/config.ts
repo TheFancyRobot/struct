@@ -6,7 +6,10 @@
  */
 
 import { Config, Redacted } from 'effect'
+import { resolve } from 'node:path'
 import { WorkspaceId } from '@struct/domain'
+
+const repositoryRoot = resolve(import.meta.dir, '../../..')
 
 const positive = (name: string) => ({
   message: `${name} must be positive`,
@@ -37,6 +40,7 @@ export const apiWorkspaceIdConfig = Config.string('API_WORKSPACE_ID').pipe(
 /** Local filesystem artifact root for upload staging. */
 export const artifactStorageRootConfig = Config.string('ARTIFACT_STORAGE_ROOT').pipe(
   Config.withDefault('./.local/artifacts'),
+  Config.map((root) => resolve(repositoryRoot, root)),
 )
 
 /** Maximum bytes accepted for one walking-slice text source. */
