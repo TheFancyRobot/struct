@@ -23,7 +23,7 @@ _Last refreshed: 2026-07-28._
 - Session in progress: [[05_Sessions/2026-07-27-002920-migrate-components-to-semantic-brand-tokens-step-10b-03|SESSION-2026-07-27-002920 step-10b-03 session for Migrate Components to Semantic Brand Tokens]] - owner: step-10b-03 - phase: [[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]] - updated: 2026-07-27
 - Current step: [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_01_improve-research-search-navigation-and-command-ux|STEP-11-01 Improve Research Search Navigation and Command UX]] - status: planned - phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]
 - Active phase: [[02_Phases/Phase_12_v1_2_additional_sources/Phase|PHASE-12 v1.2 Additional Sources]] - status: planned - updated: 2026-07-17
-- Also active: 2 more additional sessions, 17 more additional steps, 5 open critical bugs.
+- Also active: 2 more additional sessions, 17 more additional steps. Critical bug records listed below: 6.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -69,6 +69,7 @@ _Last refreshed: 2026-07-28._
 ## Critical Bugs
 
 <!-- AGENT-START:critical-bugs -->
+- [[03_Bugs/BUG-0059_standard-local-dev-stack-stages-source-uploads-outside-the-worker-artifact-root|BUG-0059 standard local dev stack stages source uploads outside the worker artifact root]] - status: fixed - severity: sev-1 - reported: 2026-07-28
 - [[03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets|BUG-0049 Global dataset attachments did not materialize project datasets]] - status: fixed - severity: sev-1 - reported: 2026-07-26
 - [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]] - status: fixed - severity: sev-1 - reported: 2026-07-21
 - [[03_Bugs/BUG-0048_workspace-source-attachments-do-not-enqueue-text-indexing|BUG-0048 Workspace source attachments do not enqueue text indexing]] - status: fixed - severity: sev-2 - reported: 2026-07-26

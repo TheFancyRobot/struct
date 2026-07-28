@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'bun:test'
 import { Effect, ConfigProvider, Layer, Exit, Redacted } from 'effect'
+import { resolve } from 'node:path'
 import { apiAuthTokenConfig, apiPortConfig, apiWorkspaceIdConfig, artifactStorageRootConfig, databaseUrlConfig, maxTextSourceBytesConfig } from './config'
 import { DEFAULT_MAX_TEXT_SOURCE_BYTES } from '@struct/ingestion'
 
@@ -106,8 +107,35 @@ describe('API upload staging config', () => {
       ),
     )
 
-    expect(root).toBe('./.local/artifacts')
+    expect(root).toBe(resolve(import.meta.dir, '../../..', '.local/artifacts'))
     expect(maxBytes).toBe(268435456)
+  })
+
+  it('resolves a relative artifact storage root from the repository root', async () => {
+    const provider = ConfigProvider.fromMap(new Map([
+      ['ARTIFACT_STORAGE_ROOT', 'var/api-artifacts'],
+    ]))
+    const root = await Effect.runPromise(
+      artifactStorageRootConfig.pipe(
+        Effect.provide(Layer.setConfigProvider(provider)),
+      ),
+    )
+
+    expect(root).toBe(resolve(import.meta.dir, '../../..', 'var/api-artifacts'))
+  })
+
+  it('preserves an absolute artifact storage root', async () => {
+    const absoluteRoot = resolve(import.meta.dir, 'api-artifacts')
+    const provider = ConfigProvider.fromMap(new Map([
+      ['ARTIFACT_STORAGE_ROOT', absoluteRoot],
+    ]))
+    const root = await Effect.runPromise(
+      artifactStorageRootConfig.pipe(
+        Effect.provide(Layer.setConfigProvider(provider)),
+      ),
+    )
+
+    expect(root).toBe(absoluteRoot)
   })
 
   it('matches the ingestion package default so config and classifier stay in sync', async () => {
