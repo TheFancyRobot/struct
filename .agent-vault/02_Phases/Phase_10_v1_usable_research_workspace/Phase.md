@@ -39,6 +39,45 @@ related_bugs:
   - '[[03_Bugs/BUG-0052_directory-source-import-rejects-a-local-canonical-corpus-with-http-413|BUG-0052 Directory source import rejects a local canonical corpus with HTTP 413]]'
   - '[[03_Bugs/BUG-0057_full-e2e-suite-leaks-process-state-before-mixed-source-report-tests|BUG-0057 full e2e suite leaks process state before mixed-source report tests]]'
   - '[[03_Bugs/BUG-0058_workspace-release-e2e-times-out-under-full-suite-docker-cold-start-contention|BUG-0058 workspace release e2e times out under full-suite docker cold-start contention]]'
+  - '[[03_Bugs/BUG-0064_citation-unavailable-state-references-a-missing-accessible-heading|BUG-0064 Citation unavailable state references a missing accessible heading]]'
+  - '[[03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label|BUG-0061 Source import file picker has no accessible label]]'
+  - '[[03_Bugs/BUG-0065_project-sidebar-section-label-fails-contrast-in-both-themes|BUG-0065 Project sidebar section label fails contrast in both themes]]'
+  - '[[03_Bugs/BUG-0066_mobile-source-form-controls-fall-below-the-touch-target-baseline|BUG-0066 Mobile source form controls fall below the touch target baseline]]'
+  - '[[03_Bugs/BUG-0067_mobile-navigation-and-evidence-sheets-do-not-isolate-keyboard-focus|BUG-0067 Mobile navigation and evidence sheets do not isolate keyboard focus]]'
+  - '[[03_Bugs/BUG-0068_source-attachment-checkboxes-have-indistinguishable-accessible-names|BUG-0068 Source attachment checkboxes have indistinguishable accessible names]]'
+  - '[[03_Bugs/BUG-0069_reports-navigation-is-permanently-disabled-and-notebook-is-undiscoverable|BUG-0069 Reports navigation is permanently disabled and notebook is undiscoverable]]'
+  - '[[03_Bugs/BUG-0070_new-project-is-missing-from-project-navigation-until-reload|BUG-0070 New project is missing from project navigation until reload]]'
+  - '[[03_Bugs/BUG-0071_add-source-leaves-focus-in-workspace-navigation-after-route-change|BUG-0071 Add Source leaves focus in workspace navigation after route change]]'
+  - '[[03_Bugs/BUG-0072_workspace-routes-reuse-one-generic-browser-title|BUG-0072 Workspace routes reuse one generic browser title]]'
+  - '[[03_Bugs/BUG-0073_workspace-has-no-skip-link-past-repeated-navigation|BUG-0073 Workspace has no skip link past repeated navigation]]'
+  - '[[03_Bugs/BUG-0074_unknown-routes-render-an-empty-main-region|BUG-0074 Unknown routes render an empty main region]]'
+  - '[[03_Bugs/BUG-0075_global-sources-route-has-no-active-navigation-state|BUG-0075 Global Sources route has no active navigation state]]'
+  - '[[03_Bugs/BUG-0076_successful-source-import-is-not-announced|BUG-0076 Successful source import is not announced]]'
+  - '[[03_Bugs/BUG-0077_workspace-searches-provide-no-no-results-feedback|BUG-0077 Workspace searches provide no no results feedback]]'
+  - '[[03_Bugs/BUG-0078_project-search-leaves-unrelated-recent-projects-visible|BUG-0078 Project search leaves unrelated recent projects visible]]'
+  - '[[03_Bugs/BUG-0079_active-source-import-mode-has-insufficient-visual-contrast|BUG-0079 Active source import mode has insufficient visual contrast]]'
+  - '[[03_Bugs/BUG-0080_dataset-and-folder-import-modes-lack-mode-specific-guidance|BUG-0080 Dataset and Folder import modes lack mode specific guidance]]'
+  - '[[03_Bugs/BUG-0081_disabled-reports-destination-is-nearly-invisible|BUG-0081 Disabled Reports destination is nearly invisible]]'
+  - '[[03_Bugs/BUG-0082_unavailable-project-attachment-control-has-no-explanation|BUG-0082 Unavailable project attachment control has no explanation]]'
+  - '[[03_Bugs/BUG-0083_conversation-source-checkbox-touch-target-is-only-25-pixels-high|BUG-0083 Conversation source checkbox touch target is only 25 pixels high]]'
+  - '[[03_Bugs/BUG-0084_failed-research-submission-returns-no-user-visible-error|BUG-0084 Failed research submission returns no user visible error]]'
+  - '[[03_Bugs/BUG-0085_terminal-failed-research-run-remains-labeled-reconnecting|BUG-0085 Terminal failed research run remains labeled Reconnecting]]'
+  - '[[03_Bugs/BUG-0086_notebook-report-404-remains-stuck-in-loading-state|BUG-0086 Notebook report 404 remains stuck in loading state]]'
+  - '[[03_Bugs/BUG-0087_research-error-variants-lack-browser-coverage|BUG-0087 Research error variants lack browser coverage]]'
+  - '[[03_Bugs/BUG-0088_research-cancellation-failure-lacks-browser-coverage|BUG-0088 Research cancellation failure lacks browser coverage]]'
+  - '[[03_Bugs/BUG-0089_removed-source-selection-notice-lacks-browser-coverage|BUG-0089 Removed source selection notice lacks browser coverage]]'
+  - '[[03_Bugs/BUG-0090_mixed-source-live-demo-state-lacks-an-explicit-browser-regression|BUG-0090 Mixed source live demo state lacks an explicit browser regression]]'
+  - '[[03_Bugs/BUG-0091_notebook-finding-selection-and-citation-warning-lack-browser-coverage|BUG-0091 Notebook finding selection and citation warning lack browser coverage]]'
+  - '[[03_Bugs/BUG-0092_report-export-failure-lacks-browser-coverage|BUG-0092 Report export failure lacks browser coverage]]'
+  - '[[03_Bugs/BUG-0093_add-project-hash-focus-journey-lacks-browser-regression-coverage|BUG-0093 Add project hash focus journey lacks browser regression coverage]]'
+  - '[[03_Bugs/BUG-0094_evidence-inspector-loading-and-error-states-lack-browser-coverage|BUG-0094 Evidence inspector loading and error states lack browser coverage]]'
+  - '[[03_Bugs/BUG-0095_mobile-project-navigation-drawer-makes-theme-switching-unreachable|BUG-0095 Mobile project navigation drawer makes theme switching unreachable]]'
+  - '[[03_Bugs/BUG-0096_mobile-project-name-input-falls-below-the-touch-target-baseline|BUG-0096 Mobile project name input falls below the touch target baseline]]'
+  - '[[03_Bugs/BUG-0097_mixed-source-light-theme-metadata-text-fails-contrast|BUG-0097 Mixed source light theme metadata text fails contrast]]'
+  - '[[03_Bugs/BUG-0098_mixed-source-dataset-type-labels-fail-contrast-in-both-themes|BUG-0098 Mixed source dataset type labels fail contrast in both themes]]'
+  - '[[03_Bugs/BUG-0099_mixed-source-dark-dataset-definition-labels-fail-contrast|BUG-0099 Mixed source dark dataset definition labels fail contrast]]'
+  - '[[03_Bugs/BUG-0100_mixed-source-mobile-section-tabs-are-only-40-pixels-high|BUG-0100 Mixed source mobile section tabs are only 40 pixels high]]'
+  - '[[03_Bugs/BUG-0101_mixed-source-citation-links-are-only-24-pixels-high-on-mobile|BUG-0101 Mixed source citation links are only 24 pixels high on mobile]]'
 tags:
   - agent-vault
   - phase
@@ -149,6 +188,45 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - [[03_Bugs/BUG-0052_directory-source-import-rejects-a-local-canonical-corpus-with-http-413|BUG-0052 Directory source import rejects a local canonical corpus with HTTP 413]]
 - [[03_Bugs/BUG-0057_full-e2e-suite-leaks-process-state-before-mixed-source-report-tests|BUG-0057 full e2e suite leaks process state before mixed-source report tests]]
 - [[03_Bugs/BUG-0058_workspace-release-e2e-times-out-under-full-suite-docker-cold-start-contention|BUG-0058 workspace release e2e times out under full-suite docker cold-start contention]]
+- [[03_Bugs/BUG-0064_citation-unavailable-state-references-a-missing-accessible-heading|BUG-0064 Citation unavailable state references a missing accessible heading]]
+- [[03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label|BUG-0061 Source import file picker has no accessible label]]
+- [[03_Bugs/BUG-0065_project-sidebar-section-label-fails-contrast-in-both-themes|BUG-0065 Project sidebar section label fails contrast in both themes]]
+- [[03_Bugs/BUG-0066_mobile-source-form-controls-fall-below-the-touch-target-baseline|BUG-0066 Mobile source form controls fall below the touch target baseline]]
+- [[03_Bugs/BUG-0067_mobile-navigation-and-evidence-sheets-do-not-isolate-keyboard-focus|BUG-0067 Mobile navigation and evidence sheets do not isolate keyboard focus]]
+- [[03_Bugs/BUG-0068_source-attachment-checkboxes-have-indistinguishable-accessible-names|BUG-0068 Source attachment checkboxes have indistinguishable accessible names]]
+- [[03_Bugs/BUG-0069_reports-navigation-is-permanently-disabled-and-notebook-is-undiscoverable|BUG-0069 Reports navigation is permanently disabled and notebook is undiscoverable]]
+- [[03_Bugs/BUG-0070_new-project-is-missing-from-project-navigation-until-reload|BUG-0070 New project is missing from project navigation until reload]]
+- [[03_Bugs/BUG-0071_add-source-leaves-focus-in-workspace-navigation-after-route-change|BUG-0071 Add Source leaves focus in workspace navigation after route change]]
+- [[03_Bugs/BUG-0072_workspace-routes-reuse-one-generic-browser-title|BUG-0072 Workspace routes reuse one generic browser title]]
+- [[03_Bugs/BUG-0073_workspace-has-no-skip-link-past-repeated-navigation|BUG-0073 Workspace has no skip link past repeated navigation]]
+- [[03_Bugs/BUG-0074_unknown-routes-render-an-empty-main-region|BUG-0074 Unknown routes render an empty main region]]
+- [[03_Bugs/BUG-0075_global-sources-route-has-no-active-navigation-state|BUG-0075 Global Sources route has no active navigation state]]
+- [[03_Bugs/BUG-0076_successful-source-import-is-not-announced|BUG-0076 Successful source import is not announced]]
+- [[03_Bugs/BUG-0077_workspace-searches-provide-no-no-results-feedback|BUG-0077 Workspace searches provide no no results feedback]]
+- [[03_Bugs/BUG-0078_project-search-leaves-unrelated-recent-projects-visible|BUG-0078 Project search leaves unrelated recent projects visible]]
+- [[03_Bugs/BUG-0079_active-source-import-mode-has-insufficient-visual-contrast|BUG-0079 Active source import mode has insufficient visual contrast]]
+- [[03_Bugs/BUG-0080_dataset-and-folder-import-modes-lack-mode-specific-guidance|BUG-0080 Dataset and Folder import modes lack mode specific guidance]]
+- [[03_Bugs/BUG-0081_disabled-reports-destination-is-nearly-invisible|BUG-0081 Disabled Reports destination is nearly invisible]]
+- [[03_Bugs/BUG-0082_unavailable-project-attachment-control-has-no-explanation|BUG-0082 Unavailable project attachment control has no explanation]]
+- [[03_Bugs/BUG-0083_conversation-source-checkbox-touch-target-is-only-25-pixels-high|BUG-0083 Conversation source checkbox touch target is only 25 pixels high]]
+- [[03_Bugs/BUG-0084_failed-research-submission-returns-no-user-visible-error|BUG-0084 Failed research submission returns no user visible error]]
+- [[03_Bugs/BUG-0085_terminal-failed-research-run-remains-labeled-reconnecting|BUG-0085 Terminal failed research run remains labeled Reconnecting]]
+- [[03_Bugs/BUG-0086_notebook-report-404-remains-stuck-in-loading-state|BUG-0086 Notebook report 404 remains stuck in loading state]]
+- [[03_Bugs/BUG-0087_research-error-variants-lack-browser-coverage|BUG-0087 Research error variants lack browser coverage]]
+- [[03_Bugs/BUG-0088_research-cancellation-failure-lacks-browser-coverage|BUG-0088 Research cancellation failure lacks browser coverage]]
+- [[03_Bugs/BUG-0089_removed-source-selection-notice-lacks-browser-coverage|BUG-0089 Removed source selection notice lacks browser coverage]]
+- [[03_Bugs/BUG-0090_mixed-source-live-demo-state-lacks-an-explicit-browser-regression|BUG-0090 Mixed source live demo state lacks an explicit browser regression]]
+- [[03_Bugs/BUG-0091_notebook-finding-selection-and-citation-warning-lack-browser-coverage|BUG-0091 Notebook finding selection and citation warning lack browser coverage]]
+- [[03_Bugs/BUG-0092_report-export-failure-lacks-browser-coverage|BUG-0092 Report export failure lacks browser coverage]]
+- [[03_Bugs/BUG-0093_add-project-hash-focus-journey-lacks-browser-regression-coverage|BUG-0093 Add project hash focus journey lacks browser regression coverage]]
+- [[03_Bugs/BUG-0094_evidence-inspector-loading-and-error-states-lack-browser-coverage|BUG-0094 Evidence inspector loading and error states lack browser coverage]]
+- [[03_Bugs/BUG-0095_mobile-project-navigation-drawer-makes-theme-switching-unreachable|BUG-0095 Mobile project navigation drawer makes theme switching unreachable]]
+- [[03_Bugs/BUG-0096_mobile-project-name-input-falls-below-the-touch-target-baseline|BUG-0096 Mobile project name input falls below the touch target baseline]]
+- [[03_Bugs/BUG-0097_mixed-source-light-theme-metadata-text-fails-contrast|BUG-0097 Mixed source light theme metadata text fails contrast]]
+- [[03_Bugs/BUG-0098_mixed-source-dataset-type-labels-fail-contrast-in-both-themes|BUG-0098 Mixed source dataset type labels fail contrast in both themes]]
+- [[03_Bugs/BUG-0099_mixed-source-dark-dataset-definition-labels-fail-contrast|BUG-0099 Mixed source dark dataset definition labels fail contrast]]
+- [[03_Bugs/BUG-0100_mixed-source-mobile-section-tabs-are-only-40-pixels-high|BUG-0100 Mixed source mobile section tabs are only 40 pixels high]]
+- [[03_Bugs/BUG-0101_mixed-source-citation-links-are-only-24-pixels-high-on-mobile|BUG-0101 Mixed source citation links are only 24 pixels high on mobile]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps
