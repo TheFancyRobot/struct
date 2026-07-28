@@ -276,10 +276,30 @@ describe('responsive workspace browser contract', () => {
       }).length)
 
     expect(await visibleThemeControlCount()).toBe(1)
+
+    await page.unroute('**/api/projects')
+    await page.route('**/api/projects', (route) => route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'ProjectListUnavailable' }),
+    }))
+    await page.reload()
+    const projectAlert = page.getByRole('alert').filter({
+      hasText: 'Projects could not be loaded. Try again.',
+    })
+    await projectAlert.waitFor()
+
     await page.getByRole('button', { name: 'Collapse workspace navigation' }).click()
     const navigationOpener = page.getByRole('button', { name: 'Open workspace navigation' })
     await navigationOpener.waitFor()
     expect(await visibleThemeControlCount()).toBe(1)
+    const themeBounds = await page
+      .locator('button[aria-label="Switch to dark theme"]:visible')
+      .boundingBox()
+    const alertBounds = await projectAlert.boundingBox()
+    expect(themeBounds).not.toBeNull()
+    expect(alertBounds).not.toBeNull()
+    expect(themeBounds!.y + themeBounds!.height).toBeLessThanOrEqual(alertBounds!.y)
     expect(await page.getByRole('complementary', { name: 'Evidence' }).isVisible()).toBe(true)
     await navigationOpener.click()
     expect(await page.getByRole('heading', { name: 'Workspace' }).evaluate(

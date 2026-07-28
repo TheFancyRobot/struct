@@ -8,10 +8,10 @@ status: fixed
 severity: sev-3
 category: logic
 reported_on: '2026-07-27'
-fixed_on: '2026-07-27'
-owner: bug0056-a2
+fixed_on: '2026-07-28'
+owner: Codex
 created: '2026-07-27'
-updated: '2026-07-27'
+updated: '2026-07-28'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]]'
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_02_build-unified-three-pane-workspace-shell|STEP-10-02 Build Unified Three Pane Workspace Shell]]'
@@ -85,8 +85,8 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - Place the primary desktop-only theme toggle (`hidden ... md:flex`) at the bottom of `WorkspaceNavigation`, above the footer tagline.
 - When desktop navigation is collapsed, expose one conditional desktop fallback in the floating bar so the theme control remains reachable; remove it again when the pane reopens.
 - Keep a mobile-only toggle (`md:hidden`) in the in-flow top bar so it remains reachable without opening the navigation sheet.
-- Preserve the transparent, click-through desktop top bar and add no compensating padding to the scroll container; padding would break the established 16/24px content gutter and zero content-inset contracts.
-- Unit tests assert the default breakpoint placement and gutter contract; `workspace-responsive.spec.ts` asserts exactly one visible theme control before collapse, while collapsed, and after restoration.
+- Preserve the established 16/24px content gutter with navigation expanded. While desktop navigation is collapsed, conditionally reserve only the floating bar's 44px height so its fallback controls cannot overlap top-of-page alerts.
+- Unit tests assert the default breakpoint placement and expanded-state gutter contract; `workspace-responsive.spec.ts` asserts exactly one visible theme control before collapse, while collapsed, and after restoration, plus geometric clearance between the collapsed fallback and a project-load alert.
 
 ## Regression Coverage Needed
 
@@ -115,3 +115,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-07-27 - Fixed by bug0056-a1: added `md:pt-11` compensating content padding under the `md:absolute` top bar (resolves error-toast overlap at desktop) and split the theme toggle by breakpoint (desktop sidebar `hidden md:flex`, mobile top bar `md:hidden`) so the desktop toggle no longer competes with primary nav and the mobile toggle stays reachable without the nav sheet. Regression tests added to `workspace-shell.test.tsx`.
 - 2026-07-27 - Revised by bug0056-a2 (retry): attempt 1's `md:pt-11` on the scroll container was a redundant AND harmful fix. Root cause of the regression: `source-import.spec.ts:212` measures `noticeTop - contentTop` where `contentTop` is that scroll container's border-box top; the 44px padding lives inside the border box, so it inflated the notice's top inset by exactly +44px (24->68 at desktop), breaking the 16/24px content gutter contract. The padding was also unnecessary: the reported overlap was the theme toggle sitting on alerts, which attempt 1 already fixed by moving the toggle to the sidebar; the floating top bar is transparent (`md:pointer-events-none`, no background) and empty by default at desktop, so it cannot visually obscure or block top-of-content alerts. Fix: removed `md:pt-11` from the scroll container in `WorkspaceShell.tsx` (overlap stays prevented by the transparent floating bar + sidebar toggle placement; `workspace-responsive` contentInset.y===0 contract preserved). Updated `workspace-shell.test.tsx` regression test to assert the gutter is kept intact (no compensating scroll-container padding) and the floating top bar stays transparent. Validated: source-import e2e (6 pass, incl. the previously-failing inset test), workspace-responsive e2e (7 pass), workspace-accessibility e2e (2 pass), web unit suite (76 pass), typecheck, lint, vault doctor clean.
 - 2026-07-28 - Review remediation: verified that collapsing desktop navigation hid the sidebar control while the top-bar control remained mobile-only. Added a conditional desktop fallback and browser regression coverage proving exactly one visible theme control before, during, and after navigation collapse.
+- 2026-07-28 - Codex review remediation: reproduced the collapsed fallback overlapping a project-load alert, then conditionally reserved the 44px floating-bar height only while desktop navigation is collapsed. Added browser geometry coverage; expanded-state gutters remain unchanged.

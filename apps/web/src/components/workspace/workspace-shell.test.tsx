@@ -77,12 +77,11 @@ describe('workspace shell', () => {
     expect(html).toContain('btn btn-ghost btn-sm md:hidden" ' + toggleLabel)
   })
 
-  // BUG-0056: the primary desktop theme toggle lives in the sidebar rather than
-  // the floating top bar. The scrollable content keeps its responsive gutter
-  // (16/24px from the scroll container top): NO compensating top padding is
-  // added to the scroll container — that would inflate the content's top inset
-  // (see source-import e2e) without improving the theme-control placement.
-  it('keeps the content gutter intact while separating the desktop theme control from alerts', () => {
+  // BUG-0056: with desktop navigation expanded, the primary theme toggle lives
+  // in the sidebar and the scrollable content keeps its responsive 16/24px
+  // gutter. Browser coverage verifies that the collapsed fallback conditionally
+  // reserves the floating bar's height so it cannot overlap alerts.
+  it('keeps the expanded-state content gutter intact', () => {
     const html = renderToString(() => (
       <WorkspaceStateProvider projectId="project-a">
         <WorkspaceShell
@@ -97,9 +96,8 @@ describe('workspace shell', () => {
 
     // Preserve the existing transparent, click-through floating-bar contract.
     expect(html).toContain('md:absolute md:inset-x-0 md:top-0 md:pointer-events-none')
-    // The scrollable content keeps its responsive gutter contract (16/24px from
-    // the scroll container top): no compensating top padding is added here.
-    expect(html).toContain('class="min-h-0 min-w-0 flex-1 overflow-auto"')
+    // Expanded navigation keeps the responsive gutter contract with no padding.
+    expect(html).toMatch(/class="min-h-0 min-w-0 flex-1 overflow-auto\s*"/)
     expect(html).not.toContain('overflow-auto md:pt-11')
   })
 })

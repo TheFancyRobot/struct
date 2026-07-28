@@ -324,11 +324,13 @@ export const ConversationWorkspace: ParentComponent<{
           </button>
         </Show>
       </div>
-      {/* No compensating top padding: the primary desktop theme toggle lives
-          in the sidebar; the floating bar exposes a fallback only while that
-          pane is collapsed. Preserve the established 16/24px content gutter
-          (see source-import e2e); adding padding here regresses it. */}
-      <div class="min-h-0 min-w-0 flex-1 overflow-auto">
+      {/* Preserve the established 16/24px content gutter while navigation is
+          expanded. When the desktop pane is collapsed, reserve exactly the
+          floating bar's height so its fallback controls cannot cover alerts. */}
+      <div
+        class="min-h-0 min-w-0 flex-1 overflow-auto"
+        classList={{ 'md:pt-11': state.navigationCollapsed() }}
+      >
         {props.children}
       </div>
     </main>
