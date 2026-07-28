@@ -19,9 +19,9 @@ Keep this note short and current.
 ## Current Objective
 
 <!-- AGENT-START:current-focus -->
-_Last refreshed: 2026-07-27._
+_Last refreshed: 2026-07-28._
 - Session in progress: [[05_Sessions/2026-07-27-002920-migrate-components-to-semantic-brand-tokens-step-10b-03|SESSION-2026-07-27-002920 step-10b-03 session for Migrate Components to Semantic Brand Tokens]] - owner: step-10b-03 - phase: [[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]] - updated: 2026-07-27
-- Current step: [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_02_add-saved-queries-views-and-research-templates|STEP-11-02 Add Saved Queries Views and Research Templates]] - status: planned - phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]
+- Current step: [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_01_improve-research-search-navigation-and-command-ux|STEP-11-01 Improve Research Search Navigation and Command UX]] - status: planned - phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]
 - Active phase: [[02_Phases/Phase_12_v1_2_additional_sources/Phase|PHASE-12 v1.2 Additional Sources]] - status: planned - updated: 2026-07-17
 - Also active: 2 more additional sessions, 17 more additional steps, 5 open critical bugs.
 <!-- AGENT-END:current-focus -->
@@ -40,7 +40,7 @@ _Last refreshed: 2026-07-27._
 - Phase 04 and STEP-04-01 through STEP-04-06 are completed and merged.
 - Phase 05 and STEP-05-01 through STEP-05-06 are completed and merged.
 - Phase 06 is completed, reviewed, and merged through STEP-06-06.
-- Phases 07–09 are complete and merged. BUG-0046 is fixed; Phase 10 delivery remains blocked by BUG-0047. Do not activate Phase 11 until BUG-0047 is validated and merged.
+- Phases 07–10 are complete, with implementation bugs through BUG-0058 fixed. Phase 11 remains blocked by DEC-0024's mandatory full browser-coverage and cross-view design audit; do not activate it until that audit and every resulting bug fix are validated and merged.
 - Keep Bun as the sole host runtime. DuckDB belongs only in its pinned, authenticated, no-egress Docker Compose sidecar.
 - Current correction: BUG-0013 is fixed by the validated real-stack root and BASE_PATH browser journey. The v1.0 release action remains intentionally unperformed.
 
@@ -58,14 +58,13 @@ _Last refreshed: 2026-07-27._
 ## Blockers
 
 <!-- AGENT-START:blockers -->
-- Phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]] - status: blocked - owner: Codex - updated: 2026-07-26
 - Phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|PHASE-11 v1.1 Research Usability]] - status: blocked - updated: 2026-07-26
 <!-- AGENT-END:blockers -->
 
 ## Open Questions
 
 - No unresolved design question remains in the completed Phase 09 work.
-- PHASE-10 is blocked on BUG-0047. Phase 11 must not advance until BUG-0047 is fixed and validated; do not perform the v1.0 release action without explicit authorization.
+- PHASE-10 is complete. Phase 11 remains blocked by the accepted DEC-0024 browser-coverage and design-consistency audit and must not advance until the audit and every resulting bug fix are validated and merged; do not perform the v1.0 release action without explicit authorization.
 
 ## Critical Bugs
 
@@ -79,5 +78,5 @@ _Last refreshed: 2026-07-27._
 
 ## Next Actions
 
-- Implement and validate BUG-0047 in its own bug branch and PR; then refine Phase 11 before activating STEP-11-01.
+- Complete DEC-0024's full browser E2E coverage and cross-view design audit; record and fix every confirmed gap before Phase 11.
 - Do not perform the v1.0 release action without explicit authorization.

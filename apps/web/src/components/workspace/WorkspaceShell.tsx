@@ -48,6 +48,8 @@ export const WorkspaceNavigation: ParentComponent<{
   readonly headingRef: (element: HTMLHeadingElement) => void
   readonly onCloseSheet: () => void
   readonly onCollapse: () => void
+  readonly theme: Theme
+  readonly onToggleTheme: () => void
 }> = (props) => {
   const state = useWorkspaceState()
   const [projectSearch, setProjectSearch] = createSignal('')
@@ -233,6 +235,16 @@ export const WorkspaceNavigation: ParentComponent<{
         </Show>
         </ul>
       </div>
+      <div class="border-t border-base-300 px-2 py-2">
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm hidden w-full justify-start md:flex"
+          aria-label={`Switch to ${props.theme === 'struct-light' ? 'dark' : 'light'} theme`}
+          onClick={props.onToggleTheme}
+        >
+          {props.theme === 'struct-light' ? 'Dark' : 'Light'} theme
+        </button>
+      </div>
       <p class="px-2 py-3 text-xs leading-relaxed text-base-content/60">
         Source-grounded research with inspectable evidence.
       </p>
@@ -273,9 +285,19 @@ export const ConversationWorkspace: ParentComponent<{
           </button>
         </Show>
         <span class="flex-1" />
+        <Show when={state.navigationCollapsed()}>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm hidden md:inline-flex md:pointer-events-auto"
+            aria-label={`Switch to ${props.theme === 'struct-light' ? 'dark' : 'light'} theme`}
+            onClick={props.onToggleTheme}
+          >
+            {props.theme === 'struct-light' ? 'Dark' : 'Light'} theme
+          </button>
+        </Show>
         <button
           type="button"
-          class="btn btn-ghost btn-sm md:pointer-events-auto"
+          class="btn btn-ghost btn-sm md:hidden"
           aria-label={`Switch to ${props.theme === 'struct-light' ? 'dark' : 'light'} theme`}
           onClick={props.onToggleTheme}
         >
@@ -302,7 +324,13 @@ export const ConversationWorkspace: ParentComponent<{
           </button>
         </Show>
       </div>
-      <div class="min-h-0 min-w-0 flex-1 overflow-auto">
+      {/* Preserve the established 16/24px content gutter while navigation is
+          expanded. When the desktop pane is collapsed, reserve exactly the
+          floating bar's height so its fallback controls cannot cover alerts. */}
+      <div
+        class="min-h-0 min-w-0 flex-1 overflow-auto"
+        classList={{ 'md:pt-11': state.navigationCollapsed() }}
+      >
         {props.children}
       </div>
     </main>
@@ -472,6 +500,8 @@ export const WorkspaceShell: ParentComponent<{
       >
       <WorkspaceNavigation
         currentPathname={props.currentPathname}
+        theme={props.theme}
+        onToggleTheme={props.onToggleTheme}
           headingRef={(element) => { navigationHeading = element }}
           onCloseSheet={closeNavigationSheet}
           onCollapse={() => {

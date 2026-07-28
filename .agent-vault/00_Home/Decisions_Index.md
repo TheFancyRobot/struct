@@ -31,13 +31,14 @@ Use this note as the directory for decision records in \`04_Decisions/\`.
 ## Decision Log
 
 <!-- AGENT-START:decisions-index -->
-_Last rebuilt: 2026-07-27._
+_Last rebuilt: 2026-07-28._
 
-- Notes indexed: 15
-- Status summary: accepted (15)
+- Notes indexed: 16
+- Status summary: accepted (16)
 
 | Id | Title | Status | Decided | Updated | Linear |
 | --- | --- | --- | --- | --- | --- |
+| DEC-0024 | [require full browser coverage and design consistency audit before phase 11](../04_Decisions/DEC-0024_require-full-browser-coverage-and-design-consistency-audit-before-phase-11.md) | accepted | 2026-07-27 | 2026-07-27 | - |
 | DEC-0015 | [Use Per-Step Branch PR Review and Merge Gates](../04_Decisions/DEC-0015_use-per-step-branch-pr-review-and-merge-gates.md) | accepted | 2026-07-18 | 2026-07-18 | - |
 | DEC-0003 | [Use TypeScript Bun and Effect with Explicit Runtime Boundaries](../04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries.md) | accepted | 2026-07-17 | 2026-07-19 | - |
 | DEC-0005 | [Use DuckDB and Parquet for the Deterministic Data Plane](../04_Decisions/DEC-0005_use-duckdb-and-parquet-for-the-deterministic-data-plane.md) | accepted | 2026-07-17 | 2026-07-19 | - |

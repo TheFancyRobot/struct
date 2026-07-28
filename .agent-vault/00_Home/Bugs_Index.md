@@ -27,10 +27,10 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 ## Status Buckets
 
 <!-- AGENT-START:bugs-index -->
-_Last rebuilt: 2026-07-27._
+_Last rebuilt: 2026-07-28._
 
-- Notes indexed: 42
-- Status summary: fixed (42)
+- Notes indexed: 45
+- Status summary: fixed (45)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -42,6 +42,9 @@ _Last rebuilt: 2026-07-27._
 | BUG-0053 | [Pre-existing e2e infra defects surface as failures independent of brand phase](../03_Bugs/BUG-0053_pre-existing-e2e-infra-defects-surface-as-failures-independent-of-brand-phase.md) | fixed | sev-3 | 2026-07-27 | 2026-07-27 | - |
 | BUG-0054 | [Error toast position inconsistent between add source and add project screens](../03_Bugs/BUG-0054_error-toast-position-inconsistent-between-add-source-and-add-project-screens.md) | fixed | sev-3 | 2026-07-27 | 2026-07-27 | - |
 | BUG-0055 | [Add source view shows only error and no fields or options](../03_Bugs/BUG-0055_add-source-view-shows-only-error-and-no-fields-or-options.md) | fixed | sev-3 | 2026-07-27 | 2026-07-27 | - |
+| BUG-0056 | [light-dark-mode-switch-positioned-awkwardly-and-covered-by-error-toast](../03_Bugs/BUG-0056_light-dark-mode-switch-positioned-awkwardly-and-covered-by-error-toast.md) | fixed | sev-3 | 2026-07-27 | 2026-07-28 | - |
+| BUG-0057 | [full e2e suite leaks process state before mixed-source report tests](../03_Bugs/BUG-0057_full-e2e-suite-leaks-process-state-before-mixed-source-report-tests.md) | fixed | sev-3 | 2026-07-27 | 2026-07-28 | - |
+| BUG-0058 | [workspace release e2e times out under full-suite docker cold-start contention](../03_Bugs/BUG-0058_workspace-release-e2e-times-out-under-full-suite-docker-cold-start-contention.md) | fixed | sev-3 | 2026-07-27 | 2026-07-28 | - |
 | BUG-0041 | [Project creation controls overlap when the name field is focused](../03_Bugs/BUG-0041_project-creation-controls-overlap-when-the-name-field-is-focused.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0042 | [Center workspace is fragmented by redundant title chrome and card framing](../03_Bugs/BUG-0042_center-workspace-is-fragmented-by-redundant-title-chrome-and-card-framing.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0043 | [Workspace navigation lacks project, source, and recent discovery sections](../03_Bugs/BUG-0043_workspace-navigation-lacks-project-source-and-recent-discovery-sections.md) | fixed | sev-3 | 2026-07-26 | 2026-07-26 | - |
