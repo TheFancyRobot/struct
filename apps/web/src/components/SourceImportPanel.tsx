@@ -19,6 +19,16 @@ export const SourceImportPanel: Component<{
   const [rejected, setRejected] = createSignal<SourceImportResponse['rejected']>([])
   const [clientBatchId, setClientBatchId] = createSignal(crypto.randomUUID())
   let fileInput: HTMLInputElement | undefined
+  const pickerLabel = () => {
+    switch (mode()) {
+      case 'folder':
+        return 'Select a folder to import'
+      case 'dataset':
+        return 'Select a dataset to import (.csv, .tsv, .json, .jsonl, .parquet)'
+      default:
+        return 'Select files to import'
+    }
+  }
   const folderPickerSupported = typeof HTMLInputElement !== 'undefined'
     && 'webkitdirectory' in HTMLInputElement.prototype
 
@@ -100,15 +110,18 @@ export const SourceImportPanel: Component<{
             </label>
           </>
         )}>
-          <input
-            class="file-input file-input-bordered w-full"
-            type="file"
-            multiple
-            required
-            accept={mode() === 'dataset' ? '.csv,.tsv,.json,.jsonl,.parquet' : undefined}
-            ref={(input) => { fileInput = input }}
-            onChange={(event) => setFiles(Array.from(event.currentTarget.files ?? []))}
-          />
+          <label class="form-control block">
+            <span class="label-text">{pickerLabel()}</span>
+            <input
+              class="file-input file-input-bordered mt-1 w-full"
+              type="file"
+              multiple
+              required
+              accept={mode() === 'dataset' ? '.csv,.tsv,.json,.jsonl,.parquet' : undefined}
+              ref={(input) => { fileInput = input }}
+              onChange={(event) => setFiles(Array.from(event.currentTarget.files ?? []))}
+            />
+          </label>
           <Show when={!folderPickerSupported}>
             <p class="text-xs text-base-content/60">
               Folder selection is unavailable in this browser; select multiple files instead.

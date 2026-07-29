@@ -56,6 +56,16 @@ describe('source import components', () => {
     expect(html).not.toContain('Create a project')
   })
 
+  it('provides a visible accessible label for the file picker in the default files mode', () => {
+    const html = renderToString(() => (
+      <SourceImportPanel projectId={projectId} onAccepted={() => undefined} />
+    ))
+
+    expect(html).toContain('Select files to import')
+    // The label must wrap the input so axe associates them (implicit labeling).
+    expect(html).toMatch(/<label[^>]*>[\s\S]*Select files to import[\s\S]*<input[^>]*file-input/)
+  })
+
   it('keeps failed work actionable without hiding successful source history', () => {
     const html = renderToString(() => (
       <BackgroundActivityTray
