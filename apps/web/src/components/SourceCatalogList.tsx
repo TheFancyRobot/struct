@@ -6,7 +6,7 @@ export const SourceCatalogList: Component<{
   readonly items: ReadonlyArray<SourceCatalogItem>
 }> = (props) => (
   <section class="rounded-box border border-base-300 bg-base-100 p-4" aria-labelledby="source-catalog-heading">
-    <h2 id="source-catalog-heading" class="font-semibold">Sources</h2>
+    <h2 id="source-catalog-heading" class="font-semibold">Project sources</h2>
     <Show when={props.items.length > 0} fallback={<p class="mt-3 text-sm text-base-content/60">No sources yet.</p>}>
       <ul class="mt-3 divide-y divide-base-300">
         <For each={props.items}>
