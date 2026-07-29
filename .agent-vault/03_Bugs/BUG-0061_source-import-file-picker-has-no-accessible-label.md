@@ -90,4 +90,4 @@ Added SSR regression test in `apps/web/src/components/source-import-panel.test.t
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
-- 2026-07-29 - Root cause confirmed (bare input, no label). Fix applied in `SourceImportPanel.tsx`: wrapped file input in a `<label>` with mode-specific visible text. Regression test added. Typecheck clean; 77/77 component/unit tests pass. 3 e2e failures are environmental (require running app server + chromium + database, unavailable in worker context).
+- 2026-07-29 - Root cause confirmed (bare input, no label). Fix applied in `SourceImportPanel.tsx`: wrapped file input in a `<label>` with mode-specific visible text. Regression test added. Typecheck clean; 77/77 component/unit tests pass. The real-browser e2e suite requires a running app server, Chromium, and database stack, so it was not part of this focused validation.

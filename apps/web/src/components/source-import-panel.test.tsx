@@ -63,7 +63,7 @@ describe('source import components', () => {
 
     expect(html).toContain('Select files to import')
     // The label must wrap the input so axe associates them (implicit labeling).
-    expect(html).toMatch(/<label[^>]*>[\s\S]*Select files to import[\s\S]*<input[^>]*file-input/)
+    expect(html).toMatch(/<label[^>]*>[\s\S]*?Select files to import[\s\S]*?<input[^>]*file-input[\s\S]*?<\/label>/)
   })
 
   it('keeps failed work actionable without hiding successful source history', () => {
