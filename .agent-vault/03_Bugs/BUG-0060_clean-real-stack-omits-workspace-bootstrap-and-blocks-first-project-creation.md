@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Clean real stack omits workspace bootstrap and blocks first project creation
 bug_id: BUG-0060
-status: new
+status: fixed
 severity: sev-1
 category: integration
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-07-29'
+owner: bug-0060-attempt-1
 created: '2026-07-28'
 updated: '2026-07-28'
 related_notes:
@@ -37,10 +37,12 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Observed Behavior
 
 - Describe what actually happens.
+- With the fix, `POST /api/projects` against a freshly reset real stack returns `201` and the project is created; the workspace row is bootstrapped before the insert reaches the DB. `readyz` still reports `not-ready` during bootstrap, preserving the existing health/readiness contract. A genuine, permanent bootstrap failure (e.g. database unreachable) surfaces as `503 ProjectCreateUnavailable` after the 30s await timeout, matching the prior error contract for that case.
 
 ## Expected Behavior
 
 - Describe what should happen instead.
+- The standard stack bootstraps `API_WORKSPACE_ID` before serving project mutations, so the first project can be created. Authenticated `POST /api/projects` blocks on workspace readiness (bounded by a 30s timeout) before attempting the insert; `/healthz` and `/readyz` keep their existing semantics.
 
 ## Reproduction Steps
 
@@ -59,6 +61,10 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Confirmed Root Cause
 
 - Record the proven cause and decisive evidence.
+- `POST /api/projects` routes to `projectRoute` → `deps.createWithIdempotency`, which inserts into `projects` (`workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE`) before the `workspaceBootstrapLoop` has created the `API_WORKSPACE_ID` workspace row.
+- The readiness gate only protects public endpoints (`/healthz`, `/readyz`); authenticated mutation routes are served immediately while the workspace bootstrap is still in progress (the `Bun.serve` listener accepts requests as soon as it binds, but `Effect.forkScoped(workspaceBootstrapLoop(...))` runs concurrently and may not have completed).
+- On a freshly reset database the `workspaces` table is empty, so the first `POST /api/projects` hits the FK constraint during the race window and the insert fails; the route maps the untagged persistence failure to 503 `{"error":"ProjectCreateUnavailable"}`.
+- Decisive evidence: reproduced on a clean `struct_bug0060_repro` database — with the readiness probe gated but mutation routes ungated, `readyz` returns 503 `not-ready` while `POST /api/projects` reaches the DB; the FK dependency is in `packages/persistence/src/migrations/0002_init_tables.sql` (`projects.workspace_id REFERENCES workspaces(id) ON DELETE CASCADE`).
 
 ## Workaround
 
@@ -67,10 +73,18 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
+- Gate project creation on workspace readiness so the first project can be created on a clean stack instead of racing the workspace row insert.
+- `apps/api/src/main.ts`:
+  - Added a `Deferred<void> workspaceReady` alongside the existing `ready` flag.
+  - `markReady` now calls `Deferred.unsafeDone(workspaceReady, Effect.void)` when the bootstrap loop succeeds.
+  - The `createWithIdempotency` wiring now `Deferred.await(workspaceReady)` (bounded by a 30s `Effect.timeoutFail`) before delegating to `ProjectRepo.createWithIdempotency`. A genuine bootstrap failure surfaces as the same 503 `ProjectCreateUnavailable` after the timeout, preserving the existing error contract.
+- The readiness probe (`/readyz`) still reports `not-ready` until bootstrap completes; auth (`401 AuthenticationRequired`) and all other routes are unchanged.
 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
+- Unit: `apps/api/src/workspace-bootstrap.test.ts` — new test `releases a readiness awaiter only after markReady fires` verifies the bootstrap loop's `markReady` contract the fix relies on (awaiter blocks while bootstrap is in progress, resolves exactly when `markReady` completes the `Deferred`).
+- E2E (existing): `apps/web/e2e/workspace-release.spec.ts` — starts `startRealAppStack` against a freshly reset `struct_e2e_workspace_release` database and creates a project as its first action, covering the BUG-0060 repro path (root and BASE_PATH deployments).
 
 ## Related Notes
 
@@ -85,3 +99,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-07-29 - Root cause confirmed (readiness gate protects only public endpoints; mutation routes race the workspace bootstrap). Fix implemented in `apps/api/src/main.ts` (gate `createWithIdempotency` on a `Deferred` completed by `markReady`). Regression test added to `apps/api/src/workspace-bootstrap.test.ts`. `bun test` (apps/api, 142 pass), `tsc`, `eslint` clean. End-to-end repro on a clean database now returns 201.

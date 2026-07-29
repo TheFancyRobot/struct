@@ -4,7 +4,7 @@
  * Runtime entry point — Effect.runPromise at the application boundary.
  */
 
-import { Cause, Effect, Layer, Option, Redacted, Runtime, Schema } from 'effect'
+import { Cause, Deferred, Duration, Effect, Layer, Option, Redacted, Runtime, Schema } from 'effect'
 import postgres from 'postgres'
 import {
   DatasetQueryAuthenticationError,
@@ -261,6 +261,10 @@ const server = Effect.gen(function* () {
   )
   const effectRuntime = yield* Effect.runtime<never>()
   let ready = false
+  // ponytail: gate project creation on workspace bootstrap so the first project can be
+  // created on a clean stack instead of racing the workspace row insert (BUG-0060).
+  // The readiness probe (/readyz) still reports not-ready until bootstrap completes.
+  const workspaceReady = yield* Deferred.make<void>()
   const authorizeApiScope = Effect.fn('ApiAuth.authorizeScope')(
     function* (
       credential: string,
@@ -335,8 +339,14 @@ const server = Effect.gen(function* () {
             Effect.provide(projectLayer),
           ),
         createWithIdempotency: (input) =>
-          ProjectRepo.createWithIdempotency(input).pipe(
-            Effect.provide(projectLayer),
+          Deferred.await(workspaceReady).pipe(
+            Effect.timeoutFail({
+              duration: Duration.seconds(30),
+              onTimeout: () => new Error('API workspace bootstrap is incomplete'),
+            }),
+            Effect.flatMap(() => ProjectRepo.createWithIdempotency(input).pipe(
+              Effect.provide(projectLayer),
+            )),
           ),
         findById: (projectId) =>
           ProjectRepo.findById(projectId).pipe(
@@ -1764,6 +1774,7 @@ const server = Effect.gen(function* () {
     isReady: () => ready,
     markReady: () => {
       ready = true
+      Deferred.unsafeDone(workspaceReady, Effect.void)
     },
   }))
   yield* Effect.never
