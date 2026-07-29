@@ -29,8 +29,8 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 <!-- AGENT-START:bugs-index -->
 _Last rebuilt: 2026-07-29._
 
-- Notes indexed: 89
-- Status summary: new (37), fixed (48), invalid (4)
+- Notes indexed: 91
+- Status summary: new (37), fixed (50), invalid (4)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -79,6 +79,8 @@ _Last rebuilt: 2026-07-29._
 | BUG-0038 | [Research replay loses durable job ownership before cancellation verification](../03_Bugs/BUG-0038_research-replay-loses-durable-job-ownership-before-cancellation-verification.md) | fixed | sev-2 | 2026-07-25 | 2026-07-25 | - |
 | BUG-0040 | [API workspace bootstrap prevents health checks during database outages](../03_Bugs/BUG-0040_api-workspace-bootstrap-prevents-health-checks-during-database-outages.md) | fixed | sev-2 | 2026-07-24 | 2026-07-25 | - |
 | BUG-0102 | [Authenticated API mutations can race workspace bootstrap](../03_Bugs/BUG-0102_authenticated-api-mutations-can-race-workspace-bootstrap.md) | fixed | sev-3 | 2026-07-29 | 2026-07-29 | - |
+| BUG-0103 | [Authenticated metrics are unavailable during workspace bootstrap](../03_Bugs/BUG-0103_authenticated-metrics-are-unavailable-during-workspace-bootstrap.md) | fixed | sev-3 | 2026-07-29 | 2026-07-29 | - |
+| BUG-0104 | [Auth integration test races workspace readiness](../03_Bugs/BUG-0104_auth-integration-test-races-workspace-readiness.md) | fixed | sev-3 | 2026-07-29 | 2026-07-29 | - |
 | BUG-0084 | [Failed research submission returns no user visible error](../03_Bugs/BUG-0084_failed-research-submission-returns-no-user-visible-error.md) | invalid | sev-3 | 2026-07-28 | 2026-07-28 | - |
 | BUG-0091 | [Notebook finding selection and citation warning lack browser coverage](../03_Bugs/BUG-0091_notebook-finding-selection-and-citation-warning-lack-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | 2026-07-28 | - |
 | BUG-0092 | [Report export failure lacks browser coverage](../03_Bugs/BUG-0092_report-export-failure-lacks-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | 2026-07-28 | - |

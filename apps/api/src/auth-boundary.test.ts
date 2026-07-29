@@ -121,6 +121,24 @@ describe('API HTTP authentication boundary', () => {
     )
   })
 
+  // BUG-0103: /metrics renders only process-local observability counters and
+  // performs no workspace/database operation, so it must stay authenticated but
+  // available during workspace bootstrap. The test DB is unreachable so
+  // bootstrap never completes and `ready` stays false; an authenticated
+  // GET /metrics must still return 200 with the Prometheus exposition, not the
+  // bootstrap 503 gate that guards workspace-backed routes.
+  it('serves authenticated /metrics while workspace bootstrap is incomplete (BUG-0103)', async () => {
+    const response = await fetch(`${origin}/metrics`, {
+      headers: { authorization: `Bearer ${token}` },
+    })
+    expect(response.status).toBe(200)
+    expect(response.headers.get('Content-Type')).toBe(
+      'text/plain; version=0.0.4',
+    )
+    const body = await response.text()
+    expect(body).toContain('# TYPE struct_research_runs_started_total counter')
+  })
+
   // BUG-0102: every authenticated mutation must hit the bootstrap readiness
   // gate after authentication, not race workspace-backed persistence while
   // workspaceBootstrapLoop is still creating API_WORKSPACE_ID. BUG-0060 gated
