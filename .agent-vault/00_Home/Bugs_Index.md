@@ -30,11 +30,10 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 _Last rebuilt: 2026-07-29._
 
 - Notes indexed: 91
-- Status summary: new (37), fixed (50), invalid (4)
+- Status summary: new (36), fixed (51), invalid (4)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
-| BUG-0061 | [Source import file picker has no accessible label](../03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label.md) | new | sev-1 | 2026-07-28 | - | - |
 | BUG-0063 | [Source import mode switcher lacks valid group and selection semantics](../03_Bugs/BUG-0063_source-import-mode-switcher-lacks-valid-group-and-selection-semantics.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0064 | [Citation unavailable state references a missing accessible heading](../03_Bugs/BUG-0064_citation-unavailable-state-references-a-missing-accessible-heading.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0065 | [Project sidebar section label fails contrast in both themes](../03_Bugs/BUG-0065_project-sidebar-section-label-fails-contrast-in-both-themes.md) | new | sev-2 | 2026-07-28 | - | - |
@@ -73,6 +72,7 @@ _Last rebuilt: 2026-07-29._
 | BUG-0101 | [Mixed source citation links are only 24 pixels high on mobile](../03_Bugs/BUG-0101_mixed-source-citation-links-are-only-24-pixels-high-on-mobile.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0059 | [standard local dev stack stages source uploads outside the worker artifact root](../03_Bugs/BUG-0059_standard-local-dev-stack-stages-source-uploads-outside-the-worker-artifact-root.md) | fixed | sev-1 | 2026-07-28 | 2026-07-28 | - |
 | BUG-0060 | [Clean real stack omits workspace bootstrap and blocks first project creation](../03_Bugs/BUG-0060_clean-real-stack-omits-workspace-bootstrap-and-blocks-first-project-creation.md) | fixed | sev-1 | 2026-07-28 | 2026-07-29 | - |
+| BUG-0061 | [Source import file picker has no accessible label](../03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label.md) | fixed | sev-1 | 2026-07-28 | 2026-07-29 | - |
 | BUG-0049 | [Global dataset attachments did not materialize project datasets](../03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets.md) | fixed | sev-1 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0013 | [v1 UI lacks core research workflows](../03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows.md) | fixed | sev-1 | 2026-07-21 | 2026-07-26 | - |
 | BUG-0048 | [Workspace source attachments do not enqueue text indexing](../03_Bugs/BUG-0048_workspace-source-attachments-do-not-enqueue-text-indexing.md) | fixed | sev-2 | 2026-07-26 | 2026-07-26 | - |
