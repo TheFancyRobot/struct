@@ -25,7 +25,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Summary
 
 - Authenticated API mutations can race workspace bootstrap.
-- Related notes: none linked yet.
+- Related notes: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10]], [[03_Bugs/BUG-0060_clean-real-stack-omits-workspace-bootstrap-and-blocks-first-project-creation|BUG-0060]], and [[03_Bugs/BUG-0103_authenticated-metrics-are-unavailable-during-workspace-bootstrap|BUG-0103]].
 - **Observed:** BUG-0060 gates only `POST /api/projects`; every other authenticated mutation remains callable while `workspaceBootstrapLoop` is still creating `API_WORKSPACE_ID`.
 - **Expected:** No authenticated route attempts persistence for the configured workspace before bootstrap completes.
 - **Confirmed cause:** `apps/api/src/main.ts` authenticates a request, then invokes route handlers immediately. For example, `POST /api/sources` can call `prepareSourceRegistration` with `projectId: null`, whose persistence transaction inserts `sources.workspace_id`; on an empty `workspaces` table this races the bootstrap row and fails its foreign-key constraint.
@@ -37,7 +37,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Expected Behavior
 
-- Every authenticated request returns `503 {"error":"ServiceUnavailable"}` until `ensureApiWorkspace` has completed; no route handler or persistence call runs first.
+- Every authenticated workspace-backed request returns `503 {"error":"ServiceUnavailable"}` until `ensureApiWorkspace` has completed; no workspace-backed route handler or persistence call runs first. Authenticated `GET /metrics` is intentionally exempt because it renders process-local metrics only (BUG-0103).
 
 ## Reproduction Steps
 
@@ -64,8 +64,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
-Apply the readiness boundary **once after authentication**, before any route
-dispatch, rather than separately to each workspace-backed route. A fail-fast
+Apply the readiness boundary **once after authentication**, before any workspace-backed route dispatch, rather than separately to each workspace-backed route. Authenticated `GET /metrics` dispatches before this boundary because it reads no workspace or database state (BUG-0103). A fail-fast
 `if (!ready) return 503 ServiceUnavailable` check in `handleRequest` (right
 after `const identity = authenticated.value`) closes the race: `ready` is
 monotonic false→true, set only by `workspaceBootstrapLoop`'s `markReady` after

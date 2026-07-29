@@ -40,9 +40,6 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 - The integration fixture must not assert authenticated workspace-scoped behavior until workspace readiness is established. `/readyz` returns `200 { status: 'ready', failures: [] }` only once `workspaceBootstrapLoop` has completed (`ready === true`) and the database readiness check passes; the fixture should poll `/readyz` instead of `/healthz`.
 
-## Expected Behavior
-
-- Describe what should happen instead.
 
 ## Reproduction Steps
 
@@ -65,17 +62,8 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 - `/healthz` (`healthResponse`) returns `200 { status: 'alive' }` as soon as the listener is bound; it is independent of the `ready` flag. `/readyz` (`readinessResponse`) returns `200` only when both the `api` readiness check (`ready`) and the `database` check pass. The fixture polled `/healthz`, so under full-suite load it advanced while `ready` was still `false` and the authenticated requests hit the BUG-0102 `if (!ready) return 503` gate. Decisive evidence: reverting the fixture to `/healthz` and adding an explicit `/readyz` readiness assertion (run first) reproduces `503 not-ready` deterministically across repeated runs, while the `/readyz` wait is green across repeated runs.
 
-## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
 
-## Suspected Root Cause
-
-- Record current theories and assumptions.
-
-## Confirmed Root Cause
-
-- Record the proven cause and decisive evidence.
 
 ## Workaround
 
@@ -92,27 +80,14 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Related Notes
 
-- Related bug: [[03_Bugs/BUG-0102_authenticated-api-mutations-can-race-workspace-bootstrap|BUG-0102 Authenticated API mutations can race workspace bootstrap]] (the runtime gate this fixture must wait on).
-- Related bug: [[03_Bugs/BUG-0103_authenticated-metrics-are-unavailable-during-workspace-bootstrap|BUG-0103 Authenticated metrics are unavailable during workspace bootstrap]] (the `/metrics` exemption whose working-tree changes were preserved).
-
-## Permanent Fix Plan
-
-- Describe the intended durable fix.
-
-## Regression Coverage Needed
-
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
-
-## Related Notes
-
 <!-- AGENT-START:bug-related-notes -->
-- None yet.
+- Related bug: [[03_Bugs/BUG-0102_authenticated-api-mutations-can-race-workspace-bootstrap|BUG-0102 Authenticated API mutations can race workspace bootstrap]]
+- Related bug: [[03_Bugs/BUG-0103_authenticated-metrics-are-unavailable-during-workspace-bootstrap|BUG-0103 Authenticated metrics are unavailable during workspace bootstrap]]
 <!-- AGENT-END:bug-related-notes -->
 
 ## Timeline
 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-29 - Reported.
-<!-- AGENT-END:bug-timeline -->
-- 2026-07-29 - Reported.
 - 2026-07-29 - Root cause confirmed: fixture polled `/healthz` (liveness) instead of `/readyz` (readiness), racing the BUG-0102 bootstrap gate. Fixed fixture to poll `/readyz`; added BUG-0104 readiness regression test (first in suite). Verified: focused integration test 3/3 green across 5/5 runs; unit `auth-boundary.test.ts` 5/5 green; `apps/api` typecheck clean; full `apps/api` suite 144 pass / 0 fail. BUG-0103 working-tree changes in `main.ts`/`auth-boundary.test.ts` untouched.
+<!-- AGENT-END:bug-timeline -->
