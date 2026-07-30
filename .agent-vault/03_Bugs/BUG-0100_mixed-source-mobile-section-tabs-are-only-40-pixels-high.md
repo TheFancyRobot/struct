@@ -35,21 +35,26 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- Sources, Synthesis, and Evidence mobile report tabs each render at 121×40px in the 390×844 mobile viewport (screenshot `mobile-light-complete.png`).
+- 40px tab height is below the 44px touch-target baseline.
+- Tab labels and `aria-pressed` state are otherwise correct; only the target height is defective (audit `report.md` item 5).
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- Each mobile section tab has at least 44px height while retaining `aria-pressed` state and labels.
+- Tabs keep adequate separation and the 3-column `grid` layout at 390px viewport.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Open any mixed-source demo state (e.g. `?demo=mixed-source&state=complete`) at 390×844 viewport.
+2. Measure `nav[aria-label="Mixed-source report sections"] button` (the `.mixed-mobile-tabs .tab` elements).
+3. Observed result: each tab is 121×40px, below the 44px touch baseline.
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- Affected component: `apps/web/src/components/MixedSourceReport.tsx` — the `.mixed-mobile-tabs` nav rendered only at mobile widths (`sm:hidden`).
+- Impact: mobile touch targets on the mixed-source report; accessibility (category: accessibility, sev-3).
+- Desktop tab/section layout is unaffected (tabs are mobile-only).
 
 ## Suspected Root Cause
 
@@ -57,19 +62,21 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Confirmed Root Cause
 
-- Record the proven cause and decisive evidence.
+- `MixedSourceReport.tsx` renders each tab button as `class="tab h-10"`; `h-10` (Tailwind) = 2.5rem = 40px, below the 44px baseline.
+- Audit `report.md` confirms tabs measure 40px high and that only the target height (not labels/`aria-pressed`) is defective.
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- No user-facing workaround; touch target remains undersized until the `h-10` class is raised to a ≥44px height (e.g. `h-11`).
 
 ## Permanent Fix Plan
 
-- Describe the intended durable fix.
+- In `MixedSourceReport.tsx`, change the mobile tab button class from `tab h-10` to a height ≥44px (e.g. `tab h-11` = 2.75rem = 44px), preserving `aria-pressed`, `tab-active`, and the 3-column `grid` layout.
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
+- Add a browser/e2e assertion that `nav[aria-label="Mixed-source report sections"] button` bounding-box height is ≥44px at 390px viewport.
+- Re-capture `mobile-light-complete.png` / `mobile-dark-complete.png` to confirm the raised tab height.
 
 ## Related Notes
 
