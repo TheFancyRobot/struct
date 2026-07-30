@@ -558,7 +558,9 @@ export const WorkspaceShell: ParentComponent<{
           'translate-x-0 visible': state.navigationSheetOpen(),
           'md:hidden': state.navigationCollapsed(),
         }}
-        onKeyDown={(event) => trapSheetFocus(event, navigationSheet)}
+        onKeyDown={(event) => {
+          if (state.navigationSheetOpen()) trapSheetFocus(event, navigationSheet)
+        }}
       >
       <WorkspaceNavigation
         currentPathname={props.currentPathname}
@@ -604,7 +606,9 @@ export const WorkspaceShell: ParentComponent<{
           'translate-x-0 visible': state.evidenceSheetOpen(),
           'lg:hidden': state.evidenceCollapsed(),
         }}
-        onKeyDown={(event) => trapSheetFocus(event, evidenceSheet)}
+        onKeyDown={(event) => {
+          if (state.evidenceSheetOpen()) trapSheetFocus(event, evidenceSheet)
+        }}
       >
         <Show
           when={selection() !== null && evidenceScope() !== null}
