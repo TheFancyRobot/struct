@@ -262,6 +262,91 @@ describe('responsive workspace browser contract', () => {
     await page.close()
   })
 
+  // BUG-0067: mobile sheets must isolate keyboard focus. The open sheet is a
+  // dialog (role/aria-modal), the background is inert, and Tab/Shift+Tab wrap
+  // inside the sheet so focus cannot reach the underlying top bar or content.
+  it('isolates keyboard focus inside mobile sheets with dialog semantics and an inert background', async () => {
+    const page = await browser.newPage({ viewport: { width: 375, height: 844 } })
+    await openWorkspace(page, 'struct-light')
+
+    const main = page.getByRole('main')
+    const evidenceAside = page.locator('aside[aria-labelledby="evidence-heading"]')
+
+    const navigationOpener = page.getByRole('button', { name: 'Open workspace navigation' })
+    await navigationOpener.click()
+    const navigationDialog = page.getByRole('dialog', { name: 'Workspace navigation' })
+    await navigationDialog.waitFor()
+    expect(await navigationDialog.getAttribute('aria-modal')).toBe('true')
+    expect(await navigationDialog.getAttribute('inert')).toBeNull()
+    expect(await main.getAttribute('inert')).not.toBeNull()
+    expect(await evidenceAside.getAttribute('inert')).not.toBeNull()
+    const navigationFocusables = await navigationDialog.evaluate((element) =>
+      [...element.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )].filter((node) => node.getClientRects().length > 0).length)
+    expect(navigationFocusables).toBeGreaterThan(0)
+    await navigationDialog.evaluate((element) => {
+      const focusable = [...element.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )].filter((node) => node.getClientRects().length > 0)
+      focusable.at(-1)?.focus()
+    })
+    await page.keyboard.press('Tab')
+    expect(await navigationDialog.evaluate((element) => {
+      const first = [...element.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )].find((node) => node.getClientRects().length > 0)
+      return document.activeElement === first
+    })).toBe(true)
+    await page.keyboard.press('Shift+Tab')
+    expect(await navigationDialog.evaluate((element) => {
+      const focusable = [...element.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )].filter((node) => node.getClientRects().length > 0)
+      return document.activeElement === focusable.at(-1)
+    })).toBe(true)
+    await page.keyboard.press('Escape')
+    expect(await navigationOpener.evaluate((element) => element === document.activeElement))
+      .toBe(true)
+
+    const evidenceOpener = page.getByRole('button', { name: 'Open evidence' })
+    await evidenceOpener.click()
+    const evidenceDialog = page.getByRole('dialog', { name: 'Evidence' })
+    await evidenceDialog.waitFor()
+    expect(await evidenceDialog.getAttribute('aria-modal')).toBe('true')
+    expect(await evidenceDialog.getAttribute('inert')).toBeNull()
+    expect(await main.getAttribute('inert')).not.toBeNull()
+    const evidenceFocusables = await evidenceDialog.evaluate((element) =>
+      [...element.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )].filter((node) => node.getClientRects().length > 0).length)
+    expect(evidenceFocusables).toBeGreaterThan(0)
+    await evidenceDialog.evaluate((element) => {
+      const focusable = [...element.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )].filter((node) => node.getClientRects().length > 0)
+      focusable.at(-1)?.focus()
+    })
+    await page.keyboard.press('Tab')
+    expect(await evidenceDialog.evaluate((element) => {
+      const first = [...element.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )].find((node) => node.getClientRects().length > 0)
+      return document.activeElement === first
+    })).toBe(true)
+    await page.keyboard.press('Shift+Tab')
+    expect(await evidenceDialog.evaluate((element) => {
+      const focusable = [...element.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )].filter((node) => node.getClientRects().length > 0)
+      return document.activeElement === focusable.at(-1)
+    })).toBe(true)
+    await page.keyboard.press('Escape')
+    expect(await evidenceOpener.evaluate((element) => element === document.activeElement))
+      .toBe(true)
+    await page.close()
+  })
+
   it('collapses and restores desktop panes independently', async () => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
     await openWorkspace(page, 'struct-light')

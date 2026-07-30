@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Mobile navigation and evidence sheets do not isolate keyboard focus
 bug_id: BUG-0067
-status: new
+status: fixed
 severity: sev-2
 category: accessibility
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-07-30'
+owner: bug-0067-attempt-1
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-07-30'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -35,41 +35,55 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- At mobile widths (<768px for navigation, <1024px for evidence) the navigation `<section>` and evidence `<aside>` slide in as overlays but render as plain landmark containers: no `role="dialog"`, no `aria-modal`, and no `inert` on the underlying `<main>` top bar or sibling sheet.
+- Tab/Shift+Tab from the sheet's controls escapes into the top bar (Menu, Evidence, theme toggle) and main content instead of wrapping inside the sheet.
+- Focus is moved into the sheet on open and Escape/backdrop dismissal restores the opener (already present), but the background stays in the tab order and accessibility tree.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- Each open mobile sheet is announced as a modal dialog (`role="dialog"`, `aria-modal="true"`) with an accessible name.
+- The background (`<main>` and the other sheet) is `inert` so its controls are removed from the tab order and accessibility tree.
+- Tab/Shift+Tab wrap inside the open sheet (focus trap); focus cannot leave the sheet.
+- Escape and backdrop click dismiss the sheet and restore focus to the opener.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. At 375×812 (mobile), open the workspace navigation sheet via the "Open workspace navigation" button.
+2. Press Tab repeatedly past the final sheet control.
+3. Observed (before fix): focus leaves the sheet into the top bar / main content. Expected: focus wraps to the first sheet control.
+4. Repeat for the evidence sheet via "Open evidence".
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- `apps/web/src/components/workspace/WorkspaceShell.tsx` (navigation section, evidence aside, main content) — mobile overlay sheet behavior only. Desktop static panes are unaffected (sheet-open signals stay false at/above their breakpoints).
+- No backend, persistence, or routing impact.
 
 ## Suspected Root Cause
 
-- Record current theories and assumptions.
+- The sheets reuse the always-rendered static pane containers and were never given modal semantics; only focus-move-on-open and Escape handling existed.
+- The background was never made `inert`, so its focusables stayed in the tab order.
 
 ## Confirmed Root Cause
 
-- Record the proven cause and decisive evidence.
+- The navigation `<section>` and evidence `<aside>` lacked `role="dialog"`/`aria-modal`, the `<main>` content and sibling sheet were not `inert` while a sheet was open, and no Tab/Shift+Tab key handler wrapped focus inside the sheet. Verified against `WorkspaceShell.tsx` before the fix and reproduced via the new e2e test failing on `getByRole('dialog')` / `main[inert]`.
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- None applied. Users could press Escape to close and reopen, but focus isolation was absent.
 
 ## Permanent Fix Plan
 
-- Describe the intended durable fix.
+- Added a module-scope `trapSheetFocus` helper in `WorkspaceShell.tsx` that, on Tab/Shift+Tab inside an open sheet, wraps focus from the last visible focusable to the first (and vice versa), correctly handling the initially-focused `tabindex="-1"` heading via `compareDocumentPosition`.
+- The navigation `<section>` now exposes `role="dialog"`, `aria-modal="true"`, `aria-label="Workspace navigation"` (only while `navigationSheetOpen()`), plus an `onKeyDown` focus trap.
+- The evidence `<aside>` now exposes `role="dialog"`/`aria-modal="true"` (only while `evidenceSheetOpen()`, labeled via the existing `aria-labelledby="evidence-heading"`) plus an `onKeyDown` focus trap.
+- `<main>` (in `ConversationWorkspace`) is `inert` while either sheet is open; each sheet is `inert` while the other sheet is open, so the open sheet stays interactive.
+- Backdrop buttons gained `tabindex="-1"` so they remain click-to-close but are never tab targets.
+- Desktop static panes are unchanged: the sheet-open signals stay false at/above their breakpoints, so no dialog role or `inert` is applied.
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
+- e2e: `apps/web/e2e/workspace-responsive.spec.ts` "isolates keyboard focus inside mobile sheets with dialog semantics and an inert background" — asserts dialog role/aria-modal, inert background, Tab and Shift+Tab wrap inside each sheet, and Escape restores the opener.
+- Existing "moves focus into mobile sheets and restores it on Escape" and accessibility/responsive specs remain green.
 
 ## Related Notes
 
@@ -84,3 +98,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-07-30 - Fixed by bug-0067-attempt-1: added dialog semantics (role/aria-modal), inert background, and Tab/Shift+Tab focus trap to the mobile navigation and evidence sheets in WorkspaceShell.tsx; added e2e regression coverage; validated via responsive/accessibility/release e2e specs and web unit tests.

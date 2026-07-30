@@ -75,7 +75,7 @@ _Last refreshed: 2026-07-30._
 - [[03_Bugs/BUG-0060_clean-real-stack-omits-workspace-bootstrap-and-blocks-first-project-creation|BUG-0060 Clean real stack omits workspace bootstrap and blocks first project creation]] - status: fixed - severity: sev-1 - reported: 2026-07-28
 - [[03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets|BUG-0049 Global dataset attachments did not materialize project datasets]] - status: fixed - severity: sev-1 - reported: 2026-07-26
 - [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]] - status: fixed - severity: sev-1 - reported: 2026-07-21
-- [[03_Bugs/BUG-0065_project-sidebar-section-label-fails-contrast-in-both-themes|BUG-0065 Project sidebar section label fails contrast in both themes]] - status: fixed - severity: sev-2 - reported: 2026-07-28
+- [[03_Bugs/BUG-0066_mobile-source-form-controls-fall-below-the-touch-target-baseline|BUG-0066 Mobile source form controls fall below the touch target baseline]] - status: fixed - severity: sev-2 - reported: 2026-07-28
 <!-- AGENT-END:critical-bugs -->
 
 ## Next Actions
