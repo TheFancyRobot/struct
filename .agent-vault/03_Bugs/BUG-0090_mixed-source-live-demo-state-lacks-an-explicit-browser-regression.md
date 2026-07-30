@@ -26,7 +26,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Summary
 
-- Mixed source live demo state lacks an explicit browser regression.
+- Mixed-source live demo state lacks an explicit browser regression.
 - Related notes: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]], [[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]].
 - **Gap:** The MixedSourceReport screenshot/state loop covers loading, reconnecting, cancelled, empty, error, and complete but does not explicitly assert `live`.
 - **Expected regression:** Add `state=live` to the browser state matrix in both themes and responsive widths.
