@@ -5,7 +5,7 @@ contract_version: 1
 title: Add Saved Queries Views and Research Templates
 step_id: STEP-11-02
 phase: '[[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]'
-status: planned
+status: blocked
 owner: ''
 created: '2026-07-17'
 updated: '2026-07-17'

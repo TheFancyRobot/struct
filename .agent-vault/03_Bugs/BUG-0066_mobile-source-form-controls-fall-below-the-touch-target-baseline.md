@@ -83,6 +83,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 - Describe the intended durable fix.
 - Added unlayered CSS rules in `apps/web/src/index.css` enforcing `min-height: 2.75rem` (44px) on `.app-shell .input`, `.app-shell .select`, `.app-shell .file-input`, and `.app-shell .textarea`. These mirror the existing `.app-shell .btn`/`.app-shell .menu a` touch-target policy. Being unlayered, they override DaisyUI's layered sizing defaults (including `.input-sm`) at all viewports, consistent with the codebase's global 44px button policy. No component changes were needed — one shared rule fixes every affected control and any future form field.
+- Follow-up review correction: the shared 44px rule is in `@layer components`, preserving the baseline while allowing Tailwind `min-h-*` utilities to retain intentionally taller editors.
 
 ## Regression Coverage Needed
 
