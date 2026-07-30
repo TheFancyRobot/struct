@@ -2,7 +2,7 @@
 note_type: bug
 template_version: 2
 contract_version: 1
-title: Source views lack a route level h1 heading
+title: Source views lack a route-level h1 heading
 bug_id: BUG-0062
 status: fixed
 severity: sev-3
@@ -20,7 +20,7 @@ tags:
   - bug
 ---
 
-# BUG-0062 - Source views lack a route level h1 heading
+# BUG-0062 - Source views lack a route-level h1 heading
 
 Use one note per bug. Capture reproduction, impact, root cause, workaround, and verification, then link back to the relevant phase, step, decision, or session. See [[07_Templates/Note_Contracts|Note Contracts]].
 
