@@ -25,7 +25,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Summary
 
 - Auth integration test races workspace readiness.
-- Related notes: none linked yet.
+- Related notes: [[03_Bugs/BUG-0102_authenticated-api-mutations-can-race-workspace-bootstrap|BUG-0102 Authenticated API mutations can race workspace bootstrap]], [[03_Bugs/BUG-0103_authenticated-metrics-are-unavailable-during-workspace-bootstrap|BUG-0103 Authenticated metrics are unavailable during workspace bootstrap]].
 - **Observed:** `apps/api/src/auth-boundary.integration.test.ts` waits only for `/healthz`, then expects authenticated workspace-scoped requests to return `404`; the post-auth bootstrap gate can correctly return `503 ServiceUnavailable` before bootstrap completes.
 - **Expected:** The integration fixture waits for `/readyz` before asserting authenticated workspace behavior.
 - **Confirmed cause:** `/healthz` proves the listener is bound, not that `workspaceBootstrapLoop` has completed. The test is timing-dependent and failed in root validation with expected 404 / received 503.
@@ -33,7 +33,6 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
 - The `apps/api/src/auth-boundary.integration.test.ts` `beforeAll` fixture polled `/healthz` and returned as soon as it was `ok`. `/healthz` only proves the HTTP listener is bound — it returns `200 { status: 'alive' }` unconditionally. The test then issued authenticated workspace-scoped requests (e.g. `POST /api/projects/{id}/research`, `GET /api/projects/{id}/dataset-queries`) that require the BUG-0102 readiness gate (`ready === true`) to have opened. While `workspaceBootstrapLoop` was still running `ensureApiWorkspace`, `ready` was `false`, so `handleRequest` returned `503 { error: 'ServiceUnavailable' }` instead of the expected `404 ResourceNotFound`. Under full-suite load the bootstrap had not yet completed when the assertions ran, producing `expected 404 / received 503`.
 
 ## Expected Behavior
@@ -43,9 +42,6 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
 1. `DATABASE_URL` set to a reachable test database (`struct-postgres` on `localhost:5432`).
 2. `bun test --timeout 30000 src/auth-boundary.integration.test.ts` from `apps/api`.
 3. Before the fix: the two assertion tests failed with `Expected: 404 / Received: 503` because `ready` was still `false` when they ran. After the fix: all tests pass.
