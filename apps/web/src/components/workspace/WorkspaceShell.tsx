@@ -44,7 +44,7 @@ function focus(element: HTMLElement | undefined): void {
 }
 
 const SHEET_FOCUSABLE_SELECTOR =
-  'button:not([disabled]), [href], textarea, input, select, [tabindex]:not([tabindex="-1"])'
+  'button:not([disabled]), [href], textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 // BUG-0067: keep Tab/Shift+Tab inside an open mobile sheet so focus cannot
 // reach the underlying top bar or content. Wraps from the last focusable to

@@ -347,6 +347,88 @@ describe('responsive workspace browser contract', () => {
     await page.close()
   })
 
+  // BUG-0067 follow-up: SHEET_FOCUSABLE_SELECTOR excluded disabled buttons but
+  // not disabled input/select/textarea, so a disabled form control at a sheet
+  // boundary became the trap's endpoint. The browser skips disabled controls in
+  // the tab order, so the trap's wrap guard (active === last/first) never matched
+  // and the trap stopped intercepting Tab/Shift+Tab at that boundary, deferring to
+  // the native tab order instead of managing focus itself.
+  it('treats disabled input/select/textarea as non-endpoints of the sheet focus trap', async () => {
+    const page = await browser.newPage({ viewport: { width: 375, height: 844 } })
+    await openWorkspace(page, 'struct-light')
+
+    const navigationOpener = page.getByRole('button', { name: 'Open workspace navigation' })
+    await navigationOpener.click()
+    const navigationDialog = page.getByRole('dialog', { name: 'Workspace navigation' })
+    await navigationDialog.waitFor()
+
+    await navigationDialog.evaluate((root) => {
+      const disabled = (tag: string, label: string) => {
+        const el = document.createElement(tag)
+        el.setAttribute('aria-label', label)
+        el.setAttribute('disabled', '')
+        el.style.display = 'block'
+        return el
+      }
+      const enabled = (label: string) => {
+        const el = document.createElement('button')
+        el.setAttribute('type', 'button')
+        el.setAttribute('aria-label', label)
+        el.style.display = 'block'
+        return el
+      }
+      const head = document.createElement('div')
+      head.append(
+        disabled('input', 'disabled-lead-input'),
+        disabled('select', 'disabled-lead-select'),
+        disabled('textarea', 'disabled-lead-textarea'),
+        enabled('trap-marker-first'),
+      )
+      root.prepend(head)
+      const tail = document.createElement('div')
+      tail.append(
+        enabled('trap-marker-last'),
+        disabled('input', 'disabled-trail-input'),
+        disabled('select', 'disabled-trail-select'),
+        disabled('textarea', 'disabled-trail-textarea'),
+      )
+      root.append(tail)
+    })
+
+    const preventDefaultOn = async (key: 'Tab' | 'Shift+Tab') => {
+      await page.evaluate(() => {
+        (window as any).__tabPrevented = null
+        const listener = (event: KeyboardEvent) => {
+          // Playwright fires a Shift keydown before the Tab keydown for
+          // Shift+Tab; only record the Tab keydown itself.
+          if (event.key === 'Tab') (window as any).__tabPrevented = event.defaultPrevented
+        }
+        window.addEventListener('keydown', listener)
+        ;(window as any).__removeTabListener = () => window.removeEventListener('keydown', listener)
+      })
+      await page.keyboard.press(key)
+      return page.evaluate(() => {
+        ;(window as any).__removeTabListener?.()
+        return (window as any).__tabPrevented as boolean | null
+      })
+    }
+
+    // Forward Tab at the real last focusable is intercepted: the trailing
+    // disabled controls must not be treated as the boundary.
+    await navigationDialog.getByRole('button', { name: 'trap-marker-last' }).focus()
+    expect(await preventDefaultOn('Tab')).toBe(true)
+
+    // Backward Shift+Tab at the real first focusable is intercepted: the leading
+    // disabled controls must not be treated as the boundary.
+    await navigationDialog.getByRole('button', { name: 'trap-marker-first' }).focus()
+    expect(await preventDefaultOn('Shift+Tab')).toBe(true)
+
+    await page.keyboard.press('Escape')
+    expect(await navigationOpener.evaluate((element) => element === document.activeElement))
+      .toBe(true)
+    await page.close()
+  })
+
   it('collapses and restores desktop panes independently', async () => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
     await openWorkspace(page, 'struct-light')
