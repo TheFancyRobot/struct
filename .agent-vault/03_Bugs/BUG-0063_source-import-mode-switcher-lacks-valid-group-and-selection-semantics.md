@@ -77,6 +77,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
 - Added regression test: `source-import-panel.test.tsx` — "exposes the import mode switcher as a labeled group with toggle-button selection semantics". Asserts the container declares `role="group"` with `aria-label="Import mode"`, and that the Files button exposes `aria-pressed="true"` while Paste/Dataset expose `aria-pressed="false"` in the default mode. Covers both the axe `aria-prohibited-attr` fix and the programmatic selection-state fix.
 - Validation: `apps/web` unit suite (81 tests, 0 fail), focused `source-import-panel.test.tsx` (5 tests, 0 fail), `tsc --noEmit` (0 errors), source-import e2e suite (6 tests, 0 fail). One unrelated e2e test (`workspace-release.spec.ts` "takes a first-time user through root and BASE_PATH durable source-grounded workspaces") timed out at 120s — a full real-stack lifecycle test that does not touch the import panel; infrastructure timeout, not caused by this change.
+- Root reran `workspace-release.spec.ts` with its 180-second budget after the worker timeout: 2 pass, 0 fail in 31.97 seconds. The prior timeout is cleared and is not an open defect.
 
 ## Related Notes
 

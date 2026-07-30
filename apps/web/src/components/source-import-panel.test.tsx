@@ -63,11 +63,11 @@ describe('source import components', () => {
 
     // The group container must declare a role that supports aria-label (resolves
     // axe aria-prohibited-attr on a role-less div).
-    expect(html).toMatch(/<div[^>]*role="group"[^>]*aria-label="Import mode"[^>]*>/)
+    expect(html).toMatch(/<div(?=[^>]*role="group")(?=[^>]*aria-label="Import mode")[^>]*>/)
     // Each mode button must expose its active state via aria-pressed, not just a class.
-    expect(html).toMatch(/<button[^>]*aria-pressed="true"[^>]*>\s*Files\s*<\/button>/)
-    expect(html).toMatch(/<button[^>]*aria-pressed="false"[^>]*>\s*Paste\s*<\/button>/)
-    expect(html).toMatch(/<button[^>]*aria-pressed="false"[^>]*>\s*Dataset\s*<\/button>/)
+    expect(html).toMatch(/<button(?=[^>]*aria-pressed="true")[^>]*>\s*Files\s*<\/button>/)
+    expect(html).toMatch(/<button(?=[^>]*aria-pressed="false")[^>]*>\s*Paste\s*<\/button>/)
+    expect(html).toMatch(/<button(?=[^>]*aria-pressed="false")[^>]*>\s*Dataset\s*<\/button>/)
   })
 
   it('provides a visible accessible label for the file picker in the default files mode', () => {
