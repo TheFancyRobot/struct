@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Source import mode switcher lacks valid group and selection semantics
 bug_id: BUG-0063
-status: new
+status: fixed
 severity: sev-2
 category: accessibility
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-07-30'
+owner: bug-0063-attempt-1
 created: '2026-07-28'
 updated: '2026-07-28'
 related_notes:
@@ -58,6 +58,8 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Confirmed Root Cause
 
 - Record the proven cause and decisive evidence.
+- The `SourceImportPanel` mode switcher rendered `<div class="join" aria-label="Import mode">` with no ARIA role, so `aria-label` was prohibited on a role-less div (axe `aria-prohibited-attr`). The four mode buttons (Files/Paste/Dataset/Folder) exposed selection only via the DaisyUI `btn-active` CSS class — no `aria-pressed` or `aria-selected` — so assistive technology could not determine the active import mode.
+- Evidence: `.local/ui-audit/dark/project-sources-dark-a11y.json` (aria-prohibited-attr on `.join`), `.local/ui-audit/lead/report.md` LEAD-001.
 
 ## Workaround
 
@@ -66,10 +68,16 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
+- Added `role="group"` to the `.join` container so `aria-label="Import mode"` is valid and the container is announced as a labeled group.
+- Added `aria-pressed={mode() === '<mode>'}` to each mode button (Files/Paste/Dataset/Folder) so the active toggle is exposed programmatically. The visual `btn-active` class is retained for styling.
+- Chosen pattern: labeled group + toggle buttons (per the bug's Expected behavior). A tablist/tab/tabpanel pattern was rejected because these are mode toggle buttons controlling a single form, not content panels; tablist would require restructuring the form into `tabpanel` roles for no functional gain.
 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
+- Added regression test: `source-import-panel.test.tsx` — "exposes the import mode switcher as a labeled group with toggle-button selection semantics". Asserts the container declares `role="group"` with `aria-label="Import mode"`, and that the Files button exposes `aria-pressed="true"` while Paste/Dataset expose `aria-pressed="false"` in the default mode. Covers both the axe `aria-prohibited-attr` fix and the programmatic selection-state fix.
+- Validation: `apps/web` unit suite (81 tests, 0 fail), focused `source-import-panel.test.tsx` (5 tests, 0 fail), `tsc --noEmit` (0 errors), source-import e2e suite (6 tests, 0 fail). One unrelated e2e test (`workspace-release.spec.ts` "takes a first-time user through root and BASE_PATH durable source-grounded workspaces") timed out at 120s — a full real-stack lifecycle test that does not touch the import panel; infrastructure timeout, not caused by this change.
+- Root reran `workspace-release.spec.ts` with its 180-second budget after the worker timeout: 2 pass, 0 fail in 31.97 seconds. The prior timeout is cleared and is not an open defect.
 
 ## Related Notes
 
@@ -84,3 +92,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-07-30 - Root cause confirmed; fix applied to `apps/web/src/components/SourceImportPanel.tsx` (role="group" + aria-pressed on each mode button). Regression test added to `apps/web/src/components/source-import-panel.test.tsx`. Unit suite and source-import e2e suite green; typecheck clean. Status → fixed.

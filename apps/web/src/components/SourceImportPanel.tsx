@@ -79,18 +79,18 @@ export const SourceImportPanel: Component<{
             Accepted items continue processing in the background.
           </p>
         </div>
-        <div class="join" aria-label="Import mode">
-          <button type="button" class="btn btn-sm join-item" classList={{ 'btn-active': mode() === 'files' }} onClick={() => setMode('files')}>
+        <div class="join" role="group" aria-label="Import mode">
+          <button type="button" class="btn btn-sm join-item" aria-pressed={mode() === 'files'} classList={{ 'btn-active': mode() === 'files' }} onClick={() => setMode('files')}>
             Files
           </button>
-          <button type="button" class="btn btn-sm join-item" classList={{ 'btn-active': mode() === 'paste' }} onClick={() => setMode('paste')}>
+          <button type="button" class="btn btn-sm join-item" aria-pressed={mode() === 'paste'} classList={{ 'btn-active': mode() === 'paste' }} onClick={() => setMode('paste')}>
             Paste
           </button>
-          <button type="button" class="btn btn-sm join-item" classList={{ 'btn-active': mode() === 'dataset' }} onClick={() => setMode('dataset')}>
+          <button type="button" class="btn btn-sm join-item" aria-pressed={mode() === 'dataset'} classList={{ 'btn-active': mode() === 'dataset' }} onClick={() => setMode('dataset')}>
             Dataset
           </button>
           <Show when={folderPickerSupported}>
-            <button type="button" class="btn btn-sm join-item" classList={{ 'btn-active': mode() === 'folder' }} onClick={() => setMode('folder')}>
+            <button type="button" class="btn btn-sm join-item" aria-pressed={mode() === 'folder'} classList={{ 'btn-active': mode() === 'folder' }} onClick={() => setMode('folder')}>
               Folder
             </button>
           </Show>
