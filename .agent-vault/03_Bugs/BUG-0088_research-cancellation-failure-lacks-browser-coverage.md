@@ -34,21 +34,28 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- ResearchStream cancellation **requested** (success) state IS e2e covered (`recursive-analysis.spec.ts`), but the cancellation **error** state (failed/rejected cancel request) is `❌ | ❌` — no e2e, no unit (inventory Route 7 table).
+- §3.3 lists "Cancellation request error" as reachable but not individually tested; §5.2 lists "Cancellation request failure | ResearchStream | ResearchPage" under E2E Tests Missing States.
+- No exercised path exists for a rejected cancellation and its user recovery state.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- Regression e2e forces the cancellation API to fail (reject/error) during a live recursive run.
+- Assert actionable feedback (error message/banner) is shown to the user.
+- Assert prior research/stream state is preserved (no data loss).
+- Capture light and dark responsive screenshots of the failure/recovery state.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Start from a project with a live recursive research run (Route 7 `/projects/:projectId/research/:threadId/runs/:runId`).
+2. Click Cancel (covered success path), then force the cancel API request to fail (mock/return error).
+3. Observe: no test exercises the failed-cancellation branch; the recovery UI state is unverified (inventory §3.3 and §5.2).
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- Affected component: `ResearchStream` on ResearchPage (Route 7).
+- Affected tests: `recursive-analysis.spec.ts` (cancel success only); ResearchStream has no unit tests.
+- Users: anyone whose cancellation request fails (network/API error) — recovery UX is unverified.
 
 ## Suspected Root Cause
 
@@ -56,19 +63,26 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Confirmed Root Cause
 
-- Record the proven cause and decisive evidence.
+- Testing-coverage gap, not a code defect: the cancellation-failure branch of ResearchStream has zero e2e and zero unit coverage (inventory Route 7: Cancellation error `❌ | ❌`; §3.3; §5.2).
+- Decisive evidence: `.local/ui-audit/inventory.md` §5.2 — "Cancellation request failure | ResearchStream | ResearchPage".
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- None at runtime; successful cancellation remains covered.
+- Manual-only: reproduce locally by failing the cancel request and inspecting the UI — not durable regression coverage.
 
 ## Permanent Fix Plan
 
-- Describe the intended durable fix.
+- Add an e2e spec forcing the cancellation API to fail during a live recursive run.
+- Assert actionable feedback, state preservation, and capture light/dark responsive screenshots.
+- Add a ResearchStream unit test for the cancel-error state (component currently has no unit tests).
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
+- E2E: failed/rejected cancellation request on ResearchPage Route 7 — actionable feedback + state preservation.
+- E2E: light and dark responsive screenshots of the cancellation-failure/recovery state.
+- Unit: ResearchStream cancel-error branch (currently `❌`).
+- Docs: update `.local/ui-audit/inventory.md` Route 7 "Cancellation error" row from `❌ | ❌` to reflect new coverage.
 
 ## Related Notes
 
