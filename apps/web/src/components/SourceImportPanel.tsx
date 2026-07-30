@@ -19,6 +19,16 @@ export const SourceImportPanel: Component<{
   const [rejected, setRejected] = createSignal<SourceImportResponse['rejected']>([])
   const [clientBatchId, setClientBatchId] = createSignal(crypto.randomUUID())
   let fileInput: HTMLInputElement | undefined
+  const pickerLabel = () => {
+    switch (mode()) {
+      case 'folder':
+        return 'Select a folder to import'
+      case 'dataset':
+        return 'Select a dataset to import (.csv, .tsv, .json, .jsonl, .parquet)'
+      default:
+        return 'Select files to import'
+    }
+  }
   const folderPickerSupported = typeof HTMLInputElement !== 'undefined'
     && 'webkitdirectory' in HTMLInputElement.prototype
 
@@ -69,18 +79,18 @@ export const SourceImportPanel: Component<{
             Accepted items continue processing in the background.
           </p>
         </div>
-        <div class="join" aria-label="Import mode">
-          <button type="button" class="btn btn-sm join-item" classList={{ 'btn-active': mode() === 'files' }} onClick={() => setMode('files')}>
+        <div class="join" role="group" aria-label="Import mode">
+          <button type="button" class="btn btn-sm join-item" aria-pressed={mode() === 'files'} classList={{ 'btn-active': mode() === 'files' }} onClick={() => setMode('files')}>
             Files
           </button>
-          <button type="button" class="btn btn-sm join-item" classList={{ 'btn-active': mode() === 'paste' }} onClick={() => setMode('paste')}>
+          <button type="button" class="btn btn-sm join-item" aria-pressed={mode() === 'paste'} classList={{ 'btn-active': mode() === 'paste' }} onClick={() => setMode('paste')}>
             Paste
           </button>
-          <button type="button" class="btn btn-sm join-item" classList={{ 'btn-active': mode() === 'dataset' }} onClick={() => setMode('dataset')}>
+          <button type="button" class="btn btn-sm join-item" aria-pressed={mode() === 'dataset'} classList={{ 'btn-active': mode() === 'dataset' }} onClick={() => setMode('dataset')}>
             Dataset
           </button>
           <Show when={folderPickerSupported}>
-            <button type="button" class="btn btn-sm join-item" classList={{ 'btn-active': mode() === 'folder' }} onClick={() => setMode('folder')}>
+            <button type="button" class="btn btn-sm join-item" aria-pressed={mode() === 'folder'} classList={{ 'btn-active': mode() === 'folder' }} onClick={() => setMode('folder')}>
               Folder
             </button>
           </Show>
@@ -100,15 +110,18 @@ export const SourceImportPanel: Component<{
             </label>
           </>
         )}>
-          <input
-            class="file-input file-input-bordered w-full"
-            type="file"
-            multiple
-            required
-            accept={mode() === 'dataset' ? '.csv,.tsv,.json,.jsonl,.parquet' : undefined}
-            ref={(input) => { fileInput = input }}
-            onChange={(event) => setFiles(Array.from(event.currentTarget.files ?? []))}
-          />
+          <label class="form-control block">
+            <span class="label-text">{pickerLabel()}</span>
+            <input
+              class="file-input file-input-bordered mt-1 w-full"
+              type="file"
+              multiple
+              required
+              accept={mode() === 'dataset' ? '.csv,.tsv,.json,.jsonl,.parquet' : undefined}
+              ref={(input) => { fileInput = input }}
+              onChange={(event) => setFiles(Array.from(event.currentTarget.files ?? []))}
+            />
+          </label>
           <Show when={!folderPickerSupported}>
             <p class="text-xs text-base-content/60">
               Folder selection is unavailable in this browser; select multiple files instead.

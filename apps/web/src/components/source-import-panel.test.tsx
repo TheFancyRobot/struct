@@ -56,6 +56,30 @@ describe('source import components', () => {
     expect(html).not.toContain('Create a project')
   })
 
+  it('exposes the import mode switcher as a labeled group with toggle-button selection semantics', () => {
+    const html = renderToString(() => (
+      <SourceImportPanel projectId={projectId} onAccepted={() => undefined} />
+    ))
+
+    // The group container must declare a role that supports aria-label (resolves
+    // axe aria-prohibited-attr on a role-less div).
+    expect(html).toMatch(/<div(?=[^>]*role="group")(?=[^>]*aria-label="Import mode")[^>]*>/)
+    // Each mode button must expose its active state via aria-pressed, not just a class.
+    expect(html).toMatch(/<button(?=[^>]*aria-pressed="true")[^>]*>\s*Files\s*<\/button>/)
+    expect(html).toMatch(/<button(?=[^>]*aria-pressed="false")[^>]*>\s*Paste\s*<\/button>/)
+    expect(html).toMatch(/<button(?=[^>]*aria-pressed="false")[^>]*>\s*Dataset\s*<\/button>/)
+  })
+
+  it('provides a visible accessible label for the file picker in the default files mode', () => {
+    const html = renderToString(() => (
+      <SourceImportPanel projectId={projectId} onAccepted={() => undefined} />
+    ))
+
+    expect(html).toContain('Select files to import')
+    // The label must wrap the input so axe associates them (implicit labeling).
+    expect(html).toMatch(/<label[^>]*>[\s\S]*?Select files to import[\s\S]*?<input[^>]*file-input[\s\S]*?<\/label>/)
+  })
+
   it('keeps failed work actionable without hiding successful source history', () => {
     const html = renderToString(() => (
       <BackgroundActivityTray

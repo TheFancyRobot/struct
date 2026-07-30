@@ -261,6 +261,10 @@ const server = Effect.gen(function* () {
   )
   const effectRuntime = yield* Effect.runtime<never>()
   let ready = false
+  // ponytail: gate every authenticated request on workspace bootstrap so the
+  // first mutation lands on a clean stack instead of racing the workspace row
+  // insert (BUG-0060 / BUG-0102). The readiness probe (/readyz) still reports
+  // not-ready until bootstrap completes.
   const authorizeApiScope = Effect.fn('ApiAuth.authorizeScope')(
     function* (
       credential: string,
@@ -328,6 +332,33 @@ const server = Effect.gen(function* () {
         return jsonResponse({ error: 'AuthenticationRequired' }, 401)
       }
       const identity = authenticated.value
+
+      // BUG-0103: /metrics renders only process-local observability counters
+      // (Metric.value over in-memory registries) and performs no
+      // workspace/database operation, so it stays authenticated but is dispatched
+      // before the bootstrap readiness gate to remain available while
+      // workspaceBootstrapLoop is still creating API_WORKSPACE_ID.
+      if (url.pathname === '/metrics' && req.method === 'GET') {
+        return new Response(
+          await Runtime.runPromise(effectRuntime)(renderWalkingSliceMetrics),
+          {
+            headers: { 'Content-Type': 'text/plain; version=0.0.4' },
+          },
+        )
+      }
+
+      // BUG-0102: gate every authenticated workspace-backed request on workspace
+      // bootstrap so no persistence races the bootstrap row insert. `ready` is
+      // monotonic false→true, set only after ensureApiWorkspace succeeds, so once
+      // true the workspace row exists for the process lifetime. The readiness probe
+      // (/readyz) reports not-ready until bootstrap completes; this boundary closes
+      // the race for clients that bypass the probe. BUG-0060 gated only project
+      // creation; the boundary now applies once after auth, before any route
+      // dispatch. /metrics is exempted above (BUG-0103) as it touches no workspace
+      // state.
+      if (!ready) {
+        return jsonResponse({ error: 'ServiceUnavailable' }, 503)
+      }
 
       const projectResponse = await Runtime.runPromise(effectRuntime)(projectRoute(req, identity, {
         listByWorkspaceId: (workspaceId, options) =>
@@ -425,15 +456,6 @@ const server = Effect.gen(function* () {
         },
       ))
       if (noteResponse !== undefined) return noteResponse
-
-      if (url.pathname === '/metrics' && req.method === 'GET') {
-        return new Response(
-          await Runtime.runPromise(effectRuntime)(renderWalkingSliceMetrics),
-          {
-          headers: { 'Content-Type': 'text/plain; version=0.0.4' },
-          },
-        )
-      }
 
       const directoryRoute =
         /^\/api\/projects\/([^/]+)\/directories$/.exec(url.pathname)

@@ -19,11 +19,11 @@ Keep this note short and current.
 ## Current Objective
 
 <!-- AGENT-START:current-focus -->
-_Last refreshed: 2026-07-28._
-- Session in progress: [[05_Sessions/2026-07-27-002920-migrate-components-to-semantic-brand-tokens-step-10b-03|SESSION-2026-07-27-002920 step-10b-03 session for Migrate Components to Semantic Brand Tokens]] - owner: step-10b-03 - phase: [[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]] - updated: 2026-07-27
+_Last refreshed: 2026-07-30._
+- Session in progress: none.
 - Current step: [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_01_improve-research-search-navigation-and-command-ux|STEP-11-01 Improve Research Search Navigation and Command UX]] - status: planned - phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]
 - Active phase: [[02_Phases/Phase_12_v1_2_additional_sources/Phase|PHASE-12 v1.2 Additional Sources]] - status: planned - updated: 2026-07-17
-- Also active: 2 more additional sessions, 17 more additional steps. Critical bug records listed below: 6.
+- Also active: 16 more additional steps, 30 open defects.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -59,6 +59,7 @@ _Last refreshed: 2026-07-28._
 
 <!-- AGENT-START:blockers -->
 - Phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|PHASE-11 v1.1 Research Usability]] - status: blocked - updated: 2026-07-26
+- Step: [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_02_add-saved-queries-views-and-research-templates|STEP-11-02 Add Saved Queries Views and Research Templates]] - status: blocked - phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]] - updated: 2026-07-17
 <!-- AGENT-END:blockers -->
 
 ## Open Questions
@@ -69,12 +70,12 @@ _Last refreshed: 2026-07-28._
 ## Critical Bugs
 
 <!-- AGENT-START:critical-bugs -->
+- [[03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label|BUG-0061 Source import file picker has no accessible label]] - status: fixed - severity: sev-1 - reported: 2026-07-28
 - [[03_Bugs/BUG-0059_standard-local-dev-stack-stages-source-uploads-outside-the-worker-artifact-root|BUG-0059 standard local dev stack stages source uploads outside the worker artifact root]] - status: fixed - severity: sev-1 - reported: 2026-07-28
+- [[03_Bugs/BUG-0060_clean-real-stack-omits-workspace-bootstrap-and-blocks-first-project-creation|BUG-0060 Clean real stack omits workspace bootstrap and blocks first project creation]] - status: fixed - severity: sev-1 - reported: 2026-07-28
 - [[03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets|BUG-0049 Global dataset attachments did not materialize project datasets]] - status: fixed - severity: sev-1 - reported: 2026-07-26
 - [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]] - status: fixed - severity: sev-1 - reported: 2026-07-21
-- [[03_Bugs/BUG-0048_workspace-source-attachments-do-not-enqueue-text-indexing|BUG-0048 Workspace source attachments do not enqueue text indexing]] - status: fixed - severity: sev-2 - reported: 2026-07-26
-- [[03_Bugs/BUG-0038_research-replay-loses-durable-job-ownership-before-cancellation-verification|BUG-0038 Research replay loses durable job ownership before cancellation verification]] - status: fixed - severity: sev-2 - reported: 2026-07-25
-- [[03_Bugs/BUG-0040_api-workspace-bootstrap-prevents-health-checks-during-database-outages|BUG-0040 API workspace bootstrap prevents health checks during database outages]] - status: fixed - severity: sev-2 - reported: 2026-07-24
+- [[03_Bugs/BUG-0066_mobile-source-form-controls-fall-below-the-touch-target-baseline|BUG-0066 Mobile source form controls fall below the touch target baseline]] - status: fixed - severity: sev-2 - reported: 2026-07-28
 <!-- AGENT-END:critical-bugs -->
 
 ## Next Actions

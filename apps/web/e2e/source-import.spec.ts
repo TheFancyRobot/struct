@@ -5,6 +5,7 @@ import { startAppServer, stopAppServer } from './support/app-server'
 const origin = 'http://127.0.0.1:4201'
 const projectId = 'c50e8400-e29b-41d4-a716-446655440001'
 const sourceId = 'c50e8400-e29b-41d4-a716-446655440002'
+const duplicateSourceId = 'c50e8400-e29b-41d4-a716-446655440004'
 const jobId = 'c50e8400-e29b-41d4-a716-446655440003'
 
 let browser: Awaited<ReturnType<typeof chromium.launch>>
@@ -177,24 +178,35 @@ describe('source import browser path', () => {
         await page.route('**/api/sources', (route) => route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ cursor: '0', items: [] }),
+          body: JSON.stringify({
+            cursor: '0',
+            items: [
+              { sourceId, name: 'notes.md', kind: 'document', mediaType: 'text/markdown', latestVersionId: null, latestVersion: null, readiness: 'pending', updatedAt: 1, job: null, projectIds: [] },
+              { sourceId: duplicateSourceId, name: 'notes.md', kind: 'document', mediaType: 'text/markdown', latestVersionId: null, latestVersion: null, readiness: 'pending', updatedAt: 1, job: null, projectIds: [] },
+            ],
+          }),
         }))
 
         await page.goto(`${origin}/sources`)
         const importPanel = page.locator('section[aria-labelledby="source-import-heading"]')
         await importPanel.waitFor()
-        await page.getByRole('heading', { name: 'Source library' }).waitFor()
-        await page.getByText('No sources loaded.').waitFor()
+        const pageHeading = page.getByRole('heading', { name: 'Source library', level: 1 })
+        await pageHeading.waitFor()
+        await page.getByRole('checkbox', { name: `Use notes.md (${sourceId}) in a project` }).waitFor()
         const attachmentNotice = page.getByTestId('source-library-attachment-notice')
         await attachmentNotice.waitFor()
+        expect(await page.getByRole('checkbox', { name: `Use notes.md (${sourceId}) in a project` }).count()).toBe(1)
+        expect(await page.getByRole('checkbox', { name: `Use notes.md (${duplicateSourceId}) in a project` }).count()).toBe(1)
 
-        const { importLeft, headingLeft, contentLeft, contentTop } = await page.evaluate(() => {
+        const { importLeft, libraryHeadingLeft, pageHeadingTop, contentLeft, contentTop } = await page.evaluate(() => {
           const content = document.querySelector('main .overflow-auto')! as HTMLElement
           const panel = document.querySelector('section[aria-labelledby="source-import-heading"]')! as HTMLElement
-          const heading = document.querySelector('#workspace-source-library-heading')! as HTMLElement
+          const libraryHeading = document.querySelector('#workspace-source-library-heading')! as HTMLElement
+          const pageHeading = document.querySelector('h1')! as HTMLElement
           return {
             importLeft: panel.getBoundingClientRect().left,
-            headingLeft: heading.getBoundingClientRect().left,
+            libraryHeadingLeft: libraryHeading.getBoundingClientRect().left,
+            pageHeadingTop: pageHeading.getBoundingClientRect().top,
             contentLeft: content.getBoundingClientRect().left,
             contentTop: content.getBoundingClientRect().top,
           }
@@ -202,14 +214,15 @@ describe('source import browser path', () => {
         const noticeTop = (await attachmentNotice.boundingBox())!.y
 
         // The notice and the source-library heading share the same responsive content gutter.
-        expect(Math.abs(importLeft - headingLeft)).toBeLessThanOrEqual(1)
+        expect(Math.abs(importLeft - libraryHeadingLeft)).toBeLessThanOrEqual(1)
         // Neither touches the workspace edge: both are inset by the gutter (16px compact, 24px desktop).
         expect(importLeft - contentLeft).toBeGreaterThanOrEqual(12)
-        expect(headingLeft - contentLeft).toBeGreaterThanOrEqual(12)
-        // The attachment notice is inset from the workspace top edge by the same responsive gutter
-        // (16px compact, 24px desktop), so it cannot render flush at the central viewport edge.
+        expect(libraryHeadingLeft - contentLeft).toBeGreaterThanOrEqual(12)
+        // The route heading is inset from the workspace top edge by the same responsive gutter
+        // (16px compact, 24px desktop). The notice follows that heading and cannot be flush.
         const expectedTopInset = width === 1440 ? 24 : 16
-        expect(Math.abs((noticeTop - contentTop) - expectedTopInset)).toBeLessThanOrEqual(1)
+        expect(Math.abs((pageHeadingTop - contentTop) - expectedTopInset)).toBeLessThanOrEqual(1)
+        expect(noticeTop).toBeGreaterThan(pageHeadingTop)
         // Accessible feedback semantics are preserved on the import notice.
         expect(await importPanel.getAttribute('aria-labelledby')).toBe('source-import-heading')
       } finally {
@@ -303,10 +316,56 @@ describe('source import browser path', () => {
 
       // Every expected field and option still renders alongside the error.
       expect(await page.locator('input[type="file"]').count()).toBe(1)
-      expect(await panel.getByRole('button', { name: 'Files' }).count()).toBe(1)
-      expect(await panel.getByRole('button', { name: 'Paste' }).count()).toBe(1)
-      expect(await panel.getByRole('button', { name: 'Dataset' }).count()).toBe(1)
+      expect(await panel.getByRole('button', { name: 'Files', exact: true }).count()).toBe(1)
+      expect(await panel.getByRole('button', { name: 'Paste', exact: true }).count()).toBe(1)
+      expect(await panel.getByRole('button', { name: 'Dataset', exact: true }).count()).toBe(1)
       expect(await panel.getByRole('button', { name: 'Add sources' }).count()).toBe(1)
+    } finally {
+      await page.close()
+    }
+  })
+
+  // BUG-0066: at 375×812 the workspace search inputs, project select, and file input
+  // rendered below the 44px touch-target baseline while buttons already reached 44px.
+  it('keeps every visible source form control at or above the 44px touch target on mobile', async () => {
+    const page = await browser.newPage({ viewport: { width: 375, height: 812 } })
+    try {
+      await page.route('**/api/projects', (route) => route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          items: [{ id: projectId, name: 'Touch target project', createdAt: 1, updatedAt: 2 }],
+          nextCursor: null,
+        }),
+      }))
+      await page.route('**/api/sources', (route) => route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ cursor: '0', items: [] }),
+      }))
+
+      await page.goto(`${origin}/sources`)
+      await page.getByRole('heading', { name: 'Source library', level: 1 }).waitFor()
+      // Reveal the workspace navigation search inputs, which are hidden behind the
+      // mobile sheet until it is opened.
+      await page.getByRole('button', { name: 'Open workspace navigation' }).click()
+      await page.getByLabel('Search projects').waitFor()
+      await page.getByLabel('Search sources').waitFor()
+
+      const undersized = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>(
+          '.app-shell .input, .app-shell .select, .app-shell .file-input, .app-shell .textarea',
+        )]
+          .filter((element) => element.offsetParent !== null)
+          .map((element) => ({
+            label: element.getAttribute('aria-label')
+              ?? element.querySelector('input,select,textarea')?.getAttribute('aria-label')
+              ?? element.textContent?.trim().slice(0, 40),
+            height: element.getBoundingClientRect().height,
+          }))
+          .filter((control) => control.height < 44),
+      )
+      expect(undersized).toEqual([])
     } finally {
       await page.close()
     }

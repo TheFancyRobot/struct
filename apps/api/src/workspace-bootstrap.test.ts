@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { Deferred, Effect } from 'effect'
+import { Deferred, Effect, Fiber } from 'effect'
 import { workspaceBootstrapLoop } from './workspace-bootstrap'
 
 describe('workspace bootstrap loop', () => {
@@ -24,6 +24,44 @@ describe('workspace bootstrap loop', () => {
 
     expect(ready).toBe(true)
     expect(attempts).toBe(2)
+  })
+
+  // BUG-0060: project creation must wait for workspace readiness, not race the
+  // bootstrap. The loop's markReady must fire exactly when bootstrap succeeds,
+  // releasing an awaiter; an in-progress bootstrap must keep awaiters blocked.
+  it('releases a readiness awaiter only after markReady fires', async () => {
+    let ready = false
+    const workspaceReady = await Effect.runPromise(Deferred.make<void>())
+    let awaiterResolved = false
+
+    const fiber = Effect.runFork(
+      Deferred.await(workspaceReady).pipe(
+        Effect.tap(() => {
+          awaiterResolved = true
+        }),
+      ),
+    )
+
+    await Effect.runPromise(Effect.sleep(10))
+    expect(awaiterResolved).toBe(false)
+    expect(ready).toBe(false)
+
+    await Effect.runPromise(workspaceBootstrapLoop(
+      Effect.sync(() => undefined),
+      {
+        isReady: () => ready,
+        markReady: () => {
+          ready = true
+          Deferred.unsafeDone(workspaceReady, Effect.void)
+        },
+        retryDelayMs: 1,
+        logFailure: () => undefined,
+      },
+    ))
+
+    await Effect.runPromise(Fiber.join(fiber))
+    expect(ready).toBe(true)
+    expect(awaiterResolved).toBe(true)
   })
 
   it('is interrupted before outer resources release', async () => {

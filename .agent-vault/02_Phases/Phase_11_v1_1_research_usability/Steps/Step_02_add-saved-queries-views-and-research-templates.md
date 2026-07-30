@@ -5,7 +5,7 @@ contract_version: 1
 title: Add Saved Queries Views and Research Templates
 step_id: STEP-11-02
 phase: '[[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]'
-status: planned
+status: blocked
 owner: ''
 created: '2026-07-17'
 updated: '2026-07-17'
@@ -46,10 +46,10 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 ## Agent-Managed Snapshot
 
 <!-- AGENT-START:step-agent-managed-snapshot -->
-- Status: planned
+- Status: blocked
 - Current owner:
-- Last touched: 2026-07-17
-- Next action: Read [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_02_add-saved-queries-views-and-research-templates/Execution_Brief|Execution Brief]] and [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_02_add-saved-queries-views-and-research-templates/Validation_Plan|Validation Plan]], then confirm the first bounded change against the dependency chain.
+- Last touched: 2026-07-30
+- Next action: Wait for [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_01_improve-research-search-navigation-and-command-ux|STEP-11-01 Improve Research Search Navigation and Command UX]] and the Phase 11 blocker to clear before execution.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes

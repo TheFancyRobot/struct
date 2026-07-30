@@ -65,15 +65,20 @@ run('API workspace isolation boundary', () => {
       stdout: 'ignore',
       stderr: 'ignore',
     })
-    for (let attempt = 0; attempt < 40; attempt += 1) {
+    // BUG-0104: wait for /readyz, not /healthz. /healthz only proves the
+    // listener is bound; the assertions below require workspace readiness
+    // (workspaceBootstrapLoop completed, `ready` is true) so authenticated
+    // workspace-scoped requests resolve to 404 instead of racing the BUG-0102
+    // bootstrap gate's 503 ServiceUnavailable.
+    for (let attempt = 0; attempt < 80; attempt += 1) {
       try {
-        if ((await fetch(`${origin}/healthz`)).ok) return
+        if ((await fetch(`${origin}/readyz`)).ok) return
       } catch {
         // Listener is still starting.
       }
       await Bun.sleep(50)
     }
-    throw new Error('API auth integration server did not start')
+    throw new Error('API auth integration server did not become ready')
   })
 
   afterAll(async () => {
@@ -88,6 +93,18 @@ run('API workspace isolation boundary', () => {
     ]])
     await sql!.end()
     rmSync(root, { recursive: true, force: true })
+  })
+
+  // BUG-0104: the fixture must establish workspace readiness, not just
+  // liveness, before asserting authenticated workspace-scoped behavior.
+  // /readyz returns 200 with status `ready` only once workspaceBootstrapLoop has
+  // completed; a fixture that waits on /healthz instead races the BUG-0102
+  // bootstrap gate and observes 503 here. Asserting readiness is reached keeps
+  // the fixture from silently regressing to a liveness-only wait.
+  it('reaches workspace readiness before asserting workspace-scoped behavior (BUG-0104)', async () => {
+    const readiness = await fetch(`${origin}/readyz`)
+    expect(readiness.status).toBe(200)
+    expect(await readiness.json()).toEqual({ status: 'ready', failures: [] })
   })
 
   it('returns the same non-existence response for foreign and guessed projects', async () => {
