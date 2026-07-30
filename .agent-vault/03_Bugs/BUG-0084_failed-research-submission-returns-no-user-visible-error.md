@@ -8,7 +8,7 @@ status: invalid
 severity: sev-3
 category: audit
 reported_on: '2026-07-28'
-fixed_on: '2026-07-28'
+fixed_on: ''
 owner: unassigned
 created: '2026-07-28'
 updated: '2026-07-28'
