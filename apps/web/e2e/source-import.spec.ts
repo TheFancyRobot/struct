@@ -315,4 +315,50 @@ describe('source import browser path', () => {
       await page.close()
     }
   })
+
+  // BUG-0066: at 375×812 the workspace search inputs, project select, and file input
+  // rendered below the 44px touch-target baseline while buttons already reached 44px.
+  it('keeps every visible source form control at or above the 44px touch target on mobile', async () => {
+    const page = await browser.newPage({ viewport: { width: 375, height: 812 } })
+    try {
+      await page.route('**/api/projects', (route) => route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          items: [{ id: projectId, name: 'Touch target project', createdAt: 1, updatedAt: 2 }],
+          nextCursor: null,
+        }),
+      }))
+      await page.route('**/api/sources', (route) => route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ cursor: '0', items: [] }),
+      }))
+
+      await page.goto(`${origin}/sources`)
+      await page.getByRole('heading', { name: 'Source library', level: 1 }).waitFor()
+      // Reveal the workspace navigation search inputs, which are hidden behind the
+      // mobile sheet until it is opened.
+      await page.getByRole('button', { name: 'Open workspace navigation' }).click()
+      await page.getByLabel('Search projects').waitFor()
+      await page.getByLabel('Search sources').waitFor()
+
+      const undersized = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>(
+          '.app-shell .input, .app-shell .select, .app-shell .file-input, .app-shell .textarea',
+        )]
+          .filter((element) => element.offsetParent !== null)
+          .map((element) => ({
+            label: element.getAttribute('aria-label')
+              ?? element.querySelector('input,select,textarea')?.getAttribute('aria-label')
+              ?? element.textContent?.trim().slice(0, 40),
+            height: element.getBoundingClientRect().height,
+          }))
+          .filter((control) => control.height < 44),
+      )
+      expect(undersized).toEqual([])
+    } finally {
+      await page.close()
+    }
+  })
 })
