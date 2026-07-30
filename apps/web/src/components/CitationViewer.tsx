@@ -29,7 +29,7 @@ export const CitationViewer: Component<CitationViewerProps> = (props) => {
   )
 
   return (
-    <section aria-labelledby="citation-title" class="max-w-3xl mx-auto space-y-4">
+    <div class="max-w-3xl mx-auto space-y-4">
       <Switch>
         <Match when={citation.error}>
           <div role="alert" class="alert alert-error">
@@ -45,7 +45,7 @@ export const CitationViewer: Component<CitationViewerProps> = (props) => {
         </Match>
         <Match when={citation()}>
           {(detail) => (
-            <>
+            <section aria-labelledby="citation-title" class="space-y-4">
               <A
                 class="link link-hover"
                 href={props.returnTo
@@ -83,10 +83,10 @@ export const CitationViewer: Component<CitationViewerProps> = (props) => {
                   </pre>
                 </div>
               </article>
-            </>
+            </section>
           )}
         </Match>
       </Switch>
-    </section>
+    </div>
   )
 }

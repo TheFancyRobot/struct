@@ -3,16 +3,13 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test'
 import { renderToString } from 'solid-js/web'
 import { ProjectId } from '@struct/domain'
+import { setRouterParams } from '../test/mock-solid-router'
 
 // BUG-0062: SourcesPage relies on @solidjs/router's useParams. The router's
 // prebuilt entry calls the client-only `template` primitive at module load,
-// which throws under solid-js/web's server build used by renderToString. Mock
-// the router so the page can render in the SSR test harness with controlled
-// route params.
-let currentParams: Record<string, string | undefined> = {}
-mock.module('@solidjs/router', () => ({
-  useParams: () => currentParams,
-}))
+// which throws under solid-js/web's server build used by renderToString. The
+// shared router mock (mock-solid-router) lets the page render in the SSR test
+// harness with controlled route params; drive it via `setRouterParams`.
 
 const { SourcesPage } = await import('./SourcesPage')
 
@@ -46,14 +43,14 @@ function mockSourceApiFetch() {
 
 afterEach(() => {
   globalThis.fetch = originalFetch
-  currentParams = {}
+  setRouterParams({})
   mock.restore()
 })
 
 describe('SourcesPage route-level heading (BUG-0062)', () => {
   it('renders a single route-level h1 in the workspace source library', () => {
     mockSourceApiFetch()
-    currentParams = {}
+    setRouterParams({})
     const html = renderToString(() => <SourcesPage />)
 
     expect(html).toContain('<h1')
@@ -64,7 +61,7 @@ describe('SourcesPage route-level heading (BUG-0062)', () => {
 
   it('renders a single route-level h1 in the project sources view', () => {
     mockSourceApiFetch()
-    currentParams = { projectId }
+    setRouterParams({ projectId })
     const html = renderToString(() => <SourcesPage />)
 
     expect(html).toContain('<h1')
@@ -74,7 +71,7 @@ describe('SourcesPage route-level heading (BUG-0062)', () => {
   })
 
   it('renders a route-level h1 for an invalid project route', () => {
-    currentParams = { projectId: 'not-a-project-id' }
+    setRouterParams({ projectId: 'not-a-project-id' })
     const html = renderToString(() => <SourcesPage />)
 
     expect(html).toContain('<h1')
