@@ -116,8 +116,8 @@ export const SourcesPage: Component = () => {
 
   return (
     <section class="mx-auto max-w-4xl space-y-4 px-4 sm:px-6 pt-4 sm:pt-6">
+      <h1 class="text-lg font-semibold">{libraryMode() ? 'Source library' : 'Sources'}</h1>
       <Show when={libraryMode() || projectId() !== null} fallback={<p class="alert alert-error">This project is no longer available.</p>}>
-        <h1 class="text-lg font-semibold">{libraryMode() ? 'Source library' : 'Sources'}</h1>
         <Show when={commandError()}>{(error) => <p class="alert alert-error" role="alert">{error()}</p>}</Show>
         <Show when={libraryMode()}>
           <div data-testid="source-library-attachment-notice" class="space-y-3 rounded-box border border-base-300 bg-base-100 p-4">

@@ -47,6 +47,7 @@ function mockSourceApiFetch() {
 afterEach(() => {
   globalThis.fetch = originalFetch
   currentParams = {}
+  mock.restore()
 })
 
 describe('SourcesPage route-level heading (BUG-0062)', () => {
@@ -70,5 +71,15 @@ describe('SourcesPage route-level heading (BUG-0062)', () => {
     expect(html).toContain('>Sources<')
     expect((html.match(/<h1\b/g) ?? [])).toHaveLength(1)
     expect(html.indexOf('<h1')).toBeLessThan(html.indexOf('<h2'))
+  })
+
+  it('renders a route-level h1 for an invalid project route', () => {
+    currentParams = { projectId: 'not-a-project-id' }
+    const html = renderToString(() => <SourcesPage />)
+
+    expect(html).toContain('<h1')
+    expect(html).toContain('>Sources<')
+    expect(html).toContain('This project is no longer available.')
+    expect((html.match(/<h1\b/g) ?? [])).toHaveLength(1)
   })
 })
