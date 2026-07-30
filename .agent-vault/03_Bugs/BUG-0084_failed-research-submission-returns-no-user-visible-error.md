@@ -2,7 +2,7 @@
 note_type: bug
 template_version: 2
 contract_version: 1
-title: Failed research submission returns no user visible error
+title: Failed research submission returns no user-visible error
 bug_id: BUG-0084
 status: invalid
 severity: sev-3
@@ -20,13 +20,13 @@ tags:
   - bug
 ---
 
-# BUG-0084 - Failed research submission returns no user visible error
+# BUG-0084 - Failed research submission returns no user-visible error
 
 Use one note per bug. Capture reproduction, impact, root cause, workaround, and verification, then link back to the relevant phase, step, decision, or session. See [[07_Templates/Note_Contracts|Note Contracts]].
 
 ## Summary
 
-- Failed research submission returns no user visible error.
+- Failed research submission returns no user-visible error.
 - Related notes: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]], [[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]].
 - **Observed:** With a prompt and selected ready source, Start research enables; when `POST /api/projects/:id/research` returns `400 InvalidResearchRequest`, the button simply returns to disabled and no alert/status explains the failure or recovery.
 - **Expected:** Display an actionable inline error, preserve the draft/source selection, announce it via `role=alert`, and allow retry.
