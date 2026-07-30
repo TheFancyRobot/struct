@@ -87,5 +87,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
-- 2026-07-28 - Reported.
 - 2026-07-30 - Fixed by bug-0065-attempt-1. Root cause: un-overridden DaisyUI `.menu-title` 40% alpha default. Fix: `.app-shell .menu-title { color: var(--struct-muted); }` in `apps/web/src/index.css` (7.56:1 light / 7.10:1 dark). Added `apps/web/src/menu-title-contrast.test.ts` regression coverage. Verified: 87 web unit tests pass, typecheck + lint clean, production build compiles with the override winning the cascade.
