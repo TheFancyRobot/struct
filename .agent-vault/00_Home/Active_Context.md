@@ -74,7 +74,7 @@ _Last refreshed: 2026-07-30._
 - [[03_Bugs/BUG-0059_standard-local-dev-stack-stages-source-uploads-outside-the-worker-artifact-root|BUG-0059 standard local dev stack stages source uploads outside the worker artifact root]] - status: fixed - severity: sev-1 - reported: 2026-07-28
 - [[03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets|BUG-0049 Global dataset attachments did not materialize project datasets]] - status: fixed - severity: sev-1 - reported: 2026-07-26
 - [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]] - status: fixed - severity: sev-1 - reported: 2026-07-21
-- [[03_Bugs/BUG-0064_citation-unavailable-state-references-a-missing-accessible-heading|BUG-0064 Citation unavailable state references a missing accessible heading]] - status: fixed - severity: sev-2 - reported: 2026-07-28
+- [[03_Bugs/BUG-0065_project-sidebar-section-label-fails-contrast-in-both-themes|BUG-0065 Project sidebar section label fails contrast in both themes]] - status: fixed - severity: sev-2 - reported: 2026-07-28
 <!-- AGENT-END:critical-bugs -->
 
 ## Next Actions

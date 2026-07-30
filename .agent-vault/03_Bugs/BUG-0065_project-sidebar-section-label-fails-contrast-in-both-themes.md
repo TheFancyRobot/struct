@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Project sidebar section label fails contrast in both themes
 bug_id: BUG-0065
-status: new
+status: fixed
 severity: sev-2
 category: accessibility
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-07-30'
+owner: bug-0065-attempt-1
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-07-30'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -70,6 +70,9 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
+- Added `apps/web/src/menu-title-contrast.test.ts`: parses the real brand tokens and the `.menu-title` override from `index.css`, resolves the color per theme, and asserts WCAG contrast ≥ 4.5:1 against `--struct-surface` in both `struct-light` and `struct-dark`. Fails fast if the override is removed or a token drops below AA.
+- Existing `apps/web/src/components/workspace/workspace-shell.test.tsx` still asserts the `.menu-title` "Project" label renders inside the ordered nav.
+- E2e `apps/web/e2e/workspace-accessibility.spec.ts` already exercises `.app-shell` brand contrast in both themes; the override improves that path.
 
 ## Related Notes
 
@@ -84,3 +87,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-07-28 - Reported.
+- 2026-07-30 - Fixed by bug-0065-attempt-1. Root cause: un-overridden DaisyUI `.menu-title` 40% alpha default. Fix: `.app-shell .menu-title { color: var(--struct-muted); }` in `apps/web/src/index.css` (7.56:1 light / 7.10:1 dark). Added `apps/web/src/menu-title-contrast.test.ts` regression coverage. Verified: 87 web unit tests pass, typecheck + lint clean, production build compiles with the override winning the cascade.
