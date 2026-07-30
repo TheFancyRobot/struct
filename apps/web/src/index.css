@@ -219,6 +219,15 @@ kbd {
   min-height: 2.75rem;
 }
 
+/* BUG-0065: DaisyUI renders .menu-title at 40% alpha of base-content
+   (2.55:1 light / 3.32:1 dark), below WCAG AA 4.5:1 for 12px text. The
+   sidebar surface is --struct-surface; --struct-muted clears AA in both
+   themes (7.56:1 light / 7.10:1 dark). This unlayered rule overrides the
+   layered DaisyUI color-mix default. */
+.app-shell .menu-title {
+  color: var(--struct-muted);
+}
+
 .app-shell .btn-sm {
   min-width: 2.75rem;
 }
