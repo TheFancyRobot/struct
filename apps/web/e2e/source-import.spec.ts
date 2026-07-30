@@ -183,18 +183,21 @@ describe('source import browser path', () => {
         await page.goto(`${origin}/sources`)
         const importPanel = page.locator('section[aria-labelledby="source-import-heading"]')
         await importPanel.waitFor()
-        await page.getByRole('heading', { name: 'Source library' }).waitFor()
+        const pageHeading = page.getByRole('heading', { name: 'Source library', level: 1 })
+        await pageHeading.waitFor()
         await page.getByText('No sources loaded.').waitFor()
         const attachmentNotice = page.getByTestId('source-library-attachment-notice')
         await attachmentNotice.waitFor()
 
-        const { importLeft, headingLeft, contentLeft, contentTop } = await page.evaluate(() => {
+        const { importLeft, libraryHeadingLeft, pageHeadingTop, contentLeft, contentTop } = await page.evaluate(() => {
           const content = document.querySelector('main .overflow-auto')! as HTMLElement
           const panel = document.querySelector('section[aria-labelledby="source-import-heading"]')! as HTMLElement
-          const heading = document.querySelector('#workspace-source-library-heading')! as HTMLElement
+          const libraryHeading = document.querySelector('#workspace-source-library-heading')! as HTMLElement
+          const pageHeading = document.querySelector('h1')! as HTMLElement
           return {
             importLeft: panel.getBoundingClientRect().left,
-            headingLeft: heading.getBoundingClientRect().left,
+            libraryHeadingLeft: libraryHeading.getBoundingClientRect().left,
+            pageHeadingTop: pageHeading.getBoundingClientRect().top,
             contentLeft: content.getBoundingClientRect().left,
             contentTop: content.getBoundingClientRect().top,
           }
@@ -202,14 +205,15 @@ describe('source import browser path', () => {
         const noticeTop = (await attachmentNotice.boundingBox())!.y
 
         // The notice and the source-library heading share the same responsive content gutter.
-        expect(Math.abs(importLeft - headingLeft)).toBeLessThanOrEqual(1)
+        expect(Math.abs(importLeft - libraryHeadingLeft)).toBeLessThanOrEqual(1)
         // Neither touches the workspace edge: both are inset by the gutter (16px compact, 24px desktop).
         expect(importLeft - contentLeft).toBeGreaterThanOrEqual(12)
-        expect(headingLeft - contentLeft).toBeGreaterThanOrEqual(12)
-        // The attachment notice is inset from the workspace top edge by the same responsive gutter
-        // (16px compact, 24px desktop), so it cannot render flush at the central viewport edge.
+        expect(libraryHeadingLeft - contentLeft).toBeGreaterThanOrEqual(12)
+        // The route heading is inset from the workspace top edge by the same responsive gutter
+        // (16px compact, 24px desktop). The notice follows that heading and cannot be flush.
         const expectedTopInset = width === 1440 ? 24 : 16
-        expect(Math.abs((noticeTop - contentTop) - expectedTopInset)).toBeLessThanOrEqual(1)
+        expect(Math.abs((pageHeadingTop - contentTop) - expectedTopInset)).toBeLessThanOrEqual(1)
+        expect(noticeTop).toBeGreaterThan(pageHeadingTop)
         // Accessible feedback semantics are preserved on the import notice.
         expect(await importPanel.getAttribute('aria-labelledby')).toBe('source-import-heading')
       } finally {
@@ -303,9 +307,9 @@ describe('source import browser path', () => {
 
       // Every expected field and option still renders alongside the error.
       expect(await page.locator('input[type="file"]').count()).toBe(1)
-      expect(await panel.getByRole('button', { name: 'Files' }).count()).toBe(1)
-      expect(await panel.getByRole('button', { name: 'Paste' }).count()).toBe(1)
-      expect(await panel.getByRole('button', { name: 'Dataset' }).count()).toBe(1)
+      expect(await panel.getByRole('button', { name: 'Files', exact: true }).count()).toBe(1)
+      expect(await panel.getByRole('button', { name: 'Paste', exact: true }).count()).toBe(1)
+      expect(await panel.getByRole('button', { name: 'Dataset', exact: true }).count()).toBe(1)
       expect(await panel.getByRole('button', { name: 'Add sources' }).count()).toBe(1)
     } finally {
       await page.close()

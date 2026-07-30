@@ -116,6 +116,7 @@ export const SourcesPage: Component = () => {
 
   return (
     <section class="mx-auto max-w-4xl space-y-4 px-4 sm:px-6 pt-4 sm:pt-6">
+      <h1 class="text-lg font-semibold">{libraryMode() ? 'Source library' : 'Sources'}</h1>
       <Show when={libraryMode() || projectId() !== null} fallback={<p class="alert alert-error">This project is no longer available.</p>}>
         <Show when={commandError()}>{(error) => <p class="alert alert-error" role="alert">{error()}</p>}</Show>
         <Show when={libraryMode()}>
@@ -176,7 +177,7 @@ export const SourcesPage: Component = () => {
               </Show>
               <Show when={libraryMode()} fallback={<SourceCatalogList items={loaded().items} />}>
                 <section aria-labelledby="workspace-source-library-heading">
-                  <h2 id="workspace-source-library-heading" class="mb-3 text-lg font-semibold">Source library</h2>
+                  <h2 id="workspace-source-library-heading" class="mb-3 text-lg font-semibold">Library sources</h2>
                   <ul class="space-y-2">
                     <For each={loaded().items} fallback={<li class="text-sm text-base-content/60">No sources loaded.</li>}>
                       {(source) => (

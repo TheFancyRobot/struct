@@ -30,7 +30,7 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 _Last rebuilt: 2026-07-29._
 
 - Notes indexed: 91
-- Status summary: new (36), fixed (51), invalid (4)
+- Status summary: new (35), fixed (52), invalid (4)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -46,7 +46,6 @@ _Last rebuilt: 2026-07-29._
 | BUG-0097 | [Mixed source light theme metadata text fails contrast](../03_Bugs/BUG-0097_mixed-source-light-theme-metadata-text-fails-contrast.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0098 | [Mixed source dataset type labels fail contrast in both themes](../03_Bugs/BUG-0098_mixed-source-dataset-type-labels-fail-contrast-in-both-themes.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0099 | [Mixed source dark dataset definition labels fail contrast](../03_Bugs/BUG-0099_mixed-source-dark-dataset-definition-labels-fail-contrast.md) | new | sev-2 | 2026-07-28 | - | - |
-| BUG-0062 | [Source views lack a route level h1 heading](../03_Bugs/BUG-0062_source-views-lack-a-route-level-h1-heading.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0070 | [New project is missing from project navigation until reload](../03_Bugs/BUG-0070_new-project-is-missing-from-project-navigation-until-reload.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0071 | [Add Source leaves focus in workspace navigation after route change](../03_Bugs/BUG-0071_add-source-leaves-focus-in-workspace-navigation-after-route-change.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0072 | [Workspace routes reuse one generic browser title](../03_Bugs/BUG-0072_workspace-routes-reuse-one-generic-browser-title.md) | new | sev-3 | 2026-07-28 | - | - |
@@ -81,6 +80,7 @@ _Last rebuilt: 2026-07-29._
 | BUG-0102 | [Authenticated API mutations can race workspace bootstrap](../03_Bugs/BUG-0102_authenticated-api-mutations-can-race-workspace-bootstrap.md) | fixed | sev-3 | 2026-07-29 | 2026-07-29 | - |
 | BUG-0103 | [Authenticated metrics are unavailable during workspace bootstrap](../03_Bugs/BUG-0103_authenticated-metrics-are-unavailable-during-workspace-bootstrap.md) | fixed | sev-3 | 2026-07-29 | 2026-07-29 | - |
 | BUG-0104 | [Auth integration test races workspace readiness](../03_Bugs/BUG-0104_auth-integration-test-races-workspace-readiness.md) | fixed | sev-3 | 2026-07-29 | 2026-07-29 | - |
+| BUG-0062 | [Source views lack a route level h1 heading](../03_Bugs/BUG-0062_source-views-lack-a-route-level-h1-heading.md) | fixed | sev-3 | 2026-07-28 | 2026-07-29 | - |
 | BUG-0084 | [Failed research submission returns no user visible error](../03_Bugs/BUG-0084_failed-research-submission-returns-no-user-visible-error.md) | invalid | sev-3 | 2026-07-28 | 2026-07-28 | - |
 | BUG-0091 | [Notebook finding selection and citation warning lack browser coverage](../03_Bugs/BUG-0091_notebook-finding-selection-and-citation-warning-lack-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | 2026-07-28 | - |
 | BUG-0092 | [Report export failure lacks browser coverage](../03_Bugs/BUG-0092_report-export-failure-lacks-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | 2026-07-28 | - |
