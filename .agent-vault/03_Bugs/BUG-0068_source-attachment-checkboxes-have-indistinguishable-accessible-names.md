@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Source attachment checkboxes have indistinguishable accessible names
 bug_id: BUG-0068
-status: new
+status: fixed
 severity: sev-2
 category: accessibility
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-07-30'
+owner: root-orchestrator
 created: '2026-07-28'
 updated: '2026-07-28'
 related_notes:
@@ -57,7 +57,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Confirmed Root Cause
 
-- Record the proven cause and decisive evidence.
+- Each checkbox inherited the same literal `Use in project` label. The source and selected-project names were not included, and source names are not unique.
 
 ## Workaround
 
@@ -66,10 +66,11 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
+- The library attachment checkbox label now includes source name, stable source ID, and target: `Use {source.name} ({source.sourceId}) in {selectedProject()?.name ?? 'a project'}`. This preserves visible label text while making duplicate source names distinguishable.
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
+- `apps/web/e2e/source-import.spec.ts` loads two same-named source rows and asserts one checkbox with each source-ID-qualified accessible name.
 
 ## Related Notes
 
@@ -83,4 +84,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
+- 2026-07-30 - Fixed with source-ID-qualified checkbox accessible names; targeted browser regression passed (7/7) and web typecheck passed.
 <!-- AGENT-END:bug-timeline -->

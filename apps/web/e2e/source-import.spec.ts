@@ -5,6 +5,7 @@ import { startAppServer, stopAppServer } from './support/app-server'
 const origin = 'http://127.0.0.1:4201'
 const projectId = 'c50e8400-e29b-41d4-a716-446655440001'
 const sourceId = 'c50e8400-e29b-41d4-a716-446655440002'
+const duplicateSourceId = 'c50e8400-e29b-41d4-a716-446655440004'
 const jobId = 'c50e8400-e29b-41d4-a716-446655440003'
 
 let browser: Awaited<ReturnType<typeof chromium.launch>>
@@ -177,7 +178,13 @@ describe('source import browser path', () => {
         await page.route('**/api/sources', (route) => route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ cursor: '0', items: [] }),
+          body: JSON.stringify({
+            cursor: '0',
+            items: [
+              { sourceId, name: 'notes.md', kind: 'document', mediaType: 'text/markdown', latestVersionId: null, latestVersion: null, readiness: 'pending', updatedAt: 1, job: null, projectIds: [] },
+              { sourceId: duplicateSourceId, name: 'notes.md', kind: 'document', mediaType: 'text/markdown', latestVersionId: null, latestVersion: null, readiness: 'pending', updatedAt: 1, job: null, projectIds: [] },
+            ],
+          }),
         }))
 
         await page.goto(`${origin}/sources`)
@@ -185,9 +192,11 @@ describe('source import browser path', () => {
         await importPanel.waitFor()
         const pageHeading = page.getByRole('heading', { name: 'Source library', level: 1 })
         await pageHeading.waitFor()
-        await page.getByText('No sources loaded.').waitFor()
+        await page.getByRole('checkbox', { name: `Use notes.md (${sourceId}) in a project` }).waitFor()
         const attachmentNotice = page.getByTestId('source-library-attachment-notice')
         await attachmentNotice.waitFor()
+        expect(await page.getByRole('checkbox', { name: `Use notes.md (${sourceId}) in a project` }).count()).toBe(1)
+        expect(await page.getByRole('checkbox', { name: `Use notes.md (${duplicateSourceId}) in a project` }).count()).toBe(1)
 
         const { importLeft, libraryHeadingLeft, pageHeadingTop, contentLeft, contentTop } = await page.evaluate(() => {
           const content = document.querySelector('main .overflow-auto')! as HTMLElement

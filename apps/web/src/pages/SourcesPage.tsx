@@ -69,6 +69,8 @@ export const SourcesPage: Component = () => {
   const [projects] = createResource(fetchProjects)
   const [selectedProjectId, setSelectedProjectId] = createSignal<typeof ProjectId.Type | null>(null)
   const [attachNewSources, setAttachNewSources] = createSignal(false)
+  const selectedProject = createMemo(() =>
+    projects()?.items.find((project) => project.id === selectedProjectId()) ?? null)
   const [catalog, { refetch }] = createResource(
     () => libraryMode() ? 'workspace' : projectId(),
     (scope) => scope === 'workspace'
@@ -187,11 +189,12 @@ export const SourcesPage: Component = () => {
                             <input
                               type="checkbox"
                               class="checkbox checkbox-sm"
+                              aria-label={`Use ${source.name} (${source.sourceId}) in ${selectedProject()?.name ?? 'a project'}`}
                               disabled={selectedProjectId() === null}
                               checked={selectedProjectId() !== null && source.projectIds.includes(selectedProjectId()!)}
                               onChange={(event) => void setAttached(source.sourceId, event.currentTarget.checked)}
                             />
-                            Use in project
+                            Use {source.name} in {selectedProject()?.name ?? 'a project'}
                           </label>
                         </li>
                       )}
