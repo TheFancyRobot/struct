@@ -59,7 +59,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- No production workaround exists. Callers must wait for the workspace readiness boundary; authenticated mutations return HTTP 503 while bootstrap is in progress.
 
 ## Permanent Fix Plan
 
