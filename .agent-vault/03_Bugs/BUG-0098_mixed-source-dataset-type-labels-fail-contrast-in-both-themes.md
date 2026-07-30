@@ -35,21 +35,25 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- Dataset table type labels such as `VARCHAR` and `BIGINT` fail contrast in both themes.
+- Labels use `text-base-content/45` at 11.2px.
+- Contrast measures 2.92:1 in light and 3.85:1 in dark, below 4.5:1.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- Small schema/type metadata meets 4.5:1 contrast.
+- Independently in both light and dark themes.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+- Open the complete mixed-source demo.
+- Run axe in light and dark themes.
+- Evidence: `.local/ui-audit/demo/contrast-unique.json` and complete-state axe JSON.
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- Mixed-source dataset table type labels.
+- Affects both light and dark themes.
 
 ## Suspected Root Cause
 
@@ -57,19 +61,21 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Confirmed Root Cause
 
-- Record the proven cause and decisive evidence.
+- Type labels render with `text-base-content/45` at 11.2px, yielding 2.92:1 (light) / 3.85:1 (dark), below 4.5:1.
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- None recorded in the summary evidence.
 
 ## Permanent Fix Plan
 
-- Describe the intended durable fix.
+- Type labels must meet 4.5:1 independently in both themes.
+- Current `text-base-content/45` at 11.2px is the cause to address.
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
+- Re-run axe in light/dark on the complete mixed-source demo.
+- Verify `.local/ui-audit/demo/contrast-unique.json` and complete-state axe JSON show type labels at >= 4.5:1.
 
 ## Related Notes
 
