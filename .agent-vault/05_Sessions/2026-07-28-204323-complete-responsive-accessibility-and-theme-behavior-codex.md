@@ -23,8 +23,11 @@ context:
   last_action:
     type: completed
 related_bugs:
+  - '[[03_Bugs/BUG-0060_clean-real-stack-omits-workspace-bootstrap-and-blocks-first-project-creation|BUG-0060 Clean real stack omits workspace bootstrap and blocks first project creation]]'
   - '[[03_Bugs/BUG-0062_source-views-lack-a-route-level-h1-heading|BUG-0062 Source views lack a route level h1 heading]]'
   - '[[03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label|BUG-0061 Source import file picker has no accessible label]]'
+  - '[[03_Bugs/BUG-0063_source-import-mode-switcher-lacks-valid-group-and-selection-semantics|BUG-0063 Source import mode switcher lacks valid group and selection semantics]]'
+  - '[[03_Bugs/BUG-0064_citation-unavailable-state-references-a-missing-accessible-heading|BUG-0064 Citation unavailable state references a missing accessible heading]]'
   - '[[03_Bugs/BUG-0065_project-sidebar-section-label-fails-contrast-in-both-themes|BUG-0065 Project sidebar section label fails contrast in both themes]]'
   - '[[03_Bugs/BUG-0066_mobile-source-form-controls-fall-below-the-touch-target-baseline|BUG-0066 Mobile source form controls fall below the touch target baseline]]'
   - '[[03_Bugs/BUG-0067_mobile-navigation-and-evidence-sheets-do-not-isolate-keyboard-focus|BUG-0067 Mobile navigation and evidence sheets do not isolate keyboard focus]]'
@@ -139,8 +142,11 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Bugs Encountered
 
 <!-- AGENT-START:session-bugs-encountered -->
+- [[03_Bugs/BUG-0060_clean-real-stack-omits-workspace-bootstrap-and-blocks-first-project-creation|BUG-0060 Clean real stack omits workspace bootstrap and blocks first project creation]] - Linked from bug generator.
 - [[03_Bugs/BUG-0062_source-views-lack-a-route-level-h1-heading|BUG-0062 Source views lack a route level h1 heading]] - Linked from bug generator.
 - [[03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label|BUG-0061 Source import file picker has no accessible label]] - Linked from bug generator.
+- [[03_Bugs/BUG-0063_source-import-mode-switcher-lacks-valid-group-and-selection-semantics|BUG-0063 Source import mode switcher lacks valid group and selection semantics]] - Linked from bug generator.
+- [[03_Bugs/BUG-0064_citation-unavailable-state-references-a-missing-accessible-heading|BUG-0064 Citation unavailable state references a missing accessible heading]] - Linked from bug generator.
 - [[03_Bugs/BUG-0065_project-sidebar-section-label-fails-contrast-in-both-themes|BUG-0065 Project sidebar section label fails contrast in both themes]] - Linked from bug generator.
 - [[03_Bugs/BUG-0066_mobile-source-form-controls-fall-below-the-touch-target-baseline|BUG-0066 Mobile source form controls fall below the touch target baseline]] - Linked from bug generator.
 - [[03_Bugs/BUG-0067_mobile-navigation-and-evidence-sheets-do-not-isolate-keyboard-focus|BUG-0067 Mobile navigation and evidence sheets do not isolate keyboard focus]] - Linked from bug generator.
@@ -179,8 +185,6 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - [[03_Bugs/BUG-0100_mixed-source-mobile-section-tabs-are-only-40-pixels-high|BUG-0100 Mixed source mobile section tabs are only 40 pixels high]] - Linked from bug generator.
 - [[03_Bugs/BUG-0101_mixed-source-citation-links-are-only-24-pixels-high-on-mobile|BUG-0101 Mixed source citation links are only 24 pixels high on mobile]] - Linked from bug generator.
 <!-- AGENT-END:session-bugs-encountered -->
-- [[03_Bugs/BUG-0060_clean-real-stack-omits-workspace-bootstrap-and-blocks-first-project-creation|BUG-0060 Clean real stack omits workspace bootstrap and blocks first project creation]]
-- [[03_Bugs/BUG-0063_source-import-mode-switcher-lacks-valid-group-and-selection-semantics|BUG-0063 Source import mode switcher lacks valid group and selection semantics]]
 
 ## Decisions Made or Updated
 

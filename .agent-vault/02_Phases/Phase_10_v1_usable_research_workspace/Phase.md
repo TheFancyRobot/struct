@@ -40,8 +40,11 @@ related_bugs:
   - '[[03_Bugs/BUG-0057_full-e2e-suite-leaks-process-state-before-mixed-source-report-tests|BUG-0057 full e2e suite leaks process state before mixed-source report tests]]'
   - '[[03_Bugs/BUG-0058_workspace-release-e2e-times-out-under-full-suite-docker-cold-start-contention|BUG-0058 workspace release e2e times out under full-suite docker cold-start contention]]'
   - '[[03_Bugs/BUG-0059_standard-local-dev-stack-stages-source-uploads-outside-the-worker-artifact-root|BUG-0059 standard local dev stack stages source uploads outside the worker artifact root]]'
+  - '[[03_Bugs/BUG-0060_clean-real-stack-omits-workspace-bootstrap-and-blocks-first-project-creation|BUG-0060 Clean real stack omits workspace bootstrap and blocks first project creation]]'
   - '[[03_Bugs/BUG-0064_citation-unavailable-state-references-a-missing-accessible-heading|BUG-0064 Citation unavailable state references a missing accessible heading]]'
   - '[[03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label|BUG-0061 Source import file picker has no accessible label]]'
+  - '[[03_Bugs/BUG-0062_source-views-lack-a-route-level-h1-heading|BUG-0062 Source views lack a route level h1 heading]]'
+  - '[[03_Bugs/BUG-0063_source-import-mode-switcher-lacks-valid-group-and-selection-semantics|BUG-0063 Source import mode switcher lacks valid group and selection semantics]]'
   - '[[03_Bugs/BUG-0065_project-sidebar-section-label-fails-contrast-in-both-themes|BUG-0065 Project sidebar section label fails contrast in both themes]]'
   - '[[03_Bugs/BUG-0066_mobile-source-form-controls-fall-below-the-touch-target-baseline|BUG-0066 Mobile source form controls fall below the touch target baseline]]'
   - '[[03_Bugs/BUG-0067_mobile-navigation-and-evidence-sheets-do-not-isolate-keyboard-focus|BUG-0067 Mobile navigation and evidence sheets do not isolate keyboard focus]]'
@@ -190,8 +193,11 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - [[03_Bugs/BUG-0057_full-e2e-suite-leaks-process-state-before-mixed-source-report-tests|BUG-0057 full e2e suite leaks process state before mixed-source report tests]]
 - [[03_Bugs/BUG-0058_workspace-release-e2e-times-out-under-full-suite-docker-cold-start-contention|BUG-0058 workspace release e2e times out under full-suite docker cold-start contention]]
 - [[03_Bugs/BUG-0059_standard-local-dev-stack-stages-source-uploads-outside-the-worker-artifact-root|BUG-0059 standard local dev stack stages source uploads outside the worker artifact root]]
+- [[03_Bugs/BUG-0060_clean-real-stack-omits-workspace-bootstrap-and-blocks-first-project-creation|BUG-0060 Clean real stack omits workspace bootstrap and blocks first project creation]]
 - [[03_Bugs/BUG-0064_citation-unavailable-state-references-a-missing-accessible-heading|BUG-0064 Citation unavailable state references a missing accessible heading]]
 - [[03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label|BUG-0061 Source import file picker has no accessible label]]
+- [[03_Bugs/BUG-0062_source-views-lack-a-route-level-h1-heading|BUG-0062 Source views lack a route level h1 heading]]
+- [[03_Bugs/BUG-0063_source-import-mode-switcher-lacks-valid-group-and-selection-semantics|BUG-0063 Source import mode switcher lacks valid group and selection semantics]]
 - [[03_Bugs/BUG-0065_project-sidebar-section-label-fails-contrast-in-both-themes|BUG-0065 Project sidebar section label fails contrast in both themes]]
 - [[03_Bugs/BUG-0066_mobile-source-form-controls-fall-below-the-touch-target-baseline|BUG-0066 Mobile source form controls fall below the touch target baseline]]
 - [[03_Bugs/BUG-0067_mobile-navigation-and-evidence-sheets-do-not-isolate-keyboard-focus|BUG-0067 Mobile navigation and evidence sheets do not isolate keyboard focus]]
