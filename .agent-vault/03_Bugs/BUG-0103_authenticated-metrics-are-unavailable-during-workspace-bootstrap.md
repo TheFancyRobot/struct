@@ -25,7 +25,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Summary
 
 - Authenticated metrics are unavailable during workspace bootstrap.
-- Related notes: none linked yet.
+- Related notes: [[03_Bugs/BUG-0102_authenticated-api-mutations-can-race-workspace-bootstrap|BUG-0102 Authenticated API mutations can race workspace bootstrap]]
 - **Observed:** BUG-0102's unconditional post-auth workspace readiness gate returns `503 ServiceUnavailable` for authenticated `GET /metrics` while bootstrap is incomplete.
 - **Expected:** `/metrics` remains authenticated but is available during bootstrap because it renders only process-local observability data and performs no workspace/database operation.
 - **Confirmed cause:** In `apps/api/src/main.ts`, the readiness gate precedes the later `/metrics` dispatch.
