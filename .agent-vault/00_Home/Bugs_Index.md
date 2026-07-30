@@ -27,14 +27,13 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 ## Status Buckets
 
 <!-- AGENT-START:bugs-index -->
-_Last rebuilt: 2026-07-29._
+_Last rebuilt: 2026-07-30._
 
 - Notes indexed: 91
-- Status summary: new (35), fixed (52), invalid (4)
+- Status summary: new (34), fixed (53), invalid (4)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
-| BUG-0063 | [Source import mode switcher lacks valid group and selection semantics](../03_Bugs/BUG-0063_source-import-mode-switcher-lacks-valid-group-and-selection-semantics.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0064 | [Citation unavailable state references a missing accessible heading](../03_Bugs/BUG-0064_citation-unavailable-state-references-a-missing-accessible-heading.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0065 | [Project sidebar section label fails contrast in both themes](../03_Bugs/BUG-0065_project-sidebar-section-label-fails-contrast-in-both-themes.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0066 | [Mobile source form controls fall below the touch target baseline](../03_Bugs/BUG-0066_mobile-source-form-controls-fall-below-the-touch-target-baseline.md) | new | sev-2 | 2026-07-28 | - | - |
@@ -74,6 +73,7 @@ _Last rebuilt: 2026-07-29._
 | BUG-0061 | [Source import file picker has no accessible label](../03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label.md) | fixed | sev-1 | 2026-07-28 | 2026-07-29 | - |
 | BUG-0049 | [Global dataset attachments did not materialize project datasets](../03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets.md) | fixed | sev-1 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0013 | [v1 UI lacks core research workflows](../03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows.md) | fixed | sev-1 | 2026-07-21 | 2026-07-26 | - |
+| BUG-0063 | [Source import mode switcher lacks valid group and selection semantics](../03_Bugs/BUG-0063_source-import-mode-switcher-lacks-valid-group-and-selection-semantics.md) | fixed | sev-2 | 2026-07-28 | 2026-07-30 | - |
 | BUG-0048 | [Workspace source attachments do not enqueue text indexing](../03_Bugs/BUG-0048_workspace-source-attachments-do-not-enqueue-text-indexing.md) | fixed | sev-2 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0038 | [Research replay loses durable job ownership before cancellation verification](../03_Bugs/BUG-0038_research-replay-loses-durable-job-ownership-before-cancellation-verification.md) | fixed | sev-2 | 2026-07-25 | 2026-07-25 | - |
 | BUG-0040 | [API workspace bootstrap prevents health checks during database outages](../03_Bugs/BUG-0040_api-workspace-bootstrap-prevents-health-checks-during-database-outages.md) | fixed | sev-2 | 2026-07-24 | 2026-07-25 | - |
