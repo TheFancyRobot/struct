@@ -505,6 +505,20 @@ export const WorkspaceShell: ParentComponent<{
   })
 
   onMount(() => {
+    const navigationDesktop = window.matchMedia('(min-width: 768px)')
+    const evidenceDesktop = window.matchMedia('(min-width: 1024px)')
+    const syncSheetBreakpoints = () => {
+      if (navigationDesktop.matches) state.setNavigationSheetOpen(false)
+      if (evidenceDesktop.matches) state.setEvidenceSheetOpen(false)
+    }
+    navigationDesktop.addEventListener('change', syncSheetBreakpoints)
+    evidenceDesktop.addEventListener('change', syncSheetBreakpoints)
+    syncSheetBreakpoints()
+    onCleanup(() => {
+      navigationDesktop.removeEventListener('change', syncSheetBreakpoints)
+      evidenceDesktop.removeEventListener('change', syncSheetBreakpoints)
+    })
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
       if (selection() !== null) {

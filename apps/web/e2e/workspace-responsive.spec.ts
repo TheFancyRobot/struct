@@ -285,17 +285,26 @@ describe('responsive workspace browser contract', () => {
         'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
       )].filter((node) => node.getClientRects().length > 0).length)
     expect(navigationFocusables).toBeGreaterThan(0)
+    await navigationDialog.evaluate((element) => {
+      const focusable = [...element.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )].filter((node) => node.getClientRects().length > 0)
+      focusable.at(-1)?.focus()
+    })
     await page.keyboard.press('Tab')
-    for (let step = 0; step < navigationFocusables + 2; step += 1) {
-      await page.keyboard.press('Tab')
-    }
-    expect(await navigationDialog.evaluate((element) => element.contains(document.activeElement)))
-      .toBe(true)
-    for (let step = 0; step < navigationFocusables + 2; step += 1) {
-      await page.keyboard.press('Shift+Tab')
-    }
-    expect(await navigationDialog.evaluate((element) => element.contains(document.activeElement)))
-      .toBe(true)
+    expect(await navigationDialog.evaluate((element) => {
+      const first = [...element.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )].find((node) => node.getClientRects().length > 0)
+      return document.activeElement === first
+    })).toBe(true)
+    await page.keyboard.press('Shift+Tab')
+    expect(await navigationDialog.evaluate((element) => {
+      const focusable = [...element.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )].filter((node) => node.getClientRects().length > 0)
+      return document.activeElement === focusable.at(-1)
+    })).toBe(true)
     await page.keyboard.press('Escape')
     expect(await navigationOpener.evaluate((element) => element === document.activeElement))
       .toBe(true)
@@ -312,16 +321,26 @@ describe('responsive workspace browser contract', () => {
         'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
       )].filter((node) => node.getClientRects().length > 0).length)
     expect(evidenceFocusables).toBeGreaterThan(0)
-    for (let step = 0; step < evidenceFocusables + 2; step += 1) {
-      await page.keyboard.press('Tab')
-    }
-    expect(await evidenceDialog.evaluate((element) => element.contains(document.activeElement)))
-      .toBe(true)
-    for (let step = 0; step < evidenceFocusables + 2; step += 1) {
-      await page.keyboard.press('Shift+Tab')
-    }
-    expect(await evidenceDialog.evaluate((element) => element.contains(document.activeElement)))
-      .toBe(true)
+    await evidenceDialog.evaluate((element) => {
+      const focusable = [...element.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )].filter((node) => node.getClientRects().length > 0)
+      focusable.at(-1)?.focus()
+    })
+    await page.keyboard.press('Tab')
+    expect(await evidenceDialog.evaluate((element) => {
+      const first = [...element.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )].find((node) => node.getClientRects().length > 0)
+      return document.activeElement === first
+    })).toBe(true)
+    await page.keyboard.press('Shift+Tab')
+    expect(await evidenceDialog.evaluate((element) => {
+      const focusable = [...element.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )].filter((node) => node.getClientRects().length > 0)
+      return document.activeElement === focusable.at(-1)
+    })).toBe(true)
     await page.keyboard.press('Escape')
     expect(await evidenceOpener.evaluate((element) => element === document.activeElement))
       .toBe(true)
