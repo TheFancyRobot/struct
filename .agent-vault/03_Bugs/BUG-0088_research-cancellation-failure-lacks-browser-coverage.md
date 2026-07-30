@@ -48,7 +48,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Reproduction Steps
 
 1. Start from a project with a live recursive research run (Route 7 `/projects/:projectId/research/:threadId/runs/:runId`).
-2. Click Cancel (covered success path), then force the cancel API request to fail (mock/return error).
+2. Configure/mock the cancellation API to reject (return error) BEFORE clicking Cancel, then click Cancel and assert the failed-cancellation recovery UI.
 3. Observe: no test exercises the failed-cancellation branch; the recovery UI state is unverified (inventory §3.3 and §5.2).
 
 ## Scope / Blast Radius
