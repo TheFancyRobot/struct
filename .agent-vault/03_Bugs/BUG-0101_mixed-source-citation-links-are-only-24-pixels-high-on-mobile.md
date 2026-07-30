@@ -35,21 +35,24 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- Inline `[D1]`, `[Q1]`, and `[M1]` citation badges measure roughly 50×24px on mobile.
+- Vertical target is almost half the 44px baseline.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- Each citation link hit area is at least 44px.
+- Visual clutter is not increased.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Open the complete mixed-source demo at 390×844.
+2. View the Synthesis section.
+3. Measure the visible citation anchors.
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- Mobile viewport at 390×844.
+- Inline `[D1]`, `[Q1]`, and `[M1]` citation badges in the mixed-source Synthesis view.
 
 ## Suspected Root Cause
 
@@ -57,19 +60,21 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Confirmed Root Cause
 
-- Record the proven cause and decisive evidence.
+- Decisive evidence: `.local/ui-audit/demo/screenshots/mobile-light-complete.png` and lead bounding-box capture confirm the ~50×24px citation hit area on mobile.
+- No code-level cause is documented.
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- No temporary workaround is documented; mitigation is the permanent fix plan.
 
 ## Permanent Fix Plan
 
-- Describe the intended durable fix.
+- Expand each citation link hit area to at least 44px without increasing visual clutter.
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
+- Re-measure visible citation anchors on the mixed-source demo at 390×844 after the fix.
+- Confirm each hit area is at least 44px without added clutter.
 
 ## Related Notes
 
