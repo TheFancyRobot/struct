@@ -43,6 +43,42 @@ function focus(element: HTMLElement | undefined): void {
   queueMicrotask(() => element?.focus())
 }
 
+const SHEET_FOCUSABLE_SELECTOR =
+  'button:not([disabled]), [href], textarea, input, select, [tabindex]:not([tabindex="-1"])'
+
+// BUG-0067: keep Tab/Shift+Tab inside an open mobile sheet so focus cannot
+// reach the underlying top bar or content. Wraps from the last focusable to
+// the first (and vice versa) and handles the initially-focused heading whose
+// tabindex="-1" places it outside the tab order.
+function trapSheetFocus(event: KeyboardEvent, container: HTMLElement | undefined): void {
+  if (event.key !== 'Tab' || container === undefined) return
+  const focusable = [...container.querySelectorAll<HTMLElement>(SHEET_FOCUSABLE_SELECTOR)]
+    .filter((element) => element.getClientRects().length > 0)
+  if (focusable.length === 0) return
+  const first = focusable[0]!
+  const last = focusable[focusable.length - 1]!
+  const active = document.activeElement
+  if (event.shiftKey) {
+    const atOrBeforeFirst = active === first
+      || (active instanceof Element
+        && (first.compareDocumentPosition(active) & Node.DOCUMENT_POSITION_PRECEDING) !== 0)
+      || !container.contains(active)
+    if (atOrBeforeFirst) {
+      event.preventDefault()
+      last.focus()
+    }
+  } else {
+    const atOrAfterLast = active === last
+      || (active instanceof Element
+        && (last.compareDocumentPosition(active) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0)
+      || !container.contains(active)
+    if (atOrAfterLast) {
+      event.preventDefault()
+      first.focus()
+    }
+  }
+}
+
 export const WorkspaceNavigation: ParentComponent<{
   readonly currentPathname?: string
   readonly headingRef: (element: HTMLHeadingElement) => void
@@ -262,7 +298,10 @@ export const ConversationWorkspace: ParentComponent<{
 }> = (props) => {
   const state = useWorkspaceState()
   return (
-    <main class="relative flex min-h-0 min-w-0 flex-1 flex-col bg-base-100">
+    <main
+      inert={state.navigationSheetOpen() || state.evidenceSheetOpen()}
+      class="relative flex min-h-0 min-w-0 flex-1 flex-col bg-base-100"
+    >
       <div class="z-20 flex min-h-11 items-center gap-2 px-1 md:absolute md:inset-x-0 md:top-0 md:pointer-events-none">
         <button
           ref={props.navigationToggleRef}
@@ -408,6 +447,8 @@ export const WorkspaceShell: ParentComponent<{
   let evidenceToggle: HTMLButtonElement | undefined
   let navigationOpener: HTMLButtonElement | undefined
   let evidenceOpener: HTMLButtonElement | undefined
+  let navigationSheet: HTMLElement | undefined
+  let evidenceSheet: HTMLElement | undefined
   let previousEvidence: string | null = null
 
   const closeNavigationSheet = () => {
@@ -486,17 +527,24 @@ export const WorkspaceShell: ParentComponent<{
       <Show when={state.navigationSheetOpen()}>
         <button
           type="button"
+          tabindex="-1"
           class="fixed inset-0 z-30 bg-neutral/45 md:hidden"
           aria-label="Close workspace navigation"
           onClick={closeNavigationSheet}
         />
       </Show>
       <section
+        ref={(element) => { navigationSheet = element }}
+        role={state.navigationSheetOpen() ? 'dialog' : undefined}
+        aria-modal={state.navigationSheetOpen() ? 'true' : undefined}
+        aria-label={state.navigationSheetOpen() ? 'Workspace navigation' : undefined}
+        inert={state.evidenceSheetOpen()}
         class="fixed inset-y-0 left-0 z-40 w-72 -translate-x-full invisible transition-transform duration-200 md:static md:z-auto md:w-64 md:translate-x-0 md:visible"
         classList={{
           'translate-x-0 visible': state.navigationSheetOpen(),
           'md:hidden': state.navigationCollapsed(),
         }}
+        onKeyDown={(event) => trapSheetFocus(event, navigationSheet)}
       >
       <WorkspaceNavigation
         currentPathname={props.currentPathname}
@@ -525,18 +573,24 @@ export const WorkspaceShell: ParentComponent<{
       <Show when={state.evidenceSheetOpen()}>
         <button
           type="button"
+          tabindex="-1"
           class="fixed inset-0 z-30 bg-neutral/45 lg:hidden"
           aria-label="Close evidence"
           onClick={closeEvidenceSheet}
         />
       </Show>
       <aside
+        ref={(element) => { evidenceSheet = element }}
         aria-labelledby="evidence-heading"
+        role={state.evidenceSheetOpen() ? 'dialog' : undefined}
+        aria-modal={state.evidenceSheetOpen() ? 'true' : undefined}
+        inert={state.navigationSheetOpen()}
         class="fixed inset-y-0 right-0 z-40 w-[min(24rem,90vw)] translate-x-full invisible transition-transform duration-200 lg:static lg:z-auto lg:w-80 lg:translate-x-0 lg:visible"
         classList={{
           'translate-x-0 visible': state.evidenceSheetOpen(),
           'lg:hidden': state.evidenceCollapsed(),
         }}
+        onKeyDown={(event) => trapSheetFocus(event, evidenceSheet)}
       >
         <Show
           when={selection() !== null && evidenceScope() !== null}
