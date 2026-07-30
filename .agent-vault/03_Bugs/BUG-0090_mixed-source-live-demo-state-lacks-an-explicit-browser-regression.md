@@ -34,21 +34,26 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- The MixedSourceReport screenshot/state loop covers loading, reconnecting, cancelled, empty, error, and complete states.
+- The `live` state is not explicitly asserted.
+- Evidence: `.local/ui-audit/inventory.md` demo-only state table.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- `state=live` is asserted in the browser state matrix.
+- Coverage spans both themes and responsive widths.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Open `.local/ui-audit/inventory.md` demo-only state table.
+2. Review the MixedSourceReport screenshot/state loop covered states: loading, reconnecting, cancelled, empty, error, complete.
+3. Confirm `live` is not explicitly asserted.
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- MixedSourceReport demo state coverage.
+- Browser state matrix (both themes, responsive widths).
+- Phase 10, Step 10-07 (responsive accessibility and theme behavior).
 
 ## Suspected Root Cause
 
@@ -56,19 +61,22 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Confirmed Root Cause
 
-- Record the proven cause and decisive evidence.
+- The screenshot/state loop enumerates loading, reconnecting, cancelled, empty, error, and complete but omits `live`.
+- Evidence: `.local/ui-audit/inventory.md` demo-only state table.
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- None documented; the `live` state remains unasserted in the browser matrix.
 
 ## Permanent Fix Plan
 
-- Describe the intended durable fix.
+- Add `state=live` to the browser state matrix.
+- Cover `live` in both themes and responsive widths.
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
+- Browser regression asserting `state=live` across both themes and responsive widths.
+- Update `.local/ui-audit/inventory.md` demo-only state table to reflect `live`.
 
 ## Related Notes
 
