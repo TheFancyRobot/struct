@@ -82,8 +82,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
-- Added unlayered CSS rules in `apps/web/src/index.css` enforcing `min-height: 2.75rem` (44px) on `.app-shell .input`, `.app-shell .select`, `.app-shell .file-input`, and `.app-shell .textarea`. These mirror the existing `.app-shell .btn`/`.app-shell .menu a` touch-target policy. Being unlayered, they override DaisyUI's layered sizing defaults (including `.input-sm`) at all viewports, consistent with the codebase's global 44px button policy. No component changes were needed — one shared rule fixes every affected control and any future form field.
-- Follow-up review correction: the shared 44px rule is in `@layer components`, preserving the baseline while allowing Tailwind `min-h-*` utilities to retain intentionally taller editors.
+- Added `@layer components` rules in `apps/web/src/index.css` enforcing `min-height: 2.75rem` (44px) on `.app-shell .input`, `.app-shell .select`, `.app-shell .file-input`, and `.app-shell .textarea`. These mirror the existing `.app-shell .btn`/`.app-shell .menu a` touch-target policy, override DaisyUI's lower-priority sizing defaults (including `.input-sm`), and allow Tailwind `min-h-*` utilities to retain intentionally taller editors. No component changes were needed — one shared rule fixes every affected control and any future form field.
 
 ## Regression Coverage Needed
 
@@ -103,4 +102,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
-- 2026-07-30 - Root cause confirmed (DaisyUI form-control defaults below 44px; no shared rule covered fields). Fix: unlayered `.app-shell` min-height 2.75rem for input/select/file-input/textarea in `apps/web/src/index.css`. Regression test added to `apps/web/e2e/source-import.spec.ts` (RED→GREEN). Full e2e suite, web unit tests, lint, and web typecheck all green.
+- 2026-07-30 - Root cause confirmed (DaisyUI form-control defaults below 44px; no shared rule covered fields). Fix: `@layer components` `.app-shell` min-height 2.75rem for input/select/file-input/textarea in `apps/web/src/index.css`, allowing larger Tailwind `min-h-*` editor utilities to win. Regression test added to `apps/web/e2e/source-import.spec.ts` (RED→GREEN). Full e2e suite, web unit tests, lint, and web typecheck all green.
