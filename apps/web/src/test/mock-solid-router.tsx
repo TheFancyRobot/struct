@@ -1,4 +1,6 @@
+/** @jsxImportSource solid-js */
 import { mock } from 'bun:test'
+import type { Component, JSX } from 'solid-js'
 
 // SSR test harness router mock.
 //
@@ -20,8 +22,16 @@ export function setRouterParams(next: Record<string, string | undefined>): void 
   params = next
 }
 
+const MockLink: Component<{
+  readonly children?: JSX.Element
+  readonly class?: string
+  readonly href?: string
+}> = (props) => (
+  <a class={props.class} href={props.href}>{props.children}</a>
+)
+
 mock.module('@solidjs/router', () => ({
-  A: (props: { readonly children?: unknown }) => props.children,
+  A: MockLink,
   useParams: () => params,
   useSearchParams: () => [params, () => {}],
   useLocation: () => ({

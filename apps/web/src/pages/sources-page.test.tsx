@@ -1,6 +1,6 @@
 /** @jsxImportSource solid-js */
 /* eslint-disable no-unused-vars -- Babel does not mark Solid JSX imports as used. */
-import { afterEach, describe, expect, it, mock } from 'bun:test'
+import { afterEach, describe, expect, it } from 'bun:test'
 import { renderToString } from 'solid-js/web'
 import { ProjectId } from '@struct/domain'
 import { setRouterParams } from '../test/mock-solid-router'
@@ -44,7 +44,6 @@ function mockSourceApiFetch() {
 afterEach(() => {
   globalThis.fetch = originalFetch
   setRouterParams({})
-  mock.restore()
 })
 
 describe('SourcesPage route-level heading (BUG-0062)', () => {

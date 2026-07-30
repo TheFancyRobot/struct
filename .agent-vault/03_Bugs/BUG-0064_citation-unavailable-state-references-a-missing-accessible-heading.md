@@ -82,7 +82,7 @@ Diff: `apps/web/src/components/CitationViewer.tsx` — outer `<section aria-labe
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
 - Added `apps/web/src/components/citation-viewer.test.tsx`: SSR regression test that renders `CitationViewer` with a never-resolving fetch (loading branch) and asserts every `aria-labelledby` reference resolves to an element `id` in the same render. Fails on the pre-fix markup, passes after the fix.
-- Added `apps/web/src/test/mock-solid-router.ts`: shared `@solidjs/router` SSR mock (Proxy-based) with a `setRouterParams` helper, so `citation-viewer.test.tsx` and the existing `sources-page.test.tsx` (BUG-0062) share one router stub instead of colliding via `mock.module`. `sources-page.test.tsx` was migrated to use this shared helper.
+- Added `apps/web/src/test/mock-solid-router.tsx`: shared `@solidjs/router` SSR mock using a mutable params record and object-literal exports, with a `setRouterParams` helper, so `citation-viewer.test.tsx` and the existing `sources-page.test.tsx` (BUG-0062) share one router stub instead of colliding via `mock.module`. `sources-page.test.tsx` was migrated to use this shared helper.
 - No production code other than `CitationViewer.tsx` changed.
 
 ## Related Notes
@@ -98,4 +98,4 @@ Diff: `apps/web/src/components/CitationViewer.tsx` — outer `<section aria-labe
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
-- 2026-07-30 - Root cause confirmed: outer `<section aria-labelledby="citation-title">` wrapped the whole `<Switch>`; heading only in loaded branch. Fix: move section into loaded branch, outer wrapper is now a plain `<div>`. Added `citation-viewer.test.tsx` regression (TDD red→green) and shared `mock-solid-router.ts`; migrated `sources-page.test.tsx` to the shared mock to resolve a `mock.module` collision. Validation: web suite 85 pass/0 fail; full monorepo 1013 pass/0 fail; typecheck, lint, dependency-cruiser, boundary-check all clean.
+- 2026-07-30 - Root cause confirmed: outer `<section aria-labelledby="citation-title">` wrapped the whole `<Switch>`; heading only in loaded branch. Fix: move section into loaded branch, outer wrapper is now a plain `<div>`. Added `citation-viewer.test.tsx` regression (TDD red→green) and shared `mock-solid-router.tsx`; migrated `sources-page.test.tsx` to the shared mock to resolve a `mock.module` collision. Validation: `bun test apps/web/src` 82 pass/0 fail; full monorepo 1013 pass/0 fail; typecheck, lint, dependency-cruiser, boundary-check all clean.
