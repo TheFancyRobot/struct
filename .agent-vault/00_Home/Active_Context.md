@@ -58,7 +58,6 @@ _Last refreshed: 2026-07-31._
 ## Blockers
 
 <!-- AGENT-START:blockers -->
-- Session: [[05_Sessions/2026-07-27-005747-validate-build-tests-and-visual-regression|SESSION-2026-07-27-005747 Session for Validate Build Tests and Visual Regression]] - status: blocked - phase: [[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]] - updated: 2026-07-27
 - Phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|PHASE-11 v1.1 Research Usability]] - status: blocked - updated: 2026-07-26
 - Step: [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_02_add-saved-queries-views-and-research-templates|STEP-11-02 Add Saved Queries Views and Research Templates]] - status: blocked - phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]] - updated: 2026-07-17
 <!-- AGENT-END:blockers -->
