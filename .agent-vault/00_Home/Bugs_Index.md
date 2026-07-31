@@ -29,11 +29,12 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 <!-- AGENT-START:bugs-index -->
 _Last rebuilt: 2026-07-31._
 
-- Notes indexed: 91
-- Status summary: new (29), fixed (58), invalid (4)
+- Notes indexed: 92
+- Status summary: new (30), fixed (58), invalid (4)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
+| BUG-0095 | [Active Context refresh counts resolved critical bugs as open](../03_Bugs/BUG-0095_active-context-refresh-counts-resolved-critical-bugs-as-open.md) | new | sev-2 | 2026-07-31 | - | - |
 | BUG-0069 | [Reports navigation is permanently disabled and notebook is undiscoverable](../03_Bugs/BUG-0069_reports-navigation-is-permanently-disabled-and-notebook-is-undiscoverable.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0085 | [Terminal failed research run remains labeled Reconnecting](../03_Bugs/BUG-0085_terminal-failed-research-run-remains-labeled-reconnecting.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0086 | [Notebook report 404 remains stuck in loading state](../03_Bugs/BUG-0086_notebook-report-404-remains-stuck-in-loading-state.md) | new | sev-2 | 2026-07-28 | - | - |
