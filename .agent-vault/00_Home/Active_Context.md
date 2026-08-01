@@ -19,11 +19,11 @@ Keep this note short and current.
 ## Current Objective
 
 <!-- AGENT-START:current-focus -->
-_Last refreshed: 2026-07-31._
+_Last refreshed: 2026-08-01._
 - Session in progress: none.
 - Current step: [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_01_improve-research-search-navigation-and-command-ux|STEP-11-01 Improve Research Search Navigation and Command UX]] - status: planned - phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]
 - Active phase: [[02_Phases/Phase_12_v1_2_additional_sources/Phase|PHASE-12 v1.2 Additional Sources]] - status: planned - updated: 2026-07-17
-- Also active: 16 more additional steps, 5 open critical bugs (sev-1/sev-2, status: new).
+- Also active: 16 more additional steps, 21 open critical bugs.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -70,12 +70,12 @@ _Last refreshed: 2026-07-31._
 ## Critical Bugs
 
 <!-- AGENT-START:critical-bugs -->
-_Open critical bugs = status `new` (sev-1 ∪ sev-2). Open sev-1: 0. Open sev-2: 5._
-- [[03_Bugs/BUG-0085_terminal-failed-research-run-remains-labeled-reconnecting|BUG-0085 Terminal failed research run remains labeled Reconnecting]] - status: new - severity: sev-2 - reported: 2026-07-28
-- [[03_Bugs/BUG-0086_notebook-report-404-remains-stuck-in-loading-state|BUG-0086 Notebook report 404 remains stuck in loading state]] - status: new - severity: sev-2 - reported: 2026-07-28
-- [[03_Bugs/BUG-0097_mixed-source-light-theme-metadata-text-fails-contrast|BUG-0097 Mixed source light theme metadata text fails contrast]] - status: new - severity: sev-2 - reported: 2026-07-28
-- [[03_Bugs/BUG-0098_mixed-source-dataset-type-labels-fail-contrast-in-both-themes|BUG-0098 Mixed source dataset type labels fail contrast in both themes]] - status: new - severity: sev-2 - reported: 2026-07-28
-- [[03_Bugs/BUG-0099_mixed-source-dark-dataset-definition-labels-fail-contrast|BUG-0099 Mixed source dark dataset definition labels fail contrast]] - status: new - severity: sev-2 - reported: 2026-07-28
+- [[03_Bugs/BUG-0060_clean-real-stack-omits-workspace-bootstrap-and-blocks-first-project-creation|BUG-0060 Clean real stack omits workspace bootstrap and blocks first project creation]] - status: fixed - severity: sev-1 - reported: 2026-07-28
+- [[03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label|BUG-0061 Source import file picker has no accessible label]] - status: fixed - severity: sev-1 - reported: 2026-07-28
+- [[03_Bugs/BUG-0059_standard-local-dev-stack-stages-source-uploads-outside-the-worker-artifact-root|BUG-0059 standard local dev stack stages source uploads outside the worker artifact root]] - status: fixed - severity: sev-1 - reported: 2026-07-28
+- [[03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets|BUG-0049 Global dataset attachments did not materialize project datasets]] - status: fixed - severity: sev-1 - reported: 2026-07-26
+- [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]] - status: fixed - severity: sev-1 - reported: 2026-07-21
+- [[03_Bugs/BUG-0107_worker-subagents-remain-idle-and-never-execute-assigned-bug-0106-task|BUG-0107 Worker subagents remain idle and never execute assigned BUG-0106 task]] - status: fixed - severity: sev-2 - reported: 2026-08-01
 <!-- AGENT-END:critical-bugs -->
 
 ## Next Actions
