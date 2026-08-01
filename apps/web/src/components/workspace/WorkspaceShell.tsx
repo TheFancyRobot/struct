@@ -17,7 +17,6 @@ import {
   type ParentComponent,
 } from 'solid-js'
 import { basePathFromPublicBaseUrl, stripBasePath, withBasePath } from '../../base-path'
-import { fetchProjects } from '../../api/projects'
 import { fetchSourceCatalog } from '../../api/sources'
 import { EvidenceInspector as EvidenceDetailInspector } from '../EvidenceInspector'
 import { parseEvidenceSelection } from '../evidence-selection'
@@ -88,10 +87,10 @@ export const WorkspaceNavigation: ParentComponent<{
   readonly onToggleTheme: () => void
 }> = (props) => {
   const state = useWorkspaceState()
+  const projects = state.projects
   const [projectSearch, setProjectSearch] = createSignal('')
   const [sourceSearch, setSourceSearch] = createSignal('')
   const [recentProjectIds, setRecentProjectIds] = createSignal(readRecentProjectIds())
-  const [projects] = createResource(fetchProjects)
   const [sources] = createResource(state.projectId, (projectId) =>
     projectId === null || !Schema.is(ProjectId)(projectId)
       ? null

@@ -13,7 +13,7 @@ import {
 } from 'solid-js'
 import { Schema } from 'effect'
 import { ProjectId, normalizeProjectName, projectNameCharacterCount } from '@struct/domain'
-import { ProjectNameConflictError, createProject, fetchProject, fetchProjects } from '../api/projects'
+import { ProjectNameConflictError, createProject, fetchProject } from '../api/projects'
 import { ProjectSwitcher, type ProjectListState } from '../components/ProjectSwitcher'
 import { ConversationPanel } from '../components/ConversationPanel'
 import {
@@ -21,6 +21,7 @@ import {
   readPendingProjectCreateState,
   rememberPendingProjectCreate,
 } from './project-create-state'
+import { useWorkspaceState } from '../components/workspace/workspace-state'
 
 const LAST_PROJECT_ID_KEY = 'struct:last-project-id'
 
@@ -45,6 +46,7 @@ async function createAndNavigate(
   setError: (value: string | null) => void,
   setCreating: (value: boolean) => void,
   creating: () => boolean,
+  refetchProjects: () => void,
 ) {
   const normalized = normalizeProjectName(name)
   if (!isProjectNameCandidateValid(normalized)) {
@@ -65,6 +67,7 @@ async function createAndNavigate(
     const created = await createProject(normalized, idempotencyKey)
     clearPendingProjectCreate(pendingProjectCreateStorage())
     window.localStorage.setItem(LAST_PROJECT_ID_KEY, created.id)
+    refetchProjects()
     navigate(`/projects/${created.id}`)
   } catch (error) {
     if (error instanceof ProjectNameConflictError) {
@@ -87,7 +90,7 @@ export const HomePage: Component = () => {
   const [checkingCache, setCheckingCache] = createSignal(true)
   const [cachedProjectId, setCachedProjectId] = createSignal<string | null>(null)
   const [cachedProjectError, setCachedProjectError] = createSignal<string | null>(null)
-  const [projects, { refetch: refetchProjects }] = createResource(fetchProjects)
+  const { projects, refetchProjects } = useWorkspaceState()
   const projectListState = createMemo<ProjectListState>(() =>
     projects.error !== undefined
       ? 'unavailable'
@@ -113,6 +116,7 @@ export const HomePage: Component = () => {
       const reopened = await fetchProject(candidate)
       if (reopened !== null) {
         window.localStorage.setItem(LAST_PROJECT_ID_KEY, reopened.id)
+        refetchProjects()
         navigate(`/projects/${reopened.id}`, { replace: true })
         return
       }
@@ -184,6 +188,7 @@ export const HomePage: Component = () => {
               setCreateError,
               setCreating,
               creating,
+              refetchProjects,
             )
           }}
         />
@@ -204,7 +209,7 @@ export const ProjectPage: Component = () => {
       ? candidate
       : null
   })
-  const [projects, { refetch: refetchProjects }] = createResource(fetchProjects)
+  const { projects, refetchProjects } = useWorkspaceState()
   const [project, { refetch: refetchProject }] = createResource(
     projectId,
     (candidate) => candidate === null ? null : fetchProject(candidate),
@@ -294,6 +299,7 @@ export const ProjectPage: Component = () => {
             setCreateError,
             setCreating,
             creating,
+            refetchProjects,
           )
         }}
       />
