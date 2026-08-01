@@ -5,7 +5,7 @@ contract_version: 1
 title: Active Context refresh counts resolved critical bugs as open
 bug_id: BUG-0095
 status: new
-severity: sev-2
+severity: sev-3
 category: logic
 reported_on: '2026-07-31'
 fixed_on: ''
@@ -30,41 +30,41 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- `vault_refresh active_context` rewrites the critical-bug rollup to include sev-1/sev-2 records that are `fixed` or `invalid`.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- The generated rollup must count only records in the vault's open bug lifecycle and list the same records.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Keep a fixed or invalid sev-1/sev-2 bug record in the vault.
+2. Run `vault_refresh active_context`.
+3. Observe that the generated open-critical count and list include the resolved record.
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- Upstream `@fancyrobot/agent-vault` generation only; Struct application code and data are unaffected.
 
 ## Suspected Root Cause
 
-- Record current theories and assumptions.
+- The generator uses a negative `status !== closed` filter rather than an allowlist of open statuses.
 
 ## Confirmed Root Cause
 
-- Record the proven cause and decisive evidence.
+- Runtime source inspection found both Active Context rollups filter only `closed`, allowing `fixed` and `invalid` records into the open-critical view.
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- Maintain Struct's canonical generated block manually and do not run `vault_refresh active_context` until upstream repairs the predicate.
 
 ## Permanent Fix Plan
 
-- Describe the intended durable fix.
+- Upstream should filter the rollup by its documented open statuses and add a resolved-critical-bug regression case.
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
+- An upstream generator test with `new`, `fixed`, `invalid`, and `closed` sev-1/sev-2 records; only open records may appear in the count or list.
 
 ## Related Notes
 
