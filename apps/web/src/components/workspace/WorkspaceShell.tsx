@@ -267,7 +267,11 @@ export const WorkspaceNavigation: ParentComponent<{
               Notes
             </a>
           </li>
-          <li><button type="button" disabled>Reports</button></li>
+          <li>
+            <a href={withBasePath(`${projectPath()}/notebook`, appBasePath)} aria-current={isCurrent(`${projectPath()}/notebook`) ? 'page' : undefined}>
+              Reports
+            </a>
+          </li>
         </Show>
         </ul>
       </div>

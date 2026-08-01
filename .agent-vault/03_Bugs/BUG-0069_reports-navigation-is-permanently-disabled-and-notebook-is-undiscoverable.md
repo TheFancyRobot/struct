@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Reports navigation is permanently disabled and notebook is undiscoverable
 bug_id: BUG-0069
-status: new
+status: fixed
 severity: sev-2
 category: navigation
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-01'
+owner: root
 created: '2026-07-28'
 updated: '2026-07-28'
 related_notes:
@@ -35,41 +35,41 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- Project navigation rendered Reports as a disabled button, although `/projects/:projectId/notebook` was a valid route with empty, loading, and error states.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- Project navigation exposes Reports as an enabled link to the project notebook.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Open a project route.
+2. Inspect Workspace navigation's Project section.
+3. Reports is disabled instead of linking to the notebook.
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- Every project workspace navigation; direct notebook URLs remained functional.
 
 ## Suspected Root Cause
 
-- Record current theories and assumptions.
+- The navigation item was a placeholder never replaced after the notebook route was added.
 
 ## Confirmed Root Cause
 
-- Record the proven cause and decisive evidence.
+- `WorkspaceShell` rendered `<button disabled>Reports</button>` while `index.tsx` already registered `/projects/:projectId/notebook`.
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- Navigate directly to the notebook URL.
 
 ## Permanent Fix Plan
 
-- Describe the intended durable fix.
+- Replace the disabled button with the same base-path-aware project notebook anchor pattern used by the other project links.
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
+- Workspace shell rendering must assert the notebook href and the absence of a disabled project-navigation button.
 
 ## Related Notes
 

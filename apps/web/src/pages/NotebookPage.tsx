@@ -15,6 +15,7 @@ import {
   mutateReport,
 } from '../api/artifacts'
 import { NotebookView } from '../components/NotebookView'
+import { fetchProject } from '../api/projects'
 
 export const NotebookPage: Component = () => {
   const params = useParams()
@@ -26,9 +27,8 @@ export const NotebookPage: Component = () => {
     : undefined
   if (
     rawProjectId === undefined
-    || rawWorkspaceId === undefined
     || !uuid.test(rawProjectId)
-    || !uuid.test(rawWorkspaceId)
+    || (rawWorkspaceId !== undefined && !uuid.test(rawWorkspaceId))
   ) {
     return (
       <section class="notebook-state alert alert-error" role="alert">
@@ -37,7 +37,13 @@ export const NotebookPage: Component = () => {
     )
   }
   const projectId = ProjectId.make(rawProjectId)
-  const workspaceId = WorkspaceId.make(rawWorkspaceId)
+  const [project] = createResource(
+    () => rawWorkspaceId === undefined ? projectId : undefined,
+    fetchProject,
+  )
+  const workspaceId = () => rawWorkspaceId === undefined
+    ? project()?.workspaceId
+    : WorkspaceId.make(rawWorkspaceId)
   const threadId = typeof search.threadId === 'string'
     && uuid.test(search.threadId)
     ? search.threadId
@@ -50,21 +56,23 @@ export const NotebookPage: Component = () => {
     : undefined
   const [existingReport] = createResource(
     () => reportId,
-    (id) => fetchReport(workspaceId, projectId, id),
+    (id) => workspaceId() === undefined
+      ? Promise.reject(new Error('Workspace could not be resolved.'))
+      : fetchReport(workspaceId()!, projectId, id),
   )
-  const notebook = () => (
+  const notebook = (resolvedWorkspaceId: typeof WorkspaceId.Type) => (
     <NotebookView
-      workspaceId={workspaceId}
+      workspaceId={resolvedWorkspaceId}
       projectId={projectId}
       threadId={threadId}
       runId={runId}
       initialReport={existingReport()}
-      loadFindings={() => fetchFindings(workspaceId, projectId)}
+      loadFindings={() => fetchFindings(resolvedWorkspaceId, projectId)}
       composeReport={(findings: ReadonlyArray<Finding>) =>
-        createReportFromFindings(workspaceId, projectId, findings)}
+        createReportFromFindings(resolvedWorkspaceId, projectId, findings)}
       mutateReport={mutateReport}
       loadReportRevision={(report, revision) =>
-        fetchReport(workspaceId, projectId, report.id, revision)}
+        fetchReport(resolvedWorkspaceId, projectId, report.id, revision)}
       exportReport={exportReport}
     />
   )
@@ -88,7 +96,17 @@ export const NotebookPage: Component = () => {
           </section>
         }
       >
-        {notebook()}
+        <Show
+          when={workspaceId()}
+          fallback={
+            <section class="notebook-state flex min-h-48 items-center justify-center rounded-box border border-base-300 bg-base-100" role="status">
+              <span class="loading loading-spinner loading-md" aria-hidden="true" />
+              <span>Opening report workspace…</span>
+            </section>
+          }
+        >
+          {(resolvedWorkspaceId) => notebook(resolvedWorkspaceId())}
+        </Show>
       </Show>
     </Show>
   )

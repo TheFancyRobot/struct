@@ -23,7 +23,7 @@ _Last refreshed: 2026-07-31._
 - Session in progress: none.
 - Current step: [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_01_improve-research-search-navigation-and-command-ux|STEP-11-01 Improve Research Search Navigation and Command UX]] - status: planned - phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]
 - Active phase: [[02_Phases/Phase_12_v1_2_additional_sources/Phase|PHASE-12 v1.2 Additional Sources]] - status: planned - updated: 2026-07-17
-- Also active: 16 more additional steps, 6 open critical bugs (sev-1/sev-2, status: new).
+- Also active: 16 more additional steps, 5 open critical bugs (sev-1/sev-2, status: new).
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -70,8 +70,7 @@ _Last refreshed: 2026-07-31._
 ## Critical Bugs
 
 <!-- AGENT-START:critical-bugs -->
-_Open critical bugs = status `new` (sev-1 ∪ sev-2). Open sev-1: 0. Open sev-2: 6._
-- [[03_Bugs/BUG-0069_reports-navigation-is-permanently-disabled-and-notebook-is-undiscoverable|BUG-0069 Reports navigation is permanently disabled and notebook is undiscoverable]] - status: new - severity: sev-2 - reported: 2026-07-28
+_Open critical bugs = status `new` (sev-1 ∪ sev-2). Open sev-1: 0. Open sev-2: 5._
 - [[03_Bugs/BUG-0085_terminal-failed-research-run-remains-labeled-reconnecting|BUG-0085 Terminal failed research run remains labeled Reconnecting]] - status: new - severity: sev-2 - reported: 2026-07-28
 - [[03_Bugs/BUG-0086_notebook-report-404-remains-stuck-in-loading-state|BUG-0086 Notebook report 404 remains stuck in loading state]] - status: new - severity: sev-2 - reported: 2026-07-28
 - [[03_Bugs/BUG-0097_mixed-source-light-theme-metadata-text-fails-contrast|BUG-0097 Mixed source light theme metadata text fails contrast]] - status: new - severity: sev-2 - reported: 2026-07-28
