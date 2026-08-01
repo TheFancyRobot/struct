@@ -86,7 +86,7 @@ _Last rebuilt: 2026-07-31._
 | BUG-0091 | [Notebook finding selection and citation warning lack browser coverage](../03_Bugs/BUG-0091_notebook-finding-selection-and-citation-warning-lack-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |
 | BUG-0092 | [Report export failure lacks browser coverage](../03_Bugs/BUG-0092_report-export-failure-lacks-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |
 | BUG-0093 | [Add project hash focus journey lacks browser regression coverage](../03_Bugs/BUG-0093_add-project-hash-focus-journey-lacks-browser-regression-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |
-| BUG-0100 | [Root bun test runs e2e specs in one process and times out workspace release](../03_Bugs/BUG-0100_root-bun-test-runs-e2e-specs-in-one-process-and-times-out-workspace-release.md) | invalid | sev-3 | 2026-07-31 | - | - |
+| BUG-0105 | [Raw bun test bypasses isolated e2e runner](../03_Bugs/BUG-0105_raw-bun-test-bypasses-isolated-e2e-runner.md) | invalid | sev-3 | 2026-07-31 | - | - |
 | BUG-0053 | [Pre-existing e2e infra defects surface as failures independent of brand phase](../03_Bugs/BUG-0053_pre-existing-e2e-infra-defects-surface-as-failures-independent-of-brand-phase.md) | fixed | sev-3 | 2026-07-27 | 2026-07-27 | - |
 | BUG-0054 | [Error toast position inconsistent between add source and add project screens](../03_Bugs/BUG-0054_error-toast-position-inconsistent-between-add-source-and-add-project-screens.md) | fixed | sev-3 | 2026-07-27 | 2026-07-27 | - |
 | BUG-0055 | [Add source view shows only error and no fields or options](../03_Bugs/BUG-0055_add-source-view-shows-only-error-and-no-fields-or-options.md) | fixed | sev-3 | 2026-07-27 | 2026-07-27 | - |

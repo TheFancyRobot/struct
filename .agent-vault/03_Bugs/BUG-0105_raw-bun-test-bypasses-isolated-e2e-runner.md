@@ -2,8 +2,8 @@
 note_type: bug
 template_version: 2
 contract_version: 1
-title: Root bun test runs e2e specs in one process and times out workspace release
-bug_id: BUG-0100
+title: Raw bun test bypasses isolated e2e runner
+bug_id: BUG-0105
 status: invalid
 severity: sev-3
 category: test
@@ -19,18 +19,18 @@ tags:
   - bug
 ---
 
-# BUG-0100 - Root bun test runs e2e specs in one process and times out workspace release
+# BUG-0105 - Raw bun test bypasses isolated e2e runner
 
 Use one note per bug. Capture reproduction, impact, root cause, workaround, and verification, then link back to the relevant phase, step, decision, or session. See [[07_Templates/Note_Contracts|Note Contracts]].
 
 ## Summary
 
-- Root bun test runs e2e specs in one process and times out workspace release.
+- Raw bun test bypasses isolated e2e runner.
 - Related notes: [[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]].
 
 ## Observed Behavior
 
-- An audit ran raw `bun test`, which intentionally bypasses the repository test script and discovers E2E files in one process; the workspace-release test timed out.
+- On 2026-07-31, raw `bun test` ran 1,157 tests and failed `workspace-release` after 120 seconds with `killed 1 dangling process`; it discovers E2E files in one process.
 - The supported root command is `bun run test`, which excludes E2E files; E2E uses `bun run test:e2e` with isolated processes.
 
 ## Expected Behavior
