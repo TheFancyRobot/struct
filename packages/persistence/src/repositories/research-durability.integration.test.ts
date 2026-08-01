@@ -36,6 +36,7 @@ const stalePlanningRunId = ResearchRunId.make(id('446655440012'))
 const jobId = JobQueueId.make(id('446655440008'))
 const failureJobId = JobQueueId.make(id('446655440009'))
 const stalePlanningJobId = JobQueueId.make(id('446655440013'))
+const staleAfterMs = 3_600_000
 const planId = ResearchPlanId.make(id('446655440010'))
 const nodeId = ResearchPlanNodeId.make(id('446655440011'))
 
@@ -190,12 +191,6 @@ describeIf('research durability (PostgreSQL, serial)', () => {
         stalePlanningJobId,
         stalePlanningRunId,
       ],
-    )
-    await sql.unsafe(
-      `UPDATE job_queue
-       SET updated_at = NOW() - INTERVAL '2 hours'
-       WHERE id = $1`,
-      [stalePlanningJobId],
     )
   })
 
@@ -558,8 +553,14 @@ describeIf('research durability (PostgreSQL, serial)', () => {
   })
 
   it('turns a pre-plan stale worker into a reconstructable typed planning failure', async () => {
+    await sql.unsafe(
+      `UPDATE job_queue
+       SET updated_at = NOW() - ($2::bigint * INTERVAL '1 millisecond')
+       WHERE id = $1`,
+      [stalePlanningJobId, staleAfterMs * 2],
+    )
     const recovered = await Effect.runPromise(
-      ResearchExecutionRepo.recoverStale(3_600_000).pipe(
+      ResearchExecutionRepo.recoverStale(staleAfterMs).pipe(
         Effect.provide(layer),
       ),
     )
