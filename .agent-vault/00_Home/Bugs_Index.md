@@ -30,7 +30,7 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 _Last rebuilt: 2026-07-31._
 
 - Notes indexed: 93
-- Status summary: new (29), fixed (59), invalid (5)
+- Status summary: new (28), fixed (60), invalid (5)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -52,7 +52,7 @@ _Last rebuilt: 2026-07-31._
 | BUG-0078 | [Project search leaves unrelated recent projects visible](../03_Bugs/BUG-0078_project-search-leaves-unrelated-recent-projects-visible.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0079 | [Active source import mode has insufficient visual contrast](../03_Bugs/BUG-0079_active-source-import-mode-has-insufficient-visual-contrast.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0080 | [Dataset and Folder import modes lack mode-specific guidance](../03_Bugs/BUG-0080_dataset-and-folder-import-modes-lack-mode-specific-guidance.md) | new | sev-3 | 2026-07-28 | - | - |
-| BUG-0081 | [Disabled Reports destination is nearly invisible](../03_Bugs/BUG-0081_disabled-reports-destination-is-nearly-invisible.md) | new | sev-3 | 2026-07-28 | - | - |
+| BUG-0081 | [Disabled Reports destination is nearly invisible](../03_Bugs/BUG-0081_disabled-reports-destination-is-nearly-invisible.md) | fixed | sev-3 | 2026-07-28 | 2026-08-01 | - |
 | BUG-0082 | [Unavailable project attachment control has no explanation](../03_Bugs/BUG-0082_unavailable-project-attachment-control-has-no-explanation.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0083 | [Conversation source checkbox touch target is only 25 pixels high](../03_Bugs/BUG-0083_conversation-source-checkbox-touch-target-is-only-25-pixels-high.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0087 | [Research error variants lack browser coverage](../03_Bugs/BUG-0087_research-error-variants-lack-browser-coverage.md) | new | sev-3 | 2026-07-28 | - | - |

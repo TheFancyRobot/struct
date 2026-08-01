@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Disabled Reports destination is nearly invisible
 bug_id: BUG-0081
-status: new
+status: fixed
 severity: sev-3
 category: visual
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-01'
+owner: root
 created: '2026-07-28'
 updated: '2026-07-28'
 related_notes:
