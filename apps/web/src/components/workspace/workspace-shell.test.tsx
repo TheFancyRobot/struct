@@ -27,6 +27,8 @@ describe('workspace shell', () => {
     expect(html).not.toContain('Grounded analysis')
     expect(html).not.toContain('max-w-')
     expect(html).toContain('href="/projects/project-a/sources" aria-current="page"')
+    expect(html).toContain('href="/projects/project-a/notebook"')
+    expect(html).not.toContain('<button type="button" disabled=""')
     expect(html).toContain('Search projects')
     expect(html).toContain('Search sources')
     expect(html).toContain('href="/#project-create"')
