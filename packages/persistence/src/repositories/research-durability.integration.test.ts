@@ -558,6 +558,12 @@ describeIf('research durability (PostgreSQL, serial)', () => {
   })
 
   it('turns a pre-plan stale worker into a reconstructable typed planning failure', async () => {
+    await sql.unsafe(
+      `UPDATE job_queue
+       SET updated_at = NOW() - INTERVAL '2 hours'
+       WHERE id = $1`,
+      [stalePlanningJobId],
+    )
     const recovered = await Effect.runPromise(
       ResearchExecutionRepo.recoverStale(3_600_000).pipe(
         Effect.provide(layer),

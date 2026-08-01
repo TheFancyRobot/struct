@@ -67,25 +67,25 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 
 ## Acceptance Criteria
 
-- [ ] The official Struct symbol and custom wordmark are used from SVG assets — never approximated with a font.
-- [ ] The compact lockup appears in the top-left corner of the workspace navigation, switching on-light/on-dark by active theme.
-- [ ] The favicon is updated to `struct-favicon.svg`.
-- [ ] Global colors are semantic and support both light and dark modes through the existing `data-theme` mechanism.
-- [ ] No ordinary product component contains unexplained raw hex values (the codebase currently has none — this must remain true).
-- [ ] Inter is the interface font; JetBrains Mono is the code/structured-data font. Space Grotesk is omitted.
-- [ ] DaisyUI theme values match the brand palette in both modes via `var(--struct-*)` references.
-- [ ] DaisyUI built-in utilities (`bg-base-100`, `text-primary`, etc.) are the only utility classes. No custom `bg-surface`, `text-foreground`, etc.
-- [ ] Focus-visible states remain obvious and consistent.
-- [ ] Dark mode uses navy/slate surfaces (not pure black) and remains readable.
-- [ ] Responsive behavior is unchanged or improved.
-- [ ] Existing tests pass and the production build succeeds.
-- [ ] No product logic was changed solely for visual migration.
+- [x] The official Struct symbol and custom wordmark are used from SVG assets — never approximated with a font.
+- [x] The compact lockup appears in the top-left corner of the workspace navigation, switching on-light/on-dark by active theme.
+- [x] The favicon is updated to `struct-favicon.svg`.
+- [x] Global colors are semantic and support both light and dark modes through the existing `data-theme` mechanism.
+- [x] No ordinary product component contains unexplained raw hex values (the codebase currently has none — this must remain true).
+- [x] Inter is the interface font; JetBrains Mono is the code/structured-data font. Space Grotesk is omitted.
+- [x] DaisyUI theme values match the brand palette in both modes via `var(--struct-*)` references.
+- [x] DaisyUI built-in utilities (`bg-base-100`, `text-primary`, etc.) are the only utility classes. No custom `bg-surface`, `text-foreground`, etc.
+- [x] Focus-visible states remain obvious and consistent.
+- [x] Dark mode uses navy/slate surfaces (not pure black) and remains readable.
+- [x] Responsive behavior is unchanged or improved.
+- [x] Existing tests pass and the production build succeeds.
+- [x] No product logic was changed solely for visual migration.
 
 ## Linear Context
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]]
-- Current phase status: completed
+- Current phase status: completed — full gate (`bun run build && bun run test && bun run test:e2e`) passed on 2026-08-01
 - Next phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|PHASE-11 v1.1 Research Usability]]
 <!-- AGENT-END:phase-linear-context -->
 

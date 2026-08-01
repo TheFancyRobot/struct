@@ -56,12 +56,12 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - Status: completed
 - Current owner:
 - Last touched: 2026-07-27
-- Next action: Step complete and validated; [[03_Bugs/BUG-0053_pre-existing-e2e-infra-defects-surface-as-failures-independent-of-brand-phase|BUG-0053]] fixed, full e2e gate green. Phase 10B published.
+- Next action: Step complete and validated. [[03_Bugs/BUG-0053_pre-existing-e2e-infra-defects-surface-as-failures-independent-of-brand-phase|BUG-0053]] fixed; `bun run build && bun run test && bun run test:e2e` exited 0 on 2026-08-01. Phase 10B published.
 <!-- AGENT-END:step-agent-managed-snapshot -->
 
 ## Human Notes
 
-- **Validation gate:** `bun run build && bun test && bun run test:e2e` (from repo root). All three must pass.
+- **Validation gate:** `bun run build && bun run test && bun run test:e2e` (from repo root). All three must pass; validated with exit 0 on 2026-08-01.
 - **Visual regression:** The e2e tests use `bun:test` + Playwright's chromium browser directly (NOT `@playwright/test`). `toHaveScreenshot()` is NOT available. Either: (a) add `@playwright/test` as a dev dependency with a separate config, or (b) implement screenshot comparison using the existing `page.screenshot()` pattern already in `notebook-report.spec.ts`. Option (b) is preferred — it reuses the existing infrastructure.
 - **E2e test assertions:** Some e2e tests assert on color contrast ratios and take screenshots (see `notebook-report.spec.ts` lines 817-900). These may need threshold updates if brand colors change contrast ratios. Check `waitForThemeStyles` usage.
 - **Font loading metrics:** New fonts (Inter, JetBrains Mono) may have different metrics than Manrope/IBM Plex Mono. Verify no text overflow or truncation regressions in e2e tests.
