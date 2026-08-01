@@ -35,7 +35,7 @@ _Last rebuilt: 2026-07-31._
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
 | BUG-0095 | [Active Context refresh counts resolved critical bugs as open](../03_Bugs/BUG-0095_active-context-refresh-counts-resolved-critical-bugs-as-open.md) | new | sev-3 | 2026-07-31 | - | - |
-| BUG-0069 | [Reports navigation is permanently disabled and notebook is undiscoverable](../03_Bugs/BUG-0069_reports-navigation-is-permanently-disabled-and-notebook-is-undiscoverable.md) | fixed | sev-2 | 2026-07-28 | 2026-08-01 | - | - |
+| BUG-0069 | [Reports navigation is permanently disabled and notebook is undiscoverable](../03_Bugs/BUG-0069_reports-navigation-is-permanently-disabled-and-notebook-is-undiscoverable.md) | fixed | sev-2 | 2026-07-28 | 2026-08-01 | - |
 | BUG-0085 | [Terminal failed research run remains labeled Reconnecting](../03_Bugs/BUG-0085_terminal-failed-research-run-remains-labeled-reconnecting.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0086 | [Notebook report 404 remains stuck in loading state](../03_Bugs/BUG-0086_notebook-report-404-remains-stuck-in-loading-state.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0097 | [Mixed source light theme metadata text fails contrast](../03_Bugs/BUG-0097_mixed-source-light-theme-metadata-text-fails-contrast.md) | new | sev-2 | 2026-07-28 | - | - |
