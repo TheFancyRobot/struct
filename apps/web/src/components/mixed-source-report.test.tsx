@@ -61,4 +61,13 @@ describe('mixed-source report Solid component', () => {
     expect(html).toContain('<td>true</td>')
     expect(html).toContain('<td>null</td>')
   })
+
+  it('uses AA-contrast metadata in the light mixed-source report', () => {
+    const html = renderToString(() => (
+      <MixedSourceReport report={mixedSourceDemoFixture('complete')} />
+    ))
+
+    expect(html).not.toContain('text-base-content/55')
+    expect(html.match(/text-base-content\/65/g)?.length).toBeGreaterThanOrEqual(7)
+  })
 })
