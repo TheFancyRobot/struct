@@ -77,5 +77,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-31 - Reported.
 - 2026-08-03 - Renumbered from BUG-0095 to resolve the duplicate bug identity; BUG-0095 remains assigned to the mobile navigation issue.
+- 2026-08-03 - Fixed in the Agent Vault source generator: Active Context now excludes resolved bug statuses from both the critical count and list. Added regression coverage for `new`, `fixed`, `invalid`, `closed`, and unknown sev-1/sev-2 records.
 <!-- AGENT-END:bug-timeline -->
-- 2026-08-03 - Fixed in the Agent Vault source generator: Active Context now allowlists open bug statuses for both the critical count and list. Added regression coverage for `new`, `fixed`, `invalid`, and `closed` sev-1/sev-2 records; only the open record is emitted.
