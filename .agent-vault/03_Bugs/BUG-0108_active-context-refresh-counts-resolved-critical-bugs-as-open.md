@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Active Context refresh counts resolved critical bugs as open
 bug_id: BUG-0108
-status: new
+status: fixed
 severity: sev-3
 category: logic
 reported_on: '2026-07-31'
-fixed_on: ''
-owner: agent-vault upstream
+fixed_on: '2026-08-03'
+owner: Agent Vault maintainers
 created: '2026-07-31'
 updated: '2026-08-03'
 related_notes:
@@ -56,15 +56,15 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Workaround
 
-- Maintain Struct's canonical generated block manually and do not run `vault_refresh active_context` until upstream repairs the predicate.
+- No workaround is required after the Agent Vault 0.5.3 generator fix; run `vault_refresh active_context` normally.
 
 ## Permanent Fix Plan
 
-- Upstream should filter the rollup by its documented open statuses and add a resolved-critical-bug regression case.
+- Completed in Agent Vault 0.5.3: the generator excludes resolved statuses from both Active Context critical-bug rollups while preserving unknown critical statuses for triage.
 
 ## Regression Coverage Needed
 
-- An upstream generator test with `new`, `fixed`, `invalid`, and `closed` sev-1/sev-2 records; only open records may appear in the count or list.
+- Completed upstream: generator coverage now exercises `new`, `fixed`, `invalid`, `closed`, and unknown sev-1/sev-2 records.
 
 ## Related Notes
 
@@ -77,4 +77,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-31 - Reported.
 - 2026-08-03 - Renumbered from BUG-0095 to resolve the duplicate bug identity; BUG-0095 remains assigned to the mobile navigation issue.
+- 2026-08-03 - Fixed in the Agent Vault source generator: Active Context now excludes resolved bug statuses from both the critical count and list. Added regression coverage for `new`, `fixed`, `invalid`, `closed`, and unknown sev-1/sev-2 records.
 <!-- AGENT-END:bug-timeline -->
