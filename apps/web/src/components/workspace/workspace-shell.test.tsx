@@ -3,9 +3,24 @@
 import { describe, expect, it } from 'bun:test'
 import { renderToString } from 'solid-js/web'
 import { WorkspaceShell } from './WorkspaceShell'
-import { WorkspaceStateProvider } from './workspace-state'
+import { useWorkspaceState, WorkspaceStateProvider } from './workspace-state'
 
 describe('workspace shell', () => {
+  // BUG-0070: the project list must be a single shared resource on the
+  // workspace state so one refetch after project creation updates both the
+  // persistent sidebar navigation and the project switcher list without a
+  // manual reload.
+  it('exposes a shared project list resource and refetch entry point on the workspace state', () => {
+    const html = renderToString(() => (
+      <WorkspaceStateProvider projectId="project-a">
+        <span data-projects={typeof useWorkspaceState().projects} data-refetch={typeof useWorkspaceState().refetchProjects} />
+      </WorkspaceStateProvider>
+    ))
+
+    expect(html).toContain('data-projects="function"')
+    expect(html).toContain('data-refetch="function"')
+  })
+
   it('renders one ordered navigation, main, and evidence surface without the legacy shell', () => {
     const html = renderToString(() => (
       <WorkspaceStateProvider projectId="project-a">

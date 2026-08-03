@@ -1,13 +1,16 @@
 import {
   type Accessor,
   type ParentComponent,
+  type Resource,
   type Setter,
   createContext,
   createEffect,
+  createResource,
   createSignal,
   useContext,
 } from 'solid-js'
 import { stripBasePath } from '../../base-path'
+import { fetchProjects } from '../../api/projects'
 
 export interface WorkspaceState {
   readonly projectId: Accessor<string | null>
@@ -26,6 +29,11 @@ export interface WorkspaceState {
   readonly evidenceSheetOpen: Accessor<boolean>
   readonly setEvidenceSheetOpen: Setter<boolean>
   readonly setProjectScope: (projectId: string | null) => void
+}
+
+export interface ProjectsState {
+  readonly projects: Resource<Awaited<ReturnType<typeof fetchProjects>>>
+  readonly refetchProjects: () => void
 }
 
 export function createWorkspaceState(initialProjectId: string | null): WorkspaceState {
@@ -66,21 +74,32 @@ export function createWorkspaceState(initialProjectId: string | null): Workspace
   }
 }
 
-const WorkspaceStateContext = createContext<WorkspaceState>()
+export type ProjectsList = Awaited<ReturnType<typeof fetchProjects>>
+
+export function createProjectsResource(): {
+  readonly projects: Resource<ProjectsList>
+  readonly refetchProjects: () => void
+} {
+  const [projects, { refetch }] = createResource(fetchProjects)
+  return { projects, refetchProjects: () => refetch() }
+}
+
+const WorkspaceStateContext = createContext<WorkspaceState & ProjectsState>()
 
 export const WorkspaceStateProvider: ParentComponent<{
   readonly projectId: string | null
 }> = (props) => {
   const state = createWorkspaceState(props.projectId)
+  const { projects, refetchProjects } = createProjectsResource()
   createEffect(() => state.setProjectScope(props.projectId))
   return (
-    <WorkspaceStateContext.Provider value={state}>
+    <WorkspaceStateContext.Provider value={{ ...state, projects, refetchProjects }}>
       {props.children}
     </WorkspaceStateContext.Provider>
   )
 }
 
-export function useWorkspaceState(): WorkspaceState {
+export function useWorkspaceState(): WorkspaceState & ProjectsState {
   const state = useContext(WorkspaceStateContext)
   if (state === undefined) {
     throw new Error('WorkspaceStateProvider is required')

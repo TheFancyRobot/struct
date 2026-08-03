@@ -356,6 +356,60 @@ describe('project lifecycle browser path', () => {
     await page.close()
   })
 
+  it('shows a newly created project in both navigation lists without a reload', async () => {
+    const page = await browser.newPage()
+    const alphaProject = { id: projectId, name: 'Alpha roadmap', createdAt: 1, updatedAt: 2 }
+    const betaProject = { id: betaProjectId, name: 'Beta archive', createdAt: 1, updatedAt: 2 }
+    const list: Array<{ id: string, name: string, createdAt: number, updatedAt: number }> = [alphaProject]
+
+    await page.route('**/api/projects', async (route) => {
+      if (!new URL(route.request().url()).pathname.endsWith('/api/projects')) {
+        await route.fallback()
+        return
+      }
+      if (route.request().method() === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ items: list, nextCursor: null }),
+        })
+        return
+      }
+      list.push(betaProject)
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify(betaProject),
+      })
+    })
+    await page.route(`**/api/projects/${projectId}`, (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(alphaProject),
+    }))
+    await page.route(`**/api/projects/${betaProjectId}`, (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(betaProject),
+    }))
+
+    await page.goto(`${origin}/projects/${projectId}`)
+    await page.getByRole('heading', { level: 1, name: alphaProject.name }).waitFor()
+
+    await page.getByLabel('Project name').fill(betaProject.name)
+    await page.getByRole('button', { name: 'Create project' }).click()
+    await page.waitForURL(`**/projects/${betaProjectId}`)
+    await page.getByRole('heading', { level: 1, name: betaProject.name }).waitFor()
+
+    // BUG-0070: both the persistent sidebar navigation and the project
+    // switcher list must show the new project immediately, without a reload.
+    await page.getByRole('navigation', { name: 'Workspace navigation' })
+      .getByRole('link', { name: betaProject.name }).waitFor()
+    await page.getByRole('navigation', { name: 'Projects', exact: true })
+      .getByRole('link', { name: betaProject.name }).waitFor()
+    await page.close()
+  })
+
   it('updates the cached last project only after successful route loads and preserves the last known good id during outages', async () => {
     const page = await browser.newPage()
     const alphaProject = { id: projectId, name: 'Alpha roadmap', createdAt: 1, updatedAt: 2 }
