@@ -21,16 +21,18 @@ import { configuredWorkspaceId } from '../workspace-scope'
 export const REPORT_LOAD_TIMEOUT_MS = 8_000
 
 export async function waitForNotebookReport<T>(
-  report: Promise<T>,
+  loadReport: (signal: AbortSignal) => Promise<T>,
   timeoutMs = REPORT_LOAD_TIMEOUT_MS,
 ): Promise<T> {
+  const controller = new AbortController()
   let timeout: ReturnType<typeof setTimeout> | undefined
   try {
     return await Promise.race([
-      report,
+      loadReport(controller.signal),
       new Promise<never>((_resolve, reject) => {
         timeout = setTimeout(() => {
           reject(new Error('The report took too long to load.'))
+          controller.abort()
         }, timeoutMs)
       }),
     ])
@@ -43,7 +45,8 @@ export const loadNotebookReport = (
   workspaceId: typeof WorkspaceId.Type,
   projectId: typeof ProjectId.Type,
   reportId: typeof ReportId.Type,
-) => waitForNotebookReport(fetchReport(workspaceId, projectId, reportId))
+) => waitForNotebookReport((signal) =>
+  fetchReport(workspaceId, projectId, reportId, undefined, signal))
 
 export const NotebookPage: Component = () => {
   const params = useParams()
@@ -111,7 +114,7 @@ export const NotebookPage: Component = () => {
         when={existingReport()?.error !== true}
         fallback={
           <section class="notebook-state alert alert-error" role="alert">
-            <span>This report could not be opened. It may no longer exist.</span>
+            <span>This report could not be opened. It may be unavailable or no longer exist.</span>
             <div class="flex gap-2">
               <button class="btn btn-sm" type="button" onClick={() => void refetchExistingReport()}>
                 Retry

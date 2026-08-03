@@ -95,14 +95,23 @@ afterEach(() => {
 
 describe('NotebookPage', () => {
   it('escapes a report load that never settles', async () => {
-    await expect(waitForNotebookReport(new Promise<never>(() => {}), 0))
+    let aborted = false
+    await expect(waitForNotebookReport((signal) => new Promise<never>((_resolve, reject) => {
+      signal.addEventListener('abort', () => {
+        aborted = signal.aborted
+        reject(signal.reason)
+      })
+    }), 0))
       .rejects.toThrow('The report took too long to load.')
+    expect(aborted).toBe(true)
   })
 
   it('loads the requested report in its workspace without reloading the public project summary', async () => {
     const requests: string[] = []
-    globalThis.fetch = Object.assign(async (input: RequestInfo | URL) => {
+    let requestSignal: AbortSignal | undefined
+    globalThis.fetch = Object.assign(async (input: RequestInfo | URL, init?: RequestInit) => {
       requests.push(typeof input === 'string' ? input : input.toString())
+      requestSignal = init?.signal ?? undefined
       return new Response(JSON.stringify(Schema.encodeSync(Report)(report)), {
         headers: { 'content-type': 'application/json' },
       })
@@ -117,6 +126,7 @@ describe('NotebookPage', () => {
       `/api/projects/${projectId}/reports/${reportId}?workspaceId=${workspaceId}`,
     )
     expect(requests).not.toContain(`/api/projects/${projectId}`)
+    expect(requestSignal).toBeInstanceOf(AbortSignal)
   })
 
   it('does not require workspace scope in the notebook URL', () => {

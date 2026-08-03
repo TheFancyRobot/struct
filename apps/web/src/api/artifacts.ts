@@ -26,11 +26,14 @@ async function artifactRequest(
   input: RequestInfo | URL,
   init?: RequestInit,
 ): Promise<unknown> {
+  const requestSignal = init?.signal
   let response: Response
   try {
     response = await fetch(input, {
       ...init,
-      signal: AbortSignal.timeout(10_000),
+      signal: requestSignal === undefined || requestSignal === null
+        ? AbortSignal.timeout(10_000)
+        : AbortSignal.any([requestSignal, AbortSignal.timeout(10_000)]),
     })
   } catch {
     throw new Error('The notebook could not connect to persistence.')
@@ -259,12 +262,14 @@ export async function fetchReport(
   projectId: typeof ProjectId.Type,
   reportId: typeof ReportId.Type,
   revision?: number,
+  signal?: AbortSignal,
 ): Promise<Report> {
   const query = new URLSearchParams({ workspaceId })
   if (revision !== undefined) query.set('revision', String(revision))
   return decodeReport(
     await artifactRequest(
       `${apiPath(`/projects/${projectId}/reports/${reportId}`, appBasePath)}?${query}`,
+      { signal },
     ),
     'The report returned an invalid revision.',
   )

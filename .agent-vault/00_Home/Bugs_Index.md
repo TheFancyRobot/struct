@@ -30,11 +30,10 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 _Last rebuilt: 2026-08-03._
 
 - Notes indexed: 95
-- Status summary: new (25), fixed (65), invalid (5)
+- Status summary: new (24), fixed (66), invalid (5)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
-| BUG-0086 | [Notebook report 404 remains stuck in loading state](../03_Bugs/BUG-0086_notebook-report-404-remains-stuck-in-loading-state.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0097 | [Mixed source light theme metadata text fails contrast](../03_Bugs/BUG-0097_mixed-source-light-theme-metadata-text-fails-contrast.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0098 | [Mixed source dataset type labels fail contrast in both themes](../03_Bugs/BUG-0098_mixed-source-dataset-type-labels-fail-contrast-in-both-themes.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0099 | [Mixed source dark dataset definition labels fail contrast](../03_Bugs/BUG-0099_mixed-source-dark-dataset-definition-labels-fail-contrast.md) | new | sev-2 | 2026-07-28 | - | - |
@@ -73,6 +72,7 @@ _Last rebuilt: 2026-08-03._
 | BUG-0068 | [Source attachment checkboxes have indistinguishable accessible names](../03_Bugs/BUG-0068_source-attachment-checkboxes-have-indistinguishable-accessible-names.md) | fixed | sev-2 | 2026-07-28 | 2026-07-30 | - |
 | BUG-0069 | [Reports navigation is permanently disabled and notebook is undiscoverable](../03_Bugs/BUG-0069_reports-navigation-is-permanently-disabled-and-notebook-is-undiscoverable.md) | fixed | sev-2 | 2026-07-28 | 2026-08-01 | - |
 | BUG-0085 | [Terminal failed research run remains labeled Reconnecting](../03_Bugs/BUG-0085_terminal-failed-research-run-remains-labeled-reconnecting.md) | fixed | sev-2 | 2026-07-28 | 2026-08-03 | - |
+| BUG-0086 | [Notebook report 404 remains stuck in loading state](../03_Bugs/BUG-0086_notebook-report-404-remains-stuck-in-loading-state.md) | fixed | sev-2 | 2026-07-28 | 2026-08-03 | - |
 | BUG-0048 | [Workspace source attachments do not enqueue text indexing](../03_Bugs/BUG-0048_workspace-source-attachments-do-not-enqueue-text-indexing.md) | fixed | sev-2 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0038 | [Research replay loses durable job ownership before cancellation verification](../03_Bugs/BUG-0038_research-replay-loses-durable-job-ownership-before-cancellation-verification.md) | fixed | sev-2 | 2026-07-25 | 2026-07-25 | - |
 | BUG-0040 | [API workspace bootstrap prevents health checks during database outages](../03_Bugs/BUG-0040_api-workspace-bootstrap-prevents-health-checks-during-database-outages.md) | fixed | sev-2 | 2026-07-24 | 2026-07-25 | - |
