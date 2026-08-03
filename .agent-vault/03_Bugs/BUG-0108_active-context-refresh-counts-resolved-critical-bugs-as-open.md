@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Active Context refresh counts resolved critical bugs as open
 bug_id: BUG-0108
-status: new
+status: fixed
 severity: sev-3
 category: logic
 reported_on: '2026-07-31'
-fixed_on: ''
-owner: agent-vault upstream
+fixed_on: '2026-08-03'
+owner: Agent Vault maintainers
 created: '2026-07-31'
 updated: '2026-08-03'
 related_notes:
@@ -78,3 +78,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-07-31 - Reported.
 - 2026-08-03 - Renumbered from BUG-0095 to resolve the duplicate bug identity; BUG-0095 remains assigned to the mobile navigation issue.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-03 - Fixed in the Agent Vault source generator: Active Context now allowlists open bug statuses for both the critical count and list. Added regression coverage for `new`, `fixed`, `invalid`, and `closed` sev-1/sev-2 records; only the open record is emitted.
