@@ -56,15 +56,15 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Workaround
 
-- Maintain Struct's canonical generated block manually and do not run `vault_refresh active_context` until upstream repairs the predicate.
+- No workaround is required after the Agent Vault 0.5.3 generator fix; run `vault_refresh active_context` normally.
 
 ## Permanent Fix Plan
 
-- Upstream should filter the rollup by its documented open statuses and add a resolved-critical-bug regression case.
+- Completed in Agent Vault 0.5.3: the generator excludes resolved statuses from both Active Context critical-bug rollups while preserving unknown critical statuses for triage.
 
 ## Regression Coverage Needed
 
-- An upstream generator test with `new`, `fixed`, `invalid`, and `closed` sev-1/sev-2 records; only open records may appear in the count or list.
+- Completed upstream: generator coverage now exercises `new`, `fixed`, `invalid`, `closed`, and unknown sev-1/sev-2 records.
 
 ## Related Notes
 
