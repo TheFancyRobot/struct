@@ -27,6 +27,7 @@ const threadId = uuid('3')
 const runId = uuid('4')
 const sourceVersionId = uuid('5')
 const reportId = uuid('6')
+const missingReportId = uuid('7')
 const origin = 'http://127.0.0.1:4177'
 const notebookUrl = `${origin}/projects/${projectId}/notebook`
   + `?workspaceId=${workspaceId}&threadId=${threadId}&reportId=${reportId}`
@@ -565,6 +566,27 @@ afterAll(async () => {
 })
 
 describe('report workspace browser workflow', () => {
+  it('shows recovery actions when the requested report is missing', async () => {
+    const page = await browser.newPage()
+    await page.route(`**/api/projects/${projectId}/reports/${missingReportId}**`, (route) =>
+      route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'ArtifactNotFound' }),
+      }))
+    await page.goto(
+      `${origin}/projects/${projectId}/notebook`
+      + `?workspaceId=${workspaceId}&reportId=${missingReportId}`,
+    )
+    const error = page.getByRole('alert')
+    await error.waitFor()
+    expect(await error.textContent()).toContain('This report could not be opened.')
+    expect(await error.getByRole('button', { name: 'Retry' }).count()).toBe(1)
+    expect(await error.getByRole('link', { name: 'Back to project' })
+      .getAttribute('href')).toBe(`/projects/${projectId}`)
+    await page.close()
+  })
+
   it('creates a report from the finding picker and preserves its reload identity', async () => {
     const page = await browser.newPage()
     await installApi(page)
