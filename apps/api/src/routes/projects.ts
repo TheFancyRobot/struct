@@ -35,7 +35,6 @@ function idempotencyKey(request: Request) {
 
 function summarize(project: {
   readonly id: typeof ProjectId.Type
-  readonly workspaceId: typeof WorkspaceId.Type
   readonly name: string
   readonly createdAt: bigint
   readonly updatedAt: bigint

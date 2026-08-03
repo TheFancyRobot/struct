@@ -17,7 +17,13 @@ afterEach(() => {
 describe('project lifecycle api client', () => {
   it('lists decoded projects from the typed api route', async () => {
     globalThis.fetch = Object.assign(async () => new Response(JSON.stringify({
-      items: [{ id: projectId, name: 'Alpha', createdAt: 1, updatedAt: 2 }],
+      items: [{
+        id: projectId,
+        workspaceId: '590e8400-e29b-41d4-a716-446655440000',
+        name: 'Alpha',
+        createdAt: 1,
+        updatedAt: 2,
+      }],
       nextCursor: null,
     }), {
       status: 200,
@@ -26,6 +32,7 @@ describe('project lifecycle api client', () => {
 
     const page = await fetchProjects()
     expect(page.items[0]?.id).toBe(projectId)
+    expect(page.items[0]).not.toHaveProperty('workspaceId')
     expect(page.items[0]?.createdAt).toBe(1n)
     expect(page.nextCursor).toBeNull()
   })

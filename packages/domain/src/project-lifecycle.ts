@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { ProjectId, WorkspaceId } from './branded-ids.js'
+import { ProjectId } from './branded-ids.js'
 
 export const MAX_PROJECT_NAME_CHARACTERS = 120
 export const DEFAULT_PROJECT_PAGE_SIZE = 25
@@ -50,7 +50,6 @@ export type ProjectNameInput = Schema.Schema.Type<typeof ProjectNameInput>
 
 export const ProjectSummary = Schema.Struct({
   id: ProjectId,
-  workspaceId: Schema.optional(WorkspaceId),
   name: ProjectName,
   createdAt: Schema.BigIntFromNumber,
   updatedAt: Schema.BigIntFromNumber,
