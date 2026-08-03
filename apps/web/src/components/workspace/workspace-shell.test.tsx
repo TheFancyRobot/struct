@@ -42,9 +42,7 @@ describe('workspace shell', () => {
     expect(html).not.toContain('Grounded analysis')
     expect(html).not.toContain('max-w-')
     expect(html).toContain('href="/projects/project-a/sources" aria-current="page"')
-    expect(html).toContain(
-      `href="/projects/project-a/notebook?workspaceId=${import.meta.env.VITE_API_WORKSPACE_ID}"`,
-    )
+    expect(html).toContain('href="/projects/project-a/notebook"')
     expect(html).toContain('>Reports</a>')
     expect(html).not.toMatch(/<button[^>]*disabled[^>]*>Reports<\/button>/)
     expect(html).toContain('Search projects')

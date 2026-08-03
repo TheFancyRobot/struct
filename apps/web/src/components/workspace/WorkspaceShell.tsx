@@ -98,7 +98,7 @@ export const WorkspaceNavigation: ParentComponent<{
   const projectPath = () => state.projectId() === null
     ? '/'
     : `/projects/${state.projectId()}`
-  const reportPath = () => `${projectPath()}/notebook?workspaceId=${import.meta.env.VITE_API_WORKSPACE_ID}`
+  const reportPath = () => `${projectPath()}/notebook`
   const isCurrent = (path: string) =>
     props.currentPathname === withBasePath(path, appBasePath)
   const matches = (name: string, query: string) =>
