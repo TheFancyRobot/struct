@@ -15,21 +15,20 @@ import {
   mutateReport,
 } from '../api/artifacts'
 import { NotebookView } from '../components/NotebookView'
-import { fetchProject } from '../api/projects'
+import { configuredWorkspaceId } from '../workspace-scope'
+
+export const loadNotebookReport = (
+  workspaceId: typeof WorkspaceId.Type,
+  projectId: typeof ProjectId.Type,
+  reportId: typeof ReportId.Type,
+) => fetchReport(workspaceId, projectId, reportId)
 
 export const NotebookPage: Component = () => {
   const params = useParams()
   const [search] = useSearchParams()
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
   const rawProjectId = params.projectId
-  const rawWorkspaceId = typeof search.workspaceId === 'string'
-    ? search.workspaceId
-    : undefined
-  if (
-    rawProjectId === undefined
-    || !uuid.test(rawProjectId)
-    || (rawWorkspaceId !== undefined && !uuid.test(rawWorkspaceId))
-  ) {
+  if (rawProjectId === undefined || !uuid.test(rawProjectId)) {
     return (
       <section class="notebook-state alert alert-error" role="alert">
         This project notebook link is invalid.
@@ -37,13 +36,7 @@ export const NotebookPage: Component = () => {
     )
   }
   const projectId = ProjectId.make(rawProjectId)
-  const [project] = createResource(
-    () => rawWorkspaceId === undefined ? projectId : undefined,
-    fetchProject,
-  )
-  const workspaceId = () => rawWorkspaceId === undefined
-    ? project()?.workspaceId
-    : WorkspaceId.make(rawWorkspaceId)
+  const workspaceId = configuredWorkspaceId()
   const threadId = typeof search.threadId === 'string'
     && uuid.test(search.threadId)
     ? search.threadId
@@ -56,23 +49,21 @@ export const NotebookPage: Component = () => {
     : undefined
   const [existingReport] = createResource(
     () => reportId,
-    (id) => workspaceId() === undefined
-      ? Promise.reject(new Error('Workspace could not be resolved.'))
-      : fetchReport(workspaceId()!, projectId, id),
+    (id) => loadNotebookReport(workspaceId, projectId, id),
   )
-  const notebook = (resolvedWorkspaceId: typeof WorkspaceId.Type) => (
+  const notebook = () => (
     <NotebookView
-      workspaceId={resolvedWorkspaceId}
+      workspaceId={workspaceId}
       projectId={projectId}
       threadId={threadId}
       runId={runId}
       initialReport={existingReport()}
-      loadFindings={() => fetchFindings(resolvedWorkspaceId, projectId)}
+      loadFindings={() => fetchFindings(workspaceId, projectId)}
       composeReport={(findings: ReadonlyArray<Finding>) =>
-        createReportFromFindings(resolvedWorkspaceId, projectId, findings)}
+        createReportFromFindings(workspaceId, projectId, findings)}
       mutateReport={mutateReport}
       loadReportRevision={(report, revision) =>
-        fetchReport(resolvedWorkspaceId, projectId, report.id, revision)}
+        fetchReport(workspaceId, projectId, report.id, revision)}
       exportReport={exportReport}
     />
   )
@@ -96,17 +87,7 @@ export const NotebookPage: Component = () => {
           </section>
         }
       >
-        <Show
-          when={workspaceId()}
-          fallback={
-            <section class="notebook-state flex min-h-48 items-center justify-center rounded-box border border-base-300 bg-base-100" role="status">
-              <span class="loading loading-spinner loading-md" aria-hidden="true" />
-              <span>Opening report workspace…</span>
-            </section>
-          }
-        >
-          {(resolvedWorkspaceId) => notebook(resolvedWorkspaceId())}
-        </Show>
+        {notebook()}
       </Show>
     </Show>
   )

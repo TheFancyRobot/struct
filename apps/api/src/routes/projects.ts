@@ -35,14 +35,12 @@ function idempotencyKey(request: Request) {
 
 function summarize(project: {
   readonly id: typeof ProjectId.Type
-  readonly workspaceId: typeof WorkspaceId.Type
   readonly name: string
   readonly createdAt: bigint
   readonly updatedAt: bigint
 }) {
   return {
     id: project.id,
-    workspaceId: project.workspaceId,
     name: project.name,
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,

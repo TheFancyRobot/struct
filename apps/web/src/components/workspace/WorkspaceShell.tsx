@@ -98,6 +98,7 @@ export const WorkspaceNavigation: ParentComponent<{
   const projectPath = () => state.projectId() === null
     ? '/'
     : `/projects/${state.projectId()}`
+  const reportPath = () => `${projectPath()}/notebook`
   const isCurrent = (path: string) =>
     props.currentPathname === withBasePath(path, appBasePath)
   const matches = (name: string, query: string) =>
@@ -267,7 +268,7 @@ export const WorkspaceNavigation: ParentComponent<{
             </a>
           </li>
           <li>
-            <a href={withBasePath(`${projectPath()}/notebook`, appBasePath)} aria-current={isCurrent(`${projectPath()}/notebook`) ? 'page' : undefined}>
+            <a href={withBasePath(reportPath(), appBasePath)} aria-current={isCurrent(`${projectPath()}/notebook`) ? 'page' : undefined}>
               Reports
             </a>
           </li>

@@ -8,11 +8,18 @@ import { apiProxyHeaders, appBase } from './vite-helpers'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, path.resolve(__dirname, '../..'), '')
   const proxyHeaders = apiProxyHeaders(env['API_AUTH_TOKEN'])
+  const workspaceId = env['API_WORKSPACE_ID']
+  if (workspaceId === undefined) {
+    throw new Error('API_WORKSPACE_ID is required to build the web application')
+  }
   const basePath = basePathFromEnv(env)
   const base = appBase(basePath)
   const apiProxyTarget = `http://localhost:${Number(env['API_PORT']) || 3001}`
   return {
     base,
+    define: {
+      'import.meta.env.VITE_API_WORKSPACE_ID': JSON.stringify(workspaceId),
+    },
     plugins: [solid(), tailwindcss()],
     resolve: {
       alias: {

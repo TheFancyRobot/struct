@@ -102,6 +102,12 @@ describe('project lifecycle route', () => {
       },
     })
     expect(response?.status).toBe(201)
+    expect(await response?.json()).toEqual({
+      id: project.id,
+      name: project.name,
+      createdAt: 1,
+      updatedAt: 2,
+    })
   })
 
   it('maps malformed create json to a bounded invalid-request response', async () => {
@@ -188,6 +194,28 @@ describe('project lifecycle route', () => {
       },
     ))
     expect(malformed?.status).toBe(404)
+  })
+
+  it('does not expose a workspace id from a project read', async () => {
+    const response = await Effect.runPromise(projectRoute(
+      new Request(`http://localhost/api/projects/${projectId}`),
+      { workspaceId },
+      {
+        listByWorkspaceId: () => Effect.die('list should not run'),
+        createWithIdempotency: () => Effect.die('create should not run'),
+        findById: () => Effect.succeed(project),
+        randomProjectId: () => projectId,
+        now: () => 2n,
+      },
+    ))
+
+    expect(response?.status).toBe(200)
+    expect(await response?.json()).toEqual({
+      id: project.id,
+      name: project.name,
+      createdAt: 1,
+      updatedAt: 2,
+    })
   })
 
   it('does not claim nested project routes owned by later slices', async () => {
