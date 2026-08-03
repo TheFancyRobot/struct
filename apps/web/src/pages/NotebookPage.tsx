@@ -15,7 +15,12 @@ import {
   mutateReport,
 } from '../api/artifacts'
 import { NotebookView } from '../components/NotebookView'
-import { fetchProject } from '../api/projects'
+
+export const loadNotebookReport = (
+  workspaceId: typeof WorkspaceId.Type,
+  projectId: typeof ProjectId.Type,
+  reportId: typeof ReportId.Type,
+) => fetchReport(workspaceId, projectId, reportId)
 
 export const NotebookPage: Component = () => {
   const params = useParams()
@@ -27,8 +32,9 @@ export const NotebookPage: Component = () => {
     : undefined
   if (
     rawProjectId === undefined
+    || rawWorkspaceId === undefined
     || !uuid.test(rawProjectId)
-    || (rawWorkspaceId !== undefined && !uuid.test(rawWorkspaceId))
+    || !uuid.test(rawWorkspaceId)
   ) {
     return (
       <section class="notebook-state alert alert-error" role="alert">
@@ -37,13 +43,7 @@ export const NotebookPage: Component = () => {
     )
   }
   const projectId = ProjectId.make(rawProjectId)
-  const [project] = createResource(
-    () => rawWorkspaceId === undefined ? projectId : undefined,
-    fetchProject,
-  )
-  const workspaceId = () => rawWorkspaceId === undefined
-    ? project()?.workspaceId
-    : WorkspaceId.make(rawWorkspaceId)
+  const workspaceId = WorkspaceId.make(rawWorkspaceId)
   const threadId = typeof search.threadId === 'string'
     && uuid.test(search.threadId)
     ? search.threadId
@@ -56,9 +56,7 @@ export const NotebookPage: Component = () => {
     : undefined
   const [existingReport] = createResource(
     () => reportId,
-    (id) => workspaceId() === undefined
-      ? Promise.reject(new Error('Workspace could not be resolved.'))
-      : fetchReport(workspaceId()!, projectId, id),
+    (id) => loadNotebookReport(workspaceId, projectId, id),
   )
   const notebook = (resolvedWorkspaceId: typeof WorkspaceId.Type) => (
     <NotebookView
@@ -96,17 +94,7 @@ export const NotebookPage: Component = () => {
           </section>
         }
       >
-        <Show
-          when={workspaceId()}
-          fallback={
-            <section class="notebook-state flex min-h-48 items-center justify-center rounded-box border border-base-300 bg-base-100" role="status">
-              <span class="loading loading-spinner loading-md" aria-hidden="true" />
-              <span>Opening report workspace…</span>
-            </section>
-          }
-        >
-          {(resolvedWorkspaceId) => notebook(resolvedWorkspaceId())}
-        </Show>
+        {notebook(workspaceId)}
       </Show>
     </Show>
   )

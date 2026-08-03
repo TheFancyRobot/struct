@@ -110,6 +110,7 @@ tailscale serve --bg --set-path /struct 3000
 | `ARTIFACT_STORAGE_ROOT` | `packages/source-storage`, `apps/api`, `apps/worker` | dev FS artifact root and upload staging root | `./.local/artifacts` |
 | `API_AUTH_TOKEN` | `apps/api`, `apps/web` server | bearer credential for protected API reads; the web server injects it without exposing it to browser code (minimum 16 characters) | local secret |
 | `API_WORKSPACE_ID` | `apps/api` | workspace UUID owned by the configured bearer identity | local configuration |
+| `VITE_API_WORKSPACE_ID` | `apps/web` browser bundle | workspace UUID used for workspace-qualified browser links; this is intentionally public and must match `API_WORKSPACE_ID` locally | local configuration |
 | `API_ORIGIN` | `apps/web` production server | upstream API origin for the same-origin credential bridge | `http://127.0.0.1:3001` |
 | `MAX_TEXT_SOURCE_BYTES` | `apps/api`, `packages/ingestion` | walking-slice upload byte cap | `1048576` |
 | `DATA_ENGINE_URL` | `packages/data-engine`, `apps/worker` | authenticated loopback gateway | `http://127.0.0.1:4300` |

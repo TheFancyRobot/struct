@@ -16,7 +16,9 @@ related_architecture:
   - '[[01_Architecture/Integration_Map|Integration Map]]'
   - '[[01_Architecture/Agent_Workflow|Agent Workflow]]'
 related_decisions: []
-related_bugs: '- ''[[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]'''
+related_bugs:
+  - '[[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]'
+  - '[[03_Bugs/BUG-0106_project-list-api-exposes-workspace-ids-despite-its-response-contract|BUG-0106 Project list API exposes workspace IDs despite its response contract]]'
 tags:
   - agent-vault
   - phase
@@ -91,6 +93,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-related-bugs -->
 - [[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]
+- [[03_Bugs/BUG-0106_project-list-api-exposes-workspace-ids-despite-its-response-contract|BUG-0106 Project list API exposes workspace IDs despite its response contract]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps

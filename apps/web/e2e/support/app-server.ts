@@ -392,6 +392,7 @@ function realStackEnvironment(
     API_ORIGIN: `http://127.0.0.1:${webPort + 1}`,
     API_PORT: String(webPort + 1),
     API_WORKSPACE_ID: e2eWorkspaceId,
+    VITE_API_WORKSPACE_ID: e2eWorkspaceId,
     ARTIFACT_STORAGE_ROOT: e2eArtifactRoot,
     DATABASE_URL: e2eDatabaseUrl,
     DATA_ENGINE_TOKEN: dataEngineToken,

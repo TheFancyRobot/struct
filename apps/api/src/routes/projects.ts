@@ -42,7 +42,6 @@ function summarize(project: {
 }) {
   return {
     id: project.id,
-    workspaceId: project.workspaceId,
     name: project.name,
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
