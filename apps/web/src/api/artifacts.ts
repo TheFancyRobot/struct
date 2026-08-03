@@ -35,13 +35,15 @@ async function artifactRequest(
         ? AbortSignal.timeout(10_000)
         : AbortSignal.any([requestSignal, AbortSignal.timeout(10_000)]),
     })
-  } catch {
+  } catch (error) {
+    if (requestSignal?.aborted) throw error
     throw new Error('The notebook could not connect to persistence.')
   }
   let body: unknown
   try {
     body = await response.json()
-  } catch {
+  } catch (error) {
+    if (requestSignal?.aborted) throw error
     throw new Error('The notebook returned an invalid persistence response.')
   }
   if (!response.ok) {
