@@ -27,7 +27,7 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 ## Status Buckets
 
 <!-- AGENT-START:bugs-index -->
-_Last rebuilt: 2026-08-01._
+_Last rebuilt: 2026-08-03._
 
 - Notes indexed: 94
 - Status summary: new (28), fixed (61), invalid (5)
@@ -39,7 +39,7 @@ _Last rebuilt: 2026-08-01._
 | BUG-0097 | [Mixed source light theme metadata text fails contrast](../03_Bugs/BUG-0097_mixed-source-light-theme-metadata-text-fails-contrast.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0098 | [Mixed source dataset type labels fail contrast in both themes](../03_Bugs/BUG-0098_mixed-source-dataset-type-labels-fail-contrast-in-both-themes.md) | new | sev-2 | 2026-07-28 | - | - |
 | BUG-0099 | [Mixed source dark dataset definition labels fail contrast](../03_Bugs/BUG-0099_mixed-source-dark-dataset-definition-labels-fail-contrast.md) | new | sev-2 | 2026-07-28 | - | - |
-| BUG-0095 | [Active Context refresh counts resolved critical bugs as open](../03_Bugs/BUG-0095_active-context-refresh-counts-resolved-critical-bugs-as-open.md) | new | sev-3 | 2026-07-31 | - | - |
+| BUG-0108 | [Active Context refresh counts resolved critical bugs as open](../03_Bugs/BUG-0108_active-context-refresh-counts-resolved-critical-bugs-as-open.md) | new | sev-3 | 2026-07-31 | - | - |
 | BUG-0070 | [New project is missing from project navigation until reload](../03_Bugs/BUG-0070_new-project-is-missing-from-project-navigation-until-reload.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0071 | [Add Source leaves focus in workspace navigation after route change](../03_Bugs/BUG-0071_add-source-leaves-focus-in-workspace-navigation-after-route-change.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0072 | [Workspace routes reuse one generic browser title](../03_Bugs/BUG-0072_workspace-routes-reuse-one-generic-browser-title.md) | new | sev-3 | 2026-07-28 | - | - |
@@ -67,7 +67,7 @@ _Last rebuilt: 2026-08-01._
 | BUG-0061 | [Source import file picker has no accessible label](../03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label.md) | fixed | sev-1 | 2026-07-28 | 2026-07-29 | - |
 | BUG-0049 | [Global dataset attachments did not materialize project datasets](../03_Bugs/BUG-0049_global-dataset-attachments-did-not-materialize-project-datasets.md) | fixed | sev-1 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0013 | [v1 UI lacks core research workflows](../03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows.md) | fixed | sev-1 | 2026-07-21 | 2026-07-26 | - |
-| BUG-0107 | [Worker subagents remain idle and never execute assigned BUG-0106 task](../03_Bugs/BUG-0107_worker-subagents-remain-idle-and-never-execute-assigned-bug-0106-task.md) | fixed | sev-2 | 2026-08-01 | 2026-08-01 | - |
+| BUG-0107 | [Worker startup delay was misclassified as permanent idleness](../03_Bugs/BUG-0107_worker-subagents-remain-idle-and-never-execute-assigned-bug-0106-task.md) | fixed | sev-2 | 2026-08-01 | 2026-08-01 | - |
 | BUG-0063 | [Source import mode switcher lacks valid group and selection semantics](../03_Bugs/BUG-0063_source-import-mode-switcher-lacks-valid-group-and-selection-semantics.md) | fixed | sev-2 | 2026-07-28 | 2026-07-30 | - |
 | BUG-0064 | [Citation unavailable state references a missing accessible heading](../03_Bugs/BUG-0064_citation-unavailable-state-references-a-missing-accessible-heading.md) | fixed | sev-2 | 2026-07-28 | 2026-07-30 | - |
 | BUG-0065 | [Project sidebar section label fails contrast in both themes](../03_Bugs/BUG-0065_project-sidebar-section-label-fails-contrast-in-both-themes.md) | fixed | sev-2 | 2026-07-28 | 2026-07-30 | - |
