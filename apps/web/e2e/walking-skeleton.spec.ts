@@ -197,6 +197,8 @@ describe('walking-skeleton browser path', () => {
     expect(await page.getByRole('alert').textContent()).toContain(
       'did not contain enough support',
     )
+    expect(await page.locator('#research-progress-title').locator('..').getByText('Failed', { exact: true }).count())
+      .toBe(1)
     expect(await page.getByRole('link', { name: /Open citation/ }).count()).toBe(0)
 
     await page.close()

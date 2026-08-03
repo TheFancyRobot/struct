@@ -108,6 +108,32 @@ describe('SSE retry policy', () => {
     })
   })
 
+  it('stops cleanly when an event ends the run', () => {
+    const lifecycle = fakeLifecycle()
+    createRoot((dispose) => {
+      const state = useSSE(
+        () => '/events',
+        (input) => input as { readonly type: string },
+        () => undefined,
+        [],
+        lifecycle.environment,
+        (event) => event.type === 'research-failed',
+      )
+      lifecycle.sources[0]?.onmessage?.(new MessageEvent('message', {
+        data: '{"type":"research-failed"}',
+      }))
+
+      expect(lifecycle.sources[0]?.closed).toBe(true)
+      expect(state.connected()).toBe(false)
+      expect(state.reconnecting()).toBe(false)
+      expect(state.error()).toBeUndefined()
+      expect(lifecycle.scheduled).toHaveLength(0)
+      lifecycle.sources[0]?.onerror?.(new Event('error'))
+      expect(lifecycle.sources).toHaveLength(1)
+      dispose()
+    })
+  })
+
   it('ignores stale callbacks after a replacement connection opens', () => {
     const lifecycle = fakeLifecycle()
     createRoot((dispose) => {

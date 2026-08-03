@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Terminal failed research run remains labeled Reconnecting
 bug_id: BUG-0085
-status: new
+status: fixed
 severity: sev-2
 category: ux
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-03'
+owner: bug_0085
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-08-03'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -102,3 +102,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-03 - Fixed: `useSSE` now closes terminal research streams without scheduling a reconnect; `ResearchStream` pins the badge to Failed, Cancelled, or Completed after the terminal event. Verified with `bun test --preload ./test/solid-test-preload.ts src/hooks/useSSE.test.ts src/components/research-stream-status.test.ts`, `bun run typecheck`, `bun run build`, and `bun test --timeout 60000 --max-concurrency 1 e2e/walking-skeleton.spec.ts` from `apps/web`.

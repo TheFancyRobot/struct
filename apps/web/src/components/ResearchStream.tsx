@@ -37,6 +37,7 @@ import {
   mergeRecursiveRead,
   researchNoteProjection,
 } from './recursive-progress-state'
+import { terminalResearchStatus } from './research-run-status'
 import { useWorkspaceState } from './workspace/workspace-state'
 interface ResearchStreamProps {
   readonly projectId: ProjectId
@@ -101,6 +102,7 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
   const legacyEvents = createMemo(() => state.events.filter(
     (event) => !event.type.startsWith('recursive-'),
   ))
+  const terminalStatus = createMemo(() => terminalResearchStatus(legacyEvents()))
   const recursiveNoteEvent = createMemo(() => {
     const result = recursive()?.result
     if (result === null || result === undefined) return undefined
@@ -217,6 +219,8 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
       'recursive-partition-progress-committed',
       'recursive-result-progress-committed',
     ],
+    undefined,
+    (event) => terminalResearchStatus([event]) !== undefined,
   )
 
   const requestCancellation = async () => {
@@ -365,8 +369,8 @@ export const ResearchStream: Component<ResearchStreamProps> = (props) => {
         <div class="card-body gap-4 p-4 sm:p-5">
         <div class="flex items-center justify-between gap-4">
           <h2 id="research-progress-title" class="card-title text-xl">Research progress</h2>
-          <span class={`badge ${connection.connected() ? 'badge-success' : connection.reconnecting() ? 'badge-warning' : 'badge-ghost'}`}>
-            {connection.connected() ? 'Live' : connection.reconnecting() ? 'Reconnecting' : 'Connecting'}
+          <span class={`badge ${terminalStatus()?.badgeClass ?? (connection.connected() ? 'badge-success' : connection.reconnecting() ? 'badge-warning' : 'badge-ghost')}`}>
+            {terminalStatus()?.label ?? (connection.connected() ? 'Live' : connection.reconnecting() ? 'Reconnecting' : 'Connecting')}
           </span>
         </div>
         <Show when={connection.error()}>
