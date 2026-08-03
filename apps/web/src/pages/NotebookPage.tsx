@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from '@solidjs/router'
 import {
   ProjectId,
   ReportId,
+  WorkspaceId,
   type Finding,
 } from '@struct/domain'
 import { Show, createResource, type Component } from 'solid-js'
@@ -15,6 +16,12 @@ import {
 } from '../api/artifacts'
 import { NotebookView } from '../components/NotebookView'
 import { configuredWorkspaceId } from '../workspace-scope'
+
+export const loadNotebookReport = (
+  workspaceId: typeof WorkspaceId.Type,
+  projectId: typeof ProjectId.Type,
+  reportId: typeof ReportId.Type,
+) => fetchReport(workspaceId, projectId, reportId)
 
 export const NotebookPage: Component = () => {
   const params = useParams()
@@ -42,7 +49,7 @@ export const NotebookPage: Component = () => {
     : undefined
   const [existingReport] = createResource(
     () => reportId,
-    (id) => fetchReport(workspaceId, projectId, id),
+    (id) => loadNotebookReport(workspaceId, projectId, id),
   )
   const notebook = () => (
     <NotebookView

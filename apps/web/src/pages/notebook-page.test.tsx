@@ -6,8 +6,6 @@ import { Schema } from 'effect'
 import { renderToString } from 'solid-js/web'
 import { setRouterParams } from '../test/mock-solid-router'
 
-const { NotebookPage, loadNotebookReport } = await import('./NotebookPage')
-
 const originalFetch = globalThis.fetch
 const projectId = 'b80e8400-e29b-41d4-a716-446655440001'
 const workspaceId = 'b80e8400-e29b-41d4-a716-446655440002'
@@ -16,6 +14,10 @@ const runId = 'b80e8400-e29b-41d4-a716-446655440004'
 const sourceVersionId = 'b80e8400-e29b-41d4-a716-446655440005'
 const findingId = 'b80e8400-e29b-41d4-a716-446655440006'
 const claimId = 'b80e8400-e29b-41d4-a716-446655440007'
+
+process.env.VITE_API_WORKSPACE_ID = workspaceId
+
+const { NotebookPage, loadNotebookReport } = await import('./NotebookPage')
 
 const report = Schema.decodeUnknownSync(Report)({
   id: reportId,
@@ -96,7 +98,7 @@ describe('NotebookPage', () => {
         headers: { 'content-type': 'application/json' },
       })
     }, { preconnect: originalFetch.preconnect })
-    setRouterParams({ projectId, workspaceId, reportId })
+    setRouterParams({ projectId, reportId })
 
     const html = renderToString(() => <NotebookPage />)
     await loadNotebookReport(report.workspaceId, report.projectId, report.id)
@@ -108,10 +110,10 @@ describe('NotebookPage', () => {
     expect(requests).not.toContain(`/api/projects/${projectId}`)
   })
 
-  it('requires workspace scope in every notebook URL', () => {
+  it('does not require workspace scope in the notebook URL', () => {
     setRouterParams({ projectId })
 
-    expect(renderToString(() => <NotebookPage />)).toContain(
+    expect(renderToString(() => <NotebookPage />)).not.toContain(
       'This project notebook link is invalid.',
     )
   })
