@@ -7,6 +7,7 @@ import {
   type Finding,
 } from '@struct/domain'
 import { Show, createResource, type Component } from 'solid-js'
+import { basePathFromPublicBaseUrl, withBasePath } from '../base-path'
 import {
   createReportFromFindings,
   exportReport,
@@ -17,11 +18,32 @@ import {
 import { NotebookView } from '../components/NotebookView'
 import { configuredWorkspaceId } from '../workspace-scope'
 
+export const REPORT_LOAD_TIMEOUT_MS = 8_000
+
+export async function waitForNotebookReport<T>(
+  report: Promise<T>,
+  timeoutMs = REPORT_LOAD_TIMEOUT_MS,
+): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      report,
+      new Promise<never>((_resolve, reject) => {
+        timeout = setTimeout(() => {
+          reject(new Error('The report took too long to load.'))
+        }, timeoutMs)
+      }),
+    ])
+  } finally {
+    if (timeout !== undefined) clearTimeout(timeout)
+  }
+}
+
 export const loadNotebookReport = (
   workspaceId: typeof WorkspaceId.Type,
   projectId: typeof ProjectId.Type,
   reportId: typeof ReportId.Type,
-) => fetchReport(workspaceId, projectId, reportId)
+) => waitForNotebookReport(fetchReport(workspaceId, projectId, reportId))
 
 export const NotebookPage: Component = () => {
   const params = useParams()
@@ -47,9 +69,15 @@ export const NotebookPage: Component = () => {
   const reportId = typeof search.reportId === 'string' && uuid.test(search.reportId)
     ? ReportId.make(search.reportId)
     : undefined
-  const [existingReport] = createResource(
+  const [existingReport, { refetch: refetchExistingReport }] = createResource(
     () => reportId,
-    (id) => loadNotebookReport(workspaceId, projectId, id),
+    async (id) => {
+      try {
+        return { report: await loadNotebookReport(workspaceId, projectId, id) }
+      } catch {
+        return { report: undefined, error: true }
+      }
+    },
   )
   const notebook = () => (
     <NotebookView
@@ -57,7 +85,7 @@ export const NotebookPage: Component = () => {
       projectId={projectId}
       threadId={threadId}
       runId={runId}
-      initialReport={existingReport()}
+      initialReport={existingReport()?.report}
       loadFindings={() => fetchFindings(workspaceId, projectId)}
       composeReport={(findings: ReadonlyArray<Finding>) =>
         createReportFromFindings(workspaceId, projectId, findings)}
@@ -70,8 +98,8 @@ export const NotebookPage: Component = () => {
   return (
     <Show
       when={reportId === undefined
-        || existingReport() !== undefined
-        || existingReport.error !== undefined}
+        || existingReport()?.report !== undefined
+        || existingReport()?.error === true}
       fallback={
         <section class="notebook-state flex min-h-48 items-center justify-center rounded-box border border-base-300 bg-base-100" role="status">
           <span class="loading loading-spinner loading-md" aria-hidden="true" />
@@ -80,10 +108,24 @@ export const NotebookPage: Component = () => {
       }
     >
       <Show
-        when={!existingReport.error}
+        when={existingReport()?.error !== true}
         fallback={
           <section class="notebook-state alert alert-error" role="alert">
-            This report could not be opened. Check your connection and try again.
+            <span>This report could not be opened. It may no longer exist.</span>
+            <div class="flex gap-2">
+              <button class="btn btn-sm" type="button" onClick={() => void refetchExistingReport()}>
+                Retry
+              </button>
+              <a
+                class="btn btn-ghost btn-sm"
+                href={withBasePath(
+                  `/projects/${projectId}`,
+                  basePathFromPublicBaseUrl(import.meta.env.BASE_URL),
+                )}
+              >
+                Back to project
+              </a>
+            </div>
           </section>
         }
       >

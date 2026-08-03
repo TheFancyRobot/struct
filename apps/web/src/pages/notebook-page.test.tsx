@@ -17,7 +17,11 @@ const claimId = 'b80e8400-e29b-41d4-a716-446655440007'
 
 process.env.VITE_API_WORKSPACE_ID = workspaceId
 
-const { NotebookPage, loadNotebookReport } = await import('./NotebookPage')
+const {
+  NotebookPage,
+  loadNotebookReport,
+  waitForNotebookReport,
+} = await import('./NotebookPage')
 
 const report = Schema.decodeUnknownSync(Report)({
   id: reportId,
@@ -90,6 +94,11 @@ afterEach(() => {
 })
 
 describe('NotebookPage', () => {
+  it('escapes a report load that never settles', async () => {
+    await expect(waitForNotebookReport(new Promise<never>(() => {}), 0))
+      .rejects.toThrow('The report took too long to load.')
+  })
+
   it('loads the requested report in its workspace without reloading the public project summary', async () => {
     const requests: string[] = []
     globalThis.fetch = Object.assign(async (input: RequestInfo | URL) => {

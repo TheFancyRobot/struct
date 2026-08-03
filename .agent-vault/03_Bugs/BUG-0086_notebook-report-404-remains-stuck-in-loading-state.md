@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Notebook report 404 remains stuck in loading state
 bug_id: BUG-0086
-status: new
+status: fixed
 severity: sev-2
 category: logic
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-03'
+owner: codex
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-08-03'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -80,12 +80,14 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - Make a missing report deterministically reach the error state: investigate why the real-stack `GET /reports/:reportId` does not settle (inventory: "appears to hang") and ensure it returns 404 promptly so the existing error path fires.
 - Add a loading timeout / non-completion fallback in NotebookPage so the `existingReport` resource cannot hang the UI indefinitely.
 - Render a back/retry action in the `This report could not be opened` error state (Summary expected).
+- Completed 2026-08-03: bound the initial report load to 8 seconds and normalize failed report loads into an explicit NotebookPage error state with Retry and Back to project actions.
 
 ## Regression Coverage Needed
 
 - Add a real-stack (non-mocked) browser/e2e reproduction for a valid-but-non-existent `reportId` asserting the page reaches the error state within a bounded time; current `notebook-report.spec.ts` only mocks 404 via `page.route` (inventory §2 Route 10) and does not exercise the real-stack hang.
 - Assert the error state exposes a back/retry action.
 - Screenshot/axe regression for the error state; update inventory Route 10 `Report not found` row from mocked-e2e to real-stack covered.
+- Completed 2026-08-03: NotebookPage unit coverage verifies a non-settling report load rejects at the configured timeout; browser coverage verifies a report 404 renders the recovery actions.
 
 ## Related Notes
 
@@ -100,3 +102,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-03: Fixed and validated the bounded loading/error recovery path.
