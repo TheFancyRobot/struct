@@ -47,6 +47,7 @@ export function useSSE<T>(
   onEvent: (event: T) => void,
   eventTypes: ReadonlyArray<string> = [],
   environment: SSEEnvironment = liveEnvironment(),
+  shouldTerminate: (event: T) => boolean = () => false,
 ): SSEState {
   const [connected, setConnected] = createSignal(false)
   const [reconnecting, setReconnecting] = createSignal(false)
@@ -68,6 +69,15 @@ export function useSSE<T>(
     setError(message)
   }
 
+  const stopCleanly = () => {
+    terminated = true
+    source?.close()
+    if (retryTimer !== undefined) environment.cancel(retryTimer)
+    setConnected(false)
+    setReconnecting(false)
+    setError(undefined)
+  }
+
   const connect = () => {
     if (disposed || terminated) return
     const endpoint = new URL(activeUrl, environment.origin)
@@ -83,9 +93,11 @@ export function useSSE<T>(
     const receive = (message: MessageEvent<string>) => {
       if (source !== currentSource) return
       try {
-        onEvent(decode(JSON.parse(message.data)))
+        const event = decode(JSON.parse(message.data))
+        onEvent(event)
         if (message.lastEventId !== '') cursor = message.lastEventId
         retries = 0
+        if (shouldTerminate(event)) stopCleanly()
       } catch {
         stopWithError('A progress update was invalid. Refresh to reload persisted progress.')
       }
