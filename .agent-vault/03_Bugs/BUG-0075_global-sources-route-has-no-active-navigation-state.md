@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Global Sources route has no active navigation state
 bug_id: BUG-0075
-status: new
+status: fixed
 severity: sev-3
 category: navigation
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-03'
+owner: bug_0075
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-08-03'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -57,6 +57,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Confirmed Root Cause
 
 - Record the proven cause and decisive evidence.
+The global-source navigation fallback rendered `Manage source library` without the same `aria-current` condition used by project-scoped navigation. Adding current state to both that link and the `/sources#source-import-heading` shortcut would incorrectly advertise two current destinations for one page.
 
 ## Workaround
 
@@ -65,10 +66,12 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
+Apply `aria-current="page"` to Manage source library only when the current pathname is `/sources`. Keep Add source as the anchor shortcut that preserves its existing focus behavior, without current-page state.
 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
+Server-render the global `/sources` navigation and assert that Manage source library is the sole `aria-current="page"` link while Add source retains its import-anchor href.
 
 ## Related Notes
 
