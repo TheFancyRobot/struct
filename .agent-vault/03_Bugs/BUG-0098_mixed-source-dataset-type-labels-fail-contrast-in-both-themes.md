@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Mixed source dataset type labels fail contrast in both themes
 bug_id: BUG-0098
-status: new
+status: fixed
 severity: sev-2
 category: accessibility
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-03'
+owner: bug_0098
 created: '2026-07-28'
 updated: '2026-07-28'
 related_notes:
@@ -71,11 +71,13 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 - Type labels must meet 4.5:1 independently in both themes.
 - Current `text-base-content/45` at 11.2px is the cause to address.
+- Implemented: dataset-table type labels now use `text-base-content/65`, matching the report's AA-safe compact metadata treatment.
 
 ## Regression Coverage Needed
 
 - Re-run axe in light/dark on the complete mixed-source demo.
 - Verify `.local/ui-audit/demo/contrast-unique.json` and complete-state axe JSON show type labels at >= 4.5:1.
+- Added server-rendered coverage for `VARCHAR` and `BIGINT`, requiring `text-base-content/65` and rejecting the former `/45` class.
 
 ## Related Notes
 
@@ -90,3 +92,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-03 - Fixed: raised compact dataset type-label opacity from `/45` to `/65` and added focused regression coverage.

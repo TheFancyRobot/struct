@@ -23,7 +23,7 @@ _Last refreshed: 2026-08-04._
 - Session in progress: none.
 - Current step: [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_01_improve-research-search-navigation-and-command-ux|STEP-11-01 Improve Research Search Navigation and Command UX]] - status: planned - phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]]
 - Active phase: [[02_Phases/Phase_12_v1_2_additional_sources/Phase|PHASE-12 v1.2 Additional Sources]] - status: planned - updated: 2026-07-17
-- Also active: 16 more additional steps, 2 open critical bugs.
+- Also active: 16 more additional steps, 1 open critical bug.
 <!-- AGENT-END:current-focus -->
 
 ## Repo Snapshot
@@ -71,7 +71,6 @@ _Last refreshed: 2026-08-04._
 
 <!-- AGENT-START:critical-bugs -->
 - [[03_Bugs/BUG-0099_mixed-source-dark-dataset-definition-labels-fail-contrast|BUG-0099 Mixed source dark dataset definition labels fail contrast]] - status: new - severity: sev-2 - reported: 2026-07-28
-- [[03_Bugs/BUG-0098_mixed-source-dataset-type-labels-fail-contrast-in-both-themes|BUG-0098 Mixed source dataset type labels fail contrast in both themes]] - status: new - severity: sev-2 - reported: 2026-07-28
 <!-- AGENT-END:critical-bugs -->
 
 ## Next Actions
