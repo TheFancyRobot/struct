@@ -77,7 +77,7 @@ describe('mixed-source report Solid component', () => {
     expect(html).not.toMatch(/text-base-content\/55/)
   })
 
-  it('uses AA-contrast text for compact dataset type labels in both themes', () => {
+  it('uses the AA-contrast class for compact dataset type labels', () => {
     const html = renderToString(() => (
       <MixedSourceReport report={mixedSourceDemoFixture('complete')} />
     ))
