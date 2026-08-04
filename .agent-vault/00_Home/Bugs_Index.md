@@ -30,11 +30,10 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 _Last rebuilt: 2026-08-04._
 
 - Notes indexed: 95
-- Status summary: new (5), fixed (85), invalid (5)
+- Status summary: new (4), fixed (86), invalid (5)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
-| BUG-0094 | [Evidence inspector loading and error states lack browser coverage](../03_Bugs/BUG-0094_evidence-inspector-loading-and-error-states-lack-browser-coverage.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0095 | [Mobile project navigation drawer makes theme switching unreachable](../03_Bugs/BUG-0095_mobile-project-navigation-drawer-makes-theme-switching-unreachable.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0096 | [Mobile project name input falls below the touch target baseline](../03_Bugs/BUG-0096_mobile-project-name-input-falls-below-the-touch-target-baseline.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0100 | [Mixed source mobile section tabs are only 40 pixels high](../03_Bugs/BUG-0100_mixed-source-mobile-section-tabs-are-only-40-pixels-high.md) | new | sev-3 | 2026-07-28 | - | - |
@@ -89,6 +88,7 @@ _Last rebuilt: 2026-08-04._
 | BUG-0091 | [Notebook finding selection and citation warning lack browser coverage](../03_Bugs/BUG-0091_notebook-finding-selection-and-citation-warning-lack-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |
 | BUG-0092 | [Report export failure lacks browser coverage](../03_Bugs/BUG-0092_report-export-failure-lacks-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |
 | BUG-0093 | [Add project hash focus journey lacks browser regression coverage](../03_Bugs/BUG-0093_add-project-hash-focus-journey-lacks-browser-regression-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |
+| BUG-0094 | [Evidence inspector loading and error states lack browser coverage](../03_Bugs/BUG-0094_evidence-inspector-loading-and-error-states-lack-browser-coverage.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
 | BUG-0053 | [Pre-existing e2e infra defects surface as failures independent of brand phase](../03_Bugs/BUG-0053_pre-existing-e2e-infra-defects-surface-as-failures-independent-of-brand-phase.md) | fixed | sev-3 | 2026-07-27 | 2026-07-27 | - |
 | BUG-0054 | [Error toast position inconsistent between add source and add project screens](../03_Bugs/BUG-0054_error-toast-position-inconsistent-between-add-source-and-add-project-screens.md) | fixed | sev-3 | 2026-07-27 | 2026-07-27 | - |
 | BUG-0055 | [Add source view shows only error and no fields or options](../03_Bugs/BUG-0055_add-source-view-shows-only-error-and-no-fields-or-options.md) | fixed | sev-3 | 2026-07-27 | 2026-07-27 | - |
