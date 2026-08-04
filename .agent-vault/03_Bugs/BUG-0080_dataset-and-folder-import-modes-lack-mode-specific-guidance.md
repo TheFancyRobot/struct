@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Dataset and Folder import modes lack mode-specific guidance
 bug_id: BUG-0080
-status: new
+status: fixed
 severity: sev-3
 category: ux
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-04'
+owner: bug_0080
 created: '2026-07-28'
 updated: '2026-07-28'
 related_notes:
@@ -57,6 +57,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Confirmed Root Cause
 
 - Record the proven cause and decisive evidence.
+The import picker changed its accessible label by mode, but supplied no visible helper text describing the distinct server behavior. Dataset files are stored as dataset sources, while folder selections preserve relative paths and become separate document sources.
 
 ## Workaround
 
@@ -65,10 +66,12 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
+Added mode-specific visible helper text associated with the file input via `aria-describedby`. Dataset mode names the accepted formats and dataset-source result; Folder mode explains separate document imports and relative-path retention.
 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
+`source-import-panel.test.tsx` asserts the visible accessible default guidance and the exact dataset and folder guidance strings tied to the implemented import behavior.
 
 ## Related Notes
 
@@ -83,3 +86,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-04 - Fixed: added accessible, visible Dataset and Folder import guidance with targeted component regression coverage; focused tests and web typecheck passed.

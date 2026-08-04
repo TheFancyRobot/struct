@@ -9,7 +9,11 @@ import {
   type SourceCatalogItem,
 } from '@struct/domain'
 import { BackgroundActivityTray } from './BackgroundActivityTray'
-import { acceptedSourceImportStatus, SourceImportPanel } from './SourceImportPanel'
+import {
+  acceptedSourceImportStatus,
+  importModeGuidance,
+  SourceImportPanel,
+} from './SourceImportPanel'
 
 const projectId = ProjectId.make('b50e8400-e29b-41d4-a716-446655440001')
 
@@ -87,8 +91,19 @@ describe('source import components', () => {
     ))
 
     expect(html).toContain('Select files to import')
+    expect(html).toContain('Choose one or more document files to import.')
+    expect(html).toMatch(/<input[^>]*aria-describedby="source-import-mode-guidance"[^>]*>/)
     // The label must wrap the input so axe associates them (implicit labeling).
     expect(html).toMatch(/<label[^>]*>[\s\S]*?Select files to import[\s\S]*?<input[^>]*file-input[\s\S]*?<\/label>/)
+  })
+
+  it('explains the actual dataset and folder import behavior', () => {
+    expect(importModeGuidance('dataset')).toBe(
+      'Choose CSV, TSV, JSON, JSONL, or Parquet files. Each file is imported as a dataset source.',
+    )
+    expect(importModeGuidance('folder')).toBe(
+      'Choose a folder. Its files are imported as separate document sources and keep their folder-relative paths.',
+    )
   })
 
   it('renders a polite live region only when an import has been accepted', () => {
