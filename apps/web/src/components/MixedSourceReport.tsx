@@ -260,7 +260,7 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
               </div>
               <p class="pane-intro mt-2 text-sm text-base-content/60">Immutable inputs retained for this answer.</p>
               <div class="source-group mt-5">
-                <h4 class="mb-2 text-xs font-semibold text-base-content/55">Documents · {props.report.documentEvidence.length}</h4>
+                <h4 class="mb-2 text-xs font-semibold text-base-content/65">Documents · {props.report.documentEvidence.length}</h4>
                 <For each={props.report.documentEvidence}>
                   {(evidence) => (
                     <details class="source-item collapse collapse-arrow mb-2 border border-base-300 bg-base-100">
@@ -269,27 +269,27 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
                           <span class={`badge badge-sm ${evidence.stance === 'supports' ? 'badge-success' : 'badge-warning'}`}>D</span>
                           <span class="min-w-0">
                             <strong class="block truncate">{evidence.sourceName}</strong>
-                            <small class="block text-xs text-base-content/55">{evidence.locator}</small>
+                            <small class="block text-xs text-base-content/65">{evidence.locator}</small>
                           </span>
                         </span>
                       </summary>
                       <div class="collapse-content text-sm">
                         <blockquote class="border-l-2 border-primary/30 pl-3 text-base-content/75">“{evidence.excerpt}”</blockquote>
-                        <code class="mt-3 block break-anywhere text-xs text-base-content/55">{evidence.sourceVersion}</code>
+                        <code class="mt-3 block break-anywhere text-xs text-base-content/65">{evidence.sourceVersion}</code>
                       </div>
                     </details>
                   )}
                 </For>
               </div>
               <div class="source-group mt-5">
-                <h4 class="mb-2 text-xs font-semibold text-base-content/55">Datasets · {props.report.datasetEvidence.length}</h4>
+                <h4 class="mb-2 text-xs font-semibold text-base-content/65">Datasets · {props.report.datasetEvidence.length}</h4>
                 <For each={props.report.datasetEvidence}>
                   {(evidence) => (
                     <div class="source-item dataset-source flex items-center gap-2 rounded-field border border-base-300 p-3">
                       <span class="badge badge-accent badge-sm">Σ</span>
                       <span class="min-w-0">
                         <strong class="block truncate text-sm">{evidence.sourceName}</strong>
-                        <small class="block text-xs text-base-content/55">{evidence.snapshot}</small>
+                        <small class="block text-xs text-base-content/65">{evidence.snapshot}</small>
                       </span>
                     </div>
                   )}
@@ -384,7 +384,7 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
                   {(evidence) => (
                     <>
                       <h4 class="mt-2 font-semibold">{evidence.sourceName}</h4>
-                      <p class="evidence-meta mt-1 text-xs text-base-content/55">{evidence.locator} · {evidence.sourceVersion}</p>
+                      <p class="evidence-meta mt-1 text-xs text-base-content/65">{evidence.locator} · {evidence.sourceVersion}</p>
                       <blockquote class="mt-3 border-l-2 border-primary/30 pl-3 text-sm text-base-content/75">“{evidence.excerpt}”</blockquote>
                     </>
                   )}
@@ -401,7 +401,7 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
                     </details>
                     <div class="result-table-wrap mt-3 overflow-x-auto" tabindex="0" aria-label="Scrollable query results">
                       <table class="table table-sm">
-                        <caption class="pb-2 text-left text-xs text-base-content/55">{evidence.rowRange}</caption>
+                        <caption class="pb-2 text-left text-xs text-base-content/65">{evidence.rowRange}</caption>
                         <thead>
                           <tr>
                             <For each={evidence.columns}>

@@ -61,4 +61,19 @@ describe('mixed-source report Solid component', () => {
     expect(html).toContain('<td>true</td>')
     expect(html).toContain('<td>null</td>')
   })
+
+  it('uses AA-contrast metadata in the light mixed-source report', () => {
+    const html = renderToString(() => (
+      <MixedSourceReport report={mixedSourceDemoFixture('complete')} />
+    ))
+
+    expect(html).toMatch(/<h4 class="[^"]*text-base-content\/65[^"]*">Documents · 2<\/h4>/)
+    expect(html).toMatch(/<small class="[^"]*text-base-content\/65[^"]*">lines 118–123<\/small>/)
+    expect(html).toMatch(/<code class="[^"]*text-base-content\/65[^"]*">v4 · sha256:7a91…e42c<\/code>/)
+    expect(html).toMatch(/<h4 class="[^"]*text-base-content\/65[^"]*">Datasets · 1<\/h4>/)
+    expect(html).toMatch(/<small class="[^"]*text-base-content\/65[^"]*">2026-Q2 · sha256:12df…91ab<\/small>/)
+    expect(html).toMatch(/<p class="[^"]*evidence-meta[^"]*text-base-content\/65[^"]*">lines 118–123 · v4 · sha256:7a91…e42c<\/p>/)
+    expect(html).toMatch(/<caption class="[^"]*text-base-content\/65[^"]*">rows 1–2 of 2 · result sha256:84ce…f10a<\/caption>/)
+    expect(html).not.toMatch(/text-base-content\/55/)
+  })
 })
