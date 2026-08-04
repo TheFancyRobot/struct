@@ -73,6 +73,7 @@ Implemented: SourcesPage now reacts to the router hash and, after the source-imp
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
 Covered the desktop workspace navigation path in `apps/web/e2e/workspace-responsive.spec.ts`: activating Add source waits for `/sources#source-import-heading` and asserts that the Add sources heading owns focus.
+- 2026-08-04 follow-up: the browser contract activates Add source a second time while already at `/sources#source-import-heading` and verifies that the import heading regains focus.
 
 ## Related Notes
 

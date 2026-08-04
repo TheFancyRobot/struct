@@ -87,6 +87,12 @@ describe('responsive workspace browser contract', () => {
     await page.waitForFunction(() => document.activeElement?.id === 'source-import-heading')
     expect(await sourceImportHeading.evaluate((element) => element === document.activeElement)).toBe(true)
 
+    // BUG-0071: repeating the current-route action must refocus the import
+    // target rather than leaving focus on the activating navigation link.
+    await addSource.click()
+    await page.waitForFunction(() => document.activeElement?.id === 'source-import-heading')
+    expect(await sourceImportHeading.evaluate((element) => element === document.activeElement)).toBe(true)
+
     await page.goto(`${origin}/projects/${projectId}`)
     await page.setViewportSize({ width: 375, height: 844 })
     await page.getByRole('button', { name: 'Open workspace navigation' }).click()

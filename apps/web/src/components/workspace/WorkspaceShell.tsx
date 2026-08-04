@@ -42,6 +42,10 @@ function focus(element: HTMLElement | undefined): void {
   queueMicrotask(() => element?.focus())
 }
 
+function focusSourceImportHeading(): void {
+  requestAnimationFrame(() => document.querySelector<HTMLElement>('#source-import-heading')?.focus())
+}
+
 const SHEET_FOCUSABLE_SELECTOR =
   'button:not([disabled]), [href], textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
@@ -216,6 +220,7 @@ export const WorkspaceNavigation: ParentComponent<{
             <a
               href={withBasePath('/sources#source-import-heading', appBasePath)}
               class="btn btn-ghost min-h-11 px-3 text-xs"
+              onClick={focusSourceImportHeading}
             >
               Add source
             </a>
