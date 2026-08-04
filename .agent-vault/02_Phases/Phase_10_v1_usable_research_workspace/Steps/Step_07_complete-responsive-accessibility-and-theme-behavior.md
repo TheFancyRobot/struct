@@ -8,7 +8,7 @@ phase: '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usab
 status: completed
 owner: phase10_step07_attempt1
 created: '2026-07-21'
-updated: '2026-07-28'
+updated: '2026-08-04'
 depends_on:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_06_add-durable-user-notes-with-provenance|STEP-10-06 Add Durable User Notes with Provenance]]'
 related_sessions:
@@ -62,6 +62,7 @@ related_bugs:
   - '[[03_Bugs/BUG-0099_mixed-source-dark-dataset-definition-labels-fail-contrast|BUG-0099 Mixed source dark dataset definition labels fail contrast]]'
   - '[[03_Bugs/BUG-0100_mixed-source-mobile-section-tabs-are-only-40-pixels-high|BUG-0100 Mixed source mobile section tabs are only 40 pixels high]]'
   - '[[03_Bugs/BUG-0101_mixed-source-citation-links-are-only-24-pixels-high-on-mobile|BUG-0101 Mixed source citation links are only 24 pixels high on mobile]]'
+  - '[[03_Bugs/BUG-0109_responsive-workspace-suite-does-not-execute-the-desktop-pane-regression|BUG-0109 Responsive workspace suite does not execute the desktop-pane regression]]'
 tags:
   - agent-vault
   - step

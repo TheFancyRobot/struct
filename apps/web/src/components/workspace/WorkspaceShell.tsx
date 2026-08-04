@@ -160,17 +160,21 @@ export const WorkspaceNavigation: ParentComponent<{
     props.currentPathname === withBasePath(path, appBasePath)
   const matches = (name: string, query: string) =>
     name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())
+  // A Solid resource throws if invoked after failure. Navigation stays mounted
+  // while the route presents its recovery UI, so it needs a safe empty list.
+  const projectItems = createMemo(() =>
+    projects.error === undefined ? projects()?.items ?? [] : [])
   const filteredProjects = createMemo(() =>
-    filterProjectsByQuery(projects()?.items ?? [], projectSearch()))
+    filterProjectsByQuery(projectItems(), projectSearch()))
   const hasNoMatchingProjects = createMemo(() =>
     searchHasNoResults(
       projectSearch(),
       filteredProjects().length,
-      projects() != null && !projects.loading,
+      projects.error === undefined && !projects.loading,
     ))
   const recentProjects = createMemo(() => {
     return recentProjectIds().flatMap((id) => {
-      const project = (projects()?.items ?? []).find((item) => item.id === id)
+      const project = projectItems().find((item) => item.id === id)
       return project === undefined ? [] : [project]
     })
   })

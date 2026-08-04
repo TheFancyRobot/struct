@@ -91,9 +91,16 @@ export const SourcesPage: Component = () => {
   const [projects] = createResource(fetchProjects)
   const [selectedProjectId, setSelectedProjectId] = createSignal<typeof ProjectId.Type | null>(null)
   const [attachNewSources, setAttachNewSources] = createSignal(false)
-  const noProjectsAvailable = createMemo(() => projectAttachmentIsUnavailable(projects()))
+  // A Solid resource throws if it is read after its fetch rejects. Keep the
+  // project-derived controls mounted safely while the library remains usable.
+  const projectItems = createMemo(() =>
+    projects.error === undefined ? projects()?.items ?? [] : [])
+  const noProjectsAvailable = createMemo(() =>
+    projects.error === undefined
+      && !projects.loading
+      && projectAttachmentIsUnavailable({ items: projectItems() }))
   const selectedProject = createMemo(() =>
-    projects()?.items.find((project) => project.id === selectedProjectId()) ?? null)
+    projectItems().find((project) => project.id === selectedProjectId()) ?? null)
   const [catalog, { refetch }] = createResource(
     () => libraryMode() ? 'workspace' : projectId(),
     (scope) => scope === 'workspace'
@@ -106,7 +113,7 @@ export const SourcesPage: Component = () => {
 
   createEffect(() => {
     if (selectedProjectId() === null) {
-      setSelectedProjectId(projects()?.items[0]?.id ?? null)
+      setSelectedProjectId(projectItems()[0]?.id ?? null)
     }
   })
 
@@ -169,7 +176,7 @@ export const SourcesPage: Component = () => {
             <Show when={noProjectsAvailable()}>
               <ProjectAttachmentRequirement />
             </Show>
-            <Show when={(projects()?.items.length ?? 0) > 0}>
+            <Show when={projectItems().length > 0}>
             <label class="form-control block">
               <span class="label-text">Project</span>
               <select
@@ -178,7 +185,7 @@ export const SourcesPage: Component = () => {
                 value={selectedProjectId() ?? ''}
                 onChange={(event) => setSelectedProjectId(ProjectId.make(event.currentTarget.value))}
               >
-                <For each={projects()?.items ?? []}>
+                <For each={projectItems()}>
                   {(project) => <option value={project.id}>{project.name}</option>}
                 </For>
               </select>
