@@ -70,6 +70,10 @@ async function openDemo(
     { waitUntil: 'commit' },
   )
   expect(response?.status()).toBe(200)
+  // `commit` only confirms that the server accepted the navigation. Wait for
+  // Solid to mount the shared report shell before a scenario queries its
+  // mobile controls; otherwise a fast query can race the client render.
+  await page.getByRole('heading', { name: 'Renewal risk synthesis' }).waitFor()
 }
 
 async function assertNoOverflow(page: typePage): Promise<void> {
