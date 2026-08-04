@@ -30,11 +30,10 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 _Last rebuilt: 2026-08-04._
 
 - Notes indexed: 95
-- Status summary: new (10), fixed (80), invalid (5)
+- Status summary: new (9), fixed (81), invalid (5)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
-| BUG-0083 | [Conversation source checkbox touch target is only 25 pixels high](../03_Bugs/BUG-0083_conversation-source-checkbox-touch-target-is-only-25-pixels-high.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0087 | [Research error variants lack browser coverage](../03_Bugs/BUG-0087_research-error-variants-lack-browser-coverage.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0088 | [Research cancellation failure lacks browser coverage](../03_Bugs/BUG-0088_research-cancellation-failure-lacks-browser-coverage.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0089 | [Removed source selection notice lacks browser coverage](../03_Bugs/BUG-0089_removed-source-selection-notice-lacks-browser-coverage.md) | new | sev-3 | 2026-07-28 | - | - |
@@ -85,6 +84,7 @@ _Last rebuilt: 2026-08-04._
 | BUG-0080 | [Dataset and Folder import modes lack mode-specific guidance](../03_Bugs/BUG-0080_dataset-and-folder-import-modes-lack-mode-specific-guidance.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
 | BUG-0081 | [Disabled Reports destination is nearly invisible](../03_Bugs/BUG-0081_disabled-reports-destination-is-nearly-invisible.md) | fixed | sev-3 | 2026-07-28 | 2026-08-01 | - |
 | BUG-0082 | [Unavailable project attachment control has no explanation](../03_Bugs/BUG-0082_unavailable-project-attachment-control-has-no-explanation.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
+| BUG-0083 | [Conversation source checkbox touch target is only 25 pixels high](../03_Bugs/BUG-0083_conversation-source-checkbox-touch-target-is-only-25-pixels-high.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
 | BUG-0084 | [Failed research submission returns no user-visible error](../03_Bugs/BUG-0084_failed-research-submission-returns-no-user-visible-error.md) | invalid | sev-3 | 2026-07-28 | - | - |
 | BUG-0091 | [Notebook finding selection and citation warning lack browser coverage](../03_Bugs/BUG-0091_notebook-finding-selection-and-citation-warning-lack-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |
 | BUG-0092 | [Report export failure lacks browser coverage](../03_Bugs/BUG-0092_report-export-failure-lacks-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |

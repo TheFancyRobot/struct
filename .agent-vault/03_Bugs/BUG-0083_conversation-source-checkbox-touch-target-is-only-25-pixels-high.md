@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Conversation source checkbox touch target is only 25 pixels high
 bug_id: BUG-0083
-status: new
+status: fixed
 severity: sev-3
 category: accessibility
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-04'
+owner: bug_0083
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-08-04'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -58,6 +58,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Confirmed Root Cause
 
 - Record the proven cause and decisive evidence.
+The ready-source checkbox used DaisyUI's compact `label` styling around a 20px checkbox, with no minimum-height constraint on the clickable label.
 
 ## Workaround
 
@@ -66,10 +67,12 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
+Replaced the compact label styling with an explicit flex label that has Tailwind's `min-h-11` (44px) touch-target baseline, horizontal padding, and existing wrapped-list spacing.
 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
+Added a focused component-source regression test that asserts the ready-source labels retain the 44px `min-h-11` target and the wrapped list retains `gap-3` separation.
 
 ## Related Notes
 
@@ -84,3 +87,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-04 - Fixed: ready-source labels now use a 44px minimum touch target with 12px wrapped-list separation. Focused regression test and `bun run --filter @struct/web typecheck` passed; vault validation passed.
