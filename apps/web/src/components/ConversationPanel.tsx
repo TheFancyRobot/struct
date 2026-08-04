@@ -325,7 +325,7 @@ export const ConversationPanel: Component<{
                 item.readiness === 'ready' && item.latestVersionId !== null)}
               >
                 {(item) => (
-                  <label class="label cursor-pointer gap-2">
+                  <label class="flex min-h-11 cursor-pointer items-center gap-2 rounded-box px-2">
                     <input
                       type="checkbox"
                       class="checkbox checkbox-sm"
