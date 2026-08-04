@@ -75,16 +75,19 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Raise the `text-base-content` opacity on the `<dt>` definition labels at `MixedSourceReport.tsx:433` from `/50` to a value that clears 4.5:1 in dark mode (e.g., `/60`–`/65`), or switch to a dedicated muted token meeting AA in both themes.
-- Re-run the `.local/ui-audit/demo/a11y/` axe suite across all dark demo states and confirm the four `dt` nodes pass `color-contrast`.
-- (No code change in this task — contract fill only.)
 - Implemented: raised the dataset definition `<dt>` labels from `text-base-content/50` to `/65`, providing a margin above AA in dark mode while keeping the existing semantic structure and token family.
 
 ## Regression Coverage Needed
 
-- Add an axe `color-contrast` assertion (or `contrast-unique.json` snapshot gate) over the mixed-source dark `complete`, `live`, `cancelled`, and `reconnecting` states, asserting the four `.p-2.bg-base-100 > dt` labels measure ≥ 4.5:1.
-- Extend the existing `.local/ui-audit` run to fail on regressions of the dataset definition `dt` contrast.
-- Add a component test asserting the `<dt>` no longer uses `/50` (or asserts computed contrast ≥ 4.5:1).
 - Added server-rendered coverage verifying `Unit`, `Window`, `Cohort`, and `Denominator` use `text-base-content/65` and no longer use the failing `/50` class.
+- A browser-level contrast assertion or an automated axe/snapshot gate has not been added or run for this fix. The existing mixed-source browser spec captures tracked screenshots but does not measure the definition-label contrast, so it cannot verify this WCAG result.
+
+## Validation
+
+- Passed: `bun test --preload ./apps/web/test/solid-test-preload.ts --max-concurrency 1 apps/web/src/components/mixed-source-report.test.tsx` (6 tests, including the dataset definition label regression test).
+- Passed: `bun run --filter @struct/web typecheck`.
+- Browser/axe verification was not run. The available mixed-source browser test overwrites tracked screenshot artifacts and has no direct color-contrast assertion; this note therefore makes no claim that axe or a snapshot gate verified the fix.
+- Passed: `vault_validate all` — frontmatter, structure, required links, orphan detection, and schema drift completed with 0 errors and 0 warnings.
 
 ## Related Notes
 
