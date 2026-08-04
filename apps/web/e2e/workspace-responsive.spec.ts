@@ -501,7 +501,7 @@ describe('responsive workspace browser contract', () => {
       body: JSON.stringify({ error: 'ProjectListUnavailable' }),
     }))
     const unavailableProjectsResponse = page.waitForResponse((response) =>
-      response.url() === `${origin}/api/projects` && response.status() === 503)
+      new URL(response.url()).pathname.endsWith('/api/projects') && response.status() === 503)
     await page.reload()
     await unavailableProjectsResponse
     const projectAlert = page.getByRole('alert').filter({
