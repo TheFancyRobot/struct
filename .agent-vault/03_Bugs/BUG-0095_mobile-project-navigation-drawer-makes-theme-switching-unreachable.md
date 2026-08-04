@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Mobile project navigation drawer makes theme switching unreachable
 bug_id: BUG-0095
-status: new
+status: fixed
 severity: sev-3
 category: ux
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-04'
+owner: bug0095_attempt1
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-08-04'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -59,6 +59,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Confirmed Root Cause
 
 - Record the proven cause and decisive evidence.
+- Confirmed 2026-08-04: `ConversationWorkspace` rendered the only mobile theme control in the underlying top bar. Opening the mobile navigation sheet adds a full-screen backdrop and makes the main region inert, so that control could neither receive pointer nor keyboard activation. `WorkspaceNavigation` contained only a desktop (`md:flex`) theme control.
 
 ## Workaround
 
@@ -67,10 +68,12 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
+- Implemented 2026-08-04: added an `md:hidden` global theme button to the navigation drawer footer, sharing the existing theme state and toggle handler. The desktop sidebar control remains unchanged, and the normal mobile top-bar control remains available when the drawer is closed.
 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
+- Implemented focused coverage in `apps/web/src/components/workspace/workspace-shell.test.tsx` for the breakpoint-specific controls and `apps/web/e2e/workspace-responsive.spec.ts` for opening a mobile project navigation sheet, activating its theme toggle, and observing `html[data-theme="struct-dark"]`.
 
 ## Related Notes
 
@@ -85,3 +88,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-04 - Fixed: added a reachable mobile drawer theme action and validated focused component plus responsive Playwright coverage.

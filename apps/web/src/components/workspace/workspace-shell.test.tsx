@@ -147,11 +147,10 @@ describe('workspace shell', () => {
     expect(html).toContain('<main id="workspace-main" tabindex="-1"')
   })
 
-  // BUG-0056: with navigation expanded, the desktop theme toggle lives in the
-  // sidebar (out of the floating top bar); the mobile toggle stays in the
-  // in-flow top bar. Each breakpoint shows exactly one toggle via md:hidden /
-  // hidden md:flex. Browser coverage exercises the collapsed desktop fallback.
-  it('renders one expanded-state theme toggle per breakpoint: sidebar on desktop, top bar on mobile', () => {
+  // BUG-0056 / BUG-0095: with navigation expanded, the desktop theme toggle
+  // lives in the sidebar. On mobile, a top-bar toggle serves the content view
+  // and a drawer toggle remains reachable after the modal sheet opens.
+  it('renders the expanded-state theme toggle in the desktop sidebar and both mobile contexts', () => {
     const html = renderToString(() => (
       <WorkspaceStateProvider projectId="project-a">
         <WorkspaceShell
@@ -167,9 +166,9 @@ describe('workspace shell', () => {
     const toggleLabel = 'aria-label="Switch to dark theme"'
     const mainStart = html.indexOf('<main')
     expect(mainStart).toBeGreaterThan(-1)
-    expect((html.match(/aria-label="Switch to dark theme"/g) ?? [])).toHaveLength(2)
+    expect((html.match(/aria-label="Switch to dark theme"/g) ?? [])).toHaveLength(3)
     expect((html.slice(0, mainStart).match(/aria-label="Switch to dark theme"/g) ?? []))
-      .toHaveLength(1)
+      .toHaveLength(2)
     expect((html.slice(mainStart).match(/aria-label="Switch to dark theme"/g) ?? []))
       .toHaveLength(1)
 
@@ -181,8 +180,12 @@ describe('workspace shell', () => {
     expect(html).toContain('btn btn-ghost btn-sm hidden w-full justify-start md:flex" ' + toggleLabel)
     expect(html).toContain('Dark theme')
 
-    // Mobile toggle: in the top bar (inside <main>), hidden at md+ (md:hidden).
-    // The conditional collapsed-navigation fallback is absent in this state.
+    // Mobile drawer toggle: before <main>, hidden at md+ (md:hidden), so the
+    // active modal sheet owns a reachable theme action.
+    expect(html).toContain('btn btn-ghost btn-sm w-full justify-start md:hidden" ' + toggleLabel)
+
+    // Mobile top-bar toggle: inside <main>, hidden at md+ (md:hidden). The
+    // conditional collapsed-navigation fallback is absent in this state.
     const topBarToggle = html.indexOf(toggleLabel, mainStart)
     expect(topBarToggle).toBeGreaterThan(mainStart)
     expect(html).toContain('btn btn-ghost btn-sm md:hidden" ' + toggleLabel)
