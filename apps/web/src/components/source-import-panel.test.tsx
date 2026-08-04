@@ -75,9 +75,10 @@ describe('source import components', () => {
       <SourceImportPanel projectId={projectId} onAccepted={() => undefined} />
     ))
 
-    // The selected mode pairs the pressed state with a visible checkmark and a
-    // high-contrast outline, so it remains identifiable in monochrome or low-color contexts.
-    expect(html).toMatch(/<button(?=[^>]*aria-pressed="true")(?=[^>]*font-semibold)(?=[^>]*outline-base-content)[^>]*>\s*Files\s*<span aria-hidden="true">✓<\/span>\s*<\/button>/)
+    // Selection uses semantic state, a text-weight change, a high-contrast
+    // border, and a checkmark. The focus-visible ring stays separate, so
+    // focusing the selected mode still produces a new visual indicator.
+    expect(html).toMatch(/<button(?=[^>]*aria-pressed="true")(?=[^>]*btn-active)(?=[^>]*font-semibold)(?=[^>]*\bborder(?=\s|"))(?=[^>]*\bborder-2(?=\s|"))(?=[^>]*\bborder-base-content(?=\s|"))(?=[^>]*focus-visible:ring-2)(?=[^>]*focus-visible:ring-primary)(?=[^>]*focus-visible:ring-offset-2)[^>]*>\s*Files\s*<span aria-hidden="true">✓<\/span>\s*<\/button>/)
   })
 
   it('provides a visible accessible label for the file picker in the default files mode', () => {
