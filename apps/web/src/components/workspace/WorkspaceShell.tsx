@@ -46,6 +46,14 @@ function focusSourceImportHeading(): void {
   requestAnimationFrame(() => document.querySelector<HTMLElement>('#source-import-heading')?.focus())
 }
 
+function isUnmodifiedPrimaryActivation(event: MouseEvent): boolean {
+  return event.button === 0
+    && !event.altKey
+    && !event.ctrlKey
+    && !event.metaKey
+    && !event.shiftKey
+}
+
 const SHEET_FOCUSABLE_SELECTOR =
   'button:not([disabled]), [href], textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
@@ -120,6 +128,13 @@ export const WorkspaceNavigation: ParentComponent<{
       .filter((source) => source.kind === 'document' && matches(source.name, sourceSearch()))
       .toSorted((left, right) => right.updatedAt - left.updatedAt)
       .slice(0, 5))
+  const addSource = (event: MouseEvent) => {
+    // Preserve native new-tab/download-style link activations. Only the
+    // ordinary in-app navigation should change focus or dismiss the sheet.
+    if (!isUnmodifiedPrimaryActivation(event)) return
+    if (state.navigationSheetOpen()) props.onCloseSheet()
+    focusSourceImportHeading()
+  }
 
   createEffect(() => {
     const projectId = state.projectId()
@@ -220,7 +235,7 @@ export const WorkspaceNavigation: ParentComponent<{
             <a
               href={withBasePath('/sources#source-import-heading', appBasePath)}
               class="btn btn-ghost min-h-11 px-3 text-xs"
-              onClick={focusSourceImportHeading}
+              onClick={addSource}
             >
               Add source
             </a>

@@ -99,6 +99,25 @@ describe('responsive workspace browser contract', () => {
     await addProject.waitFor()
     expect((await addProject.boundingBox())!.height).toBeGreaterThanOrEqual(44)
     expect((await addSource.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+
+    // BUG-0071: ordinary mobile activation closes the sheet before the
+    // deferred focus is moved to the import heading.
+    const navigationSheet = page.getByRole('dialog', { name: 'Workspace navigation' })
+    await addSource.click()
+    await page.waitForURL(`${origin}/sources#source-import-heading`)
+    await sourceImportHeading.waitFor()
+    await page.waitForFunction(() => document.activeElement?.id === 'source-import-heading')
+    expect(await navigationSheet.count()).toBe(0)
+
+    // Opening the sheet again and repeating the same-route action must still
+    // close the sheet before returning focus to the target.
+    await page.getByRole('button', { name: 'Open workspace navigation' }).click()
+    const mobileAddSource = page
+      .getByRole('dialog', { name: 'Workspace navigation' })
+      .getByRole('link', { name: 'Add source' })
+    await mobileAddSource.click()
+    await page.waitForFunction(() => document.activeElement?.id === 'source-import-heading')
+    expect(await navigationSheet.count()).toBe(0)
     await page.close()
   })
 
