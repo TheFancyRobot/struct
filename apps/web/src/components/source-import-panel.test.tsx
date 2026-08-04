@@ -65,9 +65,19 @@ describe('source import components', () => {
     // axe aria-prohibited-attr on a role-less div).
     expect(html).toMatch(/<div(?=[^>]*role="group")(?=[^>]*aria-label="Import mode")[^>]*>/)
     // Each mode button must expose its active state via aria-pressed, not just a class.
-    expect(html).toMatch(/<button(?=[^>]*aria-pressed="true")[^>]*>\s*Files\s*<\/button>/)
+    expect(html).toMatch(/<button(?=[^>]*aria-pressed="true")[^>]*>\s*Files(?:\s*<span aria-hidden="true">✓<\/span>)?\s*<\/button>/)
     expect(html).toMatch(/<button(?=[^>]*aria-pressed="false")[^>]*>\s*Paste\s*<\/button>/)
     expect(html).toMatch(/<button(?=[^>]*aria-pressed="false")[^>]*>\s*Dataset\s*<\/button>/)
+  })
+
+  it('makes the selected import mode distinguishable without relying on color alone', () => {
+    const html = renderToString(() => (
+      <SourceImportPanel projectId={projectId} onAccepted={() => undefined} />
+    ))
+
+    // The selected mode pairs the pressed state with a visible checkmark and a
+    // high-contrast outline, so it remains identifiable in monochrome or low-color contexts.
+    expect(html).toMatch(/<button(?=[^>]*aria-pressed="true")(?=[^>]*font-semibold)(?=[^>]*outline-base-content)[^>]*>\s*Files\s*<span aria-hidden="true">✓<\/span>\s*<\/button>/)
   })
 
   it('provides a visible accessible label for the file picker in the default files mode', () => {
