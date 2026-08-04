@@ -94,7 +94,7 @@ export const HomePage: Component = () => {
   const projectListState = createMemo<ProjectListState>(() =>
     projects.error !== undefined
       ? 'unavailable'
-      : projects() === undefined
+      : projects.loading
         ? 'loading'
         : 'ready')
   const projectItems = createMemo(() =>
@@ -219,7 +219,7 @@ export const ProjectPage: Component = () => {
   const projectListState = createMemo<ProjectListState>(() =>
     projects.error !== undefined
       ? 'unavailable'
-      : projects() === undefined
+      : projects.loading
         ? 'loading'
         : 'ready')
   const projectItems = createMemo(() =>

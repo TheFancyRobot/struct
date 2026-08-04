@@ -170,7 +170,7 @@ export const WorkspaceNavigation: ParentComponent<{
     searchHasNoResults(
       projectSearch(),
       filteredProjects().length,
-      projects.error === undefined && projects() != null && !projects.loading,
+      projects.error === undefined && !projects.loading,
     ))
   const recentProjects = createMemo(() => {
     return recentProjectIds().flatMap((id) => {
