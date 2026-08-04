@@ -5,6 +5,10 @@ import { importBrowserSources } from '../api/sources'
 
 type ImportMode = 'files' | 'folder' | 'paste' | 'dataset'
 
+export function acceptedSourceImportStatus(count: number): string {
+  return `${count} ${count === 1 ? 'source' : 'sources'} accepted and processing`
+}
+
 export const SourceImportPanel: Component<{
   readonly projectId: ProjectId | null
   readonly attachToProject?: boolean
@@ -17,6 +21,7 @@ export const SourceImportPanel: Component<{
   const [busy, setBusy] = createSignal(false)
   const [error, setError] = createSignal<string | null>(null)
   const [rejected, setRejected] = createSignal<SourceImportResponse['rejected']>([])
+  const [acceptedCount, setAcceptedCount] = createSignal<number | null>(null)
   const [clientBatchId, setClientBatchId] = createSignal(crypto.randomUUID())
   let fileInput: HTMLInputElement | undefined
   const pickerLabel = () => {
@@ -46,6 +51,7 @@ export const SourceImportPanel: Component<{
     setBusy(true)
     setError(null)
     setRejected([])
+    setAcceptedCount(null)
     try {
       const result = await importBrowserSources(
         props.projectId,
@@ -61,6 +67,7 @@ export const SourceImportPanel: Component<{
         setFiles([])
         if (fileInput !== undefined) fileInput.value = ''
         setPasteContent('')
+        setAcceptedCount(result.accepted.length)
         props.onAccepted(result)
       }
     } catch {
@@ -98,6 +105,9 @@ export const SourceImportPanel: Component<{
       </div>
 
       <form class="mt-4 space-y-3" onSubmit={(event) => void submit(event)}>
+        <p class="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {acceptedCount() === null ? '' : acceptedSourceImportStatus(acceptedCount()!)}
+        </p>
         <Show when={mode() !== 'paste'} fallback={(
           <>
             <label class="form-control block">
