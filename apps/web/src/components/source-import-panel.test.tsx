@@ -65,9 +65,20 @@ describe('source import components', () => {
     // axe aria-prohibited-attr on a role-less div).
     expect(html).toMatch(/<div(?=[^>]*role="group")(?=[^>]*aria-label="Import mode")[^>]*>/)
     // Each mode button must expose its active state via aria-pressed, not just a class.
-    expect(html).toMatch(/<button(?=[^>]*aria-pressed="true")[^>]*>\s*Files\s*<\/button>/)
+    expect(html).toMatch(/<button(?=[^>]*aria-pressed="true")[^>]*>\s*Files(?:\s*<span aria-hidden="true">✓<\/span>)?\s*<\/button>/)
     expect(html).toMatch(/<button(?=[^>]*aria-pressed="false")[^>]*>\s*Paste\s*<\/button>/)
     expect(html).toMatch(/<button(?=[^>]*aria-pressed="false")[^>]*>\s*Dataset\s*<\/button>/)
+  })
+
+  it('makes the selected import mode distinguishable without relying on color alone', () => {
+    const html = renderToString(() => (
+      <SourceImportPanel projectId={projectId} onAccepted={() => undefined} />
+    ))
+
+    // Selection uses semantic state, a text-weight change, a high-contrast
+    // border, and a checkmark. The focus-visible ring stays separate, so
+    // focusing the selected mode still produces a new visual indicator.
+    expect(html).toMatch(/<button(?=[^>]*aria-pressed="true")(?=[^>]*btn-active)(?=[^>]*font-semibold)(?=[^>]*\bborder(?=\s|"))(?=[^>]*\bborder-2(?=\s|"))(?=[^>]*\bborder-base-content(?=\s|"))(?=[^>]*focus-visible:ring-2)(?=[^>]*focus-visible:ring-primary)(?=[^>]*focus-visible:ring-offset-2)[^>]*>\s*Files\s*<span aria-hidden="true">✓<\/span>\s*<\/button>/)
   })
 
   it('provides a visible accessible label for the file picker in the default files mode', () => {

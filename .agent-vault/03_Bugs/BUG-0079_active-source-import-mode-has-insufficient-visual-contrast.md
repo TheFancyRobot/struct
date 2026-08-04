@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Active source import mode has insufficient visual contrast
 bug_id: BUG-0079
-status: new
+status: fixed
 severity: sev-3
 category: accessibility
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-04'
+owner: bug_0079
 created: '2026-07-28'
 updated: '2026-07-28'
 related_notes:
@@ -57,6 +57,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Confirmed Root Cause
 
 - Record the proven cause and decisive evidence.
+The import-mode buttons relied on DaisyUI's `btn-active` styling, which primarily changes color. The selected mode had no persistent shape, text, or icon treatment that distinguished it in low-color or monochrome viewing conditions.
 
 ## Workaround
 
@@ -65,10 +66,12 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
+Give the active import-mode button a high-contrast base-content outline, semibold weight, and a visible checkmark, while retaining the existing pressed-state semantics.
 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
+`source-import-panel.test.tsx` renders the default selected mode and asserts its pressed state, visible checkmark, semibold treatment, and base-content outline.
 
 ## Related Notes
 
@@ -83,3 +86,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-04 - Fixed: selected import modes now have a visible checkmark and high-contrast outline in addition to color; focused component tests and web typecheck pass.

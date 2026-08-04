@@ -97,18 +97,18 @@ export const SourceImportPanel: Component<{
           </p>
         </div>
         <div class="join" role="group" aria-label="Import mode">
-          <button type="button" class="btn btn-sm join-item" aria-pressed={mode() === 'files'} classList={{ 'btn-active': mode() === 'files' }} onClick={() => setMode('files')}>
-            Files
+          <button type="button" class="btn btn-sm join-item focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" aria-pressed={mode() === 'files'} classList={{ 'btn-active': mode() === 'files', 'border border-2 border-base-content font-semibold': mode() === 'files' }} onClick={() => setMode('files')}>
+            Files <Show when={mode() === 'files'}><span aria-hidden="true">✓</span></Show>
           </button>
-          <button type="button" class="btn btn-sm join-item" aria-pressed={mode() === 'paste'} classList={{ 'btn-active': mode() === 'paste' }} onClick={() => setMode('paste')}>
-            Paste
+          <button type="button" class="btn btn-sm join-item focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" aria-pressed={mode() === 'paste'} classList={{ 'btn-active': mode() === 'paste', 'border border-2 border-base-content font-semibold': mode() === 'paste' }} onClick={() => setMode('paste')}>
+            Paste <Show when={mode() === 'paste'}><span aria-hidden="true">✓</span></Show>
           </button>
-          <button type="button" class="btn btn-sm join-item" aria-pressed={mode() === 'dataset'} classList={{ 'btn-active': mode() === 'dataset' }} onClick={() => setMode('dataset')}>
-            Dataset
+          <button type="button" class="btn btn-sm join-item focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" aria-pressed={mode() === 'dataset'} classList={{ 'btn-active': mode() === 'dataset', 'border border-2 border-base-content font-semibold': mode() === 'dataset' }} onClick={() => setMode('dataset')}>
+            Dataset <Show when={mode() === 'dataset'}><span aria-hidden="true">✓</span></Show>
           </button>
           <Show when={folderPickerSupported}>
-            <button type="button" class="btn btn-sm join-item" aria-pressed={mode() === 'folder'} classList={{ 'btn-active': mode() === 'folder' }} onClick={() => setMode('folder')}>
-              Folder
+            <button type="button" class="btn btn-sm join-item focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" aria-pressed={mode() === 'folder'} classList={{ 'btn-active': mode() === 'folder', 'border border-2 border-base-content font-semibold': mode() === 'folder' }} onClick={() => setMode('folder')}>
+              Folder <Show when={mode() === 'folder'}><span aria-hidden="true">✓</span></Show>
             </button>
           </Show>
         </div>
