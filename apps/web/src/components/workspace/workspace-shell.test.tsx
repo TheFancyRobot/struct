@@ -2,7 +2,12 @@
 /* eslint-disable no-unused-vars -- Babel does not mark Solid JSX imports as used. */
 import { describe, expect, it } from 'bun:test'
 import { renderToString } from 'solid-js/web'
-import { searchHasNoResults, SourceCatalogEmptyState, WorkspaceShell } from './WorkspaceShell'
+import {
+  filterProjectsByQuery,
+  searchHasNoResults,
+  SourceCatalogEmptyState,
+  WorkspaceShell,
+} from './WorkspaceShell'
 import { useWorkspaceState, WorkspaceStateProvider } from './workspace-state'
 
 describe('workspace shell', () => {
@@ -12,6 +17,17 @@ describe('workspace shell', () => {
     expect(searchHasNoResults('', 0, true)).toBe(false)
     expect(searchHasNoResults('zzzz-no-project', 0, false)).toBe(false)
     expect(searchHasNoResults('project', 1, true)).toBe(false)
+  })
+
+  it('filters both project collections with the same query semantics', () => {
+    const projects = [
+      { name: 'Alpha research' },
+      { name: 'Beta planning' },
+    ] as const
+
+    expect(filterProjectsByQuery(projects, ' ALPHA ')).toEqual([projects[0]])
+    expect(filterProjectsByQuery(projects, 'zzzz-no-project')).toEqual([])
+    expect(filterProjectsByQuery(projects, '')).toBe(projects)
   })
 
   it('renders source empty states only after the catalog settles', () => {

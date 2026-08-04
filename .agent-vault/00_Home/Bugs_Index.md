@@ -30,11 +30,10 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 _Last rebuilt: 2026-08-04._
 
 - Notes indexed: 95
-- Status summary: new (14), fixed (76), invalid (5)
+- Status summary: new (13), fixed (77), invalid (5)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
-| BUG-0078 | [Project search leaves unrelated recent projects visible](../03_Bugs/BUG-0078_project-search-leaves-unrelated-recent-projects-visible.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0079 | [Active source import mode has insufficient visual contrast](../03_Bugs/BUG-0079_active-source-import-mode-has-insufficient-visual-contrast.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0080 | [Dataset and Folder import modes lack mode-specific guidance](../03_Bugs/BUG-0080_dataset-and-folder-import-modes-lack-mode-specific-guidance.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0082 | [Unavailable project attachment control has no explanation](../03_Bugs/BUG-0082_unavailable-project-attachment-control-has-no-explanation.md) | new | sev-3 | 2026-07-28 | - | - |
@@ -84,6 +83,7 @@ _Last rebuilt: 2026-08-04._
 | BUG-0075 | [Global Sources route has no active navigation state](../03_Bugs/BUG-0075_global-sources-route-has-no-active-navigation-state.md) | fixed | sev-3 | 2026-07-28 | 2026-08-03 | - |
 | BUG-0076 | [Successful source import is not announced](../03_Bugs/BUG-0076_successful-source-import-is-not-announced.md) | fixed | sev-3 | 2026-07-28 | 2026-08-03 | - |
 | BUG-0077 | [Workspace searches provide no results feedback](../03_Bugs/BUG-0077_workspace-searches-provide-no-no-results-feedback.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
+| BUG-0078 | [Project search leaves unrelated recent projects visible](../03_Bugs/BUG-0078_project-search-leaves-unrelated-recent-projects-visible.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
 | BUG-0081 | [Disabled Reports destination is nearly invisible](../03_Bugs/BUG-0081_disabled-reports-destination-is-nearly-invisible.md) | fixed | sev-3 | 2026-07-28 | 2026-08-01 | - |
 | BUG-0084 | [Failed research submission returns no user-visible error](../03_Bugs/BUG-0084_failed-research-submission-returns-no-user-visible-error.md) | invalid | sev-3 | 2026-07-28 | - | - |
 | BUG-0091 | [Notebook finding selection and citation warning lack browser coverage](../03_Bugs/BUG-0091_notebook-finding-selection-and-citation-warning-lack-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |
