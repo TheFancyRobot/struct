@@ -15,6 +15,11 @@ async function openWorkspace(page: Page, theme: 'struct-light' | 'struct-dark') 
   await page.route('**/api/projects', (route) => route.fulfill({
     status: 200,
     contentType: 'application/json',
+    // The desktop-pane regression later reloads this page with a 503 response.
+    // Keep this setup response out of Chromium's HTTP cache so that reload
+    // reliably exercises the unavailable-projects layout instead of restoring
+    // a stale successful list.
+    headers: { 'cache-control': 'no-store' },
     body: JSON.stringify({ items: [], nextCursor: null }),
   }))
   await page.goto(origin)
@@ -492,9 +497,13 @@ describe('responsive workspace browser contract', () => {
     await page.route('**/api/projects', (route) => route.fulfill({
       status: 503,
       contentType: 'application/json',
+      headers: { 'cache-control': 'no-store' },
       body: JSON.stringify({ error: 'ProjectListUnavailable' }),
     }))
+    const unavailableProjectsResponse = page.waitForResponse((response) =>
+      response.url() === `${origin}/api/projects` && response.status() === 503)
     await page.reload()
+    await unavailableProjectsResponse
     const projectAlert = page.getByRole('alert').filter({
       hasText: 'Projects could not be loaded. Try again.',
     })

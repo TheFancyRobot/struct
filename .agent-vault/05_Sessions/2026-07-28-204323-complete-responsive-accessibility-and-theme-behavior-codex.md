@@ -65,9 +65,10 @@ related_bugs:
   - '[[03_Bugs/BUG-0099_mixed-source-dark-dataset-definition-labels-fail-contrast|BUG-0099 Mixed source dark dataset definition labels fail contrast]]'
   - '[[03_Bugs/BUG-0100_mixed-source-mobile-section-tabs-are-only-40-pixels-high|BUG-0100 Mixed source mobile section tabs are only 40 pixels high]]'
   - '[[03_Bugs/BUG-0101_mixed-source-citation-links-are-only-24-pixels-high-on-mobile|BUG-0101 Mixed source citation links are only 24 pixels high on mobile]]'
+  - '[[03_Bugs/BUG-0109_responsive-workspace-suite-does-not-execute-the-desktop-pane-regression|BUG-0109 Responsive workspace suite does not execute the desktop-pane regression]]'
 related_decisions: []
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-08-04'
 tags:
   - agent-vault
   - session
@@ -184,6 +185,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 - [[03_Bugs/BUG-0099_mixed-source-dark-dataset-definition-labels-fail-contrast|BUG-0099 Mixed source dark dataset definition labels fail contrast]] - Linked from bug generator.
 - [[03_Bugs/BUG-0100_mixed-source-mobile-section-tabs-are-only-40-pixels-high|BUG-0100 Mixed source mobile section tabs are only 40 pixels high]] - Linked from bug generator.
 - [[03_Bugs/BUG-0101_mixed-source-citation-links-are-only-24-pixels-high-on-mobile|BUG-0101 Mixed source citation links are only 24 pixels high on mobile]] - Linked from bug generator.
+- [[03_Bugs/BUG-0109_responsive-workspace-suite-does-not-execute-the-desktop-pane-regression|BUG-0109 Responsive workspace suite does not execute the desktop-pane regression]] - Linked from bug generator.
 <!-- AGENT-END:session-bugs-encountered -->
 
 ## Decisions Made or Updated

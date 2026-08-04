@@ -97,6 +97,8 @@ export const HomePage: Component = () => {
       : projects() === undefined
         ? 'loading'
         : 'ready')
+  const projectItems = createMemo(() =>
+    projects.error === undefined ? projects()?.items ?? [] : [])
 
   const reopenCachedProject = async (candidate = cachedProjectId()) => {
     if (candidate === null) {
@@ -172,7 +174,7 @@ export const HomePage: Component = () => {
         </Show>
         <ProjectSwitcher
           mode="root"
-          projects={projects()?.items ?? []}
+          projects={projectItems()}
           projectListState={projectListState()}
           currentProjectId={null}
           currentProjectName={null}
@@ -220,6 +222,8 @@ export const ProjectPage: Component = () => {
       : projects() === undefined
         ? 'loading'
         : 'ready')
+  const projectItems = createMemo(() =>
+    projects.error === undefined ? projects()?.items ?? [] : [])
 
   const activeProject = createMemo(() =>
     project.error === undefined
@@ -237,7 +241,7 @@ export const ProjectPage: Component = () => {
     activeProject()?.name
     ?? (projectId() === null
       ? undefined
-      : projects()?.items.find((item) => item.id === projectId())?.name)
+      : projectItems().find((item) => item.id === projectId())?.name)
     ?? null)
   const notFound = createMemo(() =>
     projectId() === null
@@ -283,7 +287,7 @@ export const ProjectPage: Component = () => {
       </Show>
       <ProjectSwitcher
         mode="project"
-        projects={projects()?.items ?? []}
+        projects={projectItems()}
         projectListState={projectListState()}
         currentProjectId={activeProject()?.id ?? projectId()}
         currentProjectName={currentProjectName()}
