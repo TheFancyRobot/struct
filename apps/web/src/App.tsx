@@ -8,6 +8,7 @@ import {
   onMount,
 } from 'solid-js'
 import { basePathFromPublicBaseUrl } from './base-path'
+import { pageTitle } from './page-title'
 import { WorkspaceShell } from './components/workspace/WorkspaceShell'
 import {
   WorkspaceStateProvider,
@@ -38,6 +39,12 @@ const App: ParentComponent = (props) => {
   createEffect(() => {
     if (typeof window !== 'undefined') {
       document.documentElement.dataset.theme = theme()
+    }
+  })
+
+  createEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.title = pageTitle(location.pathname, appBasePath)
     }
   })
 

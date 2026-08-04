@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Workspace routes reuse one generic browser title
 bug_id: BUG-0072
-status: new
+status: fixed
 severity: sev-3
 category: accessibility
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-03'
+owner: bug_0072
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-08-03'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -58,6 +58,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Confirmed Root Cause
 
 - Record the proven cause and decisive evidence.
+- The SPA entry document supplies the initial generic title, but `App` had no reactive route-title update. Every client-side navigation therefore retained `Struct — Research Workspace`.
 
 ## Workaround
 
@@ -66,10 +67,12 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
+- Add one route-to-title helper and call it from `App`'s existing reactive lifecycle so every declared workspace route assigns a descriptive browser title.
 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
+- `apps/web/src/page-title.test.ts` covers every declared application route plus a configured deployment base path.
 
 ## Related Notes
 
@@ -83,4 +86,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
+- 2026-08-03 - Fixed: `App` now updates `document.title` from the active route; focused route-title coverage and web typecheck pass.
 <!-- AGENT-END:bug-timeline -->
