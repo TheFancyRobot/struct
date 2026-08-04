@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Research error variants lack browser coverage
 bug_id: BUG-0087
-status: new
+status: fixed
 severity: sev-3
 category: testing
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-04'
+owner: bug_0087
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-08-04'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -99,3 +99,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-04 - Added `research-error-variants.spec.ts`: deterministic SSE coverage for `EvidenceContradictionError`, `ResearchCitationValidationError`, and `RetrievalQueryError`; verifies exact guidance, keyboard-focused follow-up recovery, and light/dark 1440×900 + 390×844 captures. Focused browser test and web typecheck passed.
