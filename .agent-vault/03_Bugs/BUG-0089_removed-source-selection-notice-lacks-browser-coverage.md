@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Removed source selection notice lacks browser coverage
 bug_id: BUG-0089
-status: new
+status: fixed
 severity: sev-3
 category: testing
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-04'
+owner: bug_0089
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-08-04'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -83,6 +83,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
   5. Asserts the draft textarea still holds the preserved text after reconciliation.
   6. Captures theme (light/dark) and responsive breakpoint screenshots of the notice state.
 - Update `.local/ui-audit/inventory.md` Route 8 `Selection notice (removed source)` row to `e2e Covered: ✅`.
+Implemented 2026-08-04: `conversation.spec.ts` now holds the source-activity stream until both sources are selected and a draft is entered, then emits an `ingestion-failed` event while the next catalog response marks one source failed. The browser case asserts the singular `role=status` warning, removed checkbox, remaining selected version, exact sessionStorage draft state, and POST payload containing only the still-ready version. It captures the reconciled state at 1440×900 and 390×844 in both struct light and dark themes without horizontal overflow. `.local/ui-audit/inventory.md` Route 8 now records the e2e coverage.
 
 ## Regression Coverage Needed
 
