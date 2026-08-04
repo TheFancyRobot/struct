@@ -72,7 +72,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
-- Added an SSR component regression test that renders the complete mixed-source report, rejects `text-base-content/55`, and requires the AA-contrast metadata utility.
+- Added targeted SSR assertions for every affected metadata node and a guard against the former low-contrast `text-base-content/55` utility.
 - Verified the focused component test and web typecheck.
 
 ## Related Notes
@@ -87,5 +87,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
-<!-- AGENT-END:bug-timeline -->
 - 2026-08-03 - Fixed: changed all affected mixed-source metadata to `text-base-content/65`; focused component test and web typecheck pass.
+<!-- AGENT-END:bug-timeline -->
