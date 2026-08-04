@@ -80,6 +80,14 @@ describe('responsive workspace browser contract', () => {
     expect(await projectName.evaluate((element) => element === document.activeElement)).toBe(true)
 
     await page.goto(`${origin}/projects/${projectId}`)
+    await addSource.click()
+    await page.waitForURL(`${origin}/sources#source-import-heading`)
+    const sourceImportHeading = page.getByRole('heading', { name: 'Add sources' })
+    await sourceImportHeading.waitFor()
+    await page.waitForFunction(() => document.activeElement?.id === 'source-import-heading')
+    expect(await sourceImportHeading.evaluate((element) => element === document.activeElement)).toBe(true)
+
+    await page.goto(`${origin}/projects/${projectId}`)
     await page.setViewportSize({ width: 375, height: 844 })
     await page.getByRole('button', { name: 'Open workspace navigation' }).click()
     await addProject.waitFor()
