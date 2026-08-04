@@ -54,6 +54,27 @@ describe('workspace shell', () => {
     expect((html.match(/aria-current="page"/g) ?? [])).toHaveLength(1)
   })
 
+  it('provides a focus-visible skip link to the focusable main content region', () => {
+    const html = renderToString(() => (
+      <WorkspaceStateProvider projectId="project-a">
+        <WorkspaceShell
+          theme="struct-light"
+          onToggleTheme={() => undefined}
+          currentPathname="/projects/project-a/sources"
+        >
+          <p>Conversation</p>
+        </WorkspaceShell>
+      </WorkspaceStateProvider>
+    ))
+
+    const skipLink = '<a href="#workspace-main"'
+    expect(html.indexOf(skipLink)).toBeGreaterThan(-1)
+    expect(html.indexOf(skipLink)).toBeLessThan(html.indexOf('<nav'))
+    expect(html).toContain('Skip to main content</a>')
+    expect(html).toContain('focus-visible:ring-2')
+    expect(html).toContain('<main id="workspace-main" tabindex="-1"')
+  })
+
   // BUG-0056: with navigation expanded, the desktop theme toggle lives in the
   // sidebar (out of the floating top bar); the mobile toggle stays in the
   // in-flow top bar. Each breakpoint shows exactly one toggle via md:hidden /
