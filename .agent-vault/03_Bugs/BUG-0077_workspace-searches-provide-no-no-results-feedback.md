@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Workspace searches provide no results feedback
 bug_id: BUG-0077
-status: new
+status: fixed
 severity: sev-3
 category: ux
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-04'
+owner: bug_0077
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-08-04'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -58,6 +58,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Confirmed Root Cause
 
 - Record the proven cause and decisive evidence.
+The workspace navigation filtered project and attached document lists directly but rendered an empty list when a non-empty query had no matches. It did not distinguish a completed zero-match search from loading.
 
 ## Workaround
 
@@ -66,10 +67,12 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
+Render a polite status message for completed project or source searches with zero matches, while leaving the existing add and manage actions in place.
 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
+Focused workspace-shell coverage verifies non-empty, loaded zero-result searches produce feedback while empty queries, loading, and matching searches do not.
 
 ## Related Notes
 
@@ -84,3 +87,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-04 - Fixed: added accessible no-match search states and focused regression coverage; workspace-shell tests and web typecheck pass.

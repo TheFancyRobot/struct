@@ -2,10 +2,18 @@
 /* eslint-disable no-unused-vars -- Babel does not mark Solid JSX imports as used. */
 import { describe, expect, it } from 'bun:test'
 import { renderToString } from 'solid-js/web'
-import { WorkspaceShell } from './WorkspaceShell'
+import { searchHasNoResults, WorkspaceShell } from './WorkspaceShell'
 import { useWorkspaceState, WorkspaceStateProvider } from './workspace-state'
 
 describe('workspace shell', () => {
+  it('identifies a completed search with no matches without treating loading as empty', () => {
+    expect(searchHasNoResults('zzzz-no-project', 0, true)).toBe(true)
+    expect(searchHasNoResults('zzzz-no-source', 0, true)).toBe(true)
+    expect(searchHasNoResults('', 0, true)).toBe(false)
+    expect(searchHasNoResults('zzzz-no-project', 0, false)).toBe(false)
+    expect(searchHasNoResults('project', 1, true)).toBe(false)
+  })
+
   // BUG-0070: the project list must be a single shared resource on the
   // workspace state so one refetch after project creation updates both the
   // persistent sidebar navigation and the project switcher list without a

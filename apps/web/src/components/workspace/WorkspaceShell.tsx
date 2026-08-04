@@ -28,6 +28,14 @@ type Theme = 'struct-light' | 'struct-dark'
 const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
 const RECENT_PROJECT_IDS_KEY = 'struct:recent-project-ids'
 
+export function searchHasNoResults(
+  query: string,
+  resultCount: number,
+  hasLoaded: boolean,
+): boolean {
+  return hasLoaded && query.trim().length > 0 && resultCount === 0
+}
+
 function readRecentProjectIds(): ReadonlyArray<string> {
   if (typeof window === 'undefined') return []
   try {
@@ -117,6 +125,8 @@ export const WorkspaceNavigation: ParentComponent<{
     name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())
   const filteredProjects = createMemo(() =>
     (projects()?.items ?? []).filter((project) => matches(project.name, projectSearch())))
+  const hasNoMatchingProjects = createMemo(() =>
+    searchHasNoResults(projectSearch(), filteredProjects().length, projects() !== undefined))
   const recentProjects = createMemo(() => {
     return recentProjectIds().flatMap((id) => {
       const project = (projects()?.items ?? []).find((item) => item.id === id)
@@ -128,6 +138,8 @@ export const WorkspaceNavigation: ParentComponent<{
       .filter((source) => source.kind === 'document' && matches(source.name, sourceSearch()))
       .toSorted((left, right) => right.updatedAt - left.updatedAt)
       .slice(0, 5))
+  const hasNoMatchingSources = createMemo(() =>
+    searchHasNoResults(sourceSearch(), recentSources().length, sources() !== undefined))
   const addSource = (event: MouseEvent) => {
     // Preserve native new-tab/download-style link activations. Only the
     // ordinary in-app navigation should change focus or dismiss the sheet.
@@ -213,7 +225,14 @@ export const WorkspaceNavigation: ParentComponent<{
             />
           </label>
           <ul class="menu w-full gap-1 p-0">
-            <For each={filteredProjects()}>
+            <For
+              each={filteredProjects()}
+              fallback={
+                <Show when={hasNoMatchingProjects()}>
+                  <li class="px-2 text-xs text-base-content/60" role="status">No matching projects.</li>
+                </Show>
+              }
+            >
               {(project) => (
                 <li>
                   <a
@@ -266,7 +285,11 @@ export const WorkspaceNavigation: ParentComponent<{
             <ul class="menu w-full gap-1 p-0">
               <For
                 each={recentSources()}
-                fallback={<li class="px-2 text-xs text-base-content/60">No documents loaded.</li>}
+                fallback={
+                  <li class="px-2 text-xs text-base-content/60" role="status">
+                    {hasNoMatchingSources() ? 'No matching sources.' : 'No documents loaded.'}
+                  </li>
+                }
               >
                 {(source) => (
                   <li>
