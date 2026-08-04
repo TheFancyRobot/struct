@@ -63,6 +63,7 @@ related_bugs:
   - '[[03_Bugs/BUG-0100_mixed-source-mobile-section-tabs-are-only-40-pixels-high|BUG-0100 Mixed source mobile section tabs are only 40 pixels high]]'
   - '[[03_Bugs/BUG-0101_mixed-source-citation-links-are-only-24-pixels-high-on-mobile|BUG-0101 Mixed source citation links are only 24 pixels high on mobile]]'
   - '[[03_Bugs/BUG-0109_responsive-workspace-suite-does-not-execute-the-desktop-pane-regression|BUG-0109 Responsive workspace suite does not execute the desktop-pane regression]]'
+  - '[[03_Bugs/BUG-0110_mixed-source-mobile-section-flow-browser-test-starts-before-the-report-is-ready|BUG-0110 Mixed-source mobile section-flow browser test starts before the report is ready]]'
 tags:
   - agent-vault
   - step

@@ -70,6 +70,10 @@ async function openDemo(
     { waitUntil: 'commit' },
   )
   expect(response?.status()).toBe(200)
+  // `commit` only confirms that the server accepted the navigation. Wait for
+  // Solid to mount the report's stable root title before a scenario queries
+  // client-rendered controls; otherwise a fast query can race the render.
+  await page.locator('#mixed-source-title').waitFor()
 }
 
 async function assertNoOverflow(page: typePage): Promise<void> {
@@ -111,7 +115,6 @@ describe('mixed-source report browser workflow', () => {
           window.localStorage.setItem('struct-theme', `struct-${selected}`)
         }, theme)
         await openDemo(page)
-        await page.getByRole('heading', { name: 'Renewal risk synthesis' }).waitFor()
         await waitForThemeStyles(page, theme)
         expect(await page.locator('.app-shell').getAttribute('data-theme'))
           .toBe(`struct-${theme}`)
@@ -161,7 +164,6 @@ describe('mixed-source report browser workflow', () => {
           window.localStorage.setItem('struct-theme', `struct-${selected}`)
         }, theme)
         await openDemo(page, 'live')
-        await page.getByRole('heading', { name: 'Renewal risk synthesis' }).waitFor()
         await page.getByText('Live', { exact: true }).waitFor()
         await waitForThemeStyles(page, theme)
         expect(await page.locator('.app-shell').getAttribute('data-theme'))
