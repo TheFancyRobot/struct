@@ -323,6 +323,8 @@ export const ConversationWorkspace: ParentComponent<{
   const state = useWorkspaceState()
   return (
     <main
+      id="workspace-main"
+      tabindex="-1"
       inert={state.navigationSheetOpen() || state.evidenceSheetOpen()}
       class="relative flex min-h-0 min-w-0 flex-1 flex-col bg-base-100"
     >
@@ -562,6 +564,12 @@ export const WorkspaceShell: ParentComponent<{
       class="app-shell flex h-dvh min-h-0 min-w-80 overflow-hidden bg-base-200 text-base-content"
       data-theme={props.theme}
     >
+      <a
+        href="#workspace-main"
+        class="sr-only fixed left-4 top-4 z-50 rounded-md bg-primary px-4 py-2 text-primary-content shadow-md focus:not-sr-only focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      >
+        Skip to main content
+      </a>
       <Show when={state.navigationSheetOpen()}>
         <button
           type="button"

@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Workspace has no skip link past repeated navigation
 bug_id: BUG-0073
-status: new
+status: fixed
 severity: sev-3
 category: accessibility
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-03'
+owner: Codex
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-08-03'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -58,6 +58,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Confirmed Root Cause
 
 - Record the proven cause and decisive evidence.
+- `WorkspaceShell` rendered repeated workspace navigation before the route `<main>` region but supplied neither a bypass control nor a focusable main target.
 
 ## Workaround
 
@@ -66,10 +67,12 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
+- Added a visually hidden, focus-visible `Skip to main content` link before workspace navigation. It targets the route main region, which now has `id="workspace-main"` and `tabindex="-1"` so the browser moves keyboard focus there.
 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
+- `workspace-shell.test.tsx` verifies the skip link precedes navigation, remains focus-visible, and targets the focusable main region.
 
 ## Related Notes
 
@@ -84,3 +87,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-03 - Fixed: added the route-main skip link and focused regression coverage; focused test and web typecheck passed.
