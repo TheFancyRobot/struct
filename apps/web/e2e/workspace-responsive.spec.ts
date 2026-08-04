@@ -87,12 +87,37 @@ describe('responsive workspace browser contract', () => {
     await page.waitForFunction(() => document.activeElement?.id === 'source-import-heading')
     expect(await sourceImportHeading.evaluate((element) => element === document.activeElement)).toBe(true)
 
+    // BUG-0071: repeating the current-route action must refocus the import
+    // target rather than leaving focus on the activating navigation link.
+    await addSource.click()
+    await page.waitForFunction(() => document.activeElement?.id === 'source-import-heading')
+    expect(await sourceImportHeading.evaluate((element) => element === document.activeElement)).toBe(true)
+
     await page.goto(`${origin}/projects/${projectId}`)
     await page.setViewportSize({ width: 375, height: 844 })
     await page.getByRole('button', { name: 'Open workspace navigation' }).click()
     await addProject.waitFor()
     expect((await addProject.boundingBox())!.height).toBeGreaterThanOrEqual(44)
     expect((await addSource.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+
+    // BUG-0071: ordinary mobile activation closes the sheet before the
+    // deferred focus is moved to the import heading.
+    const navigationSheet = page.getByRole('dialog', { name: 'Workspace navigation' })
+    await addSource.click()
+    await page.waitForURL(`${origin}/sources#source-import-heading`)
+    await sourceImportHeading.waitFor()
+    await page.waitForFunction(() => document.activeElement?.id === 'source-import-heading')
+    expect(await navigationSheet.count()).toBe(0)
+
+    // Opening the sheet again and repeating the same-route action must still
+    // close the sheet before returning focus to the target.
+    await page.getByRole('button', { name: 'Open workspace navigation' }).click()
+    const mobileAddSource = page
+      .getByRole('dialog', { name: 'Workspace navigation' })
+      .getByRole('link', { name: 'Add source' })
+    await mobileAddSource.click()
+    await page.waitForFunction(() => document.activeElement?.id === 'source-import-heading')
+    expect(await navigationSheet.count()).toBe(0)
     await page.close()
   })
 
