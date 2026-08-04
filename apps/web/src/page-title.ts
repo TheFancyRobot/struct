@@ -2,7 +2,9 @@ import { stripBasePath } from './base-path'
 
 /** Returns the descriptive browser title for a workspace route. */
 export function pageTitle(pathname: string, basePath: string): string {
-  const path = stripBasePath(pathname, basePath) ?? pathname
+  const path = stripBasePath(pathname, basePath)
+
+  if (path === null) return 'Struct — Research Workspace'
 
   if (path === '/') return 'Projects — Struct'
   if (/^\/projects\/[^/]+$/.test(path)) return 'Conversation — Struct'

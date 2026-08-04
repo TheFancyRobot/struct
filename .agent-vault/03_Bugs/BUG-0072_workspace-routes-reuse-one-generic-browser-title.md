@@ -86,5 +86,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
-<!-- AGENT-END:bug-timeline -->
 - 2026-08-03 - Fixed: `App` now updates `document.title` from the active route; focused route-title coverage and web typecheck pass.
+<!-- AGENT-END:bug-timeline -->

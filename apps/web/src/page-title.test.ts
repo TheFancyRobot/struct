@@ -20,4 +20,8 @@ describe('BUG-0072 workspace page titles', () => {
   it('supports a deployed base path', () => {
     expect(pageTitle('/struct/sources', '/struct')).toBe('Sources — Struct')
   })
+
+  it('uses the generic title outside the deployed base path', () => {
+    expect(pageTitle('/sources', '/struct')).toBe('Struct — Research Workspace')
+  })
 })
