@@ -72,7 +72,7 @@ export const ProjectSwitcher: Component<ProjectSwitcherProps> = (props) => {
           <span class="label-text font-medium">Project name</span>
           <input
             aria-label="Project name"
-            class="input input-bordered w-full"
+            class="input input-bordered min-h-11 w-full"
             name="name"
             value={props.enteredName}
             onInput={props.onNameInput}
