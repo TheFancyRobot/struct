@@ -76,4 +76,14 @@ describe('mixed-source report Solid component', () => {
     expect(html).toMatch(/<caption class="[^"]*text-base-content\/65[^"]*">rows 1–2 of 2 · result sha256:84ce…f10a<\/caption>/)
     expect(html).not.toMatch(/text-base-content\/55/)
   })
+
+  it('uses the AA-contrast class for compact dataset type labels', () => {
+    const html = renderToString(() => (
+      <MixedSourceReport report={mixedSourceDemoFixture('complete')} />
+    ))
+
+    expect(html).toMatch(/<small class="[^"]*text-base-content\/65[^"]*">VARCHAR<\/small>/)
+    expect(html).toMatch(/<small class="[^"]*text-base-content\/65[^"]*">BIGINT<\/small>/)
+    expect(html).not.toMatch(/<small class="[^"]*text-base-content\/45[^"]*">(?:VARCHAR|BIGINT)<\/small>/)
+  })
 })

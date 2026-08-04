@@ -407,7 +407,7 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
                             <For each={evidence.columns}>
                               {(column) => (
                                 <th scope="col">
-                                  {column.name}<small class="block font-normal text-base-content/45">{column.type}</small>
+                                  {column.name}<small class="block font-normal text-base-content/65">{column.type}</small>
                                 </th>
                               )}
                             </For>
