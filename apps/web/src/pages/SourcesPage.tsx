@@ -11,6 +11,7 @@ import {
   type Component,
 } from 'solid-js'
 import { ProjectId, type SourceCatalog } from '@struct/domain'
+import { basePathFromPublicBaseUrl, withBasePath } from '../base-path'
 import {
   commandSourceJob,
   decodeSourceActivityEvent,
@@ -24,6 +25,26 @@ import { BackgroundActivityTray } from '../components/BackgroundActivityTray'
 import { SourceCatalogList } from '../components/SourceCatalogList'
 import { SourceImportPanel } from '../components/SourceImportPanel'
 import { useSSE } from '../hooks/useSSE'
+
+const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
+
+export function projectAttachmentIsUnavailable(projects: { readonly items: readonly unknown[] } | undefined): boolean {
+  return projects?.items.length === 0
+}
+
+export const ProjectAttachmentRequirement: Component = () => (
+  <p
+    id="source-attachment-project-required"
+    class="text-sm text-base-content/70"
+    role="status"
+  >
+    Create a project before attaching new sources.{' '}
+    <a class="link link-primary" href={withBasePath('/#project-create', appBasePath)}>
+      Add a project
+    </a>
+    .
+  </p>
+)
 
 const SourceActivitySubscription: Component<{
   readonly projectId: typeof ProjectId.Type
@@ -70,6 +91,7 @@ export const SourcesPage: Component = () => {
   const [projects] = createResource(fetchProjects)
   const [selectedProjectId, setSelectedProjectId] = createSignal<typeof ProjectId.Type | null>(null)
   const [attachNewSources, setAttachNewSources] = createSignal(false)
+  const noProjectsAvailable = createMemo(() => projectAttachmentIsUnavailable(projects()))
   const selectedProject = createMemo(() =>
     projects()?.items.find((project) => project.id === selectedProjectId()) ?? null)
   const [catalog, { refetch }] = createResource(
@@ -130,16 +152,23 @@ export const SourcesPage: Component = () => {
         <Show when={commandError()}>{(error) => <p class="alert alert-error" role="alert">{error()}</p>}</Show>
         <Show when={libraryMode()}>
           <div data-testid="source-library-attachment-notice" class="space-y-3 rounded-box border border-base-300 bg-base-100 p-4">
-            <label class="flex min-h-11 cursor-pointer items-center gap-3">
+            <label
+              class="flex min-h-11 items-center gap-3"
+              classList={{ 'cursor-pointer': selectedProjectId() !== null }}
+            >
               <input
                 type="checkbox"
                 class="checkbox checkbox-sm"
                 checked={attachNewSources()}
                 disabled={selectedProjectId() === null}
+                aria-describedby={noProjectsAvailable() ? 'source-attachment-project-required' : undefined}
                 onChange={(event) => setAttachNewSources(event.currentTarget.checked)}
               />
               <span>Attach new sources to a project</span>
             </label>
+            <Show when={noProjectsAvailable()}>
+              <ProjectAttachmentRequirement />
+            </Show>
             <Show when={(projects()?.items.length ?? 0) > 0}>
             <label class="form-control block">
               <span class="label-text">Project</span>

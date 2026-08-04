@@ -11,7 +11,11 @@ import { setRouterParams } from '../test/mock-solid-router'
 // shared router mock (mock-solid-router) lets the page render in the SSR test
 // harness with controlled route params; drive it via `setRouterParams`.
 
-const { SourcesPage } = await import('./SourcesPage')
+const {
+  ProjectAttachmentRequirement,
+  SourcesPage,
+  projectAttachmentIsUnavailable,
+} = await import('./SourcesPage')
 
 const originalFetch = globalThis.fetch
 const projectId = ProjectId.make('b50e8400-e29b-41d4-a716-446655440001')
@@ -77,5 +81,20 @@ describe('SourcesPage route-level heading (BUG-0062)', () => {
     expect(html).toContain('>Sources<')
     expect(html).toContain('This project is no longer available.')
     expect((html.match(/<h1\b/g) ?? [])).toHaveLength(1)
+  })
+})
+
+describe('unavailable project attachment recovery (BUG-0082)', () => {
+  it('explains why project attachment is unavailable and routes to project creation', () => {
+    const html = renderToString(() => <ProjectAttachmentRequirement />)
+
+    expect(projectAttachmentIsUnavailable(undefined)).toBeFalse()
+    expect(projectAttachmentIsUnavailable({ items: [] })).toBeTrue()
+    expect(projectAttachmentIsUnavailable({ items: [projectId] })).toBeFalse()
+    expect(html).toContain('id="source-attachment-project-required"')
+    expect(html).toContain('Create a project before attaching new sources.')
+    expect(html).toContain('role="status"')
+    expect(html).toContain('href="/#project-create"')
+    expect(html).toContain('>Add a project<')
   })
 })
