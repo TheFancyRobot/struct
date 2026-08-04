@@ -14,8 +14,10 @@ import {
   createSignal,
   onCleanup,
   onMount,
+  type Component,
   type ParentComponent,
 } from 'solid-js'
+import type { SourceCatalog as SourceCatalogValue } from '@struct/domain'
 import { basePathFromPublicBaseUrl, stripBasePath, withBasePath } from '../../base-path'
 import { fetchSourceCatalog } from '../../api/sources'
 import { EvidenceInspector as EvidenceDetailInspector } from '../EvidenceInspector'
@@ -27,6 +29,39 @@ type Theme = 'struct-light' | 'struct-dark'
 
 const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
 const RECENT_PROJECT_IDS_KEY = 'struct:recent-project-ids'
+
+export function searchHasNoResults(
+  query: string,
+  resultCount: number,
+  hasLoaded: boolean,
+): boolean {
+  return hasLoaded && query.trim().length > 0 && resultCount === 0
+}
+
+export const SourceCatalogEmptyState: Component<{
+  readonly catalog: SourceCatalogValue | null | undefined
+  readonly loading: boolean
+  readonly query: string
+  readonly resultCount: number
+}> = (props) => {
+  const catalogSettled = () => props.catalog != null && !props.loading
+  const hasNoMatches = () => searchHasNoResults(
+    props.query,
+    props.resultCount,
+    catalogSettled(),
+  )
+
+  return (
+    <Show when={catalogSettled()}>
+      <Show
+        when={hasNoMatches()}
+        fallback={<li class="px-2 text-xs text-base-content/60">No documents loaded.</li>}
+      >
+        <li class="px-2 text-xs text-base-content/60" role="status">No matching sources.</li>
+      </Show>
+    </Show>
+  )
+}
 
 function readRecentProjectIds(): ReadonlyArray<string> {
   if (typeof window === 'undefined') return []
@@ -117,6 +152,12 @@ export const WorkspaceNavigation: ParentComponent<{
     name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())
   const filteredProjects = createMemo(() =>
     (projects()?.items ?? []).filter((project) => matches(project.name, projectSearch())))
+  const hasNoMatchingProjects = createMemo(() =>
+    searchHasNoResults(
+      projectSearch(),
+      filteredProjects().length,
+      projects() != null && !projects.loading,
+    ))
   const recentProjects = createMemo(() => {
     return recentProjectIds().flatMap((id) => {
       const project = (projects()?.items ?? []).find((item) => item.id === id)
@@ -213,7 +254,14 @@ export const WorkspaceNavigation: ParentComponent<{
             />
           </label>
           <ul class="menu w-full gap-1 p-0">
-            <For each={filteredProjects()}>
+            <For
+              each={filteredProjects()}
+              fallback={
+                <Show when={hasNoMatchingProjects()}>
+                  <li class="px-2 text-xs text-base-content/60" role="status">No matching projects.</li>
+                </Show>
+              }
+            >
               {(project) => (
                 <li>
                   <a
@@ -265,8 +313,15 @@ export const WorkspaceNavigation: ParentComponent<{
           >
             <ul class="menu w-full gap-1 p-0">
               <For
-                each={recentSources()}
-                fallback={<li class="px-2 text-xs text-base-content/60">No documents loaded.</li>}
+              each={recentSources()}
+              fallback={
+                  <SourceCatalogEmptyState
+                    catalog={sources()}
+                    loading={sources.loading}
+                    query={sourceSearch()}
+                    resultCount={recentSources().length}
+                  />
+              }
               >
                 {(source) => (
                   <li>
