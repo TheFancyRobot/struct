@@ -145,6 +145,41 @@ describe('mixed-source report browser workflow', () => {
     }
   })
 
+  it('renders and captures the live report state across desktop/mobile light/dark', async () => {
+    const viewports = [
+      { width: 1440, height: 900 },
+      { width: 390, height: 844 },
+    ]
+    for (const viewport of viewports) {
+      for (const theme of ['light', 'dark'] as const) {
+        const page = await browser.newPage({
+          viewport,
+          reducedMotion: 'reduce',
+        })
+        const failures = observeFailures(page)
+        await page.addInitScript((selected) => {
+          window.localStorage.setItem('struct-theme', `struct-${selected}`)
+        }, theme)
+        await openDemo(page, 'live')
+        await page.getByRole('heading', { name: 'Renewal risk synthesis' }).waitFor()
+        await page.getByText('Live', { exact: true }).waitFor()
+        await waitForThemeStyles(page, theme)
+        expect(await page.locator('.app-shell').getAttribute('data-theme'))
+          .toBe(`struct-${theme}`)
+        await assertNoOverflow(page)
+        await page.screenshot({
+          path: path.join(
+            screenshotRoot,
+            `live-${viewport.width}x${viewport.height}-${theme}.png`,
+          ),
+          fullPage: false,
+        })
+        expectNoFailures(failures)
+        await page.close()
+      }
+    }
+  })
+
   it('supports keyboard exploration of citations, source spans, SQL, and rows', async () => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
     const failures = observeFailures(page)

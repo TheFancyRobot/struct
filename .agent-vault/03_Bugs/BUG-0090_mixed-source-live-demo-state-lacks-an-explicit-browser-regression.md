@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Mixed source live demo state lacks an explicit browser regression
 bug_id: BUG-0090
-status: new
+status: fixed
 severity: sev-3
 category: testing
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-04'
+owner: bug_0090
 created: '2026-07-28'
 updated: '2026-07-28'
 related_notes:
@@ -77,6 +77,8 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 - Browser regression asserting `state=live` across both themes and responsive widths.
 - Update `.local/ui-audit/inventory.md` demo-only state table to reflect `live`.
+- Completed 2026-08-04: `apps/web/e2e/mixed-source-report.spec.ts` now opens the deterministic `state=live` demo at 1440×900 and 390×844 in both light and dark themes, asserts the Live status, theme application, no horizontal overflow, and browser-failure-free rendering, then captures screenshots under `docs/demos/mixed-source-research/`.
+- Verified with `bun test --timeout 60000 --max-concurrency 1 apps/web/e2e/mixed-source-report.spec.ts` (6 pass), `bun --bun tsc --noEmit --project apps/web/tsconfig.json`, and Agent Vault validation.
 
 ## Related Notes
 
@@ -91,3 +93,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-04 - Fixed: added deterministic live-state browser coverage with light/dark desktop/mobile screenshots and assertions.

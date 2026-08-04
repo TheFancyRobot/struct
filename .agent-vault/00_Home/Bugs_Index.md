@@ -30,11 +30,10 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 _Last rebuilt: 2026-08-04._
 
 - Notes indexed: 95
-- Status summary: new (6), fixed (84), invalid (5)
+- Status summary: new (5), fixed (85), invalid (5)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
-| BUG-0090 | [Mixed source live demo state lacks an explicit browser regression](../03_Bugs/BUG-0090_mixed-source-live-demo-state-lacks-an-explicit-browser-regression.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0094 | [Evidence inspector loading and error states lack browser coverage](../03_Bugs/BUG-0094_evidence-inspector-loading-and-error-states-lack-browser-coverage.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0095 | [Mobile project navigation drawer makes theme switching unreachable](../03_Bugs/BUG-0095_mobile-project-navigation-drawer-makes-theme-switching-unreachable.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0096 | [Mobile project name input falls below the touch target baseline](../03_Bugs/BUG-0096_mobile-project-name-input-falls-below-the-touch-target-baseline.md) | new | sev-3 | 2026-07-28 | - | - |
@@ -86,6 +85,7 @@ _Last rebuilt: 2026-08-04._
 | BUG-0087 | [Research error variants lack browser coverage](../03_Bugs/BUG-0087_research-error-variants-lack-browser-coverage.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
 | BUG-0088 | [Research cancellation failure lacks browser coverage](../03_Bugs/BUG-0088_research-cancellation-failure-lacks-browser-coverage.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
 | BUG-0089 | [Removed source selection notice lacks browser coverage](../03_Bugs/BUG-0089_removed-source-selection-notice-lacks-browser-coverage.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
+| BUG-0090 | [Mixed source live demo state lacks an explicit browser regression](../03_Bugs/BUG-0090_mixed-source-live-demo-state-lacks-an-explicit-browser-regression.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
 | BUG-0091 | [Notebook finding selection and citation warning lack browser coverage](../03_Bugs/BUG-0091_notebook-finding-selection-and-citation-warning-lack-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |
 | BUG-0092 | [Report export failure lacks browser coverage](../03_Bugs/BUG-0092_report-export-failure-lacks-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |
 | BUG-0093 | [Add project hash focus journey lacks browser regression coverage](../03_Bugs/BUG-0093_add-project-hash-focus-journey-lacks-browser-regression-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |
