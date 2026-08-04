@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Mobile project name input falls below the touch target baseline
 bug_id: BUG-0096
-status: new
+status: fixed
 severity: sev-3
 category: accessibility
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-04'
+owner: bug0096_attempt1
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-08-04'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -59,6 +59,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Confirmed Root Cause
 
 - Record the proven cause and decisive evidence.
+The project-name control used only DaisyUI's default `input input-bordered` sizing, which renders at approximately 40px high. Unlike adjacent mobile controls, it did not opt into the repository's `min-h-11` (44px) touch-target convention.
 
 ## Workaround
 
@@ -67,10 +68,12 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Permanent Fix Plan
 
 - Describe the intended durable fix.
+Applied `min-h-11` directly to the ProjectSwitcher project-name input so its interactive height is at least 44px at every viewport without changing its existing input styling or width behavior.
 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
+Added a mobile Playwright assertion at a 375px viewport that measures the labelled Project name input and requires a height of at least 44px, while retaining the existing 8px separation assertion from the create action. Verified with `bun test --preload ./test/solid-test-preload.ts --max-concurrency 1 --test-name-pattern 'touch-target baseline' e2e/workspace-responsive.spec.ts` (1 pass), `bun test --preload ./test/solid-test-preload.ts --max-concurrency 1 src/components/project-switcher.test.tsx` (4 pass), and `bun --bun tsc --noEmit --project apps/web/tsconfig.json` (pass).
 
 ## Related Notes
 
@@ -85,3 +88,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-04 - Fixed: set the Project name input to `min-h-11` and added a 375px browser measurement regression test; focused browser test, component tests, and web typecheck passed.

@@ -210,7 +210,7 @@ describe('responsive workspace browser contract', () => {
     await page.close()
   })
 
-  it('keeps the focused project name input separated from its action', async () => {
+  it('keeps the project name input at the mobile touch-target baseline and separated from its action', async () => {
     const page = await browser.newPage({ viewport: { width: 375, height: 844 } })
     await openWorkspace(page, 'struct-light')
 
@@ -224,6 +224,7 @@ describe('responsive workspace browser contract', () => {
     ])
     expect(inputBox).not.toBeNull()
     expect(actionBox).not.toBeNull()
+    expect(inputBox!.height).toBeGreaterThanOrEqual(44)
     expect(actionBox!.y - (inputBox!.y + inputBox!.height)).toBeGreaterThanOrEqual(8)
     await page.close()
   })
