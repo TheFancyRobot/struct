@@ -38,6 +38,16 @@ export function searchHasNoResults(
   return hasLoaded && query.trim().length > 0 && resultCount === 0
 }
 
+export function filterProjectsByQuery<T extends { readonly name: string }>(
+  projects: ReadonlyArray<T>,
+  query: string,
+): ReadonlyArray<T> {
+  const normalizedQuery = query.trim().toLocaleLowerCase()
+  return normalizedQuery.length === 0
+    ? projects
+    : projects.filter((project) => project.name.toLocaleLowerCase().includes(normalizedQuery))
+}
+
 export const SourceCatalogEmptyState: Component<{
   readonly catalog: SourceCatalogValue | null | undefined
   readonly loading: boolean
@@ -151,7 +161,7 @@ export const WorkspaceNavigation: ParentComponent<{
   const matches = (name: string, query: string) =>
     name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())
   const filteredProjects = createMemo(() =>
-    (projects()?.items ?? []).filter((project) => matches(project.name, projectSearch())))
+    filterProjectsByQuery(projects()?.items ?? [], projectSearch()))
   const hasNoMatchingProjects = createMemo(() =>
     searchHasNoResults(
       projectSearch(),
@@ -164,6 +174,8 @@ export const WorkspaceNavigation: ParentComponent<{
       return project === undefined ? [] : [project]
     })
   })
+  const filteredRecentProjects = createMemo(() =>
+    filterProjectsByQuery(recentProjects(), projectSearch()))
   const recentSources = createMemo(() =>
     (sources()?.items ?? [])
       .filter((source) => source.kind === 'document' && matches(source.name, sourceSearch()))
@@ -216,13 +228,13 @@ export const WorkspaceNavigation: ParentComponent<{
         </button>
       </div>
       <div class="min-h-0 flex-1 space-y-5 overflow-y-auto px-2 py-3 text-sm">
-        <Show when={state.projectId() === null && recentProjects().length > 0}>
+        <Show when={state.projectId() === null && filteredRecentProjects().length > 0}>
           <section aria-labelledby="recent-projects-heading">
             <h3 id="recent-projects-heading" class="mb-2 text-xs font-semibold uppercase tracking-wide text-base-content/60">
               Recents
             </h3>
             <ul class="menu w-full gap-1 p-0">
-              <For each={recentProjects()}>
+              <For each={filteredRecentProjects()}>
                 {(project) => (
                   <li><a href={withBasePath(`/projects/${project.id}`, appBasePath)}>{project.name}</a></li>
                 )}

@@ -180,6 +180,10 @@ describe('responsive workspace browser contract', () => {
     const projectSection = navigation.getByRole('region', { name: 'Projects' })
     expect(await projectSection.getByRole('link', { name: 'Alpha research' }).count()).toBe(0)
     expect(await projectSection.getByRole('link', { name: 'Beta notebook' }).count()).toBe(1)
+    // BUG-0078: project search has one scope; it must not leave a
+    // nonmatching recently visited project visible above its filtered list.
+    expect(await navigation.getByRole('heading', { name: 'Recents' }).count()).toBe(0)
+    expect(await navigation.getByRole('link', { name: 'Alpha research' }).count()).toBe(0)
 
     await page.goto(`${origin}/projects/${projectId}`)
     expect(await navigation.getByRole('heading', { name: 'Recents' }).count()).toBe(0)
