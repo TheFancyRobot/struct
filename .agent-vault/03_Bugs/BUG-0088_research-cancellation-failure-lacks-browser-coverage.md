@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Research cancellation failure lacks browser coverage
 bug_id: BUG-0088
-status: new
+status: fixed
 severity: sev-3
 category: testing
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-04'
+owner: bug_0088
 created: '2026-07-28'
 updated: '2026-07-28'
 related_notes:
@@ -76,6 +76,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - Add an e2e spec forcing the cancellation API to fail during a live recursive run.
 - Assert actionable feedback, state preservation, and capture light/dark responsive screenshots.
 - Add a ResearchStream unit test for the cancel-error state (component currently has no unit tests).
+- Completed 2026-08-04: the route-level browser regression is the authoritative coverage for this interaction because it verifies the API rejection, user-visible recovery feedback, retained live progress, and the retry affordance as one contract. No separate component-only test was added.
 
 ## Regression Coverage Needed
 
@@ -83,6 +84,9 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - E2E: light and dark responsive screenshots of the cancellation-failure/recovery state.
 - Unit: ResearchStream cancel-error branch (currently `❌`).
 - Docs: update `.local/ui-audit/inventory.md` Route 7 "Cancellation error" row from `❌ | ❌` to reflect new coverage.
+- Completed 2026-08-04: `apps/web/e2e/recursive-analysis.spec.ts` rejects the live-run cancellation endpoint, asserts the normalized actionable alert, preserved partial findings, and a re-enabled cancellation action for recovery.
+- Captured deterministic desktop/mobile evidence in both themes under `docs/demos/research-cancellation-failure/`.
+- Verified with `bun test --timeout 60000 --max-concurrency 1 apps/web/e2e/recursive-analysis.spec.ts` (7 pass) and `bun run --filter @struct/web typecheck`.
 
 ## Related Notes
 
@@ -97,3 +101,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-04 - Fixed: added deterministic cancellation-rejection browser coverage with recovery assertions and light/dark desktop/mobile captures.

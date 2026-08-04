@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { mkdir } from 'node:fs/promises'
+import path from 'node:path'
 /* eslint-disable no-unused-vars -- Type-only import is consumed by TypeScript. */
 import { chromium, type Page as typePage } from 'playwright'
 import {
@@ -21,6 +22,10 @@ const origin = 'http://127.0.0.1:4178'
 const runUrl = `${origin}/projects/${projectId}/research/${threadId}/runs/${runId}`
 const sha = (digit: string) => `sha256:${digit.repeat(64)}`
 const screenshotRoot = '/tmp/struct-step-06-05'
+const cancellationScreenshotRoot = path.resolve(
+  new URL('../../..', import.meta.url).pathname,
+  'docs/demos/research-cancellation-failure',
+)
 
 const partialProgress = {
   runId,
@@ -240,6 +245,7 @@ async function assertNoOverflow(page: typePage): Promise<void> {
 
 beforeAll(async () => {
   await mkdir(screenshotRoot, { recursive: true })
+  await mkdir(cancellationScreenshotRoot, { recursive: true })
   web = await startAppServer(4178)
   browser = await chromium.launch({ headless: true })
 })
@@ -394,6 +400,60 @@ describe('recursive analysis browser workflow', () => {
       .toBe(true)
     expect(cancelRequests).toBe(1)
     await page.close()
+  })
+
+  it('keeps recursive findings available when cancellation fails and captures responsive recovery', async () => {
+    const viewports = [
+      { width: 1440, height: 900 },
+      { width: 390, height: 844 },
+    ]
+    for (const theme of ['light', 'dark'] as const) {
+      for (const viewport of viewports) {
+        const page = await browser.newPage({ viewport, reducedMotion: 'reduce' })
+        await page.addInitScript((selected) => {
+          window.localStorage.setItem('struct-theme', `struct-${selected}`)
+        }, theme)
+        await routeProgress(page)
+        let cancelRequests = 0
+        await page.route(`**/api/projects/${projectId}/runs/${runId}/cancel*`, async (route) => {
+          cancelRequests += 1
+          await route.fulfill({
+            status: 503,
+            contentType: 'application/json',
+            body: JSON.stringify({ error: 'CancellationUnavailable' }),
+          })
+        })
+
+        await page.goto(runUrl)
+        await page.getByRole('heading', { name: 'Partial findings' }).waitFor()
+        await page.getByRole('button', { name: 'Cancel analysis' }).click()
+
+        const alert = page.getByRole('alert').filter({
+          hasText: 'Cancellation could not be requested. Try again.',
+        })
+        await alert.waitFor()
+        expect(cancelRequests).toBe(1)
+        expect(await page.getByRole('heading', { name: 'Partial findings' }).count()).toBe(1)
+        expect(await page.getByText(
+          'Customer escalations cluster around handoff delays, not initial response time.',
+        ).count()).toBe(1)
+        expect(await page.getByRole('button', { name: 'Cancel analysis' }).isEnabled())
+          .toBe(true)
+
+        await waitForThemeStyles(page, theme)
+        expect(await page.locator('.app-shell[data-theme]').getAttribute('data-theme'))
+          .toBe(`struct-${theme}`)
+        await assertNoOverflow(page)
+        await page.screenshot({
+          path: path.join(
+            cancellationScreenshotRoot,
+            `cancellation-failure-${viewport.width}x${viewport.height}-${theme}.png`,
+          ),
+          fullPage: false,
+        })
+        await page.close()
+      }
+    }
   })
 
   it('shows loading, reconnect, and recoverable read-error states', async () => {
