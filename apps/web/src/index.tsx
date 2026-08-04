@@ -14,6 +14,7 @@ import { CitationPage } from './pages/CitationPage'
 import { HomePage } from './pages/HomePage'
 import { ResearchPage } from './pages/ResearchPage'
 import { NotebookPage } from './pages/NotebookPage'
+import { NotFoundPage } from './pages/NotFoundPage'
 import { ProjectPage } from './pages/ProjectPage'
 import { SourcesPage } from './pages/SourcesPage'
 import { NotesPage } from './pages/NotesPage'
@@ -34,6 +35,7 @@ render(
       <Route path="/projects/:projectId/research/:threadId" component={ResearchPage} />
       <Route path="/projects/:projectId/research/:threadId/citation/:citationId" component={CitationPage} />
       <Route path="/projects/:projectId/notebook" component={NotebookPage} />
+      <Route path="*404" component={NotFoundPage} />
     </Router>
   ),
   document.getElementById('app')!,

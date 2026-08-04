@@ -13,5 +13,5 @@ export function pageTitle(pathname: string, basePath: string): string {
   if (/^\/projects\/[^/]+\/research\/[^/]+\/citation\/[^/]+$/.test(path)) return 'Citation — Struct'
   if (/^\/projects\/[^/]+\/research\/[^/]+(?:\/runs\/[^/]+)?$/.test(path)) return 'Research — Struct'
   if (/^\/projects\/[^/]+\/notebook$/.test(path)) return 'Notebook — Struct'
-  return 'Struct — Research Workspace'
+  return 'Page Not Found — Struct'
 }
