@@ -9,6 +9,17 @@ export function acceptedSourceImportStatus(count: number): string {
   return `${count} ${count === 1 ? 'source' : 'sources'} accepted and processing`
 }
 
+export function importModeGuidance(mode: ImportMode): string {
+  switch (mode) {
+    case 'folder':
+      return 'Choose a folder. Its files are imported as separate document sources and keep their folder-relative paths.'
+    case 'dataset':
+      return 'Choose CSV, TSV, JSON, JSONL, or Parquet files. Each file is imported as a dataset source.'
+    default:
+      return 'Choose one or more document files to import.'
+  }
+}
+
 export const SourceImportPanel: Component<{
   readonly projectId: ProjectId | null
   readonly attachToProject?: boolean
@@ -136,10 +147,14 @@ export const SourceImportPanel: Component<{
               multiple
               required
               accept={mode() === 'dataset' ? '.csv,.tsv,.json,.jsonl,.parquet' : undefined}
+              aria-describedby="source-import-mode-guidance"
               ref={(input) => { fileInput = input }}
               onChange={(event) => setFiles(Array.from(event.currentTarget.files ?? []))}
             />
           </label>
+          <p id="source-import-mode-guidance" class="text-sm text-base-content/65">
+            {importModeGuidance(mode())}
+          </p>
           <Show when={!folderPickerSupported}>
             <p class="text-xs text-base-content/60">
               Folder selection is unavailable in this browser; select multiple files instead.
