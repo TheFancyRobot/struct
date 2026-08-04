@@ -30,11 +30,10 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 _Last rebuilt: 2026-08-04._
 
 - Notes indexed: 95
-- Status summary: new (21), fixed (69), invalid (5)
+- Status summary: new (20), fixed (70), invalid (5)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
-| BUG-0071 | [Add Source leaves focus in workspace navigation after route change](../03_Bugs/BUG-0071_add-source-leaves-focus-in-workspace-navigation-after-route-change.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0072 | [Workspace routes reuse one generic browser title](../03_Bugs/BUG-0072_workspace-routes-reuse-one-generic-browser-title.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0073 | [Workspace has no skip link past repeated navigation](../03_Bugs/BUG-0073_workspace-has-no-skip-link-past-repeated-navigation.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0074 | [Unknown routes render an empty main region](../03_Bugs/BUG-0074_unknown-routes-render-an-empty-main-region.md) | new | sev-3 | 2026-07-28 | - | - |
@@ -84,6 +83,7 @@ _Last rebuilt: 2026-08-04._
 | BUG-0104 | [Auth integration test races workspace readiness](../03_Bugs/BUG-0104_auth-integration-test-races-workspace-readiness.md) | fixed | sev-3 | 2026-07-29 | 2026-07-29 | - |
 | BUG-0062 | [Source views lack a route-level h1 heading](../03_Bugs/BUG-0062_source-views-lack-a-route-level-h1-heading.md) | fixed | sev-3 | 2026-07-28 | 2026-07-29 | - |
 | BUG-0070 | [New project is missing from project navigation until reload](../03_Bugs/BUG-0070_new-project-is-missing-from-project-navigation-until-reload.md) | fixed | sev-3 | 2026-07-28 | 2026-08-01 | - |
+| BUG-0071 | [Add Source leaves focus in workspace navigation after route change](../03_Bugs/BUG-0071_add-source-leaves-focus-in-workspace-navigation-after-route-change.md) | fixed | sev-3 | 2026-07-28 | 2026-08-03 | - |
 | BUG-0081 | [Disabled Reports destination is nearly invisible](../03_Bugs/BUG-0081_disabled-reports-destination-is-nearly-invisible.md) | fixed | sev-3 | 2026-07-28 | 2026-08-01 | - |
 | BUG-0084 | [Failed research submission returns no user-visible error](../03_Bugs/BUG-0084_failed-research-submission-returns-no-user-visible-error.md) | invalid | sev-3 | 2026-07-28 | - | - |
 | BUG-0091 | [Notebook finding selection and citation warning lack browser coverage](../03_Bugs/BUG-0091_notebook-finding-selection-and-citation-warning-lack-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |

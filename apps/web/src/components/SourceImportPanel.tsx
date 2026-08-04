@@ -74,7 +74,7 @@ export const SourceImportPanel: Component<{
     <section class="rounded-box border border-base-300 bg-base-100 p-4" aria-labelledby="source-import-heading">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 id="source-import-heading" class="font-semibold">Add sources</h2>
+          <h2 id="source-import-heading" tabindex="-1" class="font-semibold">Add sources</h2>
           <p class="mt-1 text-sm text-base-content/65">
             Accepted items continue processing in the background.
           </p>

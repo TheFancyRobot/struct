@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars -- Babel does not mark Solid JSX imports as used. */
-import { useParams } from '@solidjs/router'
+import { useLocation, useParams } from '@solidjs/router'
 import { Schema } from 'effect'
 import {
   For,
@@ -63,6 +63,7 @@ const SourceActivitySubscription: Component<{
 
 export const SourcesPage: Component = () => {
   const params = useParams()
+  const location = useLocation()
   const projectId = createMemo(() =>
     Schema.is(ProjectId)(params.projectId) ? params.projectId : null)
   const libraryMode = createMemo(() => params.projectId === undefined)
@@ -84,6 +85,12 @@ export const SourcesPage: Component = () => {
   createEffect(() => {
     if (selectedProjectId() === null) {
       setSelectedProjectId(projects()?.items[0]?.id ?? null)
+    }
+  })
+
+  createEffect(() => {
+    if (location.hash === '#source-import-heading') {
+      requestAnimationFrame(() => document.querySelector<HTMLElement>('#source-import-heading')?.focus())
     }
   })
 
