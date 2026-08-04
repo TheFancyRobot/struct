@@ -56,6 +56,7 @@ describe('source-grounded conversation browser path', () => {
         const submitted: unknown[] = []
         let sourceIsReady = true
         let secondRemovedSourceIsReady = true
+        let activityHasEmitted = false
         let releaseActivity: (() => void) | undefined
         let activityConnectedResolve: (() => void) | undefined
         const activityConnected = new Promise<void>((resolve) => {
@@ -119,8 +120,12 @@ describe('source-grounded conversation browser path', () => {
             })
           }
           if (pathname === `/api/projects/${projectId}/source-activity`) {
+            if (activityHasEmitted) {
+              return route.fulfill({ status: 200, contentType: 'text/event-stream', body: ': heartbeat\n\n' })
+            }
             activityConnectedResolve?.()
             await new Promise<void>((resolve) => { releaseActivity = resolve })
+            activityHasEmitted = true
             return route.fulfill({
               status: 200,
               contentType: 'text/event-stream',
@@ -165,6 +170,7 @@ describe('source-grounded conversation browser path', () => {
 
         const status = page.getByRole('status')
         await status.waitFor()
+        expect(await status.count()).toBe(1)
         expect(await status.textContent()).toBe(
           removedCount === 1
             ? 'A source that is no longer ready was removed from this question.'
