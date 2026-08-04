@@ -24,6 +24,16 @@ export const SourceImportPanel: Component<{
   const [acceptedCount, setAcceptedCount] = createSignal<number | null>(null)
   const [clientBatchId, setClientBatchId] = createSignal(crypto.randomUUID())
   let fileInput: HTMLInputElement | undefined
+  const acceptedStatus = () => {
+    const count = acceptedCount()
+    if (count === null) return null
+
+    return (
+      <p class="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {acceptedSourceImportStatus(count)}
+      </p>
+    )
+  }
   const pickerLabel = () => {
     switch (mode()) {
       case 'folder':
@@ -105,9 +115,7 @@ export const SourceImportPanel: Component<{
       </div>
 
       <form class="mt-4 space-y-3" onSubmit={(event) => void submit(event)}>
-        <p class="sr-only" role="status" aria-live="polite" aria-atomic="true">
-          {acceptedCount() === null ? '' : acceptedSourceImportStatus(acceptedCount()!)}
-        </p>
+        {acceptedStatus()}
         <Show when={mode() !== 'paste'} fallback={(
           <>
             <label class="form-control block">

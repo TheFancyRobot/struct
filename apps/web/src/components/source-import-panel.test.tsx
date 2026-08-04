@@ -80,12 +80,12 @@ describe('source import components', () => {
     expect(html).toMatch(/<label[^>]*>[\s\S]*?Select files to import[\s\S]*?<input[^>]*file-input[\s\S]*?<\/label>/)
   })
 
-  it('provides a persistent polite live region with an accurate accepted-source count', () => {
+  it('renders a polite live region only when an import has been accepted', () => {
     const html = renderToString(() => (
       <SourceImportPanel projectId={projectId} onAccepted={() => undefined} />
     ))
 
-    expect(html).toMatch(/<p(?=[^>]*role="status")(?=[^>]*aria-live="polite")(?=[^>]*aria-atomic="true")[^>]*>/)
+    expect(html).not.toContain('role="status"')
     expect(acceptedSourceImportStatus(1)).toBe('1 source accepted and processing')
     expect(acceptedSourceImportStatus(3)).toBe('3 sources accepted and processing')
   })
