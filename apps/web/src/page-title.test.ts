@@ -13,6 +13,7 @@ describe('BUG-0072 workspace page titles', () => {
     ['/projects/project-1/research/thread-1/runs/run-1', 'Research — Struct'],
     ['/projects/project-1/research/thread-1/citation/citation-1', 'Citation — Struct'],
     ['/projects/project-1/notebook', 'Notebook — Struct'],
+    ['/does-not-exist', 'Page Not Found — Struct'],
   ])('uses %s for %s', (pathname, title) => {
     expect(pageTitle(pathname, '')).toBe(title)
   })
