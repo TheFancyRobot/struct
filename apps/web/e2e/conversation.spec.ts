@@ -1,11 +1,18 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { mkdir } from 'node:fs/promises'
+import path from 'node:path'
 import { chromium } from 'playwright'
 import { startAppServer, stopAppServer } from './support/app-server'
+import { waitForThemeStyles } from './support/theme-readiness'
 
 const origin = 'http://127.0.0.1:4182'
 const projectId = 'd50e8400-e29b-41d4-a716-446655440001'
 const sourceId = 'd50e8400-e29b-41d4-a716-446655440002'
 const sourceVersionId = 'd50e8400-e29b-41d4-a716-446655440003'
+const secondRemovedSourceId = 'd50e8400-e29b-41d4-a716-446655440017'
+const secondRemovedSourceVersionId = 'd50e8400-e29b-41d4-a716-446655440018'
+const remainingSourceId = 'd50e8400-e29b-41d4-a716-446655440015'
+const remainingSourceVersionId = 'd50e8400-e29b-41d4-a716-446655440016'
 const threadId = 'd50e8400-e29b-41d4-a716-446655440004'
 const firstRunId = 'd50e8400-e29b-41d4-a716-446655440005'
 const followUpRunId = 'd50e8400-e29b-41d4-a716-446655440006'
@@ -17,11 +24,16 @@ const datasetSnapshotId = 'd50e8400-e29b-41d4-a716-446655440011'
 const querySnapshotId = 'd50e8400-e29b-41d4-a716-446655440012'
 const eventId = 'd50e8400-e29b-41d4-a716-446655440013'
 const sha = (digit: string) => `sha256:${digit.repeat(64)}`
+const removedSourceScreenshotRoot = path.resolve(
+  new URL('../../..', import.meta.url).pathname,
+  'docs/demos/removed-source-selection',
+)
 
 let browser: Awaited<ReturnType<typeof chromium.launch>>
 let web: Awaited<ReturnType<typeof startAppServer>>
 
 beforeAll(async () => {
+  await mkdir(removedSourceScreenshotRoot, { recursive: true })
   web = await startAppServer(4182)
   browser = await chromium.launch({ headless: true })
 })
@@ -32,6 +44,183 @@ afterAll(async () => {
 })
 
 describe('source-grounded conversation browser path', () => {
+  it('removes selected sources that become unavailable while preserving the draft and remaining submission', async () => {
+    const viewports = [
+      { width: 1440, height: 900 },
+      { width: 390, height: 844 },
+    ]
+    for (const removedCount of [1, 2] as const) {
+      for (const theme of ['light', 'dark'] as const) {
+        for (const viewport of viewports) {
+        const page = await browser.newPage({ viewport, reducedMotion: 'reduce' })
+        const submitted: unknown[] = []
+        let sourceIsReady = true
+        let secondRemovedSourceIsReady = true
+        let activityHasEmitted = false
+        let releaseActivity: (() => void) | undefined
+        let activityConnectedResolve: (() => void) | undefined
+        const activityConnected = new Promise<void>((resolve) => {
+          activityConnectedResolve = resolve
+        })
+        await page.addInitScript((selectedTheme) => {
+          window.localStorage.setItem('struct-theme', `struct-${selectedTheme}`)
+        }, theme)
+        await page.route('**/api/**', async (route) => {
+          const request = route.request()
+          const pathname = new URL(request.url()).pathname
+          const json = (body: unknown, status = 200) => route.fulfill({
+            status,
+            contentType: 'application/json',
+            body: JSON.stringify(body),
+          })
+          if (pathname === '/api/projects') {
+            return json({ items: [{ id: projectId, name: 'Selection project', createdAt: 1, updatedAt: 2 }], nextCursor: null })
+          }
+          if (pathname === `/api/projects/${projectId}`) {
+            return json({ id: projectId, name: 'Selection project', createdAt: 1, updatedAt: 2 })
+          }
+          if (pathname === `/api/projects/${projectId}/sources`) {
+            return json({
+              cursor: sourceIsReady && secondRemovedSourceIsReady ? '0' : '1',
+              items: [
+                {
+                  sourceId,
+                  name: 'removed-ready.md',
+                  kind: 'document',
+                  mediaType: 'text/markdown',
+                  latestVersionId: sourceIsReady ? sourceVersionId : null,
+                  latestVersion: sourceIsReady ? 1 : null,
+                  readiness: sourceIsReady ? 'ready' : 'failed',
+                  updatedAt: 1,
+                  job: { id: jobId, status: sourceIsReady ? 'completed' : 'failed', attempts: 1, maxAttempts: 3, updatedAt: 1 },
+                },
+                {
+                  sourceId: secondRemovedSourceId,
+                  name: 'also-removed-ready.md',
+                  kind: 'document',
+                  mediaType: 'text/markdown',
+                  latestVersionId: secondRemovedSourceIsReady ? secondRemovedSourceVersionId : null,
+                  latestVersion: secondRemovedSourceIsReady ? 1 : null,
+                  readiness: secondRemovedSourceIsReady ? 'ready' : 'failed',
+                  updatedAt: 1,
+                  job: { id: jobId, status: secondRemovedSourceIsReady ? 'completed' : 'failed', attempts: 1, maxAttempts: 3, updatedAt: 1 },
+                },
+                {
+                  sourceId: remainingSourceId,
+                  name: 'still-ready.md',
+                  kind: 'document',
+                  mediaType: 'text/markdown',
+                  latestVersionId: remainingSourceVersionId,
+                  latestVersion: 1,
+                  readiness: 'ready',
+                  updatedAt: 1,
+                  job: { id: jobId, status: 'completed', attempts: 1, maxAttempts: 3, updatedAt: 1 },
+                },
+              ],
+            })
+          }
+          if (pathname === `/api/projects/${projectId}/source-activity`) {
+            if (activityHasEmitted) {
+              return route.fulfill({ status: 200, contentType: 'text/event-stream', body: ': heartbeat\n\n' })
+            }
+            activityConnectedResolve?.()
+            await new Promise<void>((resolve) => { releaseActivity = resolve })
+            activityHasEmitted = true
+            return route.fulfill({
+              status: 200,
+              contentType: 'text/event-stream',
+              body: [sourceId, ...(removedCount === 2 ? [secondRemovedSourceId] : [])].map((failedSourceId, index) => (
+                `id: ${index + 1}\nevent: ingestion-failed\ndata: ${JSON.stringify({
+                  id: `${eventId.slice(0, -1)}${index + 3}`,
+                  cursor: '1',
+                  sourceId: failedSourceId,
+                  type: 'ingestion-failed',
+                  createdAt: 2,
+                })}\n\n`
+              )).join(''),
+            })
+          }
+          if (pathname === `/api/projects/${projectId}/research` && request.method() === 'GET') {
+            return json({ items: [] })
+          }
+          if (pathname === `/api/projects/${projectId}/research` && request.method() === 'POST') {
+            submitted.push(JSON.parse(request.postData() ?? '{}'))
+            return json({ threadId, runId: firstRunId, jobId, status: 'pending' }, 202)
+          }
+          if (pathname.startsWith(`/api/projects/${projectId}/runs/`)) {
+            return route.fulfill({ status: 200, contentType: 'text/event-stream', body: ': heartbeat\n\n' })
+          }
+          return route.fallback()
+        })
+
+        await page.goto(`${origin}/projects/${projectId}`)
+        await page.getByRole('checkbox', { name: 'removed-ready.md', exact: true }).waitFor()
+        await activityConnected
+        const removedCheckbox = page.getByRole('checkbox', { name: 'removed-ready.md', exact: true })
+        const secondRemovedCheckbox = page.getByRole('checkbox', { name: 'also-removed-ready.md' })
+        await removedCheckbox.uncheck()
+        await removedCheckbox.check()
+        await secondRemovedCheckbox.uncheck()
+        await secondRemovedCheckbox.check()
+        await page.getByRole('textbox', { name: 'Ask your sources' }).fill('Keep this draft')
+
+        sourceIsReady = false
+        secondRemovedSourceIsReady = removedCount === 1
+        releaseActivity?.()
+
+        const status = page.getByRole('status')
+        await status.waitFor()
+        expect(await status.count()).toBe(1)
+        expect(await status.textContent()).toBe(
+          removedCount === 1
+            ? 'A source that is no longer ready was removed from this question.'
+            : '2 sources that are no longer ready were removed from this question.',
+        )
+        expect(await page.getByRole('checkbox', { name: 'removed-ready.md', exact: true }).count()).toBe(0)
+        expect(await page.getByRole('checkbox', { name: 'also-removed-ready.md' }).count()).toBe(removedCount === 1 ? 1 : 0)
+        if (removedCount === 1) {
+          expect(await page.getByRole('checkbox', { name: 'also-removed-ready.md' }).isChecked()).toBe(true)
+        }
+        expect(await page.getByRole('checkbox', { name: 'still-ready.md' }).isChecked()).toBe(true)
+        expect(await page.getByRole('textbox', { name: 'Ask your sources' }).inputValue()).toBe('Keep this draft')
+        expect(await page.evaluate(() => {
+          const key = Object.keys(window.sessionStorage).find((item) => item.startsWith('struct:conversation:'))
+          return key === undefined ? null : JSON.parse(window.sessionStorage.getItem(key) ?? 'null')
+        })).toEqual({
+          draft: 'Keep this draft',
+          selected: removedCount === 1
+            ? [remainingSourceVersionId, secondRemovedSourceVersionId]
+            : [remainingSourceVersionId],
+          selectionTouched: true,
+        })
+        await waitForThemeStyles(page, theme)
+        expect(await page.locator('.app-shell').getAttribute('data-theme')).toBe(`struct-${theme}`)
+        expect(await page.locator('html').getAttribute('data-theme')).toBe(`struct-${theme}`)
+        const overflow = await page.evaluate(() => ({
+          viewport: window.innerWidth,
+          document: document.documentElement.scrollWidth,
+          body: document.body.scrollWidth,
+        }))
+        expect(overflow.document).toBeLessThanOrEqual(overflow.viewport)
+        expect(overflow.body).toBeLessThanOrEqual(overflow.viewport)
+        await page.screenshot({
+          path: path.join(removedSourceScreenshotRoot, `${removedCount === 1 ? '' : 'plural-'}${viewport.width}x${viewport.height}-${theme}.png`),
+          fullPage: false,
+        })
+        await page.getByRole('button', { name: 'Start research' }).click()
+        await page.waitForURL(`**/projects/${projectId}/research/${threadId}/runs/${firstRunId}`)
+        expect(submitted).toEqual([{
+          question: 'Keep this draft',
+          sourceVersionIds: removedCount === 1
+            ? [remainingSourceVersionId, secondRemovedSourceVersionId]
+            : [remainingSourceVersionId],
+        }])
+        await page.close()
+      }
+    }
+    }
+  })
+
   it('starts, reloads, and continues one durable thread with the selected ready version', async () => {
     const page = await browser.newPage()
     const submitted: unknown[] = []
