@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars -- Babel does not mark Solid JSX imports as used. */
 import { describe, expect, it } from 'bun:test'
 import { renderToString } from 'solid-js/web'
-import { searchHasNoResults, WorkspaceShell } from './WorkspaceShell'
+import { searchHasNoResults, SourceCatalogEmptyState, WorkspaceShell } from './WorkspaceShell'
 import { useWorkspaceState, WorkspaceStateProvider } from './workspace-state'
 
 describe('workspace shell', () => {
@@ -12,6 +12,35 @@ describe('workspace shell', () => {
     expect(searchHasNoResults('', 0, true)).toBe(false)
     expect(searchHasNoResults('zzzz-no-project', 0, false)).toBe(false)
     expect(searchHasNoResults('project', 1, true)).toBe(false)
+  })
+
+  it('renders source empty states only after the catalog settles', () => {
+    const catalog = { items: [], cursor: '0' } as const
+    const renderEmptyState = (
+      value: typeof catalog | null | undefined,
+      loading: boolean,
+      query: string,
+    ) => renderToString(() => (
+      <ul>
+        <SourceCatalogEmptyState
+          catalog={value}
+          loading={loading}
+          query={query}
+          resultCount={0}
+        />
+      </ul>
+    ))
+
+    expect(renderEmptyState(undefined, true, 'missing')).not.toContain('No documents loaded.')
+    expect(renderEmptyState(null, false, 'missing')).not.toContain('No matching sources.')
+    expect(renderEmptyState(catalog, true, 'missing')).not.toContain('No matching sources.')
+
+    const noResults = renderEmptyState(catalog, false, 'missing')
+    expect(noResults).toContain('role="status">No matching sources.</li>')
+
+    const emptyCatalog = renderEmptyState(catalog, false, '')
+    expect(emptyCatalog).toContain('No documents loaded.')
+    expect(emptyCatalog).not.toContain('role="status"')
   })
 
   // BUG-0070: the project list must be a single shared resource on the
