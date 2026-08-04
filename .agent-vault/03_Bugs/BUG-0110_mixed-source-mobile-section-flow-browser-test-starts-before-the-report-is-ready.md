@@ -66,11 +66,13 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 - Describe the intended durable fix.
 - Implemented: `openDemo` now waits for the rendered `Renewal risk synthesis` heading after the successful response. All mixed-source browser scenarios therefore begin only after the shared Solid report shell is mounted.
+- PR #145 review remediation (2026-08-04): replaced the copied report-title lookup in `openDemo` with the stable `#mixed-source-title` readiness locator and removed the two equivalent post-`openDemo` heading waits. The helper remains the single readiness boundary while title wording can evolve.
 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
 - Covered by the shared `openDemo` readiness boundary used by the focused mobile section-flow browser scenario and every other mixed-source report state. The focused spec passed three consecutive runs (6 tests each; 18 total passing test executions).
+- PR #145 remediation validation (2026-08-04): `cd apps/web && bun test --timeout 60000 --max-concurrency 1 ./e2e/mixed-source-report.spec.ts` passed all 6 tests with 174 assertions, including the mobile section-flow scenario.
 
 ## Related Notes
 
