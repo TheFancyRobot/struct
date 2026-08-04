@@ -379,6 +379,18 @@ export const WorkspaceNavigation: ParentComponent<{
         >
           {props.theme === 'struct-light' ? 'Dark' : 'Light'} theme
         </button>
+        {/* BUG-0095: while the mobile navigation sheet is open, its backdrop
+            intercepts the top-bar theme control. Keep the global action in the
+            sheet footer as well so it remains reachable without dismissing the
+            drawer. */}
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm w-full justify-start md:hidden"
+          aria-label={`Switch to ${props.theme === 'struct-light' ? 'dark' : 'light'} theme`}
+          onClick={props.onToggleTheme}
+        >
+          {props.theme === 'struct-light' ? 'Dark' : 'Light'} theme
+        </button>
       </div>
       <p class="px-2 py-3 text-xs leading-relaxed text-base-content/60">
         Source-grounded research with inspectable evidence.

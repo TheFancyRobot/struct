@@ -100,9 +100,16 @@ describe('responsive workspace browser contract', () => {
     expect((await addProject.boundingBox())!.height).toBeGreaterThanOrEqual(44)
     expect((await addSource.boundingBox())!.height).toBeGreaterThanOrEqual(44)
 
+    // BUG-0095: the top-bar switch is covered by the mobile sheet backdrop, so
+    // the drawer itself must expose a working global theme action.
+    const navigationSheet = page.getByRole('dialog', { name: 'Workspace navigation' })
+    const drawerThemeToggle = navigationSheet.getByRole('button', { name: 'Switch to dark theme' })
+    expect(await drawerThemeToggle.count()).toBe(1)
+    await drawerThemeToggle.click()
+    expect(await page.locator('html').getAttribute('data-theme')).toBe('struct-dark')
+
     // BUG-0071: ordinary mobile activation closes the sheet before the
     // deferred focus is moved to the import heading.
-    const navigationSheet = page.getByRole('dialog', { name: 'Workspace navigation' })
     await addSource.click()
     await page.waitForURL(`${origin}/sources#source-import-heading`)
     await sourceImportHeading.waitFor()
