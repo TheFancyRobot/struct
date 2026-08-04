@@ -9,7 +9,7 @@ import {
   type SourceCatalogItem,
 } from '@struct/domain'
 import { BackgroundActivityTray } from './BackgroundActivityTray'
-import { SourceImportPanel } from './SourceImportPanel'
+import { acceptedSourceImportStatus, SourceImportPanel } from './SourceImportPanel'
 
 const projectId = ProjectId.make('b50e8400-e29b-41d4-a716-446655440001')
 
@@ -78,6 +78,16 @@ describe('source import components', () => {
     expect(html).toContain('Select files to import')
     // The label must wrap the input so axe associates them (implicit labeling).
     expect(html).toMatch(/<label[^>]*>[\s\S]*?Select files to import[\s\S]*?<input[^>]*file-input[\s\S]*?<\/label>/)
+  })
+
+  it('renders a polite live region only when an import has been accepted', () => {
+    const html = renderToString(() => (
+      <SourceImportPanel projectId={projectId} onAccepted={() => undefined} />
+    ))
+
+    expect(html).not.toContain('role="status"')
+    expect(acceptedSourceImportStatus(1)).toBe('1 source accepted and processing')
+    expect(acceptedSourceImportStatus(3)).toBe('3 sources accepted and processing')
   })
 
   it('keeps failed work actionable without hiding successful source history', () => {
