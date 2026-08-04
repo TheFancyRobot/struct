@@ -54,6 +54,25 @@ describe('workspace shell', () => {
     expect((html.match(/aria-current="page"/g) ?? [])).toHaveLength(1)
   })
 
+  it('marks the source library, not its import anchor, as current on the global sources route', () => {
+    const html = renderToString(() => (
+      <WorkspaceStateProvider projectId={null}>
+        <WorkspaceShell
+          theme="struct-light"
+          onToggleTheme={() => undefined}
+          currentPathname="/sources"
+        >
+          <p>Sources</p>
+        </WorkspaceShell>
+      </WorkspaceStateProvider>
+    ))
+
+    expect(html).toContain('href="/sources#source-import-heading"')
+    expect(html).toContain('href="/sources" aria-current="page">Manage source library</a>')
+    expect(html).not.toContain('href="/sources#source-import-heading" aria-current="page"')
+    expect((html.match(/aria-current="page"/g) ?? [])).toHaveLength(1)
+  })
+
   it('provides a focus-visible skip link to the focusable main content region', () => {
     const html = renderToString(() => (
       <WorkspaceStateProvider projectId="project-a">
