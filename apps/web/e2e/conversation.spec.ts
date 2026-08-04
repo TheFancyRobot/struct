@@ -9,6 +9,8 @@ const origin = 'http://127.0.0.1:4182'
 const projectId = 'd50e8400-e29b-41d4-a716-446655440001'
 const sourceId = 'd50e8400-e29b-41d4-a716-446655440002'
 const sourceVersionId = 'd50e8400-e29b-41d4-a716-446655440003'
+const secondRemovedSourceId = 'd50e8400-e29b-41d4-a716-446655440017'
+const secondRemovedSourceVersionId = 'd50e8400-e29b-41d4-a716-446655440018'
 const remainingSourceId = 'd50e8400-e29b-41d4-a716-446655440015'
 const remainingSourceVersionId = 'd50e8400-e29b-41d4-a716-446655440016'
 const threadId = 'd50e8400-e29b-41d4-a716-446655440004'
@@ -42,16 +44,18 @@ afterAll(async () => {
 })
 
 describe('source-grounded conversation browser path', () => {
-  it('removes a selected source that becomes unavailable while preserving the draft and remaining submission', async () => {
+  it('removes selected sources that become unavailable while preserving the draft and remaining submission', async () => {
     const viewports = [
       { width: 1440, height: 900 },
       { width: 390, height: 844 },
     ]
-    for (const theme of ['light', 'dark'] as const) {
-      for (const viewport of viewports) {
+    for (const removedCount of [1, 2] as const) {
+      for (const theme of ['light', 'dark'] as const) {
+        for (const viewport of viewports) {
         const page = await browser.newPage({ viewport, reducedMotion: 'reduce' })
         const submitted: unknown[] = []
         let sourceIsReady = true
+        let secondRemovedSourceIsReady = true
         let releaseActivity: (() => void) | undefined
         let activityConnectedResolve: (() => void) | undefined
         const activityConnected = new Promise<void>((resolve) => {
@@ -76,7 +80,7 @@ describe('source-grounded conversation browser path', () => {
           }
           if (pathname === `/api/projects/${projectId}/sources`) {
             return json({
-              cursor: sourceIsReady ? '0' : '1',
+              cursor: sourceIsReady && secondRemovedSourceIsReady ? '0' : '1',
               items: [
                 {
                   sourceId,
@@ -88,6 +92,17 @@ describe('source-grounded conversation browser path', () => {
                   readiness: sourceIsReady ? 'ready' : 'failed',
                   updatedAt: 1,
                   job: { id: jobId, status: sourceIsReady ? 'completed' : 'failed', attempts: 1, maxAttempts: 3, updatedAt: 1 },
+                },
+                {
+                  sourceId: secondRemovedSourceId,
+                  name: 'also-removed-ready.md',
+                  kind: 'document',
+                  mediaType: 'text/markdown',
+                  latestVersionId: secondRemovedSourceIsReady ? secondRemovedSourceVersionId : null,
+                  latestVersion: secondRemovedSourceIsReady ? 1 : null,
+                  readiness: secondRemovedSourceIsReady ? 'ready' : 'failed',
+                  updatedAt: 1,
+                  job: { id: jobId, status: secondRemovedSourceIsReady ? 'completed' : 'failed', attempts: 1, maxAttempts: 3, updatedAt: 1 },
                 },
                 {
                   sourceId: remainingSourceId,
@@ -109,13 +124,15 @@ describe('source-grounded conversation browser path', () => {
             return route.fulfill({
               status: 200,
               contentType: 'text/event-stream',
-              body: `id: 1\nevent: ingestion-failed\ndata: ${JSON.stringify({
-                id: eventId,
-                cursor: '1',
-                sourceId,
-                type: 'ingestion-failed',
-                createdAt: 2,
-              })}\n\n`,
+              body: [sourceId, ...(removedCount === 2 ? [secondRemovedSourceId] : [])].map((failedSourceId, index) => (
+                `id: ${index + 1}\nevent: ingestion-failed\ndata: ${JSON.stringify({
+                  id: `${eventId.slice(0, -1)}${index + 3}`,
+                  cursor: '1',
+                  sourceId: failedSourceId,
+                  type: 'ingestion-failed',
+                  createdAt: 2,
+                })}\n\n`
+              )).join(''),
             })
           }
           if (pathname === `/api/projects/${projectId}/research` && request.method() === 'GET') {
@@ -132,20 +149,32 @@ describe('source-grounded conversation browser path', () => {
         })
 
         await page.goto(`${origin}/projects/${projectId}`)
-        await page.getByRole('checkbox', { name: 'removed-ready.md' }).waitFor()
+        await page.getByRole('checkbox', { name: 'removed-ready.md', exact: true }).waitFor()
         await activityConnected
-        const removedCheckbox = page.getByRole('checkbox', { name: 'removed-ready.md' })
+        const removedCheckbox = page.getByRole('checkbox', { name: 'removed-ready.md', exact: true })
+        const secondRemovedCheckbox = page.getByRole('checkbox', { name: 'also-removed-ready.md' })
         await removedCheckbox.uncheck()
         await removedCheckbox.check()
+        await secondRemovedCheckbox.uncheck()
+        await secondRemovedCheckbox.check()
         await page.getByRole('textbox', { name: 'Ask your sources' }).fill('Keep this draft')
 
         sourceIsReady = false
+        secondRemovedSourceIsReady = removedCount === 1
         releaseActivity?.()
 
         const status = page.getByRole('status')
         await status.waitFor()
-        expect(await status.textContent()).toBe('A source that is no longer ready was removed from this question.')
-        expect(await page.getByRole('checkbox', { name: 'removed-ready.md' }).count()).toBe(0)
+        expect(await status.textContent()).toBe(
+          removedCount === 1
+            ? 'A source that is no longer ready was removed from this question.'
+            : '2 sources that are no longer ready were removed from this question.',
+        )
+        expect(await page.getByRole('checkbox', { name: 'removed-ready.md', exact: true }).count()).toBe(0)
+        expect(await page.getByRole('checkbox', { name: 'also-removed-ready.md' }).count()).toBe(removedCount === 1 ? 1 : 0)
+        if (removedCount === 1) {
+          expect(await page.getByRole('checkbox', { name: 'also-removed-ready.md' }).isChecked()).toBe(true)
+        }
         expect(await page.getByRole('checkbox', { name: 'still-ready.md' }).isChecked()).toBe(true)
         expect(await page.getByRole('textbox', { name: 'Ask your sources' }).inputValue()).toBe('Keep this draft')
         expect(await page.evaluate(() => {
@@ -153,7 +182,9 @@ describe('source-grounded conversation browser path', () => {
           return key === undefined ? null : JSON.parse(window.sessionStorage.getItem(key) ?? 'null')
         })).toEqual({
           draft: 'Keep this draft',
-          selected: [remainingSourceVersionId],
+          selected: removedCount === 1
+            ? [remainingSourceVersionId, secondRemovedSourceVersionId]
+            : [remainingSourceVersionId],
           selectionTouched: true,
         })
         await waitForThemeStyles(page, theme)
@@ -167,17 +198,20 @@ describe('source-grounded conversation browser path', () => {
         expect(overflow.document).toBeLessThanOrEqual(overflow.viewport)
         expect(overflow.body).toBeLessThanOrEqual(overflow.viewport)
         await page.screenshot({
-          path: path.join(removedSourceScreenshotRoot, `${viewport.width}x${viewport.height}-${theme}.png`),
+          path: path.join(removedSourceScreenshotRoot, `${removedCount === 1 ? '' : 'plural-'}${viewport.width}x${viewport.height}-${theme}.png`),
           fullPage: false,
         })
         await page.getByRole('button', { name: 'Start research' }).click()
         await page.waitForURL(`**/projects/${projectId}/research/${threadId}/runs/${firstRunId}`)
         expect(submitted).toEqual([{
           question: 'Keep this draft',
-          sourceVersionIds: [remainingSourceVersionId],
+          sourceVersionIds: removedCount === 1
+            ? [remainingSourceVersionId, secondRemovedSourceVersionId]
+            : [remainingSourceVersionId],
         }])
         await page.close()
       }
+    }
     }
   })
 
