@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Mixed source dark dataset definition labels fail contrast
 bug_id: BUG-0099
-status: new
+status: fixed
 severity: sev-2
 category: accessibility
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-03'
+owner: Codex
 created: '2026-07-28'
-updated: '2026-07-30'
+updated: '2026-08-03'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -77,12 +77,14 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - Raise the `text-base-content` opacity on the `<dt>` definition labels at `MixedSourceReport.tsx:433` from `/50` to a value that clears 4.5:1 in dark mode (e.g., `/60`–`/65`), or switch to a dedicated muted token meeting AA in both themes.
 - Re-run the `.local/ui-audit/demo/a11y/` axe suite across all dark demo states and confirm the four `dt` nodes pass `color-contrast`.
 - (No code change in this task — contract fill only.)
+- Implemented: raised the dataset definition `<dt>` labels from `text-base-content/50` to `/65`, providing a margin above AA in dark mode while keeping the existing semantic structure and token family.
 
 ## Regression Coverage Needed
 
 - Add an axe `color-contrast` assertion (or `contrast-unique.json` snapshot gate) over the mixed-source dark `complete`, `live`, `cancelled`, and `reconnecting` states, asserting the four `.p-2.bg-base-100 > dt` labels measure ≥ 4.5:1.
 - Extend the existing `.local/ui-audit` run to fail on regressions of the dataset definition `dt` contrast.
 - Add a component test asserting the `<dt>` no longer uses `/50` (or asserts computed contrast ≥ 4.5:1).
+- Added server-rendered coverage verifying `Unit`, `Window`, `Cohort`, and `Denominator` use `text-base-content/65` and no longer use the failing `/50` class.
 
 ## Related Notes
 
@@ -97,3 +99,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-03: Fixed the dark-mode dataset definition label contrast and added targeted regression coverage.

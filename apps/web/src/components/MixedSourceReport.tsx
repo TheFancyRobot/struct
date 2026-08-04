@@ -430,7 +430,7 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
                       <For each={evidence.semantics}>
                         {(semantic) => (
                           <div class="bg-base-100 p-2">
-                            <dt class="text-xs text-base-content/50">{semantic.label}</dt>
+                            <dt class="text-xs text-base-content/65">{semantic.label}</dt>
                             <dd class="mt-0.5 text-sm font-medium">{semantic.value}</dd>
                           </div>
                         )}
