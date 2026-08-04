@@ -86,4 +86,16 @@ describe('mixed-source report Solid component', () => {
     expect(html).toMatch(/<small class="[^"]*text-base-content\/65[^"]*">BIGINT<\/small>/)
     expect(html).not.toMatch(/<small class="[^"]*text-base-content\/45[^"]*">(?:VARCHAR|BIGINT)<\/small>/)
   })
+
+  it('uses the AA-contrast class for compact dataset definition labels', () => {
+    const html = renderToString(() => (
+      <MixedSourceReport report={mixedSourceDemoFixture('complete')} />
+    ))
+
+    expect(html).toMatch(/<dt class="[^"]*text-base-content\/65[^"]*">Unit<\/dt>/)
+    expect(html).toMatch(/<dt class="[^"]*text-base-content\/65[^"]*">Window<\/dt>/)
+    expect(html).toMatch(/<dt class="[^"]*text-base-content\/65[^"]*">Cohort<\/dt>/)
+    expect(html).toMatch(/<dt class="[^"]*text-base-content\/65[^"]*">Denominator<\/dt>/)
+    expect(html).not.toMatch(/<dt class="[^"]*text-base-content\/50[^"]*">(?:Unit|Window|Cohort|Denominator)<\/dt>/)
+  })
 })
