@@ -11,10 +11,10 @@ branch: ''
 phase: '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usable research workspace]]'
 context:
   context_id: SESSION-2026-08-05-035906
-  status: active
+  status: completed
   updated_at: '2026-08-05T03:59:06.435Z'
   current_focus:
-    summary: Advance [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]].
+    summary: BUG-0095 mobile theme access re-validated; no remaining Step 07 work.
     target: '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   resume_target:
     type: step
@@ -68,7 +68,10 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Changed Paths
 
 <!-- AGENT-START:session-changed-paths -->
-- None yet.
+- `apps/web/src/components/workspace/WorkspaceShell.tsx` — mobile navigation-sheet theme toggle.
+- `apps/web/src/components/workspace/workspace-shell.test.tsx` — breakpoint-specific render regression coverage.
+- `apps/web/e2e/workspace-responsive.spec.ts` — Chromium mobile drawer activation coverage.
+- `03_Bugs/BUG-0095_mobile-project-navigation-drawer-makes-theme-switching-unreachable.md` — durable BUG-0095 record.
 <!-- AGENT-END:session-changed-paths -->
 - `apps/web/src/components/workspace/WorkspaceShell.tsx` — mobile navigation-sheet theme toggle.
 - `apps/web/src/components/workspace/workspace-shell.test.tsx` — breakpoint-specific render regression coverage.
@@ -78,9 +81,9 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Validation Run
 
 <!-- AGENT-START:session-validation-run -->
-- Command: not run yet
-- Result: not run
-- Notes: 
+- Focused Solid render test — passed (9 tests, 57 expectations).
+- Web typecheck — passed.
+- Chromium responsive browser contract — passed (9 tests, 145 expectations).
 <!-- AGENT-END:session-validation-run -->
 - Command: `bun test --preload ./test/solid-test-preload.ts --max-concurrency 1 src/components/workspace/workspace-shell.test.tsx`
 - Result: passed — 9 tests, 57 expectations.
@@ -92,7 +95,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Bugs Encountered
 
 <!-- AGENT-START:session-bugs-encountered -->
-- None.
+- [[03_Bugs/BUG-0095_mobile-project-navigation-drawer-makes-theme-switching-unreachable|BUG-0095]] — confirmed fixed and re-validated.
 <!-- AGENT-END:session-bugs-encountered -->
 - [[03_Bugs/BUG-0095_mobile-project-navigation-drawer-makes-theme-switching-unreachable|BUG-0095]] — confirmed fixed and re-validated.
 
@@ -105,7 +108,7 @@ Use one note per meaningful work session. Record chronology, validation, and han
 ## Follow-Up Work
 
 <!-- AGENT-START:session-follow-up-work -->
-- [ ] Continue [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]].
+- [x] Re-validate BUG-0095 in a real browser at the mobile breakpoint.
 <!-- AGENT-END:session-follow-up-work -->
 - [x] Re-validate BUG-0095 in a real browser at the mobile breakpoint.
 - No remaining BUG-0095 follow-up.
