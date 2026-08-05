@@ -152,10 +152,7 @@ export const campaignGates: readonly CampaignGate[] = [
   },
   {
     id: 'playwright-accessibility-responsive-ui',
-    command: [
-      'bun', 'test', '--timeout', '60000', '--max-concurrency', '1',
-      './apps/web/e2e',
-    ],
+    command: ['bun', 'run', 'test:e2e'],
     maximumMilliseconds: 180_000,
   },
   { id: 'typecheck', command: ['bun', 'run', 'typecheck'], maximumMilliseconds: 180_000 },

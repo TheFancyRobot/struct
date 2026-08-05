@@ -52,4 +52,9 @@ describe('v1 evaluation campaign inventory', () => {
     expect(campaignGates.find(({ id }) => id === 'lint')?.command)
       .toEqual(['bun', '--bun', 'eslint', '.', '--max-warnings', '0'])
   })
+
+  it('uses the isolated E2E runner for the browser gate', () => {
+    expect(campaignGates.find(({ id }) => id === 'playwright-accessibility-responsive-ui')?.command)
+      .toEqual(['bun', 'run', 'test:e2e'])
+  })
 })

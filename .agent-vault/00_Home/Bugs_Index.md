@@ -29,8 +29,8 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 <!-- AGENT-START:bugs-index -->
 _Last rebuilt: 2026-08-05._
 
-- Notes indexed: 101
-- Status summary: fixed (96), invalid (5)
+- Notes indexed: 102
+- Status summary: fixed (97), invalid (5)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -59,6 +59,7 @@ _Last rebuilt: 2026-08-05._
 | BUG-0113 | [Workspace skip link falls below the touch-target baseline](../03_Bugs/BUG-0113_workspace-skip-link-falls-below-the-touch-target-baseline.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
 | BUG-0114 | [Source-import E2E suite shares an unstable server lifecycle](../03_Bugs/BUG-0114_source-import-e2e-suite-shares-an-unstable-server-lifecycle.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
 | BUG-0115 | [Release journey E2E does not reliably await source readiness](../03_Bugs/BUG-0115_release-journey-e2e-does-not-reliably-await-source-readiness.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
+| BUG-0116 | [Full v1 browser gate leaves dangling lifecycle and source readiness failures](../03_Bugs/BUG-0116_full-v1-browser-gate-leaves-dangling-lifecycle-and-source-readiness-failures.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
 | BUG-0109 | [Responsive workspace suite does not execute the desktop-pane regression](../03_Bugs/BUG-0109_responsive-workspace-suite-does-not-execute-the-desktop-pane-regression.md) | fixed | sev-3 | 2026-08-04 | 2026-08-04 | - |
 | BUG-0110 | [Mixed-source mobile section-flow browser test starts before the report is ready](../03_Bugs/BUG-0110_mixed-source-mobile-section-flow-browser-test-starts-before-the-report-is-ready.md) | fixed | sev-3 | 2026-08-04 | 2026-08-04 | - |
 | BUG-0106 | [Project list API exposes workspace IDs despite its response contract](../03_Bugs/BUG-0106_project-list-api-exposes-workspace-ids-despite-its-response-contract.md) | fixed | sev-3 | 2026-08-01 | 2026-08-03 | - |
