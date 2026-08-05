@@ -85,6 +85,7 @@ related_bugs:
   - '[[03_Bugs/BUG-0109_responsive-workspace-suite-does-not-execute-the-desktop-pane-regression|BUG-0109 Responsive workspace suite does not execute the desktop-pane regression]]'
   - '[[03_Bugs/BUG-0110_mixed-source-mobile-section-flow-browser-test-starts-before-the-report-is-ready|BUG-0110 Mixed-source mobile section-flow browser test starts before the report is ready]]'
   - '[[03_Bugs/BUG-0114_source-import-e2e-suite-shares-an-unstable-server-lifecycle|BUG-0114 Source-import E2E suite shares an unstable server lifecycle]]'
+  - '[[03_Bugs/BUG-0115_release-journey-e2e-does-not-reliably-await-source-readiness|BUG-0115 Release journey E2E does not reliably await source readiness]]'
 tags:
   - agent-vault
   - phase
@@ -241,6 +242,7 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - [[03_Bugs/BUG-0109_responsive-workspace-suite-does-not-execute-the-desktop-pane-regression|BUG-0109 Responsive workspace suite does not execute the desktop-pane regression]]
 - [[03_Bugs/BUG-0110_mixed-source-mobile-section-flow-browser-test-starts-before-the-report-is-ready|BUG-0110 Mixed-source mobile section-flow browser test starts before the report is ready]]
 - [[03_Bugs/BUG-0114_source-import-e2e-suite-shares-an-unstable-server-lifecycle|BUG-0114 Source-import E2E suite shares an unstable server lifecycle]]
+- [[03_Bugs/BUG-0115_release-journey-e2e-does-not-reliably-await-source-readiness|BUG-0115 Release journey E2E does not reliably await source readiness]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps
