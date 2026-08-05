@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { chromium } from 'playwright'
 import { startAppServer, stopAppServer } from './support/app-server'
 
@@ -11,12 +11,12 @@ const jobId = 'c50e8400-e29b-41d4-a716-446655440003'
 let browser: Awaited<ReturnType<typeof chromium.launch>>
 let web: Awaited<ReturnType<typeof startAppServer>>
 
-beforeAll(async () => {
+beforeEach(async () => {
   web = await startAppServer(4201)
   browser = await chromium.launch({ headless: true })
 })
 
-afterAll(async () => {
+afterEach(async () => {
   await browser?.close()
   await stopAppServer(web)
 })
@@ -86,7 +86,7 @@ describe('source import browser path', () => {
       })
     })
 
-    await page.goto(`${origin}/projects/${projectId}/sources`)
+    await page.goto(`${origin}/projects/${projectId}/sources`, { waitUntil: 'domcontentloaded' })
     await page.locator('input[type="file"]').setInputFiles({
       name: 'notes.md',
       mimeType: 'text/markdown',
@@ -118,7 +118,7 @@ describe('source import browser path', () => {
       })
     })
 
-    await page.goto(`${origin}/projects/${projectId}/sources`)
+    await page.goto(`${origin}/projects/${projectId}/sources`, { waitUntil: 'domcontentloaded' })
     await page.getByRole('alert').filter({ hasText: 'Live progress became unavailable' }).waitFor()
     expect(await page.getByRole('button', { name: 'Reload' }).count()).toBe(1)
     await page.close()
@@ -159,7 +159,7 @@ describe('source import browser path', () => {
       await route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"SourceJobControlUnavailable"}' })
     })
 
-    await page.goto(`${origin}/projects/${projectId}/sources`)
+    await page.goto(`${origin}/projects/${projectId}/sources`, { waitUntil: 'domcontentloaded' })
     await page.getByRole('button', { name: 'Retry' }).click()
     await page.getByRole('alert').filter({ hasText: 'The source job could not be updated' }).waitFor()
     expect(await page.getByRole('button', { name: 'Retry' }).count()).toBe(1)
@@ -187,7 +187,7 @@ describe('source import browser path', () => {
           }),
         }))
 
-        await page.goto(`${origin}/sources`)
+        await page.goto(`${origin}/sources`, { waitUntil: 'domcontentloaded' })
         const importPanel = page.locator('section[aria-labelledby="source-import-heading"]')
         await importPanel.waitFor()
         const pageHeading = page.getByRole('heading', { name: 'Source library', level: 1 })
@@ -250,7 +250,7 @@ describe('source import browser path', () => {
         await route.fulfill({ status: 200, contentType: 'text/event-stream', body: ': heartbeat\n\n' })
       })
 
-      await page.goto(`${origin}/projects/${projectId}/sources`)
+      await page.goto(`${origin}/projects/${projectId}/sources`, { waitUntil: 'domcontentloaded' })
       await page.locator('input[type="file"]').setInputFiles({
         name: 'notes.md',
         mimeType: 'text/markdown',
@@ -288,24 +288,15 @@ describe('source import browser path', () => {
   it('renders the add-source form fields and options even when the source catalog cannot be loaded', async () => {
     const page = await browser.newPage()
     try {
-      await page.route(`**/api/projects/${projectId}/sources`, async (route) => {
-        if (route.request().method() === 'GET') {
-          await route.fulfill({
-            status: 503,
-            contentType: 'application/json',
-            body: JSON.stringify({ error: 'SourceCatalogUnavailable' }),
-          })
-          return
-        }
+      await page.route('**/api/sources', async (route) => {
         await route.fulfill({
-          status: 202, contentType: 'application/json',
-          body: JSON.stringify({ clientBatchId: 'c0000000-0000-0000-0000-000000000001', replayed: false, accepted: [], rejected: [] }) })
-      })
-      await page.route(`**/api/projects/${projectId}/source-activity**`, async (route) => {
-        await route.fulfill({ status: 200, contentType: 'text/event-stream', body: ': heartbeat\n\n' })
+          status: 503,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'SourceCatalogUnavailable' }),
+        })
       })
 
-      await page.goto(`${origin}/projects/${projectId}/sources`)
+      await page.goto(`${origin}/sources`, { waitUntil: 'domcontentloaded' })
       const panel = page.locator('section[aria-labelledby="source-import-heading"]')
       await panel.waitFor()
 
@@ -344,7 +335,7 @@ describe('source import browser path', () => {
         body: JSON.stringify({ cursor: '0', items: [] }),
       }))
 
-      await page.goto(`${origin}/sources`)
+      await page.goto(`${origin}/sources`, { waitUntil: 'domcontentloaded' })
       await page.getByRole('heading', { name: 'Source library', level: 1 }).waitFor()
       // Reveal the workspace navigation search inputs, which are hidden behind the
       // mobile sheet until it is opened.
