@@ -7,7 +7,7 @@ phase_id: PHASE-11
 status: planned
 owner: ''
 created: '2026-07-17'
-updated: '2026-07-26'
+updated: '2026-08-05'
 depends_on:
   - '[[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]]'
 related_architecture:
@@ -19,6 +19,8 @@ related_decisions: []
 related_bugs:
   - '[[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]'
   - '[[03_Bugs/BUG-0106_project-list-api-exposes-workspace-ids-despite-its-response-contract|BUG-0106 Project list API exposes workspace IDs despite its response contract]]'
+  - '[[03_Bugs/BUG-0123_phase-11-status-conflicts-with-the-active-context|BUG-0123 Phase 11 status conflicts with the active context]]'
+  - '[[03_Bugs/BUG-0124_vault-link-metadata-and-managed-blocks-drift-from-their-contract|BUG-0124 Vault link metadata and managed blocks drift from their contract]]'
 tags:
   - agent-vault
   - phase
@@ -51,7 +53,6 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 ## Dependencies
 
 - Depends on [[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]].
-- Blocked by [[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]] until its fix is validated and merged.
 
 ## Acceptance Criteria
 
@@ -70,7 +71,7 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 
 <!-- AGENT-START:phase-linear-context -->
 - Previous phase: [[02_Phases/Phase_10B_brand_implementation/Phase|PHASE-10B Brand Implementation]]
-- Current phase status: blocked by [[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]
+- Current phase status: planned
 - Next phase: [[02_Phases/Phase_12_v1_2_additional_sources/Phase|PHASE-12 v1.2 Additional Sources]]
 <!-- AGENT-END:phase-linear-context -->
 
@@ -94,8 +95,9 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 <!-- AGENT-START:phase-related-bugs -->
 - [[03_Bugs/BUG-0047_source-import-notice-ignores-the-source-library-content-gutter|BUG-0047 Source import notice ignores the source library content gutter]]
 - [[03_Bugs/BUG-0106_project-list-api-exposes-workspace-ids-despite-its-response-contract|BUG-0106 Project list API exposes workspace IDs despite its response contract]]
-<!-- AGENT-END:phase-related-bugs -->
 - [[03_Bugs/BUG-0123_phase-11-status-conflicts-with-the-active-context|BUG-0123 Phase 11 status conflicts with the active context]]
+- [[03_Bugs/BUG-0124_vault-link-metadata-and-managed-blocks-drift-from-their-contract|BUG-0124 Vault link metadata and managed blocks drift from their contract]]
+<!-- AGENT-END:phase-related-bugs -->
 
 ## Steps
 

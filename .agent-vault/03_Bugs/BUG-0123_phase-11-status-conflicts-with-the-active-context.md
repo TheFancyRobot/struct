@@ -12,9 +12,8 @@ fixed_on: '2026-08-05'
 owner: ''
 created: '2026-08-05'
 updated: '2026-08-05'
-related_notes: |2-
-
-    - "[[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1.1 Research Usability]]"
+related_notes:
+  - '[[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1.1 Research Usability]]'
 tags:
   - agent-vault
   - bug
@@ -27,7 +26,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Summary
 
 - Phase 11 status conflicts with the active context.
-- Related notes: none linked yet.
+- Related notes: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1.1 Research Usability]].
 
 ## Observed Behavior
 
@@ -70,7 +69,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Related Notes
 
 <!-- AGENT-START:bug-related-notes -->
-- None yet.
+- Phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1.1 Research Usability]]
 <!-- AGENT-END:bug-related-notes -->
 
 ## Timeline

@@ -12,7 +12,8 @@ fixed_on: '2026-08-05'
 owner: ''
 created: '2026-08-05'
 updated: '2026-08-05'
-related_notes: '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]]'
+related_notes:
+  - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]]'
 tags:
   - agent-vault
   - bug
