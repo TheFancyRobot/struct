@@ -1111,16 +1111,34 @@ const server = Effect.gen(function* () {
         if (runs._tag === 'Failure') {
           return jsonResponse({ error: 'ResearchServiceUnavailable' }, 503)
         }
+        const history = await Runtime.runPromiseExit(effectRuntime)(
+          Effect.forEach([...runs.value].reverse(), (run) =>
+            run.status !== 'completed'
+              ? Effect.succeed({ run, result: Option.none() })
+              : ResearchProjectionRepo.findCompleted(
+                identity.workspaceId,
+                ids.value.projectId,
+                run.id,
+              ).pipe(
+                Effect.provide(projectionLayer),
+                Effect.map((result) => ({ run, result: Option.some(result) })),
+              ),
+          ),
+        )
+        if (history._tag === 'Failure') {
+          return jsonResponse({ error: 'ResearchServiceUnavailable' }, 503)
+        }
         return jsonResponse({
           thread: {
             ...thread.value,
             createdAt: Number(thread.value.createdAt),
             updatedAt: Number(thread.value.updatedAt),
           },
-          runs: [...runs.value].reverse().map((run) => ({
+          runs: history.value.map(({ run, result }) => ({
             ...run,
             createdAt: Number(run.createdAt),
             updatedAt: Number(run.updatedAt),
+            ...(Option.isNone(result) ? {} : { result: result.value }),
           })),
         })
       }

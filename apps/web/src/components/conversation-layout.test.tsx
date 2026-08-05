@@ -1,30 +1,41 @@
 /* eslint-disable no-unused-vars -- Babel does not mark Solid JSX component imports as used. */
 /** @jsxImportSource solid-js */
 import { describe, expect, it } from 'bun:test'
-import { readFileSync } from 'node:fs'
-import path from 'node:path'
 import { renderToString } from 'solid-js/web'
 import { ConversationHistory } from './ConversationHistory'
 
 describe('conversation layout', () => {
-  it('renders role-aware message bubbles and a compact footer composer', () => {
+  it('renders persisted answers and citations in instance-safe conversations', () => {
     const html = renderToString(() => (
-      <ConversationHistory
-        title="Launch date"
-        runs={[{ question: 'When is the launch?', status: 'completed' }]}
-      />
+      <>
+        <ConversationHistory
+          title="Launch date"
+          runs={[{
+            question: 'When is the launch?',
+            status: 'completed',
+            result: {
+              answer: 'July 18.',
+              citations: [{
+                id: '750e8400-e29b-41d4-a716-446655440001',
+                sourceVersionId: '750e8400-e29b-41d4-a716-446655440002',
+                locator: 'lines:1-1',
+              }],
+              datasetCitations: [],
+            },
+          }]}
+        />
+        <ConversationHistory title="Follow-up" runs={[]} />
+      </>
     ))
-    const panel = readFileSync(
-      path.resolve(new URL('.', import.meta.url).pathname, './ConversationPanel.tsx'),
-      'utf8',
-    )
 
     expect(html).toContain('role="log"')
     expect(html).toContain('aria-label="You"')
     expect(html).toContain('aria-label="Struct"')
-    expect(html).toContain('ml-auto max-w-[85%]')
-    expect(html).toContain('mr-auto max-w-[85%]')
-    expect(panel).toContain('mt-auto rounded-box border border-base-300 bg-base-100 p-3 shadow-sm')
-    expect(panel).toContain('textarea textarea-bordered mt-2 min-h-20 w-full')
+    expect(html).toContain('July 18.')
+    expect(html).toContain('Citation 1: lines:1-1')
+    expect(html).not.toContain('Research completed.')
+    expect(new Set([...html.matchAll(/id="(conversation-heading-[^"]+)"/g)].map(
+      (match) => match[1],
+    )).size).toBe(2)
   })
 })
