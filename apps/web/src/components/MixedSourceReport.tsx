@@ -329,20 +329,22 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
                 <p class="text-xl leading-relaxed sm:text-2xl">{props.report.answer}</p>
                 <div class="inline-citations mt-4 flex gap-2" aria-label="Answer citations">
                   <a
-                    class="badge badge-outline badge-primary"
+                    class="-my-2 inline-flex min-h-11 items-center"
                     href="#document-evidence"
                     onClick={() => setMobilePane('evidence')}
                   >
-                    [D1]
+                    <span class="badge badge-outline badge-primary">[D1]</span>
                   </a>
                   <a
-                    class="badge badge-outline badge-primary"
+                    class="-my-2 inline-flex min-h-11 items-center"
                     href={firstDatasetEvidenceId()}
                     onClick={() => setMobilePane('evidence')}
                   >
-                    [Q1]
+                    <span class="badge badge-outline badge-primary">[Q1]</span>
                   </a>
-                  <a class="badge badge-outline badge-warning" href="#mismatch-note">[M1]</a>
+                  <a class="-my-2 inline-flex min-h-11 items-center" href="#mismatch-note">
+                    <span class="badge badge-outline badge-warning">[M1]</span>
+                  </a>
                 </div>
               </div>
               <aside id="mismatch-note" class="mismatch-note alert alert-warning items-start" aria-labelledby="mismatch-title">
