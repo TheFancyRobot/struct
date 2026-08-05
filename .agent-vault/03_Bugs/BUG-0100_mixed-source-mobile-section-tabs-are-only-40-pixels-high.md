@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Mixed source mobile section tabs are only 40 pixels high
 bug_id: BUG-0100
-status: new
+status: fixed
 severity: sev-3
 category: accessibility
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-04'
+owner: bug0100_attempt1
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-08-04'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -91,3 +91,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-04 - Fixed: changed `.mixed-mobile-tabs .tab` from `h-10` to `h-11`, producing a 44px mobile touch target while retaining the three-column layout and `aria-pressed` behavior. Verified with `bun test --preload ./test/solid-test-preload.ts e2e/mixed-source-report.spec.ts` (6 pass; includes a 390×844 bounding-box assertion for all three tabs and refreshed responsive light/dark captures) and `bun run typecheck` in `apps/web`.
+- 2026-08-04 - PR #144 review remediation: the focused mobile-tab E2E flow now waits for the rendered tab locator after shared report readiness, captures the tab count once, and asserts every tab bounding box is non-null before checking its 44px minimum height. Verified with `bun test --preload ./test/solid-test-preload.ts e2e/mixed-source-report.spec.ts` (6 pass, 181 expectations) and `bun run typecheck` in `apps/web`.

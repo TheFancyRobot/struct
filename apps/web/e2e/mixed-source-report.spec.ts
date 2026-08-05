@@ -209,6 +209,15 @@ describe('mixed-source report browser workflow', () => {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } })
     const failures = observeFailures(page)
     await openDemo(page)
+    const sectionTabs = page.locator('nav[aria-label="Mixed-source report sections"] button')
+    await sectionTabs.first().waitFor()
+    const tabCount = await sectionTabs.count()
+    expect(tabCount).toBe(3)
+    for (let index = 0; index < tabCount; index += 1) {
+      const box = await sectionTabs.nth(index).boundingBox()
+      expect(box).not.toBeNull()
+      expect(box!.height).toBeGreaterThanOrEqual(44)
+    }
     expect(await page.locator('.synthesis-pane').evaluate(
       (element) => getComputedStyle(element).display,
     )).toBe('block')

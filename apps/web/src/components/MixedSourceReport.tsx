@@ -206,7 +206,7 @@ export const MixedSourceReport: Component<MixedSourceReportProps> = (props) => {
           {([pane, label]) => (
             <button
               type="button"
-              class="tab h-10"
+              class="tab h-11"
               classList={{ 'tab-active': mobilePane() === pane }}
               aria-pressed={mobilePane() === pane}
               onClick={() => setMobilePane(pane)}
