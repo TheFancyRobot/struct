@@ -12,7 +12,11 @@ fixed_on: '2026-08-05'
 owner: root orchestrator
 created: '2026-08-05'
 updated: '2026-08-05'
-related_notes: []
+related_notes:
+  - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey|STEP-10-08 Gate v1 on the Complete Browser Journey]]'
+  - '[[03_Bugs/BUG-0105_raw-bun-test-bypasses-isolated-e2e-runner|BUG-0105 Raw Bun test bypasses isolated E2E runner]]'
+  - '[[03_Bugs/BUG-0110_mixed-source-mobile-section-flow-browser-test-starts-before-the-report-is-ready|BUG-0110 Mixed-source browser test readiness]]'
+  - '[[03_Bugs/BUG-0053_pre-existing-e2e-infra-defects-surface-as-failures-independent-of-brand-phase|BUG-0053 E2E infrastructure defects]]'
 tags:
   - agent-vault
   - bug
@@ -79,7 +83,10 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Related Notes
 
 <!-- AGENT-START:bug-related-notes -->
-- None yet.
+- Step: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_08_gate-v1-on-the-complete-browser-journey|STEP-10-08 Gate v1 on the Complete Browser Journey]]
+- [[03_Bugs/BUG-0105_raw-bun-test-bypasses-isolated-e2e-runner|BUG-0105 Raw Bun test bypasses isolated E2E runner]] — establishes the supported isolated E2E command boundary.
+- [[03_Bugs/BUG-0110_mixed-source-mobile-section-flow-browser-test-starts-before-the-report-is-ready|BUG-0110 Mixed-source browser test readiness]] — related v1 browser-gate readiness remediation.
+- [[03_Bugs/BUG-0053_pre-existing-e2e-infra-defects-surface-as-failures-independent-of-brand-phase|BUG-0053 E2E infrastructure defects]] — shared launcher lifecycle and cleanup context.
 <!-- AGENT-END:bug-related-notes -->
 
 ## Timeline

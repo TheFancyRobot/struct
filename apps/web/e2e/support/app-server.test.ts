@@ -174,19 +174,12 @@ describe('isolated production web lifecycle', () => {
   it('starts the source-import browser server without relying on PATH to find Bun', async () => {
     const port = 4193
     cleanupPortDistRoots(port)
-    const originalPath = process.env['PATH']
-    process.env['PATH'] = ''
 
     try {
-      const server = await startAppServer(port)
+      const server = await startAppServer(port, { PATH: '' })
       expect((await fetch(`http://127.0.0.1:${port}`)).ok).toBe(true)
       await stopAppServer(server)
     } finally {
-      if (originalPath === undefined) {
-        delete process.env['PATH']
-      } else {
-        process.env['PATH'] = originalPath
-      }
       cleanupPortDistRoots(port)
     }
   })
