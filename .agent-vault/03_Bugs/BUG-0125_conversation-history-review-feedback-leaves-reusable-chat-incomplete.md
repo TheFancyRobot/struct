@@ -28,6 +28,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 - Completed conversation runs now return their persisted answer and citations, including dataset citations, through the project-scoped history endpoint.
 - The response is identity-scoped and explicitly non-storable.
+- History is intentionally capped at the latest 100 runs; within that window, each stored completed projection is returned and absent projections remain metadata-only rather than failing the thread.
 
 ## Observed Behavior
 

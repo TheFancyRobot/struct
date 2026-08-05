@@ -29,14 +29,11 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 <!-- AGENT-START:bugs-index -->
 _Last rebuilt: 2026-08-05._
 
-- Notes indexed: 106
-- Status summary: new (3), fixed (98), invalid (5)
+- Notes indexed: 112
+- Status summary: fixed (106), invalid (5), resolved (1)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
-| BUG-0118 | [Project chat UI lacks recognizable conversation layout and collapsible columns](../03_Bugs/BUG-0118_project-chat-ui-lacks-recognizable-conversation-layout-and-collapsible-columns.md) | new | sev-3 | 2026-08-05 | - | - |
-| BUG-0119 | [Project navigation is over-spaced and lacks discoverable search and settings](../03_Bugs/BUG-0119_project-navigation-is-over-spaced-and-lacks-discoverable-search-and-settings.md) | new | sev-3 | 2026-08-05 | - | - |
-| BUG-0120 | [UI lacks inference provider and model configuration](../03_Bugs/BUG-0120_ui-lacks-inference-provider-and-model-configuration.md) | new | sev-3 | 2026-08-05 | - | - |
 | BUG-0059 | [standard local dev stack stages source uploads outside the worker artifact root](../03_Bugs/BUG-0059_standard-local-dev-stack-stages-source-uploads-outside-the-worker-artifact-root.md) | fixed | sev-1 | 2026-07-28 | 2026-07-28 | - |
 | BUG-0060 | [Clean real stack omits workspace bootstrap and blocks first project creation](../03_Bugs/BUG-0060_clean-real-stack-omits-workspace-bootstrap-and-blocks-first-project-creation.md) | fixed | sev-1 | 2026-07-28 | 2026-07-29 | - |
 | BUG-0061 | [Source import file picker has no accessible label](../03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label.md) | fixed | sev-1 | 2026-07-28 | 2026-07-29 | - |
@@ -64,6 +61,15 @@ _Last rebuilt: 2026-08-05._
 | BUG-0115 | [Release journey E2E does not reliably await source readiness](../03_Bugs/BUG-0115_release-journey-e2e-does-not-reliably-await-source-readiness.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
 | BUG-0116 | [Full v1 browser gate leaves dangling lifecycle and source readiness failures](../03_Bugs/BUG-0116_full-v1-browser-gate-leaves-dangling-lifecycle-and-source-readiness-failures.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
 | BUG-0117 | [Lint gate fails on unused frontend imports](../03_Bugs/BUG-0117_lint-gate-fails-on-unused-frontend-imports.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
+| BUG-0118 | [Project chat UI lacks recognizable conversation layout and collapsible columns](../03_Bugs/BUG-0118_project-chat-ui-lacks-recognizable-conversation-layout-and-collapsible-columns.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
+| BUG-0119 | [Project navigation is over-spaced and lacks discoverable search and settings](../03_Bugs/BUG-0119_project-navigation-is-over-spaced-and-lacks-discoverable-search-and-settings.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
+| BUG-0120 | [UI lacks inference provider and model configuration](../03_Bugs/BUG-0120_ui-lacks-inference-provider-and-model-configuration.md) | resolved | sev-3 | 2026-08-05 | 2026-08-05 | - |
+| BUG-0121 | [Canonical v1 performance resilience report hashes are stale](../03_Bugs/BUG-0121_canonical-v1-performance-resilience-report-hashes-are-stale.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
+| BUG-0122 | [Full test suite leaks persistence ownership state across integration tests](../03_Bugs/BUG-0122_full-test-suite-leaks-persistence-ownership-state-across-integration-tests.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
+| BUG-0123 | [Phase 11 status conflicts with the active context](../03_Bugs/BUG-0123_phase-11-status-conflicts-with-the-active-context.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
+| BUG-0124 | [Vault link metadata and managed blocks drift from their contract](../03_Bugs/BUG-0124_vault-link-metadata-and-managed-blocks-drift-from-their-contract.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
+| BUG-0125 | [Conversation history review feedback leaves reusable chat incomplete](../03_Bugs/BUG-0125_conversation-history-review-feedback-leaves-reusable-chat-incomplete.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
+| BUG-0126 | [Research history loading fails on missing projections and scales per run](../03_Bugs/BUG-0126_research-history-loading-fails-on-missing-projections-and-scales-per-run.md) | fixed | sev-3 | 2026-08-05 | 2026-08-05 | - |
 | BUG-0109 | [Responsive workspace suite does not execute the desktop-pane regression](../03_Bugs/BUG-0109_responsive-workspace-suite-does-not-execute-the-desktop-pane-regression.md) | fixed | sev-3 | 2026-08-04 | 2026-08-04 | - |
 | BUG-0110 | [Mixed-source mobile section-flow browser test starts before the report is ready](../03_Bugs/BUG-0110_mixed-source-mobile-section-flow-browser-test-starts-before-the-report-is-ready.md) | fixed | sev-3 | 2026-08-04 | 2026-08-04 | - |
 | BUG-0106 | [Project list API exposes workspace IDs despite its response contract](../03_Bugs/BUG-0106_project-list-api-exposes-workspace-ids-despite-its-response-contract.md) | fixed | sev-3 | 2026-08-01 | 2026-08-03 | - |

@@ -128,8 +128,9 @@ import { reportExportRoute } from './routes/report-export'
 import { noteRoute } from './routes/notes'
 import { inferenceSettingsRoute } from './routes/inference-settings'
 import {
+  MAX_RESEARCH_HISTORY_RUNS,
   researchHistoryResponse,
-  serializeCompletedResearch,
+  serializeResearchHistoryRuns,
 } from './routes/research-history'
 import { workspaceBootstrapLoop } from './workspace-bootstrap'
 
@@ -1108,27 +1109,33 @@ const server = Effect.gen(function* () {
           || project.value.workspaceId !== identity.workspaceId
         ) return jsonResponse({ error: 'ResourceNotFound' }, 404)
         const runs = await Runtime.runPromiseExit(effectRuntime)(
-          ResearchRunRepo.findByThreadId(ids.value.threadId).pipe(
+          ResearchRunRepo.findByThreadId(
+            ids.value.threadId,
+            MAX_RESEARCH_HISTORY_RUNS,
+          ).pipe(
             Effect.provide(researchRunLayer),
           ),
         )
         if (runs._tag === 'Failure') {
           return jsonResponse({ error: 'ResearchServiceUnavailable' }, 503)
         }
-        const history = await Runtime.runPromiseExit(effectRuntime)(
-          Effect.forEach([...runs.value].reverse(), (run) =>
-            run.status !== 'completed'
-              ? Effect.succeed({ run, result: Option.none() })
-              : ResearchProjectionRepo.findCompleted(
-                identity.workspaceId,
-                ids.value.projectId,
-                run.id,
-              ).pipe(
-                Effect.provide(projectionLayer),
-                Effect.flatMap(serializeCompletedResearch),
-                Effect.map((result) => ({ run, result: Option.some(result) })),
-              ),
+        const completedRunIds = runs.value
+          .filter((run) => run.status === 'completed')
+          .map((run) => run.id)
+        const projections = await Runtime.runPromiseExit(effectRuntime)(
+          ResearchProjectionRepo.findCompletedByRunIds(
+            identity.workspaceId,
+            ids.value.projectId,
+            completedRunIds,
+          ).pipe(
+            Effect.provide(projectionLayer),
           ),
+        )
+        if (projections._tag === 'Failure') {
+          return jsonResponse({ error: 'ResearchServiceUnavailable' }, 503)
+        }
+        const history = await Runtime.runPromiseExit(effectRuntime)(
+          serializeResearchHistoryRuns(runs.value, projections.value),
         )
         if (history._tag === 'Failure') {
           return jsonResponse({ error: 'ResearchServiceUnavailable' }, 503)
@@ -1139,12 +1146,7 @@ const server = Effect.gen(function* () {
             createdAt: Number(thread.value.createdAt),
             updatedAt: Number(thread.value.updatedAt),
           },
-          runs: history.value.map(({ run, result }) => ({
-            ...run,
-            createdAt: Number(run.createdAt),
-            updatedAt: Number(run.updatedAt),
-            ...(Option.isNone(result) ? {} : { result: result.value }),
-          })),
+          runs: history.value,
         })
       }
       if (researchThreadRoute !== null && req.method === 'POST') {
