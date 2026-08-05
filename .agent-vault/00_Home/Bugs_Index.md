@@ -27,17 +27,13 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 ## Status Buckets
 
 <!-- AGENT-START:bugs-index -->
-_Last rebuilt: 2026-08-04._
+_Last rebuilt: 2026-08-05._
 
-- Notes indexed: 95
-- Status summary: new (4), fixed (86), invalid (5)
+- Notes indexed: 97
+- Status summary: fixed (92), invalid (5)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
-| BUG-0095 | [Mobile project navigation drawer makes theme switching unreachable](../03_Bugs/BUG-0095_mobile-project-navigation-drawer-makes-theme-switching-unreachable.md) | new | sev-3 | 2026-07-28 | - | - |
-| BUG-0096 | [Mobile project name input falls below the touch target baseline](../03_Bugs/BUG-0096_mobile-project-name-input-falls-below-the-touch-target-baseline.md) | new | sev-3 | 2026-07-28 | - | - |
-| BUG-0100 | [Mixed source mobile section tabs are only 40 pixels high](../03_Bugs/BUG-0100_mixed-source-mobile-section-tabs-are-only-40-pixels-high.md) | new | sev-3 | 2026-07-28 | - | - |
-| BUG-0101 | [Mixed source citation links are only 24 pixels high on mobile](../03_Bugs/BUG-0101_mixed-source-citation-links-are-only-24-pixels-high-on-mobile.md) | new | sev-3 | 2026-07-28 | - | - |
 | BUG-0059 | [standard local dev stack stages source uploads outside the worker artifact root](../03_Bugs/BUG-0059_standard-local-dev-stack-stages-source-uploads-outside-the-worker-artifact-root.md) | fixed | sev-1 | 2026-07-28 | 2026-07-28 | - |
 | BUG-0060 | [Clean real stack omits workspace bootstrap and blocks first project creation](../03_Bugs/BUG-0060_clean-real-stack-omits-workspace-bootstrap-and-blocks-first-project-creation.md) | fixed | sev-1 | 2026-07-28 | 2026-07-29 | - |
 | BUG-0061 | [Source import file picker has no accessible label](../03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label.md) | fixed | sev-1 | 2026-07-28 | 2026-07-29 | - |
@@ -59,6 +55,8 @@ _Last rebuilt: 2026-08-04._
 | BUG-0048 | [Workspace source attachments do not enqueue text indexing](../03_Bugs/BUG-0048_workspace-source-attachments-do-not-enqueue-text-indexing.md) | fixed | sev-2 | 2026-07-26 | 2026-07-26 | - |
 | BUG-0038 | [Research replay loses durable job ownership before cancellation verification](../03_Bugs/BUG-0038_research-replay-loses-durable-job-ownership-before-cancellation-verification.md) | fixed | sev-2 | 2026-07-25 | 2026-07-25 | - |
 | BUG-0040 | [API workspace bootstrap prevents health checks during database outages](../03_Bugs/BUG-0040_api-workspace-bootstrap-prevents-health-checks-during-database-outages.md) | fixed | sev-2 | 2026-07-24 | 2026-07-25 | - |
+| BUG-0109 | [Responsive workspace suite does not execute the desktop-pane regression](../03_Bugs/BUG-0109_responsive-workspace-suite-does-not-execute-the-desktop-pane-regression.md) | fixed | sev-3 | 2026-08-04 | 2026-08-04 | - |
+| BUG-0110 | [Mixed-source mobile section-flow browser test starts before the report is ready](../03_Bugs/BUG-0110_mixed-source-mobile-section-flow-browser-test-starts-before-the-report-is-ready.md) | fixed | sev-3 | 2026-08-04 | 2026-08-04 | - |
 | BUG-0106 | [Project list API exposes workspace IDs despite its response contract](../03_Bugs/BUG-0106_project-list-api-exposes-workspace-ids-despite-its-response-contract.md) | fixed | sev-3 | 2026-08-01 | 2026-08-03 | - |
 | BUG-0105 | [Raw bun test bypasses isolated e2e runner](../03_Bugs/BUG-0105_raw-bun-test-bypasses-isolated-e2e-runner.md) | invalid | sev-3 | 2026-07-31 | - | - |
 | BUG-0108 | [Active Context refresh counts resolved critical bugs as open](../03_Bugs/BUG-0108_active-context-refresh-counts-resolved-critical-bugs-as-open.md) | fixed | sev-3 | 2026-07-31 | 2026-08-03 | - |
@@ -89,6 +87,10 @@ _Last rebuilt: 2026-08-04._
 | BUG-0092 | [Report export failure lacks browser coverage](../03_Bugs/BUG-0092_report-export-failure-lacks-browser-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |
 | BUG-0093 | [Add project hash focus journey lacks browser regression coverage](../03_Bugs/BUG-0093_add-project-hash-focus-journey-lacks-browser-regression-coverage.md) | invalid | sev-3 | 2026-07-28 | - | - |
 | BUG-0094 | [Evidence inspector loading and error states lack browser coverage](../03_Bugs/BUG-0094_evidence-inspector-loading-and-error-states-lack-browser-coverage.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
+| BUG-0095 | [Mobile project navigation drawer makes theme switching unreachable](../03_Bugs/BUG-0095_mobile-project-navigation-drawer-makes-theme-switching-unreachable.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
+| BUG-0096 | [Mobile project name input falls below the touch target baseline](../03_Bugs/BUG-0096_mobile-project-name-input-falls-below-the-touch-target-baseline.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
+| BUG-0100 | [Mixed source mobile section tabs are only 40 pixels high](../03_Bugs/BUG-0100_mixed-source-mobile-section-tabs-are-only-40-pixels-high.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
+| BUG-0101 | [Mixed source citation links are only 24 pixels high on mobile](../03_Bugs/BUG-0101_mixed-source-citation-links-are-only-24-pixels-high-on-mobile.md) | fixed | sev-3 | 2026-07-28 | 2026-08-04 | - |
 | BUG-0053 | [Pre-existing e2e infra defects surface as failures independent of brand phase](../03_Bugs/BUG-0053_pre-existing-e2e-infra-defects-surface-as-failures-independent-of-brand-phase.md) | fixed | sev-3 | 2026-07-27 | 2026-07-27 | - |
 | BUG-0054 | [Error toast position inconsistent between add source and add project screens](../03_Bugs/BUG-0054_error-toast-position-inconsistent-between-add-source-and-add-project-screens.md) | fixed | sev-3 | 2026-07-27 | 2026-07-27 | - |
 | BUG-0055 | [Add source view shows only error and no fields or options](../03_Bugs/BUG-0055_add-source-view-shows-only-error-and-no-fields-or-options.md) | fixed | sev-3 | 2026-07-27 | 2026-07-27 | - |

@@ -62,6 +62,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 - Decisive evidence: `.local/ui-audit/demo/screenshots/mobile-light-complete.png` and lead bounding-box capture confirm the ~50×24px citation hit area on mobile.
 - No code-level cause is documented.
+- Confirmed 2026-08-05: the mobile citation anchors exposed only the compact badge’s roughly 24px height and did not provide a 44px minimum interactive hit area.
 
 ## Workaround
 
