@@ -82,6 +82,8 @@ export {
   NoteConflictError,
   NoteNotFoundError,
   NoteProvenanceError,
+  InferenceSettingsRepo,
+  type InferenceRuntimeModel,
   // Persistence errors
   QueryError,
   EntityNotFoundError,
@@ -126,6 +128,12 @@ export type {
 } from './repositories/interfaces.js'
 
 export type { PersistenceError } from './errors.js'
+
+export type {
+  InferenceCapability,
+  InferenceRole,
+  InferenceSettings,
+} from './repositories/inference-settings.js'
 
 export type {
   SourceRegistrationInput,

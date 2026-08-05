@@ -375,6 +375,7 @@ export const WorkspaceNavigation: ParentComponent<{
         </ul>
       </div>
       <div class="border-t border-base-300 px-2 py-2">
+        <a class="btn btn-ghost btn-sm mb-1 w-full justify-start" href={withBasePath('/settings', appBasePath)} aria-current={isCurrent('/settings') ? 'page' : undefined}>Settings</a>
         <button
           type="button"
           class="btn btn-ghost btn-sm hidden w-full justify-start md:flex"

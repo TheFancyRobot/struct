@@ -59,6 +59,8 @@ export interface ProductionResearchWorkflowDeps {
   readonly storage: ArtifactStoreShape
   readonly runtime: Runtime.Runtime<never>
   readonly fredConfig: FredRuntimeConfig
+  /** Workspace settings override the deployment default for chat execution. */
+  readonly resolveChatRuntimeConfig?: (workspaceId: string) => Effect.Effect<FredRuntimeConfig, unknown>
   readonly retrieve: (input: {
     readonly workspaceId: typeWorkspaceId
     readonly projectId: typeProjectId
@@ -132,6 +134,13 @@ export function makeProductionResearchWorkflow(
       onRetrievalCompleted,
     }) =>
       Effect.gen(function* () {
+        const runtimeConfig = dependencies.resolveChatRuntimeConfig === undefined
+          ? dependencies.fredConfig
+          : yield* dependencies.resolveChatRuntimeConfig(workspaceId).pipe(
+              Effect.mapError(() => new ResearchProviderFailure({
+                message: 'Configured chat model could not be resolved',
+              })),
+            )
         let evidence: ReadonlyArray<TextEvidence> = []
         let datasetResults:
           ReadonlyArray<DeterministicDatasetQueryOutputType> = []
@@ -537,7 +546,7 @@ export function makeProductionResearchWorkflow(
                     node,
                     evidence: [...evidence],
                     datasetResults: [...datasetResults],
-                  }, route.primary.model, dependencies.fredConfig).pipe(
+                  }, route.primary.model, runtimeConfig).pipe(
                     Effect.flatMap((assessment) =>
                       writeArtifact(
                         node.id,
@@ -558,7 +567,7 @@ export function makeProductionResearchWorkflow(
                     node,
                     evidence: [...evidence],
                     datasetResults: [...datasetResults],
-                  }, route.primary.model, dependencies.fredConfig).pipe(
+                  }, route.primary.model, runtimeConfig).pipe(
                     Effect.tap((value) => Effect.sync(() => {
                       answer = value
                     })),
@@ -585,7 +594,7 @@ export function makeProductionResearchWorkflow(
                   )).pipe(
                 Effect.timeoutFail({
                   duration: Math.min(
-                    dependencies.fredConfig.maxElapsedMs,
+                    runtimeConfig.maxElapsedMs,
                     plan.budget.maximumElapsedMilliseconds,
                   ),
                   onTimeout: () =>
@@ -634,7 +643,7 @@ export function makeProductionResearchWorkflow(
               runGraph(
                 plan,
                 initial,
-                routing(dependencies.fredConfig),
+                routing(runtimeConfig),
                 {
                   maximumDuplicateActions: 1,
                   maximumNoProgressActions: 2,
@@ -695,7 +704,7 @@ export function makeProductionResearchWorkflow(
                         })))
                     }),
                 },
-                dependencies.fredConfig,
+                runtimeConfig,
                 signal,
               ),
               { signal },

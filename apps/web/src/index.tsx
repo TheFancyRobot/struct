@@ -18,6 +18,7 @@ import { NotFoundPage } from './pages/NotFoundPage'
 import { ProjectPage } from './pages/ProjectPage'
 import { SourcesPage } from './pages/SourcesPage'
 import { NotesPage } from './pages/NotesPage'
+import { SettingsPage } from './pages/SettingsPage'
 import { basePathFromPublicBaseUrl } from './base-path'
 
 const routerBase = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
@@ -27,6 +28,7 @@ render(
     <Router root={App} base={routerBase}>
       <Route path="/" component={HomePage} />
       <Route path="/sources" component={SourcesPage} />
+      <Route path="/settings" component={SettingsPage} />
       <Route path="/projects/:projectId" component={ProjectPage} />
       <Route path="/projects/:projectId/sources" component={SourcesPage} />
       <Route path="/projects/:projectId/notes" component={NotesPage} />

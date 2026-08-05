@@ -19,6 +19,7 @@ import {
   DatasetQueryEvidenceScopeError,
   DurableArtifactsRepo,
   NoteRepo,
+  InferenceSettingsRepo,
   EntityNotFoundError,
   ProvenanceGraphRepo,
   ResearchExecutionRepo,
@@ -125,6 +126,7 @@ import {
 import { durableArtifactRoute } from './routes/durable-artifacts'
 import { reportExportRoute } from './routes/report-export'
 import { noteRoute } from './routes/notes'
+import { inferenceSettingsRoute } from './routes/inference-settings'
 import { workspaceBootstrapLoop } from './workspace-bootstrap'
 
 interface ResearchRequestBody {
@@ -243,6 +245,7 @@ const server = Effect.gen(function* () {
     sqlLayer,
   )
   const noteLayer = Layer.provide(NoteRepo.Default, sqlLayer)
+  const inferenceSettingsLayer = Layer.provide(InferenceSettingsRepo.Default, sqlLayer)
   const provenanceGraphLayer = Layer.provide(
     ProvenanceGraphRepo.Default,
     sqlLayer,
@@ -358,6 +361,26 @@ const server = Effect.gen(function* () {
       // state.
       if (!ready) {
         return jsonResponse({ error: 'ServiceUnavailable' }, 503)
+      }
+
+      if (url.pathname.startsWith('/api/settings/inference')) {
+        const exit = await Runtime.runPromiseExit(effectRuntime)(
+          inferenceSettingsRoute(req, identity.workspaceId, {
+            list: (workspaceId) => InferenceSettingsRepo.list(workspaceId).pipe(Effect.provide(inferenceSettingsLayer)),
+            createProvider: (input) => InferenceSettingsRepo.createProvider(input).pipe(Effect.provide(inferenceSettingsLayer)),
+            updateProvider: (input) => InferenceSettingsRepo.updateProvider(input).pipe(Effect.provide(inferenceSettingsLayer)),
+            setProviderEnabled: (input) => InferenceSettingsRepo.setProviderEnabled(input).pipe(Effect.provide(inferenceSettingsLayer)),
+            deleteProvider: (input) => InferenceSettingsRepo.deleteProvider(input).pipe(Effect.provide(inferenceSettingsLayer)),
+            // No secret resolver is configured in this deployment. Fail closed rather
+            // than falsely testing an endpoint without the provider credential.
+            testProvider: () => Effect.succeed({ ok: false, message: 'Connection testing is unavailable until a server-side secret resolver is configured.' }),
+            createModel: (input) => InferenceSettingsRepo.createModel(input).pipe(Effect.provide(inferenceSettingsLayer)),
+            assign: (input) => InferenceSettingsRepo.assign(input).pipe(Effect.provide(inferenceSettingsLayer)),
+            randomId: () => crypto.randomUUID(),
+          }),
+        )
+        if (exit._tag === 'Success' && exit.value !== undefined) return exit.value
+        return jsonResponse({ error: 'InvalidInferenceSettingsRequest' }, 400)
       }
 
       const projectResponse = await Runtime.runPromise(effectRuntime)(projectRoute(req, identity, {

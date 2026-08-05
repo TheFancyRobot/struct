@@ -10,6 +10,7 @@ import {
   DatasetCatalogRepo,
   DatasetMaterializationRepo,
   DatasetQueryEvidenceRepo,
+  InferenceSettingsRepo,
   JobQueueRepo,
   QueryError,
   ResearchExecutionRepo,
@@ -153,6 +154,14 @@ const program = Effect.gen(function* () {
     DatasetQueryEvidenceRepo.Default,
     sqlLayer,
   )
+  const inferenceSettingsLayer = Layer.provide(InferenceSettingsRepo.Default, sqlLayer)
+  const configuredChatRuntime = (workspaceId: string) =>
+    InferenceSettingsRepo.resolveRuntimeModel(workspaceId, 'chat').pipe(
+      Effect.provide(inferenceSettingsLayer),
+      Effect.map((route) => route === null
+        ? fredConfig
+        : { ...fredConfig, providerPackage: route.providerPackage, model: route.model }),
+    )
   const dataEngineClient = yield* DataEngineClient.pipe(
     Effect.provide(DataEngineClient.Default),
   )
@@ -407,10 +416,11 @@ const program = Effect.gen(function* () {
             sourceVersionIds,
           )
           .pipe(Effect.provide(datasetCatalogLayer))
+        const configuredFredConfig = yield* configuredChatRuntime(workspaceId)
         const { toolPolicy, budgetCeiling } =
           makeProductionResearchPlanningPolicy(
             sourceScopes,
-            fredConfig.maxElapsedMs,
+            configuredFredConfig.maxElapsedMs,
           )
         return yield* runFredResearchPlanning({
           classifier: {
@@ -429,13 +439,14 @@ const program = Effect.gen(function* () {
             toolPolicy,
             budgetCeiling,
           },
-        }, fredConfig)
+        }, configuredFredConfig)
       }),
     },
     workflow: makeProductionResearchWorkflow({
       storage,
       runtime: effectRuntime,
       fredConfig,
+      resolveChatRuntimeConfig: configuredChatRuntime,
       loadDurableState: (workspaceId, projectId, runId) =>
         ResearchExecutionRepo.loadDurableState(workspaceId, projectId, runId).pipe(
           Effect.provide(researchExecutionLayer),
