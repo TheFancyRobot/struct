@@ -12,7 +12,6 @@ import {
   startIsolatedDataEngineGateway,
   stopAppServer,
   waitForReady,
-  type CapturedProcess,
 } from './app-server'
 
 const webRoot = resolve(import.meta.dir, '../..')
@@ -151,7 +150,7 @@ describe('isolated production web lifecycle', () => {
 
     await expect(
       startAppServer(port, { API_AUTH_TOKEN: 'short-token' }),
-    ).rejects.toThrow(`Web app exited before becoming ready at http://127.0.0.1:${port}`)
+    ).rejects.toThrow(`web app exited before becoming ready at http://127.0.0.1:${port}`)
 
     const after = listPortDistRoots(port)
     expect(newDistRoots(before, after)).toEqual([])
@@ -170,6 +169,26 @@ describe('isolated production web lifecycle', () => {
     await stopAppServer(second)
 
     cleanupPortDistRoots(port)
+  })
+
+  it('starts the source-import browser server without relying on PATH to find Bun', async () => {
+    const port = 4193
+    cleanupPortDistRoots(port)
+    const originalPath = process.env['PATH']
+    process.env['PATH'] = ''
+
+    try {
+      const server = await startAppServer(port)
+      expect((await fetch(`http://127.0.0.1:${port}`)).ok).toBe(true)
+      await stopAppServer(server)
+    } finally {
+      if (originalPath === undefined) {
+        delete process.env['PATH']
+      } else {
+        process.env['PATH'] = originalPath
+      }
+      cleanupPortDistRoots(port)
+    }
   })
 
   it('surfaces nonzero dependency start exits', async () => {

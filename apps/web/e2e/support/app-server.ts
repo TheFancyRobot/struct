@@ -40,6 +40,7 @@ export interface CapturedProcess {
 export interface AppServerProcess {
   readonly distRoot: string
   readonly process: AppServerChildProcess
+  readonly logs: Promise<string>
   readonly stubApi?: Bun.Server<undefined>
 }
 
@@ -211,7 +212,7 @@ async function buildApp(distRoot: string, environment: Readonly<Record<string, s
   mkdirSync(resolve(webRoot, distRoot), { recursive: true })
   await runCommand(
     'web build',
-    ['bun', '--bun', 'vite', 'build', '--outDir', distRoot],
+    [process.execPath, '--bun', 'vite', 'build', '--outDir', distRoot],
     webRoot,
     environment,
     buildMaxWaitMs,
@@ -667,40 +668,27 @@ export async function startAppServer(
   const origin = `http://127.0.0.1:${port}`
   const distRoot = uniqueDistRoot(port, environment)
   let stubApi: Bun.Server<undefined> | undefined
-  let server: AppServerChildProcess | undefined
+  let server: CapturedProcess | undefined
   try {
     stubApi = environment['API_ORIGIN'] === undefined ? startStubApiOrigin() : undefined
     await buildApp(distRoot, environment)
-    server = Bun.spawn(['bun', 'src/server.ts'], {
-      cwd: webRoot,
-      env: {
-        ...process.env,
+    server = spawnCapturedProcess(
+      'web app',
+      [process.execPath, 'src/server.ts'],
+      webRoot,
+      {
         WEB_PORT: String(port),
         API_AUTH_TOKEN: e2eApiAuthToken,
         DIST_ROOT: distRoot,
         ...environment,
         ...(stubApi !== undefined ? { API_ORIGIN: `http://127.0.0.1:${stubApi.port}` } : {}),
       },
-      stdout: 'ignore',
-      stderr: 'ignore',
-    })
-    for (let attempt = 0; attempt < 50; attempt += 1) {
-      if (server.exitCode !== null) {
-        throw new Error(`Web app exited before becoming ready at ${origin}`)
-      }
-      try {
-        if ((await fetch(origin)).ok) {
-          return { distRoot, process: server, stubApi }
-        }
-      } catch {
-        // The built app server is still starting.
-      }
-      await Bun.sleep(100)
-    }
-    throw new Error(`Web app did not become ready at ${origin}`)
+    )
+    await waitForReady(server, origin)
+    return { distRoot, process: server.process, logs: server.logs, stubApi }
   } catch (error) {
     if (server !== undefined) {
-      await stopServerProcess(server)
+      await stopCapturedProcess(server)
     }
     stubApi?.stop(true)
     removeDistRoot(distRoot)
@@ -748,6 +736,10 @@ export async function startRealAppStack(port: number): Promise<RealAppStackProce
 export async function stopAppServer(server: AppServerProcess | undefined): Promise<void> {
   if (server === undefined) return
   await stopServerProcess(server.process)
+  await Promise.race([
+    server.logs.catch(() => ''),
+    Bun.sleep(processLogDrainTimeoutMs),
+  ])
   await server.stubApi?.stop(true)
   removeDistRoot(server.distRoot)
 }
