@@ -249,6 +249,13 @@ kbd {
   min-width: 2.75rem;
 }
 
+/* BUG-0113: Tailwind's sr-only utility sets a 1px box. These explicit
+ * dimensions keep the skip link's off-screen hit area at the 44px baseline. */
+.workspace-skip-link {
+  height: 2.75rem;
+  min-width: 2.75rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
