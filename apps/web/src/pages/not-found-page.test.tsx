@@ -1,5 +1,5 @@
 /** @jsxImportSource solid-js */
-/* eslint-disable no-unused-vars -- Babel does not mark Solid JSX imports as used. */
+// eslint-disable-next-line no-unused-vars -- Babel does not mark Solid JSX imports as used.
 import { describe, expect, it } from 'bun:test'
 import { renderToString } from 'solid-js/web'
 import { NotFoundPage } from './NotFoundPage'

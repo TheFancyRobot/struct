@@ -6,7 +6,7 @@ title: Lint gate fails on unused frontend imports
 bug_id: BUG-0117
 status: fixed
 severity: sev-3
-category: logic
+category: tooling
 reported_on: '2026-08-05'
 fixed_on: '2026-08-05'
 owner: bug0117_attempt1
@@ -30,17 +30,16 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- `bun run lint` reports `ResearchEvent` and `NotFoundPage` as unused despite their type-only and JSX usages.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- The lint gate passes without disabling unused-variable checks for unrelated code.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Run `bun run lint` from the repository root.
+2. Observe false-positive `no-unused-vars` warnings for the type-only `ResearchEvent` import and Solid JSX `NotFoundPage` import.
 
 ## Scope / Blast Radius
 
