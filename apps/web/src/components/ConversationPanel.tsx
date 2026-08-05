@@ -24,6 +24,7 @@ import { useSSE } from '../hooks/useSSE'
 import { reconcileSourceSelection } from './conversation-state'
 import { useWorkspaceState } from './workspace/workspace-state'
 import { ResearchStream } from './ResearchStream'
+import { ConversationHistory } from './ConversationHistory'
 
 const SourceRefresh: Component<{
   readonly projectId: ProjectId
@@ -243,7 +244,7 @@ export const ConversationPanel: Component<{
   }
 
   return (
-    <section class="mx-auto max-w-4xl space-y-4" aria-label="Source-grounded conversation">
+    <section class="mx-auto flex min-h-full w-full max-w-4xl flex-col gap-4 px-4 py-4 lg:px-6" aria-label="Source-grounded conversation">
       <Show when={catalog()}>
         {(loaded) => (
           <SourceRefresh
@@ -271,19 +272,7 @@ export const ConversationPanel: Component<{
       </Show>
       <Show when={history()}>
         {(loaded) => (
-          <section class="rounded-box border border-base-300 bg-base-100 p-4">
-            <h1 class="text-lg font-semibold">{loaded().thread.title}</h1>
-            <ol class="mt-3 space-y-3">
-              <For each={loaded().runs}>
-                {(run) => (
-                  <li class="rounded-box bg-base-200 p-3">
-                    <p>{run.question}</p>
-                    <p class="mt-1 text-xs text-base-content/60">{run.status}</p>
-                  </li>
-                )}
-              </For>
-            </ol>
-          </section>
+          <ConversationHistory title={loaded().thread.title} runs={loaded().runs} />
         )}
       </Show>
       <Show when={props.runId !== undefined && props.threadId !== undefined}>
@@ -298,7 +287,7 @@ export const ConversationPanel: Component<{
         items={catalog()?.items ?? []}
       />
       <form
-        class="rounded-box border border-base-300 bg-base-100 p-4"
+        class="mt-auto rounded-box border border-base-300 bg-base-100 p-3 shadow-sm"
         onSubmit={(event) => {
           event.preventDefault()
           void submit()
@@ -307,7 +296,7 @@ export const ConversationPanel: Component<{
         <label class="form-control">
           <span class="label-text font-medium">Ask your sources</span>
           <textarea
-            class="textarea textarea-bordered mt-2 min-h-28"
+            class="textarea textarea-bordered mt-2 min-h-20 w-full"
             maxlength={2048}
             value={workspace.draft()}
             onInput={(event) => workspace.setDraft(event.currentTarget.value)}
