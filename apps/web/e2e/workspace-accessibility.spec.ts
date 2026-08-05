@@ -89,6 +89,18 @@ describe('workspace accessibility browser contract', () => {
     await page.getByRole('heading', { name: 'Accessible project' }).waitFor()
     await waitForThemeStyles(page, 'light')
 
+    // BUG-0113: the visually hidden link remains in the mobile accessibility
+    // audit, so its focused hit area must meet the same 44px baseline as the
+    // visible controls. Its main-content destination must stay unchanged.
+    const skipLink = page.getByRole('link', { name: 'Skip to main content' })
+    await skipLink.focus()
+    const skipLinkBox = await skipLink.boundingBox()
+    expect(skipLinkBox).not.toBeNull()
+    expect(skipLinkBox!.width).toBeGreaterThanOrEqual(44)
+    expect(skipLinkBox!.height).toBeGreaterThanOrEqual(44)
+    expect(await skipLink.getAttribute('href')).toBe('#workspace-main')
+    await page.locator('#workspace-main').focus()
+
     const activity = page.getByRole('button', { name: /Source activity/ })
     const composer = page.getByRole('textbox', { name: 'Ask your sources' })
     await expect(await activity.innerText()).toContain('1 import needs attention')

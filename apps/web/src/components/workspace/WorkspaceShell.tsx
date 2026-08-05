@@ -657,7 +657,7 @@ export const WorkspaceShell: ParentComponent<{
     >
       <a
         href="#workspace-main"
-        class="sr-only fixed left-4 top-4 z-50 rounded-md bg-primary px-4 py-2 text-primary-content shadow-md focus:not-sr-only focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        class="workspace-skip-link sr-only fixed left-4 top-4 z-50 inline-flex items-center rounded-md bg-primary px-4 py-2 text-primary-content shadow-md focus:not-sr-only focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       >
         Skip to main content
       </a>
