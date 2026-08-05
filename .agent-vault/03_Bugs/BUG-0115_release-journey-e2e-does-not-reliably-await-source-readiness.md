@@ -65,6 +65,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Regression Coverage Needed
 
 - The real root and `BASE_PATH` release journey now exercises sequential file, pasted-text, folder, and dataset imports, requiring each source's user-visible `ready` state before research begins. Focused result: 2/2 tests, 19 assertions. Full web E2E result: 88/88 tests, 1,048 assertions. Web typecheck passed.
+- Review-remediation validation: the release test shares one deadline from browser launch across both deployments; four source-ready waits plus the initial conversation checkbox wait are individually capped at `min(60 seconds, remaining shared budget)`. Focused result: 2/2 tests, 19 assertions. Web typecheck passed.
 
 ## Related Notes
 
@@ -80,3 +81,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-END:bug-timeline -->
 - 2026-08-05 - Fixed: replaced the implicit 30-second readiness wait with an explicit 60-second UI-state budget and set the complete root plus `BASE_PATH` journey budget to 180 seconds. Verified focused release, full web E2E, and web typecheck.
 - 2026-08-05 - Review remediation: replaced all template prompts with the observed cold-stack readiness failure, explicit expected UI state, reproducible root and `BASE_PATH` scenario, affected release-gate scope, confirmed timeout cause, rejected warm-run workaround, permanent 60-second readiness/180-second journey budgets, and the focused plus full-E2E regression evidence.
+- 2026-08-05 - Review remediation: replaced the per-scenario timeout interpretation with one 180-second deadline shared by the root and `BASE_PATH` journeys. Every source readiness and initial source-checkbox wait now receives `min(60 seconds, remaining shared budget)` and reports a clear shared-budget exhaustion error. Focused release journey passed (2/2 tests, 19 assertions); web typecheck passed.
