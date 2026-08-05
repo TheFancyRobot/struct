@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars -- Babel's parser does not mark type-only imports as used. */
 import type { ResearchEvent } from '@struct/domain'
 
 export function terminalResearchStatus(events: readonly ResearchEvent[]): {
