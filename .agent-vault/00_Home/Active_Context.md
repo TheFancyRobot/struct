@@ -58,14 +58,13 @@ _Last refreshed: 2026-08-05._
 ## Blockers
 
 <!-- AGENT-START:blockers -->
-- Phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|PHASE-11 v1.1 Research Usability]] - status: blocked - updated: 2026-07-26
-- Step: [[02_Phases/Phase_11_v1_1_research_usability/Steps/Step_02_add-saved-queries-views-and-research-templates|STEP-11-02 Add Saved Queries Views and Research Templates]] - status: blocked - phase: [[02_Phases/Phase_11_v1_1_research_usability/Phase|Phase 11 v1 1 research usability]] - updated: 2026-07-17
+- No blockers. DEC-0024 gate satisfied. Phase 11 unblocked.
 <!-- AGENT-END:blockers -->
 
 ## Open Questions
 
 - No unresolved design question remains in the completed Phase 09 work.
-- PHASE-10 is complete. Phase 11 remains blocked by the accepted DEC-0024 browser-coverage and design-consistency audit and must not advance until the audit and every resulting bug fix are validated and merged; do not perform the v1.0 release action without explicit authorization.
+- PHASE-10 is complete. DEC-0024 final browser E2E and cross-view design audit completed 2026-08-05: 0 new confirmed defects. DEC-0024 gate satisfied; Phase 11 unblocked. Do not perform the v1.0 release action without explicit authorization.
 
 ## Critical Bugs
 
@@ -75,5 +74,5 @@ _Last refreshed: 2026-08-05._
 
 ## Next Actions
 
-- Complete DEC-0024's full browser E2E coverage and cross-view design audit; record and fix every confirmed gap before Phase 11.
+- DEC-0024 audit is complete (0 new defects). Phase 11 may advance when ready.
 - Do not perform the v1.0 release action without explicit authorization.

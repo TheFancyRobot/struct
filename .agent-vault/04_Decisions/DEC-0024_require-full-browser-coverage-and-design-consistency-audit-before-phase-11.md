@@ -65,4 +65,5 @@ Use one note per durable choice. Record what was chosen, why, tradeoffs, and sup
 
 <!-- AGENT-START:decision-change-log -->
 - 2026-07-27 - Created and accepted as the mandatory gate before PHASE-11.
+- 2026-08-05 - DEC-0024 final browser E2E and cross-view design audit completed. 0 new confirmed defects found. DEC-0024 gate satisfied; Phase 11 unblocked. Session: [[05_Sessions/2026-08-05-052456-complete-responsive-accessibility-and-theme-behavior-pi|SESSION-2026-08-05-052456]].
 <!-- AGENT-END:decision-change-log -->

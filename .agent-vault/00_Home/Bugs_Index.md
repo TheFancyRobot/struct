@@ -29,11 +29,14 @@ Use this note as the manual table of contents for bug records in \`03_Bugs/\`.
 <!-- AGENT-START:bugs-index -->
 _Last rebuilt: 2026-08-05._
 
-- Notes indexed: 103
-- Status summary: fixed (98), invalid (5)
+- Notes indexed: 106
+- Status summary: new (3), fixed (98), invalid (5)
 
 | Id | Title | Status | Severity | Reported | Fixed | Linear |
 | --- | --- | --- | --- | --- | --- | --- |
+| BUG-0118 | [Project chat UI lacks recognizable conversation layout and collapsible columns](../03_Bugs/BUG-0118_project-chat-ui-lacks-recognizable-conversation-layout-and-collapsible-columns.md) | new | sev-3 | 2026-08-05 | - | - |
+| BUG-0119 | [Project navigation is over-spaced and lacks discoverable search and settings](../03_Bugs/BUG-0119_project-navigation-is-over-spaced-and-lacks-discoverable-search-and-settings.md) | new | sev-3 | 2026-08-05 | - | - |
+| BUG-0120 | [UI lacks inference provider and model configuration](../03_Bugs/BUG-0120_ui-lacks-inference-provider-and-model-configuration.md) | new | sev-3 | 2026-08-05 | - | - |
 | BUG-0059 | [standard local dev stack stages source uploads outside the worker artifact root](../03_Bugs/BUG-0059_standard-local-dev-stack-stages-source-uploads-outside-the-worker-artifact-root.md) | fixed | sev-1 | 2026-07-28 | 2026-07-28 | - |
 | BUG-0060 | [Clean real stack omits workspace bootstrap and blocks first project creation](../03_Bugs/BUG-0060_clean-real-stack-omits-workspace-bootstrap-and-blocks-first-project-creation.md) | fixed | sev-1 | 2026-07-28 | 2026-07-29 | - |
 | BUG-0061 | [Source import file picker has no accessible label](../03_Bugs/BUG-0061_source-import-file-picker-has-no-accessible-label.md) | fixed | sev-1 | 2026-07-28 | 2026-07-29 | - |
