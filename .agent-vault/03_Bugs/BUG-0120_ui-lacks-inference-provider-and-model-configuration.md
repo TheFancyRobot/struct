@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: UI lacks inference provider and model configuration
 bug_id: BUG-0120
-status: new
+status: resolved
 severity: sev-3
 category: integration
 reported_on: '2026-08-05'
-fixed_on: ''
-owner: ''
+fixed_on: '2026-08-05'
+owner: bug-0120-attempt-2
 created: '2026-08-05'
 updated: '2026-08-05'
 related_notes: |2-
@@ -126,3 +126,6 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-08-05 - Reported.
 - 2026-08-05 - User reported that provider connections and chat/embedding/vision model assignments have no main-menu configuration screen.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-05: Added the first persisted Settings slice: workspace-scoped provider metadata with write-only credential references, capability-tagged models, one model assignment per chat/embedding/vision role, and a reachable `/settings` screen. Focused API/UI tests, TypeScript checks, and focused lint pass. Remaining: provider update/disable/delete and real connection testing require the still-absent server-side secret resolution boundary; live chat/embedding resolution remains to be wired after that boundary exists.
+- 2026-08-05: Added provider update/enable-disable/delete controls, a server-only fail-closed connection-test boundary, and persisted enabled-provider runtime resolution for chat and embedding. Focused API, persistence, worker, web, lint, and TypeScript checks pass.
+- 2026-08-05: Fixed the inference-settings route test double to honor readonly capability contracts and guard route/indexed test values. `bun run typecheck` and `bun test --max-concurrency 1 apps/api/src/routes/inference-settings.test.ts` pass.

@@ -7,6 +7,7 @@ export function pageTitle(pathname: string, basePath: string): string {
   if (path === null) return 'Struct — Research Workspace'
 
   if (path === '/') return 'Projects — Struct'
+  if (path === '/settings') return 'Settings — Struct'
   if (/^\/projects\/[^/]+$/.test(path)) return 'Conversation — Struct'
   if (/^(?:\/sources|\/projects\/[^/]+\/sources)$/.test(path)) return 'Sources — Struct'
   if (/^\/projects\/[^/]+\/notes(?:\/[^/]+)?$/.test(path)) return 'Notes — Struct'

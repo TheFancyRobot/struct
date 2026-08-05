@@ -131,4 +131,9 @@ export const migrations: readonly Migration[] = [
     upPath: new URL('./0024_workspace_dataset_attachments.sql', import.meta.url).pathname,
     downPath: new URL('./0024_workspace_dataset_attachments.down.sql', import.meta.url).pathname,
   },
+  {
+    name: '0025_inference_settings',
+    upPath: new URL('./0025_inference_settings.sql', import.meta.url).pathname,
+    downPath: new URL('./0025_inference_settings.down.sql', import.meta.url).pathname,
+  },
 ] as const

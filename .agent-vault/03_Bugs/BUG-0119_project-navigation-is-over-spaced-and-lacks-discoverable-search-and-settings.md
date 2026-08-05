@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Project navigation is over-spaced and lacks discoverable search and settings
 bug_id: BUG-0119
-status: new
+status: fixed
 severity: sev-3
 category: frontend
 reported_on: '2026-08-05'
-fixed_on: ''
-owner: ''
+fixed_on: '2026-08-05'
+owner: bug_0119_attempt_1
 created: '2026-08-05'
 updated: '2026-08-05'
 related_notes: |2-
@@ -77,6 +77,9 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 ## Confirmed Root Cause
 
 - Not yet confirmed. Reproduce in the running app and inspect the shared navigation component, search state, route configuration, and responsive variants before implementation.
+- Confirmed in `WorkspaceNavigation`: both search fields were unconditional and the shared footer contained non-actionable prose; the only supported user setting was an unlabeled theme action, and no Settings route exists.
+- Fixed by making both existing filters on-demand disclosures with focus and Escape/close handling, tightening section spacing, removing the footer copy, and labeling the existing theme action as Settings rather than adding a dead route.
+- Correction: `/settings` now exists through BUG-0120. The navigation fix links to that real route; theme controls remain theme controls.
 
 ## Workaround
 
@@ -117,3 +120,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-08-05 - Reported.
 - 2026-08-05 - User supplied the Open Notebook sidebar screenshot as a compact-navigation reference and explicitly limited copying to Struct-relevant menu items.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-05 - Fixed: compacted `WorkspaceNavigation`, made project/source search on-demand with focus and Escape close, removed footer prose, and exposed the supported theme setting as Settings. Verified `workspace-shell.test.tsx`, `workspace-responsive.spec.ts`, `source-import.spec.ts`, and `@struct/web` typecheck.
+- 2026-08-05 - Corrected the retry: Settings is now the real `/settings` navigation link; the theme buttons are labeled only for their theme action. Verified `workspace-shell.test.tsx` and the web TypeScript check.

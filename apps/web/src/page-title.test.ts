@@ -4,6 +4,7 @@ import { pageTitle } from './page-title'
 describe('BUG-0072 workspace page titles', () => {
   it.each([
     ['/', 'Projects — Struct'],
+    ['/settings', 'Settings — Struct'],
     ['/sources', 'Sources — Struct'],
     ['/projects/project-1', 'Conversation — Struct'],
     ['/projects/project-1/sources', 'Sources — Struct'],

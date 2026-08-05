@@ -154,6 +154,11 @@ describe('production research workflow', () => {
         model: 'unused',
         maxElapsedMs: 10_000,
       },
+      resolveChatRuntimeConfig: () => Effect.succeed({
+        providerPackage: '@fancyrobot/fred-openai',
+        model: 'workspace-chat-model',
+        maxElapsedMs: 10_000,
+      }),
       retrieve: () => Effect.dieMessage('unused'),
       queryDataset: () => Effect.dieMessage('unused'),
       loadDurableState: () => Effect.succeed(Option.some({
@@ -170,6 +175,7 @@ describe('production research workflow', () => {
         _policy,
         graphDependencies,
       ) => Effect.gen(function* () {
+        expect(modelRouting.synthesis.primary.model).toBe('workspace-chat-model')
         const executor = yield* graphDependencies.models.resolve({
           role: 'synthesis',
           ...modelRouting.synthesis,
