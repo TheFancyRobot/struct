@@ -337,11 +337,10 @@ describe('source import browser path', () => {
 
       await page.goto(`${origin}/sources`, { waitUntil: 'domcontentloaded' })
       await page.getByRole('heading', { name: 'Source library', level: 1 }).waitFor()
-      // Reveal the workspace navigation search inputs, which are hidden behind the
-      // mobile sheet until it is opened.
+      // Search stays out of the compact navigation until its named control opens it.
       await page.getByRole('button', { name: 'Open workspace navigation' }).click()
-      await page.getByLabel('Search projects').waitFor()
-      await page.getByLabel('Search sources').waitFor()
+      expect(await page.getByLabel('Search projects').count()).toBe(0)
+      expect(await page.getByLabel('Search sources').count()).toBe(0)
 
       const undersized = await page.evaluate(() =>
         [...document.querySelectorAll<HTMLElement>(

@@ -147,7 +147,13 @@ export const WorkspaceNavigation: ParentComponent<{
   const projects = state.projects
   const [projectSearch, setProjectSearch] = createSignal('')
   const [sourceSearch, setSourceSearch] = createSignal('')
+  const [projectSearchOpen, setProjectSearchOpen] = createSignal(false)
+  const [sourceSearchOpen, setSourceSearchOpen] = createSignal(false)
   const [recentProjectIds, setRecentProjectIds] = createSignal(readRecentProjectIds())
+  let projectSearchInput: HTMLInputElement | undefined
+  let sourceSearchInput: HTMLInputElement | undefined
+  let projectSearchButton: HTMLButtonElement | undefined
+  let sourceSearchButton: HTMLButtonElement | undefined
   const [sources] = createResource(state.projectId, (projectId) =>
     projectId === null || !Schema.is(ProjectId)(projectId)
       ? null
@@ -192,6 +198,24 @@ export const WorkspaceNavigation: ParentComponent<{
     if (state.navigationSheetOpen()) props.onCloseSheet()
     focusSourceImportHeading()
   }
+  const openProjectSearch = () => {
+    setProjectSearchOpen(true)
+    focus(projectSearchInput)
+  }
+  const closeProjectSearch = () => {
+    setProjectSearch('')
+    setProjectSearchOpen(false)
+    focus(projectSearchButton)
+  }
+  const openSourceSearch = () => {
+    setSourceSearchOpen(true)
+    focus(sourceSearchInput)
+  }
+  const closeSourceSearch = () => {
+    setSourceSearch('')
+    setSourceSearchOpen(false)
+    focus(sourceSearchButton)
+  }
 
   createEffect(() => {
     const projectId = state.projectId()
@@ -231,10 +255,10 @@ export const WorkspaceNavigation: ParentComponent<{
           Collapse
         </button>
       </div>
-      <div class="min-h-0 flex-1 space-y-5 overflow-y-auto px-2 py-3 text-sm">
+      <div class="min-h-0 flex-1 space-y-3 overflow-y-auto px-2 py-2 text-sm">
         <Show when={state.projectId() === null && filteredRecentProjects().length > 0}>
           <section aria-labelledby="recent-projects-heading">
-            <h3 id="recent-projects-heading" class="mb-2 text-xs font-semibold uppercase tracking-wide text-base-content/60">
+            <h3 id="recent-projects-heading" class="mb-1 text-xs font-semibold uppercase tracking-wide text-base-content/60">
               Recents
             </h3>
             <ul class="menu w-full gap-1 p-0">
@@ -247,28 +271,50 @@ export const WorkspaceNavigation: ParentComponent<{
           </section>
         </Show>
         <section aria-labelledby="projects-heading">
-          <div class="mb-2 flex items-center justify-between gap-2">
+          <div class="mb-1 flex items-center justify-between gap-2">
             <h3 id="projects-heading" class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
               Projects
             </h3>
-            <a
-              href={withBasePath('/#project-create', appBasePath)}
-              class="btn btn-ghost min-h-11 px-3 text-xs"
-            >
-              Add project
-            </a>
+            <div class="flex gap-1">
+              <button
+                ref={projectSearchButton}
+                type="button"
+                class="btn btn-ghost min-h-11 min-w-11 px-0"
+                aria-label="Open project search"
+                aria-controls="project-search"
+                aria-expanded={projectSearchOpen()}
+                title="Search projects"
+                onClick={openProjectSearch}
+              >
+                ⌕
+              </button>
+              <a
+                href={withBasePath('/#project-create', appBasePath)}
+                class="btn btn-ghost min-h-11 px-3 text-xs"
+              >
+                Add project
+              </a>
+            </div>
           </div>
-          <label class="input input-sm mb-2 flex w-full items-center">
-            <span class="sr-only">Search projects</span>
-            <input
-              type="search"
-              class="grow"
-              aria-label="Search projects"
-              placeholder="Search projects"
-              value={projectSearch()}
-              onInput={(event) => setProjectSearch(event.currentTarget.value)}
-            />
-          </label>
+          <Show when={projectSearchOpen()}>
+            <label class="input input-sm mb-1 flex w-full items-center">
+              <span class="sr-only">Search projects</span>
+              <input
+                id="project-search"
+                ref={projectSearchInput}
+                type="search"
+                class="grow"
+                aria-label="Search projects"
+                placeholder="Search projects"
+                value={projectSearch()}
+                onInput={(event) => setProjectSearch(event.currentTarget.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Escape') closeProjectSearch()
+                }}
+              />
+              <button type="button" class="btn btn-ghost min-h-11 px-3 text-xs" aria-label="Close project search" onClick={closeProjectSearch}>Close</button>
+            </label>
+          </Show>
           <ul class="menu w-full gap-1 p-0">
             <For
               each={filteredProjects()}
@@ -292,29 +338,51 @@ export const WorkspaceNavigation: ParentComponent<{
           </ul>
         </section>
         <section aria-labelledby="navigation-sources-heading">
-          <div class="mb-2 flex items-center justify-between gap-2">
+          <div class="mb-1 flex items-center justify-between gap-2">
             <h3 id="navigation-sources-heading" class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
               Sources
             </h3>
-            <a
-              href={withBasePath('/sources#source-import-heading', appBasePath)}
-              class="btn btn-ghost min-h-11 px-3 text-xs"
-              onClick={addSource}
-            >
-              Add source
-            </a>
+            <div class="flex gap-1">
+              <button
+                ref={sourceSearchButton}
+                type="button"
+                class="btn btn-ghost min-h-11 min-w-11 px-0"
+                aria-label="Open source search"
+                aria-controls="source-search"
+                aria-expanded={sourceSearchOpen()}
+                title="Search sources"
+                onClick={openSourceSearch}
+              >
+                ⌕
+              </button>
+              <a
+                href={withBasePath('/sources#source-import-heading', appBasePath)}
+                class="btn btn-ghost min-h-11 px-3 text-xs"
+                onClick={addSource}
+              >
+                Add source
+              </a>
+            </div>
           </div>
-          <label class="input input-sm mb-2 flex w-full items-center">
-            <span class="sr-only">Search sources</span>
-            <input
-              type="search"
-              class="grow"
-              aria-label="Search sources"
-              placeholder="Search sources"
-              value={sourceSearch()}
-              onInput={(event) => setSourceSearch(event.currentTarget.value)}
-            />
-          </label>
+          <Show when={sourceSearchOpen()}>
+            <label class="input input-sm mb-1 flex w-full items-center">
+              <span class="sr-only">Search sources</span>
+              <input
+                id="source-search"
+                ref={sourceSearchInput}
+                type="search"
+                class="grow"
+                aria-label="Search sources"
+                placeholder="Search sources"
+                value={sourceSearch()}
+                onInput={(event) => setSourceSearch(event.currentTarget.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Escape') closeSourceSearch()
+                }}
+              />
+              <button type="button" class="btn btn-ghost min-h-11 px-3 text-xs" aria-label="Close source search" onClick={closeSourceSearch}>Close</button>
+            </label>
+          </Show>
           <Show
             when={state.projectId() !== null}
             fallback={
@@ -397,9 +465,6 @@ export const WorkspaceNavigation: ParentComponent<{
           {props.theme === 'struct-light' ? 'Dark' : 'Light'} theme
         </button>
       </div>
-      <p class="px-2 py-3 text-xs leading-relaxed text-base-content/60">
-        Source-grounded research with inspectable evidence.
-      </p>
     </nav>
   )
 }
