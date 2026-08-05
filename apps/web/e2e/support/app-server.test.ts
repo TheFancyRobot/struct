@@ -3,6 +3,7 @@ import { existsSync, readdirSync, rmSync } from 'node:fs'
 import { createServer as createHttpServer } from 'node:http'
 import { resolve } from 'node:path'
 import {
+  type CapturedProcess,
   isolatedDataEngineGatewayRunCommand,
   isolatedDataEngineNetworkCreateCommand,
   isolatedDataEngineRunCommand,

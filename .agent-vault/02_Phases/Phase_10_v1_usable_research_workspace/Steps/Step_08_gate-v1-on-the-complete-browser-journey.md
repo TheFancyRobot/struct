@@ -18,6 +18,7 @@ related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
   - '[[03_Bugs/BUG-0114_source-import-e2e-suite-shares-an-unstable-server-lifecycle|BUG-0114 Source-import E2E suite shares an unstable server lifecycle]]'
   - '[[03_Bugs/BUG-0115_release-journey-e2e-does-not-reliably-await-source-readiness|BUG-0115 Release journey E2E does not reliably await source readiness]]'
+  - '[[03_Bugs/BUG-0116_full-v1-browser-gate-leaves-dangling-lifecycle-and-source-readiness-failures|BUG-0116 Full v1 browser gate leaves dangling lifecycle and source readiness failures]]'
 tags:
   - agent-vault
   - step
