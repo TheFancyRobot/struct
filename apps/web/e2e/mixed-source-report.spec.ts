@@ -241,12 +241,15 @@ describe('mixed-source report browser workflow', () => {
 
     for (const label of ['[D1]', '[Q1]', '[M1]']) {
       const citation = page.getByRole('link', { name: label, exact: true })
+      const badge = citation.locator('.badge')
+      await citation.waitFor({ state: 'visible' })
+      await badge.waitFor({ state: 'visible' })
       const target = await citation.boundingBox()
-      const badge = await citation.locator('.badge').boundingBox()
+      const badgeBox = await badge.boundingBox()
       expect(target).not.toBeNull()
-      expect(badge).not.toBeNull()
+      expect(badgeBox).not.toBeNull()
       expect(target!.height).toBeGreaterThanOrEqual(44)
-      expect(badge!.height).toBeLessThan(44)
+      expect(badgeBox!.height).toBeLessThan(44)
     }
 
     await assertNoOverflow(page)

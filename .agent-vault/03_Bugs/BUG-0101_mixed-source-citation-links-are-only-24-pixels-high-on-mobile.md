@@ -91,3 +91,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
 - 2026-08-04 - Fixed: kept the compact visible citation badges inside 44px minimum-height link targets, using negative vertical margins to preserve the existing visual density. Verified with `bun test --timeout 30000 apps/web/src/components/mixed-source-report.test.tsx`, `bun test --timeout 60000 --max-concurrency 1 apps/web/e2e/mixed-source-report.spec.ts` (including a 390×844 measurement for [D1], [Q1], and [M1]), web TypeScript check, targeted ESLint, and production web build.
+- 2026-08-04: Automated review follow-up: citation touch-target E2E coverage now explicitly waits for each citation link and its nested `.badge` to be visible before bounding-box measurement. Focused validation passed: `bun test --timeout 60000 --max-concurrency 1 apps/web/e2e/mixed-source-report.spec.ts` (7 passing, 0 failing, 200 assertions).
