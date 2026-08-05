@@ -72,6 +72,48 @@ const ingestionManifestRef =
 const ingestionContentHash =
   'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
 
+async function cleanup(sql: postgresTypes.Sql): Promise<void> {
+  await sql.unsafe(
+    `DELETE FROM event_journal WHERE workspace_id = ANY($1::uuid[])`,
+    [[workspaceId, foreignWorkspaceId]],
+  )
+  await sql.unsafe(
+    `DELETE FROM job_queue WHERE workspace_id = ANY($1::uuid[])`,
+    [[workspaceId, foreignWorkspaceId]],
+  )
+  await sql.unsafe(
+    `DELETE FROM research_run_results WHERE run_id = ANY($1::uuid[])`,
+    [[
+      runId,
+      completeRunId,
+      failRunId,
+      scopeRunId,
+      duplicateRunId,
+      resultConflictRunId,
+      citationConflictRunId,
+      citationOwnerRunId,
+    ]],
+  )
+  await sql.unsafe(`DELETE FROM research_runs WHERE thread_id = $1`, [threadId])
+  await sql.unsafe(`DELETE FROM research_threads WHERE id = $1`, [threadId])
+  await sql.unsafe(
+    `DELETE FROM source_versions WHERE source_id = ANY($1::uuid[])`,
+    [[sourceId, foreignSourceId]],
+  )
+  await sql.unsafe(
+    `DELETE FROM sources WHERE id = ANY($1::uuid[])`,
+    [[sourceId, foreignSourceId]],
+  )
+  await sql.unsafe(
+    `DELETE FROM projects WHERE id = ANY($1::uuid[])`,
+    [[projectId, foreignProjectId]],
+  )
+  await sql.unsafe(
+    `DELETE FROM workspaces WHERE id = ANY($1::uuid[])`,
+    [[workspaceId, foreignWorkspaceId]],
+  )
+}
+
 describeIf('attempt and workspace ownership persistence (PostgreSQL)', () => {
   let sql: postgresTypes.Sql
   let jobLayer: Layer.Layer<JobQueueRepo>
@@ -81,6 +123,7 @@ describeIf('attempt and workspace ownership persistence (PostgreSQL)', () => {
   beforeAll(async () => {
     if (!DATABASE_URL) return
     sql = postgres(DATABASE_URL, { max: 2, idle_timeout: 5 })
+    await cleanup(sql)
     const sqlLayer = SqlClientLive(sql)
     jobLayer = Layer.provide(JobQueueRepo.Default, sqlLayer)
     versionLayer = Layer.provide(SourceVersionRepo.Default, sqlLayer)
@@ -253,45 +296,7 @@ describeIf('attempt and workspace ownership persistence (PostgreSQL)', () => {
 
   afterAll(async () => {
     if (!sql) return
-    await sql.unsafe(
-      `DELETE FROM event_journal WHERE workspace_id = ANY($1::uuid[])`,
-      [[workspaceId, foreignWorkspaceId]],
-    )
-    await sql.unsafe(
-      `DELETE FROM job_queue WHERE workspace_id = ANY($1::uuid[])`,
-      [[workspaceId, foreignWorkspaceId]],
-    )
-    await sql.unsafe(
-      `DELETE FROM research_run_results WHERE run_id = ANY($1::uuid[])`,
-      [[
-        runId,
-        completeRunId,
-        failRunId,
-        scopeRunId,
-        duplicateRunId,
-        resultConflictRunId,
-        citationConflictRunId,
-        citationOwnerRunId,
-      ]],
-    )
-    await sql.unsafe(`DELETE FROM research_runs WHERE thread_id = $1`, [threadId])
-    await sql.unsafe(`DELETE FROM research_threads WHERE id = $1`, [threadId])
-    await sql.unsafe(
-      `DELETE FROM source_versions WHERE source_id = ANY($1::uuid[])`,
-      [[sourceId, foreignSourceId]],
-    )
-    await sql.unsafe(
-      `DELETE FROM sources WHERE id = ANY($1::uuid[])`,
-      [[sourceId, foreignSourceId]],
-    )
-    await sql.unsafe(
-      `DELETE FROM projects WHERE id = ANY($1::uuid[])`,
-      [[projectId, foreignProjectId]],
-    )
-    await sql.unsafe(
-      `DELETE FROM workspaces WHERE id = ANY($1::uuid[])`,
-      [[workspaceId, foreignWorkspaceId]],
-    )
+    await cleanup(sql)
     await sql.end()
   })
 
