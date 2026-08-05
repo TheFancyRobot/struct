@@ -8,7 +8,7 @@ phase: '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usab
 status: completed
 owner: phase10-step02-attempt1
 created: '2026-07-21'
-updated: '2026-07-26'
+updated: '2026-08-05'
 depends_on:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_01_establish-workspace-and-project-lifecycle|STEP-10-01 Establish Workspace and Project Lifecycle]]'
 related_sessions:
@@ -18,6 +18,7 @@ related_bugs:
   - '[[03_Bugs/BUG-0042_center-workspace-is-fragmented-by-redundant-title-chrome-and-card-framing|BUG-0042 Center workspace is fragmented by redundant title chrome and card framing]]'
   - '[[03_Bugs/BUG-0043_workspace-navigation-lacks-project-source-and-recent-discovery-sections|BUG-0043 Workspace navigation lacks project, source, and recent discovery sections]]'
   - '[[03_Bugs/BUG-0044_navigation-discovery-sections-lack-direct-creation-actions|BUG-0044 Navigation discovery sections lack direct creation actions]]'
+  - '[[03_Bugs/BUG-0119_project-navigation-is-over-spaced-and-lacks-discoverable-search-and-settings|BUG-0119 Project navigation is over-spaced and lacks discoverable search and settings]]'
 tags:
   - agent-vault
   - step
