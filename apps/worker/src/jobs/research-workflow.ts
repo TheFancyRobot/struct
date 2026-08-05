@@ -137,9 +137,7 @@ export function makeProductionResearchWorkflow(
         const runtimeConfig = dependencies.resolveChatRuntimeConfig === undefined
           ? dependencies.fredConfig
           : yield* dependencies.resolveChatRuntimeConfig(workspaceId).pipe(
-              Effect.mapError(() => new ResearchProviderFailure({
-                message: 'Configured chat model could not be resolved',
-              })),
+              Effect.catchAll(() => Effect.succeed(dependencies.fredConfig)),
             )
         let evidence: ReadonlyArray<TextEvidence> = []
         let datasetResults:

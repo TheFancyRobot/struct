@@ -84,6 +84,7 @@ export {
   NoteProvenanceError,
   InferenceSettingsRepo,
   type InferenceRuntimeModel,
+  type InferenceRuntimeProvider,
   // Persistence errors
   QueryError,
   EntityNotFoundError,

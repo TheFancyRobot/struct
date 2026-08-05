@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars -- Babel does not mark Solid JSX imports as used. */
 import { For, Show, createResource, createSignal, type Component } from 'solid-js'
-import { assignInferenceModel, createInferenceModel, createInferenceProvider, deleteInferenceProvider, fetchInferenceSettings, setInferenceProviderEnabled, testInferenceProvider, type InferenceRole, updateInferenceProvider } from '../api/inference-settings'
+import { assignInferenceModel, clearInferenceModelAssignment, createInferenceModel, createInferenceProvider, deleteInferenceProvider, fetchInferenceSettings, setInferenceProviderEnabled, testInferenceProvider, type InferenceRole, updateInferenceProvider } from '../api/inference-settings'
 
 const roles: ReadonlyArray<InferenceRole> = ['chat', 'embedding', 'vision']
 
@@ -12,7 +12,9 @@ export const SettingsPage: Component = () => {
   }
   const submitProvider = (event: SubmitEvent) => {
     event.preventDefault(); const form = event.currentTarget as HTMLFormElement
-    void save(() => createInferenceProvider({ type: new FormData(form).get('type')?.toString() ?? '', endpoint: new FormData(form).get('endpoint')?.toString() ?? '', credentialReference: new FormData(form).get('credentialReference')?.toString() ?? '' })).then(() => form.reset())
+    const data = new FormData(form)
+    const endpoint = data.get('endpoint')?.toString().trim()
+    void save(() => createInferenceProvider({ type: '@fancyrobot/fred-openai', ...(endpoint === '' ? {} : { endpoint }), credentialReference: data.get('credentialReference')?.toString() ?? '' })).then(() => form.reset())
   }
   const submitModel = (event: SubmitEvent) => {
     event.preventDefault(); const form = event.currentTarget as HTMLFormElement; const data = new FormData(form)
@@ -21,7 +23,8 @@ export const SettingsPage: Component = () => {
   const updateProvider = (event: SubmitEvent, id: string) => {
     event.preventDefault(); const data = new FormData(event.currentTarget as HTMLFormElement)
     const credentialReference = data.get('credentialReference')?.toString().trim()
-    void save(() => updateInferenceProvider(id, { type: data.get('type')?.toString() ?? '', endpoint: data.get('endpoint')?.toString() ?? '', ...(credentialReference === '' ? {} : { credentialReference }) }))
+    const endpoint = data.get('endpoint')?.toString().trim()
+    void save(() => updateInferenceProvider(id, { type: '@fancyrobot/fred-openai', ...(endpoint === '' ? {} : { endpoint }), ...(credentialReference === '' ? {} : { credentialReference }) }))
   }
   const testProvider = async (id: string) => {
     try { setMessage((await testInferenceProvider(id)).message) } catch (error) { setMessage(error instanceof Error ? error.message : 'Connection test could not be started.') }
@@ -33,9 +36,9 @@ export const SettingsPage: Component = () => {
       <h2 id="providers-heading" class="font-semibold">Provider connections</h2>
       <p class="text-sm text-base-content/70">Credential references are write-only and never shown again.</p>
       <form class="grid gap-3 sm:grid-cols-2" onSubmit={submitProvider}>
-        <label class="form-control"><span class="label-text">Provider type</span><input class="input input-bordered" name="type" required placeholder="OpenAI" /></label>
+        <label class="form-control"><span class="label-text">Provider type</span><input class="input input-bordered" value="OpenAI" readonly aria-label="Provider type" /></label>
         <label class="form-control"><span class="label-text">Endpoint (optional)</span><input class="input input-bordered" name="endpoint" type="url" placeholder="https://api.example.com" /></label>
-        <label class="form-control sm:col-span-2"><span class="label-text">Credential reference</span><input class="input input-bordered" name="credentialReference" required autocomplete="off" placeholder="secret://team/openai" /></label>
+        <label class="form-control sm:col-span-2"><span class="label-text">Credential reference</span><input class="input input-bordered" name="credentialReference" required autocomplete="off" placeholder="env://OPENAI_API_KEY" /></label>
         <button class="btn btn-primary w-fit" type="submit">Save provider</button>
       </form>
       <ul class="space-y-2"><For each={settings()?.providers ?? []}>{(provider) => <li class="rounded-box bg-base-200 px-3 py-2 text-sm">
@@ -45,7 +48,7 @@ export const SettingsPage: Component = () => {
           <button class="btn btn-ghost btn-xs" type="button" onClick={() => void save(() => deleteInferenceProvider(provider.id))}>Delete</button>
         </div>
         <details class="mt-2"><summary class="cursor-pointer">Update</summary><form class="mt-2 grid gap-2 sm:grid-cols-2" onSubmit={(event) => updateProvider(event, provider.id)}>
-          <input class="input input-bordered input-sm" name="type" required value={provider.type} aria-label="Provider type" />
+          <input class="input input-bordered input-sm" value="OpenAI" readonly aria-label="Provider type" />
           <input class="input input-bordered input-sm" name="endpoint" type="url" value={provider.endpoint ?? ''} aria-label="Endpoint" />
           <input class="input input-bordered input-sm" name="credentialReference" autocomplete="off" placeholder="New credential reference (optional)" aria-label="New credential reference" />
           <button class="btn btn-primary btn-sm w-fit" type="submit">Save update</button>
@@ -62,7 +65,7 @@ export const SettingsPage: Component = () => {
           <button class="btn btn-primary w-fit" type="submit">Save model</button>
         </form>
       </Show>
-      <div class="space-y-3"><For each={roles}>{(role) => <label class="form-control"><span class="label-text capitalize">{role} model</span><select class="select select-bordered" value={settings()?.assignments[role] ?? ''} onChange={(event) => event.currentTarget.value !== '' && void save(() => assignInferenceModel(role, event.currentTarget.value))}><option value="">No model selected</option><For each={(settings()?.models ?? []).filter((model) => model.capabilities.includes(role) && settings()?.providers.some((provider) => provider.id === model.providerId && provider.enabled))}>{(model) => <option value={model.id}>{model.name}</option>}</For></select></label>}</For></div>
+      <div class="space-y-3"><For each={roles}>{(role) => <label class="form-control"><span class="label-text capitalize">{role} model</span><select class="select select-bordered" value={settings()?.assignments[role] ?? ''} onChange={(event) => { const modelId = event.currentTarget.value; void save(() => modelId === '' ? clearInferenceModelAssignment(role) : assignInferenceModel(role, modelId)) }}><option value="">No model selected</option><For each={(settings()?.models ?? []).filter((model) => model.capabilities.includes(role) && settings()?.providers.some((provider) => provider.id === model.providerId && provider.enabled))}>{(model) => <option value={model.id}>{model.name}</option>}</For></select></label>}</For></div>
     </section>
   </section>
 }

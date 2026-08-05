@@ -51,6 +51,7 @@ import { TextRetrieval } from '@struct/retrieval'
 import {
   fredRuntimeConfig,
   preflightFredRuntime,
+  resolveInferenceProviderCredential,
   runFredResearchPlanning,
 } from '@struct/workflows'
 import {
@@ -158,9 +159,22 @@ const program = Effect.gen(function* () {
   const configuredChatRuntime = (workspaceId: string) =>
     InferenceSettingsRepo.resolveRuntimeModel(workspaceId, 'chat').pipe(
       Effect.provide(inferenceSettingsLayer),
-      Effect.map((route) => route === null
-        ? fredConfig
-        : { ...fredConfig, providerPackage: route.providerPackage, model: route.model }),
+      Effect.catchAll(() => Effect.logWarning('Inference settings lookup failed; using deployment default.').pipe(
+        Effect.as(null),
+      )),
+      Effect.flatMap((route) => route === null
+        ? Effect.succeed(fredConfig)
+        : resolveInferenceProviderCredential(route.credentialReference).pipe(
+            Effect.map((credential) => ({
+              ...fredConfig,
+              providerPackage: route.providerPackage,
+              model: route.model,
+              providerConfig: {
+                apiKeyEnvVar: credential.environmentVariable,
+                ...(route.endpoint === null ? {} : { baseUrl: route.endpoint }),
+              },
+            })),
+          )),
     )
   const dataEngineClient = yield* DataEngineClient.pipe(
     Effect.provide(DataEngineClient.Default),
