@@ -127,6 +127,10 @@ import { durableArtifactRoute } from './routes/durable-artifacts'
 import { reportExportRoute } from './routes/report-export'
 import { noteRoute } from './routes/notes'
 import { inferenceSettingsRoute } from './routes/inference-settings'
+import {
+  researchHistoryResponse,
+  serializeCompletedResearch,
+} from './routes/research-history'
 import { workspaceBootstrapLoop } from './workspace-bootstrap'
 
 interface ResearchRequestBody {
@@ -1121,6 +1125,7 @@ const server = Effect.gen(function* () {
                 run.id,
               ).pipe(
                 Effect.provide(projectionLayer),
+                Effect.flatMap(serializeCompletedResearch),
                 Effect.map((result) => ({ run, result: Option.some(result) })),
               ),
           ),
@@ -1128,7 +1133,7 @@ const server = Effect.gen(function* () {
         if (history._tag === 'Failure') {
           return jsonResponse({ error: 'ResearchServiceUnavailable' }, 503)
         }
-        return jsonResponse({
+        return researchHistoryResponse({
           thread: {
             ...thread.value,
             createdAt: Number(thread.value.createdAt),

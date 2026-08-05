@@ -26,55 +26,59 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Summary
 
-- Conversation history review feedback leaves reusable chat incomplete.
-- Related notes: none linked yet.
+- Completed conversation runs now return their persisted answer and citations, including dataset citations, through the project-scoped history endpoint.
+- The response is identity-scoped and explicitly non-storable.
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- A completed run with a dataset citation reached `JSON.stringify` with a `bigint` `createdAt`, causing the history request to fail instead of returning the thread.
+- The authenticated history response did not set `Cache-Control: no-store`.
+- Before the initial fix, the client only received run metadata and rendered a completed-status placeholder; repeated conversation panels also shared a heading ID.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- History returns each completed run's persisted answer, document citations, and dataset citations as JSON-safe values.
+- The browser and intermediaries do not store identity-scoped conversation history.
+- Each rendered conversation panel has its own accessible heading ID.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Complete a research run that links at least one dataset citation.
+2. Authenticate and request `GET /api/projects/:projectId/research/:threadId`.
+3. Before the fix, the server throws while serializing `DatasetCitation.createdAt`; without a dataset citation, the response still omitted `Cache-Control: no-store`.
 
 ## Scope / Blast Radius
 
-- List affected packages, commands, integrations, environments, or users.
+- `apps/api/src/main.ts` project-scoped research-thread history response.
+- `apps/api/src/routes/research-history.ts` JSON serialization and cache policy.
+- `apps/web` conversation history consumers of completed answers and citations.
 
 ## Suspected Root Cause
 
-- Record current theories and assumptions.
+- The completed projection carries domain `bigint` timestamps, while the HTTP boundary serializes arbitrary values with `JSON.stringify`.
 
 ## Confirmed Root Cause
 
-- Record the proven cause and decisive evidence.
-- The thread-history endpoint returned only `ResearchRun` metadata. `ConversationHistory` therefore rendered a status placeholder even though `ResearchProjectionRepo.findCompleted` already persisted the answer and citations. Its fixed heading ID was also shared across component instances.
-
-- The endpoint now attaches the existing scoped completed projection to completed runs. The client decodes that result, and the component renders it with a unique Solid ID per instance.
+- The thread-history endpoint attached the completed persistence projection directly to its JSON response. `DatasetCitation.createdAt` is decoded as `bigint`, which `JSON.stringify` rejects. The endpoint also used the default JSON helper with no cache directive.
+- The endpoint now schema-encodes completed dataset citations before serialization and returns `Cache-Control: no-store`. The prior fix already attaches the scoped projection, decodes it in the client, and uses instance-safe Solid heading IDs.
 
 ## Workaround
 
-- Describe any temporary mitigation and remaining risk.
+- No safe client-side workaround existed: the server failed before returning a completed history item containing dataset evidence.
 
 ## Permanent Fix Plan
 
-- Describe the intended durable fix.
+- Keep the persistence projection typed internally, encode domain values only at the HTTP boundary, and retain the no-store response policy for this authenticated endpoint.
 
 ## Regression Coverage Needed
 
-- List tests, fixtures, reproductions, alerts, or docs updates needed.
-- Rendered component coverage verifies persisted answer/citation output, absence of the completed-status placeholder, and distinct heading IDs. API decoding coverage verifies the persisted result contract.
+- Rendered component coverage verifies persisted answer/citation output, absence of the completed-status placeholder, and distinct heading IDs.
+- `apps/api/src/routes/research-history.test.ts` verifies a completed dataset citation serializes safely and the response has `Cache-Control: no-store`.
 
 ## Related Notes
 
 <!-- AGENT-START:bug-related-notes -->
-- None yet.
+- [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_04_deliver-source-grounded-conversation|STEP-10-04 Deliver Source Grounded Conversation]]
 <!-- AGENT-END:bug-related-notes -->
 
 ## Timeline
@@ -83,3 +87,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-08-05 - Reported.
 <!-- AGENT-END:bug-timeline -->
 - 2026-08-05 - Fixed: completed thread history now returns and renders persisted answers and citations; heading IDs are instance-safe. Verified with `bun run typecheck` and focused web tests (17 passing).
+- 2026-08-05 - Fixed review findings: completed dataset citations are schema-encoded before JSON serialization and history replies set `Cache-Control: no-store`. Verified with `bun test ./apps/api/src/routes/research-history.test.ts` and `bun run typecheck`.
+- 2026-08-05 - PR #161 review found that the identity-scoped `GET /api/projects/:projectId/research/:threadId` history response could pass `DatasetCitation.createdAt` as a bigint to `JSON.stringify`, and lacked `Cache-Control: no-store`. Fixed by schema-encoding completed dataset citations before the HTTP boundary and returning the history response with `Cache-Control: no-store`; focused regression coverage verifies both.
