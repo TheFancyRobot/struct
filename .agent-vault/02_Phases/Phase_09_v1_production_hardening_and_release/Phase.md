@@ -24,14 +24,15 @@ related_architecture:
 related_decisions:
   - '[[04_Decisions/DEC-0009_sandbox-filesystem-roots-and-allowlist-read-only-sql|DEC-0009 Sandbox Filesystem Roots and Allowlist Read-Only SQL]]'
   - '[[04_Decisions/DEC-0011_gate-releases-on-a-reproducible-25000-file-evaluation-corpus|DEC-0011 Gate Releases on a Reproducible 25000-File Evaluation Corpus]]'
-related_bugs: |-
-  [[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]
-  [[03_Bugs/BUG-0014_documentation-roadmap-links-point-to-removed-phase-paths|BUG-0014 Documentation roadmap links point to removed phase paths]]
-  [[03_Bugs/BUG-0015_citation-navigation-bypasses-configured-web-base-path|BUG-0015 Citation navigation bypasses configured web base path]]
-  [[03_Bugs/BUG-0016_base-path-citation-regression-test-is-not-isolated-in-the-full-test-suite|BUG-0016 Base-path citation regression test is not isolated in the full test suite]]
-  [[03_Bugs/BUG-0017_staged-planning-documents-fail-whitespace-validation|BUG-0017 Staged planning documents fail whitespace validation]]
-  [[03_Bugs/BUG-0121_canonical-v1-performance-resilience-report-hashes-are-stale|BUG-0121 Canonical v1 performance resilience report hashes are stale]]
-  [[03_Bugs/BUG-0122_full-test-suite-leaks-persistence-ownership-state-across-integration-tests|BUG-0122 Full test suite leaks persistence ownership state across integration tests]]
+related_bugs:
+  - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
+  - '[[03_Bugs/BUG-0014_documentation-roadmap-links-point-to-removed-phase-paths|BUG-0014 Documentation roadmap links point to removed phase paths]]'
+  - '[[03_Bugs/BUG-0015_citation-navigation-bypasses-configured-web-base-path|BUG-0015 Citation navigation bypasses configured web base path]]'
+  - '[[03_Bugs/BUG-0016_base-path-citation-regression-test-is-not-isolated-in-the-full-test-suite|BUG-0016 Base-path citation regression test is not isolated in the full test suite]]'
+  - '[[03_Bugs/BUG-0017_staged-planning-documents-fail-whitespace-validation|BUG-0017 Staged planning documents fail whitespace validation]]'
+  - '[[03_Bugs/BUG-0121_canonical-v1-performance-resilience-report-hashes-are-stale|BUG-0121 Canonical v1 performance resilience report hashes are stale]]'
+  - '[[03_Bugs/BUG-0122_full-test-suite-leaks-persistence-ownership-state-across-integration-tests|BUG-0122 Full test suite leaks persistence ownership state across integration tests]]'
+  - '[[03_Bugs/BUG-0124_vault-link-metadata-and-managed-blocks-drift-from-their-contract|BUG-0124 Vault link metadata and managed blocks drift from their contract]]'
 tags:
   - agent-vault
   - phase
@@ -153,6 +154,9 @@ Use this note as the canonical bounded milestone. Detailed execution belongs in 
 - [[03_Bugs/BUG-0015_citation-navigation-bypasses-configured-web-base-path|BUG-0015 Citation navigation bypasses configured web base path]]
 - [[03_Bugs/BUG-0016_base-path-citation-regression-test-is-not-isolated-in-the-full-test-suite|BUG-0016 Base-path citation regression test is not isolated in the full test suite]]
 - [[03_Bugs/BUG-0017_staged-planning-documents-fail-whitespace-validation|BUG-0017 Staged planning documents fail whitespace validation]]
+- [[03_Bugs/BUG-0121_canonical-v1-performance-resilience-report-hashes-are-stale|BUG-0121 Canonical v1 performance resilience report hashes are stale]]
+- [[03_Bugs/BUG-0122_full-test-suite-leaks-persistence-ownership-state-across-integration-tests|BUG-0122 Full test suite leaks persistence ownership state across integration tests]]
+- [[03_Bugs/BUG-0124_vault-link-metadata-and-managed-blocks-drift-from-their-contract|BUG-0124 Vault link metadata and managed blocks drift from their contract]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps
