@@ -217,6 +217,11 @@ describe('conversation requests', () => {
           status: 'completed',
           createdAt: 1,
           updatedAt: 2,
+          result: {
+            answer: 'July 18.',
+            citations: [{ id: citationId, sourceVersionId, locator: 'lines:1-1' }],
+            datasetCitations: [],
+          },
         }],
       }), { headers: { 'Content-Type': 'application/json' } }),
       { preconnect: originalFetch.preconnect },
@@ -225,5 +230,6 @@ describe('conversation requests', () => {
     const history = await fetchResearchThread(projectId, threadId)
     expect(history.runs[0]?.question).toBe('First question')
     expect(history.runs[0]?.createdAt).toBe(1n)
+    expect(history.runs[0]?.result?.answer).toBe('July 18.')
   })
 })

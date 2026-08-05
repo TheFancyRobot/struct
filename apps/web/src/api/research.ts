@@ -1,15 +1,17 @@
 /* eslint-disable no-unused-vars -- Babel's parser does not mark type-only imports as used. */
 import { Effect, Schema } from 'effect'
 import {
+  CitationId,
   CitationDetail,
+  DatasetCitation,
   DatasetCitationEvidence,
   JobQueueId,
   ResearchRunId,
   ResearchStatus,
   ResearchThreadId,
-  ResearchRun,
   ResearchThread,
   RecursiveRunProgress,
+  SourceVersionId,
 } from '@struct/domain'
 import type * as typeDomain from '@struct/domain'
 import { apiPath, basePathFromPublicBaseUrl } from '../base-path'
@@ -19,7 +21,23 @@ const appBasePath = basePathFromPublicBaseUrl(import.meta.env.BASE_URL)
 const ResearchThreadList = Schema.Struct({ items: Schema.Array(ResearchThread) })
 const ResearchThreadHistory = Schema.Struct({
   thread: ResearchThread,
-  runs: Schema.Array(ResearchRun),
+  runs: Schema.Array(Schema.Struct({
+    id: ResearchRunId,
+    threadId: ResearchThreadId,
+    question: Schema.String,
+    status: ResearchStatus,
+    createdAt: Schema.BigIntFromNumber,
+    updatedAt: Schema.BigIntFromNumber,
+    result: Schema.optional(Schema.Struct({
+      answer: Schema.String,
+      citations: Schema.Array(Schema.Struct({
+        id: CitationId,
+        sourceVersionId: SourceVersionId,
+        locator: Schema.String,
+      })),
+      datasetCitations: Schema.Array(DatasetCitation),
+    })),
+  })),
 })
 const StartedResearch = Schema.Struct({
   threadId: ResearchThreadId,

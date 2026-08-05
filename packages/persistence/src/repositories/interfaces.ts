@@ -739,7 +739,7 @@ function makeResearchThreadRepositoryImpl(sql: import('../sql-client.js').SqlCli
 export interface ResearchRunRepository {
   readonly create: (run: typeof Domain.ResearchRun.Type) => Effect.Effect<typeof Domain.ResearchRun.Type, PersistenceError, never>
   readonly findById: (id: typeof Domain.ResearchRunId.Type) => Effect.Effect<typeof Domain.ResearchRun.Type, PersistenceError, never>
-  readonly findByThreadId: (threadId: typeof Domain.ResearchThreadId.Type) => Effect.Effect<ReadonlyArray<typeof Domain.ResearchRun.Type>, PersistenceError, never>
+  readonly findByThreadId: (threadId: typeof Domain.ResearchThreadId.Type, limit: number) => Effect.Effect<ReadonlyArray<typeof Domain.ResearchRun.Type>, PersistenceError, never>
   readonly updateStatus: (id: typeof Domain.ResearchRunId.Type, status: typeof Domain.ResearchStatus.Type) => Effect.Effect<typeof Domain.ResearchRun.Type, PersistenceError, never>
 }
 
@@ -797,13 +797,14 @@ function makeResearchRunRepositoryImpl(sql: import('../sql-client.js').SqlClient
         }),
       ),
 
-    findByThreadId: (threadId: typeof Domain.ResearchThreadId.Type) =>
+    findByThreadId: (threadId: typeof Domain.ResearchThreadId.Type, limit: number) =>
       Effect.tryPromise({
         try: () => sql.unsafe(
           `SELECT * FROM research_runs
            WHERE thread_id = $1
-           ORDER BY created_at DESC, id DESC`,
-          [threadId],
+           ORDER BY created_at DESC, id DESC
+           LIMIT $2`,
+          [threadId, limit],
         ),
         catch: (err) => new QueryError({ operation: 'findByThreadId', entity: 'ResearchRun', message: String(err) }),
       }).pipe(

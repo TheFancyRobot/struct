@@ -127,6 +127,11 @@ import { durableArtifactRoute } from './routes/durable-artifacts'
 import { reportExportRoute } from './routes/report-export'
 import { noteRoute } from './routes/notes'
 import { inferenceSettingsRoute } from './routes/inference-settings'
+import {
+  MAX_RESEARCH_HISTORY_RUNS,
+  researchHistoryResponse,
+  serializeResearchHistoryRuns,
+} from './routes/research-history'
 import { workspaceBootstrapLoop } from './workspace-bootstrap'
 
 interface ResearchRequestBody {
@@ -1104,24 +1109,44 @@ const server = Effect.gen(function* () {
           || project.value.workspaceId !== identity.workspaceId
         ) return jsonResponse({ error: 'ResourceNotFound' }, 404)
         const runs = await Runtime.runPromiseExit(effectRuntime)(
-          ResearchRunRepo.findByThreadId(ids.value.threadId).pipe(
+          ResearchRunRepo.findByThreadId(
+            ids.value.threadId,
+            MAX_RESEARCH_HISTORY_RUNS,
+          ).pipe(
             Effect.provide(researchRunLayer),
           ),
         )
         if (runs._tag === 'Failure') {
           return jsonResponse({ error: 'ResearchServiceUnavailable' }, 503)
         }
-        return jsonResponse({
+        const completedRunIds = runs.value
+          .filter((run) => run.status === 'completed')
+          .map((run) => run.id)
+        const projections = await Runtime.runPromiseExit(effectRuntime)(
+          ResearchProjectionRepo.findCompletedByRunIds(
+            identity.workspaceId,
+            ids.value.projectId,
+            completedRunIds,
+          ).pipe(
+            Effect.provide(projectionLayer),
+          ),
+        )
+        if (projections._tag === 'Failure') {
+          return jsonResponse({ error: 'ResearchServiceUnavailable' }, 503)
+        }
+        const history = await Runtime.runPromiseExit(effectRuntime)(
+          serializeResearchHistoryRuns(runs.value, projections.value),
+        )
+        if (history._tag === 'Failure') {
+          return jsonResponse({ error: 'ResearchServiceUnavailable' }, 503)
+        }
+        return researchHistoryResponse({
           thread: {
             ...thread.value,
             createdAt: Number(thread.value.createdAt),
             updatedAt: Number(thread.value.updatedAt),
           },
-          runs: [...runs.value].reverse().map((run) => ({
-            ...run,
-            createdAt: Number(run.createdAt),
-            updatedAt: Number(run.updatedAt),
-          })),
+          runs: history.value,
         })
       }
       if (researchThreadRoute !== null && req.method === 'POST') {

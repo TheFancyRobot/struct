@@ -1,5 +1,5 @@
 import { Effect, Schema } from 'effect'
-import { DatasetCitation } from '@struct/domain'
+import { DatasetCitation, ResearchRunId } from '@struct/domain'
 import type * as typeDomain from '@struct/domain'
 import { EntityNotFoundError, QueryError } from '../errors.js'
 import { SqlClient } from '../sql-client.js'
@@ -31,6 +31,69 @@ export interface CitationSourceProjection {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+interface CompletedResearchProjectionRow {
+  readonly runId: typeof typeDomain.ResearchRunId.Type
+  readonly projection: CompletedResearchProjection
+}
+
+function decodeCompletedResearchProjection(
+  row: Record<string, unknown>,
+): Effect.Effect<CompletedResearchProjectionRow, QueryError, never> {
+  return Effect.gen(function* () {
+    const runId = yield* Schema.decodeUnknown(ResearchRunId)(row['run_id']).pipe(
+      Effect.mapError(() => new QueryError({
+        operation: 'findCompletedByRunIds',
+        entity: 'ResearchProjection',
+        message: 'Research result data is invalid',
+      })),
+    )
+    if (typeof row['answer'] !== 'string') {
+      return yield* new QueryError({
+        operation: 'findCompletedByRunIds',
+        entity: 'ResearchProjection',
+        message: 'Research result data is invalid',
+      })
+    }
+    const citations = row['citations']
+    const datasetCitations = row['dataset_citations']
+    if (!Array.isArray(citations) || !Array.isArray(datasetCitations)) {
+      return yield* new QueryError({
+        operation: 'findCompletedByRunIds',
+        entity: 'ResearchProjection',
+        message: 'Research result data is invalid',
+      })
+    }
+    const decodedDatasetCitations = yield* Schema.decodeUnknown(
+      Schema.Array(DatasetCitation).pipe(Schema.maxItems(80)),
+    )(datasetCitations).pipe(
+      Effect.mapError(() => new QueryError({
+        operation: 'findCompletedByRunIds',
+        entity: 'ResearchProjection',
+        message: 'Research dataset citation data is invalid',
+      })),
+    )
+    return {
+      runId,
+      projection: {
+        answer: row['answer'],
+        citations: citations.flatMap((value) => {
+          if (!isRecord(value)) return []
+          return typeof value['id'] === 'string'
+            && typeof value['sourceVersionId'] === 'string'
+            && typeof value['locator'] === 'string'
+            ? [{
+                id: value['id'],
+                sourceVersionId: value['sourceVersionId'],
+                locator: value['locator'],
+              }]
+            : []
+        }),
+        datasetCitations: decodedDatasetCitations,
+      },
+    }
+  })
 }
 
 export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRepo>()(
@@ -111,15 +174,24 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
         },
       )
 
-      const findCompleted = Effect.fn('ResearchProjectionRepo.findCompleted')(
+      const findCompletedByRunIds = Effect.fn(
+        'ResearchProjectionRepo.findCompletedByRunIds',
+      )(
         function* (
           workspaceId: typeof typeDomain.WorkspaceId.Type,
           projectId: typeof typeDomain.ProjectId.Type,
-          runId: typeof typeDomain.ResearchRunId.Type,
+          runIds: ReadonlyArray<typeof typeDomain.ResearchRunId.Type>,
         ) {
+          if (runIds.length === 0) {
+            return new Map<
+              typeof typeDomain.ResearchRunId.Type,
+              CompletedResearchProjection
+            >()
+          }
           const rows = yield* Effect.tryPromise({
             try: () => sql.unsafe(
-              `SELECT result.answer,
+              `SELECT result.run_id,
+                      result.answer,
                       COALESCE(
                         (
                           SELECT jsonb_agg(
@@ -178,60 +250,43 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
                JOIN research_runs run ON run.id = result.run_id
                JOIN research_threads thread ON thread.id = run.thread_id
                JOIN projects project ON project.id = thread.project_id
-               WHERE result.run_id = $1
+               WHERE result.run_id = ANY($1::uuid[])
                  AND thread.project_id = $2
                  AND project.workspace_id = $3`,
-              [runId, projectId, workspaceId],
+              [runIds, projectId, workspaceId],
             ),
             catch: () => new QueryError({
-              operation: 'findCompleted',
+              operation: 'findCompletedByRunIds',
               entity: 'ResearchProjection',
-              message: 'Research result could not be loaded',
+              message: 'Research results could not be loaded',
             }),
           })
-          const row = rows[0]
-          if (row === undefined || typeof row['answer'] !== 'string') {
+          const decoded = yield* Effect.forEach(rows, decodeCompletedResearchProjection)
+          const projections = new Map<
+            typeof typeDomain.ResearchRunId.Type,
+            CompletedResearchProjection
+          >()
+          for (const { runId, projection } of decoded) projections.set(runId, projection)
+          return projections
+        },
+      )
+
+      const findCompleted = Effect.fn('ResearchProjectionRepo.findCompleted')(
+        function* (
+          workspaceId: typeof typeDomain.WorkspaceId.Type,
+          projectId: typeof typeDomain.ProjectId.Type,
+          runId: typeof typeDomain.ResearchRunId.Type,
+        ) {
+          const projections = yield* findCompletedByRunIds(workspaceId, projectId, [runId])
+          const projection = projections.get(runId)
+          if (projection === undefined) {
             return yield* new EntityNotFoundError({
               entity: 'ResearchResult',
               id: runId,
               message: 'Research result not found',
             })
           }
-          const citations = row['citations']
-          const datasetCitations = row['dataset_citations']
-          if (!Array.isArray(citations) || !Array.isArray(datasetCitations)) {
-            return yield* new QueryError({
-              operation: 'findCompleted',
-              entity: 'ResearchProjection',
-              message: 'Research result data is invalid',
-            })
-          }
-          const decodedDatasetCitations = yield* Schema.decodeUnknown(
-            Schema.Array(DatasetCitation).pipe(Schema.maxItems(80)),
-          )(datasetCitations).pipe(
-            Effect.mapError(() => new QueryError({
-              operation: 'findCompleted',
-              entity: 'ResearchProjection',
-              message: 'Research dataset citation data is invalid',
-            })),
-          )
-          return {
-            answer: row['answer'],
-            citations: citations.flatMap((value) => {
-              if (!isRecord(value)) return []
-              const record = value
-              return typeof record['id'] === 'string'
-                && typeof record['sourceVersionId'] === 'string'
-                && typeof record['locator'] === 'string'
-                ? [{
-                    id: record['id'],
-                    sourceVersionId: record['sourceVersionId'],
-                    locator: record['locator'],
-                  }]
-                : []
-            }),
-            datasetCitations: decodedDatasetCitations,
-          } satisfies CompletedResearchProjection
+          return projection
         },
       )
 
@@ -328,7 +383,13 @@ export class ResearchProjectionRepo extends Effect.Service<ResearchProjectionRep
         },
       )
 
-      return { listEventsAfter, runExists, findCompleted, findCitation }
+      return {
+        listEventsAfter,
+        runExists,
+        findCompleted,
+        findCompletedByRunIds,
+        findCitation,
+      }
     }),
   },
 ) {}
