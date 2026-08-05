@@ -4,14 +4,14 @@ template_version: 2
 contract_version: 1
 title: Mixed source citation links are only 24 pixels high on mobile
 bug_id: BUG-0101
-status: new
+status: fixed
 severity: sev-3
 category: accessibility
 reported_on: '2026-07-28'
-fixed_on: ''
-owner: unassigned
+fixed_on: '2026-08-04'
+owner: bug0101_attempt1
 created: '2026-07-28'
-updated: '2026-07-28'
+updated: '2026-08-04'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
@@ -62,6 +62,7 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 - Decisive evidence: `.local/ui-audit/demo/screenshots/mobile-light-complete.png` and lead bounding-box capture confirm the ~50×24px citation hit area on mobile.
 - No code-level cause is documented.
+- Confirmed 2026-08-05: the mobile citation anchors exposed only the compact badge’s roughly 24px height and did not provide a 44px minimum interactive hit area.
 
 ## Workaround
 
@@ -89,3 +90,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-04 - Fixed: kept the compact visible citation badges inside 44px minimum-height link targets, using negative vertical margins to preserve the existing visual density. Verified with `bun test --timeout 30000 apps/web/src/components/mixed-source-report.test.tsx`, `bun test --timeout 60000 --max-concurrency 1 apps/web/e2e/mixed-source-report.spec.ts` (including a 390×844 measurement for [D1], [Q1], and [M1]), web TypeScript check, targeted ESLint, and production web build.
+- 2026-08-04: Automated review follow-up: citation touch-target E2E coverage now explicitly waits for each citation link and its nested `.badge` to be visible before bounding-box measurement. Focused validation passed: `bun test --timeout 60000 --max-concurrency 1 apps/web/e2e/mixed-source-report.spec.ts` (7 passing, 0 failing, 200 assertions).

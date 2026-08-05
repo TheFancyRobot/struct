@@ -234,6 +234,29 @@ describe('mixed-source report browser workflow', () => {
     await page.close()
   })
 
+  it('keeps compact citation badges inside 44px mobile link targets', async () => {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } })
+    const failures = observeFailures(page)
+    await openDemo(page)
+
+    for (const label of ['[D1]', '[Q1]', '[M1]']) {
+      const citation = page.getByRole('link', { name: label, exact: true })
+      const badge = citation.locator('.badge')
+      await citation.waitFor({ state: 'visible' })
+      await badge.waitFor({ state: 'visible' })
+      const target = await citation.boundingBox()
+      const badgeBox = await badge.boundingBox()
+      expect(target).not.toBeNull()
+      expect(badgeBox).not.toBeNull()
+      expect(target!.height).toBeGreaterThanOrEqual(44)
+      expect(badgeBox!.height).toBeLessThan(44)
+    }
+
+    await assertNoOverflow(page)
+    expectNoFailures(failures)
+    await page.close()
+  })
+
   it('exposes loading, error, empty, reconnecting, and cancelled states', async () => {
     const cases = [
       ['loading', 'Loading committed evidence'],
