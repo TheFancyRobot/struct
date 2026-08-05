@@ -4,12 +4,12 @@ template_version: 2
 contract_version: 1
 title: Project chat UI lacks recognizable conversation layout and collapsible columns
 bug_id: BUG-0118
-status: new
+status: fixed
 severity: sev-3
 category: frontend
 reported_on: '2026-08-05'
-fixed_on: ''
-owner: ''
+fixed_on: '2026-08-05'
+owner: bug_0118_attempt_1
 created: '2026-08-05'
 updated: '2026-08-05'
 related_notes: |2-
@@ -111,3 +111,5 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-08-05 - Reported.
 - 2026-08-05 - User supplied current-state and Open Notebook reference screenshots; defect scope expanded to include independently collapsible project columns.
 <!-- AGENT-END:bug-timeline -->
+- 2026-08-05 - Fixed: traced the persisted conversation renderer to its raw question/status list; replaced it with role-aware user/Struct message bubbles and a compact footer composer. Existing shared workspace state already supplied independent navigation/evidence collapse, restore, and focus behavior. Verified with the focused component check, web typecheck/build, and `workspace-responsive.spec.ts` (9/9).
+- 2026-08-05: Retry attempt 2 fixed the remaining lint warning in `conversation-layout.test.tsx` by adding the existing Solid JSX ESLint exemption. Verified with focused ESLint, web typecheck, and the conversation layout regression test.
