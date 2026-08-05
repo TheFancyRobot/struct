@@ -89,3 +89,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-07-28 - Reported.
 <!-- AGENT-END:bug-timeline -->
 - 2026-08-04 - Fixed: added a reachable mobile drawer theme action and validated focused component plus responsive Playwright coverage.
+- 2026-08-05: Re-validated in the shared tree: focused Solid render coverage and the Chromium `workspace-responsive.spec.ts` journey both pass. The latter opens the 375px project navigation dialog, presses its theme toggle, and observes `html[data-theme="struct-dark"]`.

@@ -8,13 +8,14 @@ phase: '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usab
 status: completed
 owner: phase10_step07_attempt1
 created: '2026-07-21'
-updated: '2026-08-04'
+updated: '2026-08-05'
 depends_on:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_06_add-durable-user-notes-with-provenance|STEP-10-06 Add Durable User Notes with Provenance]]'
 related_sessions:
   - '[[05_Sessions/2026-07-23-150027-complete-responsive-accessibility-and-theme-behavior-openai-codex-gpt-5-6-sol-fallback-required-openai-codex-gpt-5-4-unavailable|SESSION-2026-07-23-150027 openai-codex/gpt-5.6-sol fallback (required openai-codex/gpt-5.4 unavailable) session for Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-26-073338-complete-responsive-accessibility-and-theme-behavior-phase10-step07-attempt1|SESSION-2026-07-26-073338 phase10_step07_attempt1 session for Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
+  - '[[05_Sessions/2026-08-05-035906-complete-responsive-accessibility-and-theme-behavior-bug-0095|SESSION-2026-08-05-035906 bug_0095 session for Complete Responsive Accessibility and Theme Behavior]]'
 related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
   - '[[03_Bugs/BUG-0057_full-e2e-suite-leaks-process-state-before-mixed-source-report-tests|BUG-0057 full e2e suite leaks process state before mixed-source report tests]]'
@@ -68,10 +69,10 @@ related_bugs:
 tags:
   - agent-vault
   - step
-context_id: SESSION-2026-07-28-204323
-active_session_id: 05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex
-context_status: completed
-context_summary: Completed DEC-0024 audit records; remediation remains blocked by 38 confirmed open defects and coverage gaps.
+context_id: SESSION-2026-08-05-035906
+active_session_id: 05_Sessions/2026-08-05-035906-complete-responsive-accessibility-and-theme-behavior-bug-0095
+context_status: active
+context_summary: Advance [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]].
 ---
 
 # Step 07 - Complete Responsive Accessibility and Theme Behavior
@@ -121,6 +122,7 @@ Use this note as a thin index for one executable step. Keep detail in companion 
 - 2026-07-23 - [[05_Sessions/2026-07-23-150027-complete-responsive-accessibility-and-theme-behavior-openai-codex-gpt-5-6-sol-fallback-required-openai-codex-gpt-5-4-unavailable|SESSION-2026-07-23-150027 openai-codex/gpt-5.6-sol fallback (required openai-codex/gpt-5.4 unavailable) session for Complete Responsive Accessibility and Theme Behavior]] - Session created.
 - 2026-07-26 - [[05_Sessions/2026-07-26-073338-complete-responsive-accessibility-and-theme-behavior-phase10-step07-attempt1|SESSION-2026-07-26-073338 phase10_step07_attempt1 session for Complete Responsive Accessibility and Theme Behavior]] - Session created.
 - 2026-07-28 - [[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]] - Session created.
+- 2026-08-05 - [[05_Sessions/2026-08-05-035906-complete-responsive-accessibility-and-theme-behavior-bug-0095|SESSION-2026-08-05-035906 bug_0095 session for Complete Responsive Accessibility and Theme Behavior]] - Session created.
 <!-- AGENT-END:step-session-history -->
 
 ## Related Notes
