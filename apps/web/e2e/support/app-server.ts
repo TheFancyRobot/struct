@@ -235,9 +235,16 @@ async function stopServerProcess(server: AppServerChildProcess): Promise<void> {
 async function stopCapturedProcess(process: CapturedProcess | undefined): Promise<void> {
   if (process === undefined) return
   await stopServerProcess(process.process)
-  await Promise.race([
+  await readCapturedProcessLogs(process)
+}
+
+async function readCapturedProcessLogs(
+  process: CapturedProcess,
+  maxWaitMs = processLogDrainTimeoutMs,
+): Promise<string> {
+  return await Promise.race([
     process.logs.catch(() => ''),
-    Bun.sleep(processLogDrainTimeoutMs),
+    Bun.sleep(maxWaitMs).then(() => ''),
   ])
 }
 
@@ -245,6 +252,7 @@ export interface ReadinessProbeOptions {
   readonly maxWaitMs?: number
   readonly probeTimeoutMs?: number
   readonly retryIntervalMs?: number
+  readonly logDrainTimeoutMs?: number
 }
 
 export async function waitForReady(
@@ -255,10 +263,11 @@ export async function waitForReady(
   const maxWaitMs = Math.max(1, options.maxWaitMs ?? readinessMaxWaitMs)
   const probeTimeoutMs = Math.max(1, options.probeTimeoutMs ?? readinessProbeTimeoutMs)
   const retryIntervalMs = Math.max(1, options.retryIntervalMs ?? readinessRetryIntervalMs)
+  const logDrainTimeoutMs = Math.max(1, options.logDrainTimeoutMs ?? processLogDrainTimeoutMs)
   const deadline = Date.now() + maxWaitMs
   while (Date.now() < deadline) {
     if (process.process.exitCode !== null) {
-      const logs = await process.logs
+      const logs = await readCapturedProcessLogs(process, logDrainTimeoutMs)
       throw new Error(`${process.name} exited before becoming ready at ${origin}${logs ? `\n${logs}` : ''}`)
     }
     try {
@@ -271,8 +280,8 @@ export async function waitForReady(
     if (Date.now() >= deadline) break
     await Bun.sleep(retryIntervalMs)
   }
-  await stopCapturedProcess(process)
-  const logs = await process.logs.catch(() => '')
+  await stopServerProcess(process.process)
+  const logs = await readCapturedProcessLogs(process, logDrainTimeoutMs)
   throw new Error(`${process.name} did not become ready at ${origin}${logs ? `\n${logs}` : ''}`)
 }
 

@@ -88,3 +88,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-08-05 - Reported.
 <!-- AGENT-END:bug-timeline -->
 - 2026-08-05 - Fixed: E2E launcher uses `process.execPath`, waits through the shared readiness path, and captures server logs. Focused lifecycle and source-import browser tests passed (19 tests, 73 assertions); web typecheck and targeted ESLint passed.
+- 2026-08-05 review remediation: bounded captured-log draining after readiness timeout and early process exit, so diagnostics cannot hang the E2E run; added never-resolving-log regressions.
