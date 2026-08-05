@@ -7,7 +7,7 @@ phase_id: PHASE-10
 status: completed
 owner: Codex
 created: '2026-07-21'
-updated: '2026-08-04'
+updated: '2026-08-05'
 depends_on:
   - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]]'
 related_architecture:
@@ -84,6 +84,7 @@ related_bugs:
   - '[[03_Bugs/BUG-0101_mixed-source-citation-links-are-only-24-pixels-high-on-mobile|BUG-0101 Mixed source citation links are only 24 pixels high on mobile]]'
   - '[[03_Bugs/BUG-0109_responsive-workspace-suite-does-not-execute-the-desktop-pane-regression|BUG-0109 Responsive workspace suite does not execute the desktop-pane regression]]'
   - '[[03_Bugs/BUG-0110_mixed-source-mobile-section-flow-browser-test-starts-before-the-report-is-ready|BUG-0110 Mixed-source mobile section-flow browser test starts before the report is ready]]'
+  - '[[03_Bugs/BUG-0114_source-import-e2e-suite-shares-an-unstable-server-lifecycle|BUG-0114 Source-import E2E suite shares an unstable server lifecycle]]'
 tags:
   - agent-vault
   - phase
@@ -239,6 +240,7 @@ Use this note for a bounded phase. Keep it focused, link outward, and avoid dupl
 - [[03_Bugs/BUG-0101_mixed-source-citation-links-are-only-24-pixels-high-on-mobile|BUG-0101 Mixed source citation links are only 24 pixels high on mobile]]
 - [[03_Bugs/BUG-0109_responsive-workspace-suite-does-not-execute-the-desktop-pane-regression|BUG-0109 Responsive workspace suite does not execute the desktop-pane regression]]
 - [[03_Bugs/BUG-0110_mixed-source-mobile-section-flow-browser-test-starts-before-the-report-is-ready|BUG-0110 Mixed-source mobile section-flow browser test starts before the report is ready]]
+- [[03_Bugs/BUG-0114_source-import-e2e-suite-shares-an-unstable-server-lifecycle|BUG-0114 Source-import E2E suite shares an unstable server lifecycle]]
 <!-- AGENT-END:phase-related-bugs -->
 
 ## Steps

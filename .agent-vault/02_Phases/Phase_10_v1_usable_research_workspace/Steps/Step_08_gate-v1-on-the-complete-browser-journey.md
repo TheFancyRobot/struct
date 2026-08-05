@@ -8,7 +8,7 @@ phase: '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|Phase 10 v1 usab
 status: completed
 owner: phase10_step08_attempt2
 created: '2026-07-21'
-updated: '2026-07-26'
+updated: '2026-08-05'
 depends_on:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
 related_sessions:
@@ -16,6 +16,7 @@ related_sessions:
   - '[[05_Sessions/2026-07-26-083732-gate-v1-on-the-complete-browser-journey-openai-codex-gpt-5-6-sol|SESSION-2026-07-26-083732 openai-codex/gpt-5.6-sol session for Gate v1 on the Complete Browser Journey]]'
 related_bugs:
   - '[[03_Bugs/BUG-0013_v1-ui-lacks-core-research-workflows|BUG-0013 v1 UI lacks core research workflows]]'
+  - '[[03_Bugs/BUG-0114_source-import-e2e-suite-shares-an-unstable-server-lifecycle|BUG-0114 Source-import E2E suite shares an unstable server lifecycle]]'
 tags:
   - agent-vault
   - step
