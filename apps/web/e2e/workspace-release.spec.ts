@@ -12,6 +12,7 @@ import {
 
 const uuidPattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
 const folderFixture = resolve(import.meta.dir, 'fixtures/release-folder')
+const sourceReadinessTimeoutMs = 60_000
 const releaseJourneyScenarios = [
   {
     name: 'root deployment',
@@ -111,7 +112,12 @@ async function runReleaseJourney(
       const sources = page.getByRole('region', { name: 'Sources' })
       const waitForReadySource = async (name: string | RegExp) => {
         const item = sources.getByRole('listitem').filter({ hasText: name })
-        await item.getByText('ready', { exact: true }).waitFor()
+        // A source becomes usable only after the worker materializes and
+        // indexes its immutable version. Under the full release campaign that
+        // can legitimately outlast Playwright's implicit 30-second wait.
+        await item.getByText('ready', { exact: true }).waitFor({
+          timeout: sourceReadinessTimeoutMs,
+        })
       }
       await waitForReadySource(sourceName)
 
@@ -136,7 +142,9 @@ async function runReleaseJourney(
       await waitForReadySource('renewal-accounts.csv')
 
       await page.getByRole('link', { name: 'Conversation' }).click()
-      await page.getByRole('checkbox', { name: sourceName }).waitFor()
+      await page.getByRole('checkbox', { name: sourceName }).waitFor({
+        timeout: sourceReadinessTimeoutMs,
+      })
       for (const name of ['customer-context.md', 'renewal-accounts.csv']) {
         await page.getByRole('checkbox', { name }).uncheck()
       }
@@ -276,4 +284,4 @@ it('takes a first-time user through root and BASE_PATH durable source-grounded w
   } finally {
     await browser.close()
   }
-}, 120_000)
+}, 180_000)
