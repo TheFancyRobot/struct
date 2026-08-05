@@ -12,7 +12,6 @@ import {
   startIsolatedDataEngineGateway,
   stopAppServer,
   waitForReady,
-  type CapturedProcess,
 } from './app-server'
 
 const webRoot = resolve(import.meta.dir, '../..')
@@ -151,7 +150,7 @@ describe('isolated production web lifecycle', () => {
 
     await expect(
       startAppServer(port, { API_AUTH_TOKEN: 'short-token' }),
-    ).rejects.toThrow(`Web app exited before becoming ready at http://127.0.0.1:${port}`)
+    ).rejects.toThrow(`web app exited before becoming ready at http://127.0.0.1:${port}`)
 
     const after = listPortDistRoots(port)
     expect(newDistRoots(before, after)).toEqual([])
@@ -170,6 +169,19 @@ describe('isolated production web lifecycle', () => {
     await stopAppServer(second)
 
     cleanupPortDistRoots(port)
+  })
+
+  it('starts the source-import browser server without relying on PATH to find Bun', async () => {
+    const port = 4193
+    cleanupPortDistRoots(port)
+
+    try {
+      const server = await startAppServer(port, { PATH: '' })
+      expect((await fetch(`http://127.0.0.1:${port}`)).ok).toBe(true)
+      await stopAppServer(server)
+    } finally {
+      cleanupPortDistRoots(port)
+    }
   })
 
   it('surfaces nonzero dependency start exits', async () => {
@@ -380,6 +392,70 @@ describe('isolated production web lifecycle', () => {
           retryIntervalMs: 1,
         },
       )).rejects.toThrow('hung readiness probe did not become ready')
+      expect(Date.now() - startedAt).toBeLessThan(500)
+    } finally {
+      hangingServer.closeAllConnections()
+      await new Promise<void>((resolveStop) => hangingServer.close(() => resolveStop()))
+      if (child.exitCode === null) child.kill()
+      await child.exited
+    }
+  })
+
+  it('bounds log collection after a process exits before readiness', async () => {
+    const child = Bun.spawn(['bun', '-e', 'process.exit(1)'], {
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    await child.exited
+    const process: CapturedProcess = {
+      name: 'early readiness exit',
+      process: child,
+      logs: new Promise<string>(() => {}),
+    }
+
+    const startedAt = Date.now()
+    await expect(waitForReady(process, 'http://127.0.0.1:1', {
+      logDrainTimeoutMs: 20,
+    })).rejects.toThrow('early readiness exit exited before becoming ready')
+    expect(Date.now() - startedAt).toBeLessThan(500)
+  })
+
+  it('bounds log collection after readiness times out', async () => {
+    const hangingServer = createHttpServer((_request, _response) => {
+      // Accept the connection and intentionally never finish the response.
+    })
+    await new Promise<void>((resolveStart, reject) => {
+      hangingServer.once('error', reject)
+      hangingServer.listen(0, '127.0.0.1', () => resolveStart())
+    })
+    const address = hangingServer.address()
+    if (!address || typeof address === 'string') {
+      hangingServer.close()
+      throw new Error('Could not allocate a hanging readiness port')
+    }
+
+    const child = Bun.spawn(['bun', '-e', 'setInterval(() => {}, 1000)'], {
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    const process: CapturedProcess = {
+      name: 'timed out readiness',
+      process: child,
+      logs: new Promise<string>(() => {}),
+    }
+
+    const startedAt = Date.now()
+    try {
+      await expect(waitForReady(
+        process,
+        `http://127.0.0.1:${address.port}`,
+        {
+          maxWaitMs: 80,
+          probeTimeoutMs: 20,
+          retryIntervalMs: 1,
+          logDrainTimeoutMs: 20,
+        },
+      )).rejects.toThrow('timed out readiness did not become ready')
       expect(Date.now() - startedAt).toBeLessThan(500)
     } finally {
       hangingServer.closeAllConnections()
