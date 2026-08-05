@@ -6,13 +6,16 @@ title: Workspace skip link falls below the touch-target baseline
 bug_id: BUG-0113
 status: fixed
 severity: sev-3
-category: logic
+category: accessibility
 reported_on: '2026-08-05'
 fixed_on: '2026-08-05'
 owner: ''
 created: '2026-08-05'
 updated: '2026-08-05'
-related_notes: []
+related_notes:
+  - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
+  - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
+  - '[[03_Bugs/BUG-0073_workspace-has-no-skip-link-past-repeated-navigation|BUG-0073 Workspace has no skip link past repeated navigation]]'
 tags:
   - agent-vault
   - bug
@@ -24,22 +27,22 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Summary
 
-- Workspace skip link falls below the touch-target baseline.
-- Related notes: none linked yet.
+- Mobile accessibility validation measured the visually hidden `Skip to main content` link in `WorkspaceShell` as a 1px × 1px focus target, below the 44px baseline.
+- Related notes: [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]], [[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]], and [[03_Bugs/BUG-0073_workspace-has-no-skip-link-past-repeated-navigation|BUG-0073 Workspace has no skip link past repeated navigation]].
 
 ## Observed Behavior
 
-- Describe what actually happens.
+- On a 375px-wide workspace route, focusing `Skip to main content` left its off-screen hit box at 1px × 1px because the shared `sr-only` utility clipped it to that size. The browser accessibility contract flags both dimensions as below the 44px mobile touch-target baseline.
 
 ## Expected Behavior
 
-- Describe what should happen instead.
+- The skip link must remain visually hidden until focus, retain its `#workspace-main` destination, and provide at least a 44px × 44px focus target without clipping content at increased text size.
 
 ## Reproduction Steps
 
-1. List the exact setup state.
-2. List the user or developer actions.
-3. Record the observed result.
+1. Start the workspace browser contract and open `/projects/<id>` at a 375px viewport.
+2. Focus the `Skip to main content` link before any other workspace control.
+3. Measure its `boundingBox`; before the fix it reports 1px × 1px, failing the 44px touch-target gate.
 
 ## Scope / Blast Radius
 
@@ -60,18 +63,19 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 ## Permanent Fix Plan
 
-- Describe the intended durable fix.
-- Added the `workspace-skip-link` class with explicit 2.75rem height and minimum width in the unlayered workspace stylesheet, overriding the `sr-only` 1px box while retaining the existing focus-visible skip-link presentation and `#workspace-main` destination.
+- Added the `workspace-skip-link` class with explicit 2.75rem minimum dimensions in the unlayered workspace stylesheet, overriding the `sr-only` 1px box while retaining the existing focus-visible skip-link presentation and `#workspace-main` destination. Minimum, rather than fixed, height preserves the baseline while allowing zoomed content to grow.
 
 ## Regression Coverage Needed
 
 - List tests, fixtures, reproductions, alerts, or docs updates needed.
-- Added browser coverage that focuses and measures the skip link at the mobile baseline and verifies its `#workspace-main` destination. The existing full mobile accessibility audit also now validates the hidden link's 44px × 44px box.
+- Added browser coverage that focuses and measures both skip-link dimensions at the mobile baseline and verifies its `#workspace-main` destination. The existing full mobile accessibility audit also validates the hidden link's 44px × 44px box.
 
 ## Related Notes
 
 <!-- AGENT-START:bug-related-notes -->
-- None yet.
+- [[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]
+- [[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]
+- [[03_Bugs/BUG-0073_workspace-has-no-skip-link-past-repeated-navigation|BUG-0073 Workspace has no skip link past repeated navigation]]
 <!-- AGENT-END:bug-related-notes -->
 
 ## Timeline
@@ -80,3 +84,6 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-08-05 - Reported.
 <!-- AGENT-END:bug-timeline -->
 - 2026-08-05 - Confirmed the 1px `sr-only` hit box, implemented the 44px override, and verified the targeted browser regression.
+- 2026-08-05 - Review remediation switched the override to minimum height, asserted both target dimensions, and linked the bug into the workspace-accessibility context.
+- 2026-08-05 - Pending focused browser validation for the reviewed minimum-size behavior.
+- 2026-08-05 - Focused browser contract passed (2 tests, 23 assertions) and `@struct/web` typecheck passed after the review remediation.

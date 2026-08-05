@@ -96,6 +96,7 @@ describe('workspace accessibility browser contract', () => {
     await skipLink.focus()
     const skipLinkBox = await skipLink.boundingBox()
     expect(skipLinkBox).not.toBeNull()
+    expect(skipLinkBox!.width).toBeGreaterThanOrEqual(44)
     expect(skipLinkBox!.height).toBeGreaterThanOrEqual(44)
     expect(await skipLink.getAttribute('href')).toBe('#workspace-main')
     await page.locator('#workspace-main').focus()
