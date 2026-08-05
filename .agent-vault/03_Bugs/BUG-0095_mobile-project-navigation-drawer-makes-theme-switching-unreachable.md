@@ -11,10 +11,11 @@ reported_on: '2026-07-28'
 fixed_on: '2026-08-04'
 owner: bug0095_attempt1
 created: '2026-07-28'
-updated: '2026-08-04'
+updated: '2026-08-05'
 related_notes:
   - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_07_complete-responsive-accessibility-and-theme-behavior|STEP-10-07 Complete Responsive Accessibility and Theme Behavior]]'
   - '[[05_Sessions/2026-07-28-204323-complete-responsive-accessibility-and-theme-behavior-codex|SESSION-2026-07-28-204323 Codex session for Complete Responsive Accessibility and Theme Behavior]]'
+  - '[[05_Sessions/2026-08-05-035906-complete-responsive-accessibility-and-theme-behavior-bug-0095|SESSION-2026-08-05-035906 bug_0095 session for Complete Responsive Accessibility and Theme Behavior]]'
 tags:
   - agent-vault
   - bug
@@ -87,5 +88,6 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 
 <!-- AGENT-START:bug-timeline -->
 - 2026-07-28 - Reported.
-<!-- AGENT-END:bug-timeline -->
 - 2026-08-04 - Fixed: added a reachable mobile drawer theme action and validated focused component plus responsive Playwright coverage.
+- 2026-08-05 - Re-validated in the shared tree: focused Solid render coverage and the Chromium mobile navigation dialog theme toggle both pass.
+<!-- AGENT-END:bug-timeline -->
