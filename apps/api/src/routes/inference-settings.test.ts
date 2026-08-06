@@ -4,13 +4,13 @@ import { inferenceSettingsRoute, runInferenceSettingsRoute, type InferenceSettin
 
 describe('inference settings route', () => {
   it('keeps credentials write-only, normalizes endpoints, and clears assignments', async () => {
-    const providers: Array<{ id: string, type: string, endpoint: string | null, enabled: boolean, hasCredential: boolean }> = []
+    const providers: Array<{ id: string, type: string, endpoint: string | null, credentialReference: string, enabled: boolean, hasCredential: boolean }> = []
     const models: Array<{ id: string, providerId: string, name: string, capabilities: ReadonlyArray<'chat' | 'embedding' | 'vision'> }> = []
     const assignments = { chat: null, embedding: null, vision: null } as { chat: string | null, embedding: string | null, vision: string | null }
     let sequence = 0
     const deps: InferenceSettingsRouteDeps = {
       list: () => Effect.succeed({ providers, models, assignments }),
-      createProvider: (input: { id: string, type: string, endpoint: string | null }) => Effect.sync(() => providers.push({ ...input, enabled: true, hasCredential: true })),
+      createProvider: (input: { id: string, type: string, endpoint: string | null, credentialReference: string }) => Effect.sync(() => providers.push({ ...input, enabled: true, hasCredential: true })),
       updateProvider: (input: { id: string, type: string, endpoint: string | null }) => Effect.sync(() => {
         const provider = providers.find((item) => item.id === input.id)
         if (provider !== undefined) Object.assign(provider, input)
@@ -37,11 +37,17 @@ describe('inference settings route', () => {
     const provider = await route(new Request('http://local/api/settings/inference/providers', { method: 'POST', body: JSON.stringify({ type: '@fancyrobot/fred-openai', endpoint: '', credentialReference: 'env://OPENAI_API_KEY' }) }))
     expect(provider.status).toBe(201)
     expect(providers[0]?.endpoint).toBeNull()
+    expect(providers[0]?.credentialReference).toBe('env://OPENAI_API_KEY')
     const listed = await route(new Request('http://local/api/settings/inference'))
     expect(await listed.text()).not.toContain('env://OPENAI_API_KEY')
 
+    const unapprovedEndpoint = await route(new Request('http://local/api/settings/inference/providers', { method: 'POST', body: JSON.stringify({ type: '@fancyrobot/fred-openai', endpoint: 'https://api.openai.com.evil.example/v1', credentialReference: 'env://OPENAI_API_KEY' }) }))
+    expect(unapprovedEndpoint.status).toBe(400)
+
     const unsupportedCredential = await route(new Request('http://local/api/settings/inference/providers', { method: 'POST', body: JSON.stringify({ type: '@fancyrobot/fred-openai', credentialReference: 'env://DATABASE_URL' }) }))
     expect(unsupportedCredential.status).toBe(400)
+    const mismatchedCredential = await route(new Request('http://local/api/settings/inference/providers', { method: 'POST', body: JSON.stringify({ type: '@fancyrobot/fred-openai', credentialReference: 'env://FRED_ANTHROPIC_API_KEY' }) }))
+    expect(mismatchedCredential.status).toBe(400)
     expect(providers).toHaveLength(1)
     const providerId = providers[0]?.id
     if (providerId === undefined) throw new Error('provider was not created')

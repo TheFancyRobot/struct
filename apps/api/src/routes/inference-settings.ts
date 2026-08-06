@@ -1,27 +1,25 @@
 import { Cause, Effect, Option, Schema } from 'effect'
 import type { InferenceRole, InferenceSettings } from '@struct/persistence'
-import { isSupportedInferenceProviderCredentialReference } from '@struct/workflows'
+import {
+  isApprovedInferenceProviderEndpoint,
+  isSupportedInferenceProviderCredentialReference,
+} from '@struct/workflows'
 
 const Role = Schema.Literal('chat', 'embedding', 'vision')
 const NonBlank = Schema.String.pipe(Schema.trimmed(), Schema.minLength(1), Schema.maxLength(256))
 const ProviderType = Schema.Literal('@fancyrobot/fred-openai')
-const isSecureEndpoint = (value: string): boolean => {
-  if (value === '') return true
-  try {
-    return new URL(value).protocol === 'https:'
-  } catch {
-    return false
-  }
-}
+const providerPackage = '@fancyrobot/fred-openai'
+const isApprovedEndpoint = (value: string): boolean =>
+  value === '' || isApprovedInferenceProviderEndpoint(value)
 const Endpoint = Schema.String.pipe(
   Schema.trimmed(),
-  Schema.filter(isSecureEndpoint, {
-    message: () => 'Endpoint must use https',
+  Schema.filter(isApprovedEndpoint, {
+    message: () => 'Endpoint must use an approved provider URL',
   }),
   Schema.maxLength(2048),
 )
 const CredentialReference = NonBlank.pipe(Schema.filter(
-  isSupportedInferenceProviderCredentialReference,
+  (value) => isSupportedInferenceProviderCredentialReference(providerPackage, value),
   { message: () => 'Credential reference must name a supported provider key' },
 ))
 const ProviderRequest = Schema.Struct({

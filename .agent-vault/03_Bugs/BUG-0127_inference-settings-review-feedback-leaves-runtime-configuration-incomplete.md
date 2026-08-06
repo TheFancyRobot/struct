@@ -12,10 +12,7 @@ fixed_on: '2026-08-05'
 owner: ''
 created: '2026-08-05'
 updated: '2026-08-05'
-related_notes: |-
-  - '[[03_Bugs/BUG-0120_ui-lacks-inference-provider-and-model-configuration|BUG-0120]]'
-  - '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]]'
-  - '[[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_03_implement-bounded-graph-orchestration-and-model-routing|STEP-05-03 Implement Bounded Graph Orchestration and Model Routing]]'
+related_notes: '["[[03_Bugs/BUG-0120_ui-lacks-inference-provider-and-model-configuration|BUG-0120]]","[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]]","[[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_03_implement-bounded-graph-orchestration-and-model-routing|STEP-05-03 Implement Bounded Graph Orchestration and Model Routing]]","[[03_Bugs/BUG-0128_inference-provider-runtime-validation-is-incomplete|BUG-0128]]"]'
 tags:
   - agent-vault
   - bug

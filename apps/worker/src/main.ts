@@ -52,6 +52,7 @@ import {
   fredRuntimeConfig,
   preflightFredRuntime,
   resolveInferenceProviderCredential,
+  isApprovedInferenceProviderConfiguration,
   runFredResearchPlanning,
 } from '@struct/workflows'
 import {
@@ -161,7 +162,12 @@ const program = Effect.gen(function* () {
       Effect.provide(inferenceSettingsLayer),
       Effect.flatMap((route) => route === null
         ? Effect.succeed(fredConfig)
-        : resolveInferenceProviderCredential(route.credentialReference).pipe(
+        : isApprovedInferenceProviderConfiguration({
+          providerPackage: route.providerPackage,
+          endpoint: route.endpoint,
+          credentialReference: route.credentialReference,
+        })
+          ? resolveInferenceProviderCredential(route.providerPackage, route.credentialReference).pipe(
             Effect.map((credential) => ({
               ...fredConfig,
               providerPackage: route.providerPackage,
@@ -171,7 +177,9 @@ const program = Effect.gen(function* () {
                 ...(route.endpoint === null ? {} : { baseUrl: route.endpoint }),
               },
             })),
-          )),
+          )
+          : Effect.fail<unknown>('Inference provider configuration is not approved'),
+      ),
       Effect.catchAll(() => Effect.logWarning('Inference settings lookup failed; using deployment default.').pipe(
         Effect.as(fredConfig),
       )),
