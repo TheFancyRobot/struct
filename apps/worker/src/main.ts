@@ -159,9 +159,6 @@ const program = Effect.gen(function* () {
   const configuredChatRuntime = (workspaceId: string) =>
     InferenceSettingsRepo.resolveRuntimeModel(workspaceId, 'chat').pipe(
       Effect.provide(inferenceSettingsLayer),
-      Effect.catchAll(() => Effect.logWarning('Inference settings lookup failed; using deployment default.').pipe(
-        Effect.as(null),
-      )),
       Effect.flatMap((route) => route === null
         ? Effect.succeed(fredConfig)
         : resolveInferenceProviderCredential(route.credentialReference).pipe(
@@ -175,6 +172,9 @@ const program = Effect.gen(function* () {
               },
             })),
           )),
+      Effect.catchAll(() => Effect.logWarning('Inference settings lookup failed; using deployment default.').pipe(
+        Effect.as(fredConfig),
+      )),
     )
   const dataEngineClient = yield* DataEngineClient.pipe(
     Effect.provide(DataEngineClient.Default),

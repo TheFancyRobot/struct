@@ -8,13 +8,14 @@ export const SettingsPage: Component = () => {
   const [settings, { refetch }] = createResource(fetchInferenceSettings)
   const [message, setMessage] = createSignal<string>()
   const save = async (operation: () => Promise<unknown>) => {
-    try { await operation(); setMessage('Saved.'); await refetch() } catch (error) { setMessage(error instanceof Error ? error.message : 'Settings could not be saved.') }
+    try { await operation(); setMessage('Saved.'); await refetch(); return true } catch (error) { setMessage(error instanceof Error ? error.message : 'Settings could not be saved.'); return false }
   }
   const submitProvider = (event: SubmitEvent) => {
     event.preventDefault(); const form = event.currentTarget as HTMLFormElement
     const data = new FormData(form)
     const endpoint = data.get('endpoint')?.toString().trim()
-    void save(() => createInferenceProvider({ type: '@fancyrobot/fred-openai', ...(endpoint === '' ? {} : { endpoint }), credentialReference: data.get('credentialReference')?.toString() ?? '' })).then(() => form.reset())
+    const credentialReference = data.get('credentialReference')?.toString().trim() ?? ''
+    void save(() => createInferenceProvider({ type: '@fancyrobot/fred-openai', ...(endpoint === '' ? {} : { endpoint }), credentialReference })).then((saved) => { if (saved) form.reset() })
   }
   const submitModel = (event: SubmitEvent) => {
     event.preventDefault(); const form = event.currentTarget as HTMLFormElement; const data = new FormData(form)

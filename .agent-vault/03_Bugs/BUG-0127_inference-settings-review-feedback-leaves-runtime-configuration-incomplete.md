@@ -82,3 +82,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-08-05 - Reported.
 <!-- AGENT-END:bug-timeline -->
 - 2026-08-05 - Fixed: server-side credential resolution now configures Fred runtime and authenticated provider checks; workspace FKs, assignment clearing, endpoint normalization, and resilient fallback are covered by focused tests.
+- 2026-08-05 - Review remediation: connection responses are cancelled; provider credentials are trimmed and failed saves retain form values; runtime credential-resolution failures fall back to deployment defaults; provider-row locks serialize assignment and disable operations.
