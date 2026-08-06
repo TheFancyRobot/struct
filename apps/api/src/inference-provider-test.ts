@@ -1,6 +1,7 @@
 import { Effect } from 'effect'
 import {
   inferenceProviderModelsUrl,
+  isApprovedInferenceProviderConfiguration,
   isApprovedInferenceProviderUrl,
   resolveInferenceProviderCredential,
 } from '@struct/workflows'
@@ -14,7 +15,12 @@ export const testInferenceProviderConnection = (input: {
     catch: () => null,
   }).pipe(
     Effect.flatMap((url) => isApprovedInferenceProviderUrl(url)
-      ? resolveInferenceProviderCredential(input.credentialReference).pipe(
+      && isApprovedInferenceProviderConfiguration({
+        providerPackage: '@fancyrobot/fred-openai',
+        endpoint: input.endpoint,
+        credentialReference: input.credentialReference,
+      })
+      ? resolveInferenceProviderCredential('@fancyrobot/fred-openai', input.credentialReference).pipe(
           Effect.map((credential) => ({ url, credential })),
         )
       : Effect.fail(null),
