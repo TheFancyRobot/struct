@@ -127,6 +127,7 @@ import { durableArtifactRoute } from './routes/durable-artifacts'
 import { reportExportRoute } from './routes/report-export'
 import { noteRoute } from './routes/notes'
 import { inferenceSettingsRoute } from './routes/inference-settings'
+import { testInferenceProviderConnection } from './inference-provider-test'
 import {
   MAX_RESEARCH_HISTORY_RUNS,
   researchHistoryResponse,
@@ -376,11 +377,15 @@ const server = Effect.gen(function* () {
             updateProvider: (input) => InferenceSettingsRepo.updateProvider(input).pipe(Effect.provide(inferenceSettingsLayer)),
             setProviderEnabled: (input) => InferenceSettingsRepo.setProviderEnabled(input).pipe(Effect.provide(inferenceSettingsLayer)),
             deleteProvider: (input) => InferenceSettingsRepo.deleteProvider(input).pipe(Effect.provide(inferenceSettingsLayer)),
-            // No secret resolver is configured in this deployment. Fail closed rather
-            // than falsely testing an endpoint without the provider credential.
-            testProvider: () => Effect.succeed({ ok: false, message: 'Connection testing is unavailable until a server-side secret resolver is configured.' }),
+            testProvider: (input) => InferenceSettingsRepo.resolveRuntimeProvider(input).pipe(
+              Effect.provide(inferenceSettingsLayer),
+              Effect.flatMap((provider) => provider === null
+                ? Effect.succeed({ ok: false, message: 'Provider is unavailable.' })
+                : testInferenceProviderConnection(provider)),
+            ),
             createModel: (input) => InferenceSettingsRepo.createModel(input).pipe(Effect.provide(inferenceSettingsLayer)),
             assign: (input) => InferenceSettingsRepo.assign(input).pipe(Effect.provide(inferenceSettingsLayer)),
+            clearAssignment: (input) => InferenceSettingsRepo.clearAssignment(input).pipe(Effect.provide(inferenceSettingsLayer)),
             randomId: () => crypto.randomUUID(),
           }),
         )

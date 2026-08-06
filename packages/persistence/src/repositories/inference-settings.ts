@@ -34,6 +34,12 @@ export interface InferenceRuntimeModel {
   readonly credentialReference: string
 }
 
+export interface InferenceRuntimeProvider {
+  readonly providerPackage: string
+  readonly endpoint: string | null
+  readonly credentialReference: string
+}
+
 export class InferenceSettingsRepo extends Effect.Service<InferenceSettingsRepo>()('InferenceSettingsRepo', {
   accessors: true,
   effect: Effect.gen(function* () {
@@ -73,6 +79,10 @@ export class InferenceSettingsRepo extends Effect.Service<InferenceSettingsRepo>
         [input.id, input.workspaceId, input.type, input.endpoint, input.credentialReference],
       )),
       setProviderEnabled: (input: { id: string, workspaceId: string, enabled: boolean }) => query('setProviderEnabled', () => sql.transaction(async (transaction) => {
+        await transaction.unsafe(
+          `SELECT id FROM inference_providers WHERE id = $1 AND workspace_id = $2 FOR UPDATE`,
+          [input.id, input.workspaceId],
+        )
         if (!input.enabled) await transaction.unsafe(
           `DELETE FROM inference_model_assignments assignment USING inference_models model WHERE assignment.workspace_id = $2 AND assignment.model_id = model.id AND model.provider_id = $1`,
           [input.id, input.workspaceId],
@@ -96,10 +106,34 @@ export class InferenceSettingsRepo extends Effect.Service<InferenceSettingsRepo>
         `INSERT INTO inference_models (id, workspace_id, provider_id, name, capabilities) VALUES ($1, $2, $3, $4, $5)`,
         [input.id, input.workspaceId, input.providerId, input.name, input.capabilities],
       )),
-      assign: (input: { workspaceId: string, role: InferenceRole, modelId: string }) => query('assign', () => sql.unsafe(
-        `INSERT INTO inference_model_assignments (workspace_id, role, model_id) SELECT $1, $2, model.id FROM inference_models model JOIN inference_providers provider ON provider.id = model.provider_id WHERE model.id = $3 AND model.workspace_id = $1 AND provider.enabled ON CONFLICT (workspace_id, role) DO UPDATE SET model_id = EXCLUDED.model_id, updated_at = NOW()`,
-        [input.workspaceId, input.role, input.modelId],
+      assign: (input: { workspaceId: string, role: InferenceRole, modelId: string }) => query('assign', () => sql.transaction(async (transaction) => {
+        const providers = await transaction.unsafe(
+          `SELECT provider.id FROM inference_models model JOIN inference_providers provider ON provider.id = model.provider_id AND provider.workspace_id = model.workspace_id WHERE model.id = $1 AND model.workspace_id = $2 AND provider.enabled FOR UPDATE OF provider`,
+          [input.modelId, input.workspaceId],
+        )
+        if (providers.length === 0) return
+        await transaction.unsafe(
+          `INSERT INTO inference_model_assignments (workspace_id, role, model_id) VALUES ($1, $2, $3) ON CONFLICT (workspace_id, role) DO UPDATE SET model_id = EXCLUDED.model_id, updated_at = NOW()`,
+          [input.workspaceId, input.role, input.modelId],
+        )
+      })),
+      clearAssignment: (input: { workspaceId: string, role: InferenceRole }) => query('clearAssignment', () => sql.unsafe(
+        `DELETE FROM inference_model_assignments WHERE workspace_id = $1 AND role = $2`,
+        [input.workspaceId, input.role],
       )),
+      resolveRuntimeProvider: (input: { id: string, workspaceId: string }): Effect.Effect<InferenceRuntimeProvider | null, QueryError> => Effect.gen(function* () {
+        const rows = yield* query('resolveRuntimeProvider', () => sql.unsafe(
+          `SELECT provider_type, endpoint, credential_reference FROM inference_providers WHERE id = $1 AND workspace_id = $2 AND enabled LIMIT 1`,
+          [input.id, input.workspaceId],
+        ))
+        const row = rows[0]
+        if (row === undefined) return null
+        return {
+          providerPackage: String(row['provider_type']),
+          endpoint: typeof row['endpoint'] === 'string' ? row['endpoint'] : null,
+          credentialReference: String(row['credential_reference']),
+        }
+      }),
       resolveRuntimeModel: (workspaceId: string, role: InferenceRole): Effect.Effect<InferenceRuntimeModel | null, QueryError> => Effect.gen(function* () {
         const rows = yield* query('resolveRuntimeModel', () => sql.unsafe(
           `SELECT provider.provider_type, provider.endpoint, provider.credential_reference, model.name FROM inference_model_assignments assignment JOIN inference_models model ON model.id = assignment.model_id AND model.workspace_id = assignment.workspace_id JOIN inference_providers provider ON provider.id = model.provider_id AND provider.workspace_id = model.workspace_id WHERE assignment.workspace_id = $1 AND assignment.role = $2 AND provider.enabled LIMIT 1`,

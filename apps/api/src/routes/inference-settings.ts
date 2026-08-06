@@ -1,17 +1,36 @@
 import { Cause, Effect, Option, Schema } from 'effect'
 import type { InferenceRole, InferenceSettings } from '@struct/persistence'
+import {
+  isApprovedInferenceProviderEndpoint,
+  isSupportedInferenceProviderCredentialReference,
+} from '@struct/workflows'
 
 const Role = Schema.Literal('chat', 'embedding', 'vision')
 const NonBlank = Schema.String.pipe(Schema.trimmed(), Schema.minLength(1), Schema.maxLength(256))
+const ProviderType = Schema.Literal('@fancyrobot/fred-openai')
+const providerPackage = '@fancyrobot/fred-openai'
+const isApprovedEndpoint = (value: string): boolean =>
+  value === '' || isApprovedInferenceProviderEndpoint(value)
+const Endpoint = Schema.String.pipe(
+  Schema.trimmed(),
+  Schema.filter(isApprovedEndpoint, {
+    message: () => 'Endpoint must use an approved provider URL',
+  }),
+  Schema.maxLength(2048),
+)
+const CredentialReference = NonBlank.pipe(Schema.filter(
+  (value) => isSupportedInferenceProviderCredentialReference(providerPackage, value),
+  { message: () => 'Credential reference must name a supported provider key' },
+))
 const ProviderRequest = Schema.Struct({
-  type: NonBlank,
-  endpoint: Schema.optional(Schema.NullOr(Schema.String.pipe(Schema.trimmed(), Schema.maxLength(2048)))),
-  credentialReference: NonBlank,
+  type: ProviderType,
+  endpoint: Schema.optional(Schema.NullOr(Endpoint)),
+  credentialReference: CredentialReference,
 })
 const ProviderUpdateRequest = Schema.Struct({
-  type: NonBlank,
-  endpoint: Schema.optional(Schema.NullOr(Schema.String.pipe(Schema.trimmed(), Schema.maxLength(2048)))),
-  credentialReference: Schema.optional(NonBlank),
+  type: ProviderType,
+  endpoint: Schema.optional(Schema.NullOr(Endpoint)),
+  credentialReference: Schema.optional(CredentialReference),
 })
 const EnabledRequest = Schema.Struct({ enabled: Schema.Boolean })
 const ModelRequest = Schema.Struct({
@@ -20,6 +39,11 @@ const ModelRequest = Schema.Struct({
   capabilities: Schema.Array(Role).pipe(Schema.minItems(1), Schema.maxItems(3)),
 })
 const AssignmentRequest = Schema.Struct({ modelId: Schema.UUID })
+
+const nullableEndpoint = (endpoint: string | null | undefined): string | null => {
+  const normalized = endpoint?.trim()
+  return normalized === undefined || normalized === '' ? null : normalized
+}
 
 function response(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' }, status })
@@ -39,6 +63,7 @@ export interface InferenceSettingsRouteDeps {
   readonly testProvider: (input: { id: string, workspaceId: string }) => Effect.Effect<{ readonly ok: boolean, readonly message: string }, unknown>
   readonly createModel: (input: { id: string, workspaceId: string, providerId: string, name: string, capabilities: ReadonlyArray<InferenceRole> }) => Effect.Effect<unknown, unknown>
   readonly assign: (input: { workspaceId: string, role: InferenceRole, modelId: string }) => Effect.Effect<unknown, unknown>
+  readonly clearAssignment: (input: { workspaceId: string, role: InferenceRole }) => Effect.Effect<unknown, unknown>
   readonly randomId: () => string
 }
 
@@ -57,7 +82,7 @@ export const inferenceSettingsRoute = Effect.fn('InferenceSettingsRoute.route')(
   }
   if (path === '/api/settings/inference/providers' && request.method === 'POST') {
     const input = yield* body(request).pipe(Effect.flatMap(Schema.decodeUnknown(ProviderRequest)))
-    yield* deps.createProvider({ id: deps.randomId(), workspaceId, type: input.type, endpoint: input.endpoint ?? null, credentialReference: input.credentialReference })
+    yield* deps.createProvider({ id: deps.randomId(), workspaceId, type: input.type, endpoint: nullableEndpoint(input.endpoint), credentialReference: input.credentialReference })
     return response({ ok: true }, 201)
   }
   if (path === '/api/settings/inference/models' && request.method === 'POST') {
@@ -72,7 +97,7 @@ export const inferenceSettingsRoute = Effect.fn('InferenceSettingsRoute.route')(
   const provider = /^\/api\/settings\/inference\/providers\/([0-9a-f-]{36})$/.exec(path)
   if (provider !== null && request.method === 'PUT') {
     const input = yield* body(request).pipe(Effect.flatMap(Schema.decodeUnknown(ProviderUpdateRequest)))
-    yield* deps.updateProvider({ id: provider[1]!, workspaceId, type: input.type, endpoint: input.endpoint ?? null, credentialReference: input.credentialReference ?? null })
+    yield* deps.updateProvider({ id: provider[1]!, workspaceId, type: input.type, endpoint: nullableEndpoint(input.endpoint), credentialReference: input.credentialReference ?? null })
     return response({ ok: true })
   }
   if (provider !== null && request.method === 'DELETE') {
@@ -99,6 +124,11 @@ export const inferenceSettingsRoute = Effect.fn('InferenceSettingsRoute.route')(
       return response({ error: 'IncompatibleModel' }, 409)
     }
     yield* deps.assign({ workspaceId, role, modelId: input.modelId })
+    return response({ ok: true })
+  }
+  if (assignment !== null && request.method === 'DELETE') {
+    const role = assignment[1] as InferenceRole
+    yield* deps.clearAssignment({ workspaceId, role })
     return response({ ok: true })
   }
   return undefined

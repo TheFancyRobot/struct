@@ -12,22 +12,15 @@ fixed_on: '2026-08-05'
 owner: bug-0120-attempt-2
 created: '2026-08-05'
 updated: '2026-08-05'
-related_notes: |2-
-    - '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]]'
-    - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_02_build-unified-three-pane-workspace-shell|STEP-10-02 Build Unified Three Pane Workspace Shell]]'
-    - '[[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|PHASE-05 Typed Research Planning and Bounded Execution]]'
-    - '[[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_03_implement-bounded-graph-orchestration-and-model-routing|STEP-05-03 Implement Bounded Graph Orchestration and Model Routing]]'
-    - '[[02_Phases/Phase_02_document_research_and_hybrid_retrieval/Steps/Step_03_implement-keyword-vector-and-hybrid-retrieval|STEP-02-03 Implement Keyword Vector and Hybrid Retrieval]]'
-    - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]]'
-    - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_01_harden-authentication-workspace-isolation-and-secrets|STEP-09-01 Harden Authentication Workspace Isolation and Secrets]]'
-    - '[[01_Architecture/System_Overview|System Overview]]'
-    - '[[01_Architecture/Domain_Model|Domain Model]]'
-    - '[[01_Architecture/Integration_Map|Integration Map]]'
-    - '[[01_Architecture/Agent_Workflow|Agent Workflow]]'
-    - '[[04_Decisions/DEC-0003_use-typescript-bun-and-effect-with-explicit-runtime-boundaries|DEC-0003 Use TypeScript Bun and Effect with Explicit Runtime Boundaries]]'
-    - '[[04_Decisions/DEC-0010_use-focused-fred-agents-with-deterministic-effect-tools|DEC-0010 Use Focused Fred Agents with Deterministic Effect Tools]]'
-    - '[[04_Decisions/DEC-0014_use-solidjs-vite-8-and-solid-router-for-frontend-runtime|DEC-0014 Use SolidJS Vite 8 and Solid Router for Frontend Runtime]]'
-    - '[[03_Bugs/BUG-0119_project-navigation-is-over-spaced-and-lacks-discoverable-search-and-settings|BUG-0119 Project Navigation Is Over-Spaced and Lacks Discoverable Search and Settings]]'
+related_notes: |-
+  - '[[02_Phases/Phase_10_v1_usable_research_workspace/Phase|PHASE-10 v1 Usable Research Workspace]]'
+  - '[[02_Phases/Phase_10_v1_usable_research_workspace/Steps/Step_02_build-unified-three-pane-workspace-shell|STEP-10-02 Build Unified Three Pane Workspace Shell]]'
+  - '[[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Phase|PHASE-05 Typed Research Planning and Bounded Execution]]'
+  - '[[02_Phases/Phase_05_typed_research_planning_and_bounded_execution/Steps/Step_03_implement-bounded-graph-orchestration-and-model-routing|STEP-05-03 Implement Bounded Graph Orchestration and Model Routing]]'
+  - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Phase|PHASE-09 v1 Production Hardening and Release]]'
+  - '[[02_Phases/Phase_09_v1_production_hardening_and_release/Steps/Step_01_harden-authentication-workspace-isolation-and-secrets|STEP-09-01 Harden Authentication Workspace Isolation and Secrets]]'
+  - '[[03_Bugs/BUG-0119_project-navigation-is-over-spaced-and-lacks-discoverable-search-and-settings|BUG-0119]]'
+  - '[[03_Bugs/BUG-0127_inference-settings-review-feedback-leaves-runtime-configuration-incomplete|BUG-0127]]'
 tags:
   - agent-vault
   - bug
@@ -126,6 +119,6 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 - 2026-08-05 - Reported.
 - 2026-08-05 - User reported that provider connections and chat/embedding/vision model assignments have no main-menu configuration screen.
 <!-- AGENT-END:bug-timeline -->
-- 2026-08-05: Added the first persisted Settings slice: workspace-scoped provider metadata with write-only credential references, capability-tagged models, one model assignment per chat/embedding/vision role, and a reachable `/settings` screen. Focused API/UI tests, TypeScript checks, and focused lint pass. Remaining: provider update/disable/delete and real connection testing require the still-absent server-side secret resolution boundary; live chat/embedding resolution remains to be wired after that boundary exists.
+- 2026-08-05: Added the first persisted Settings slice: workspace-scoped provider metadata with write-only credential references, capability-tagged models, one model assignment per chat/embedding/vision role, and a reachable `/settings` screen. The subsequent BUG-0127 correction completed server-side credential resolution, connection testing, and runtime wiring.
 - 2026-08-05: Added provider update/enable-disable/delete controls, a server-only fail-closed connection-test boundary, and persisted enabled-provider runtime resolution for chat and embedding. Focused API, persistence, worker, web, lint, and TypeScript checks pass.
 - 2026-08-05: Fixed the inference-settings route test double to honor readonly capability contracts and guard route/indexed test values. `bun run typecheck` and `bun test --max-concurrency 1 apps/api/src/routes/inference-settings.test.ts` pass.

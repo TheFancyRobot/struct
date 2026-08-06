@@ -24,4 +24,22 @@ describe('InferenceSettingsRepo runtime resolver', () => {
     expect(embedding?.model).toBe('embedding-model')
     expect(vision).toBeNull()
   })
+
+  it('uses the provider row lock for assignment and disable', async () => {
+    const queries: string[] = []
+    const sql = SqlClientTest(async (query) => {
+      queries.push(query)
+      return query.includes('SELECT provider.id') ? [{ id: 'provider' }] : []
+    })
+    const layer = Layer.provide(InferenceSettingsRepo.Default, sql)
+
+    await Effect.runPromise(Effect.all([
+      InferenceSettingsRepo.assign({ workspaceId: 'workspace', role: 'chat', modelId: 'model' }),
+      InferenceSettingsRepo.setProviderEnabled({ id: 'provider', workspaceId: 'workspace', enabled: false }),
+    ]).pipe(Effect.provide(layer)))
+
+    expect(queries.filter((query) => query.includes('FOR UPDATE')).length).toBe(2)
+    expect(queries.some((query) => query.includes('FOR UPDATE OF provider'))).toBe(true)
+    expect(queries.some((query) => query.includes('FROM inference_providers WHERE id = $1 AND workspace_id = $2 FOR UPDATE'))).toBe(true)
+  })
 })
