@@ -83,3 +83,4 @@ Use one note per bug. Capture reproduction, impact, root cause, workaround, and 
 <!-- AGENT-END:bug-timeline -->
 - 2026-08-05 - Fixed: server-side credential resolution now configures Fred runtime and authenticated provider checks; workspace FKs, assignment clearing, endpoint normalization, and resilient fallback are covered by focused tests.
 - 2026-08-05 - Review remediation: connection responses are cancelled; provider credentials are trimmed and failed saves retain form values; runtime credential-resolution failures fall back to deployment defaults; provider-row locks serialize assignment and disable operations.
+- 2026-08-06 - Security remediation: credential references now accept only documented provider key variables; connection tests refuse non-approved HTTPS provider hosts before resolving or sending a bearer credential. Focused regressions cover both boundaries.

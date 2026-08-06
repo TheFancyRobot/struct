@@ -12,5 +12,7 @@ describe('inference provider credentials', () => {
     expect(result).toEqual({ environmentVariable: 'OPENAI_API_KEY', secret: 'server-only-secret' })
     const invalid = await Effect.runPromiseExit(resolveInferenceProviderCredential('secret://openai'))
     expect(invalid._tag).toBe('Failure')
+    const unsupported = await Effect.runPromiseExit(resolveInferenceProviderCredential('env://DATABASE_URL'))
+    expect(unsupported._tag).toBe('Failure')
   })
 })

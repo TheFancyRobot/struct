@@ -1,6 +1,11 @@
 import { Config, Effect, Schema } from 'effect'
 
 const environmentReference = /^env:\/\/([A-Z_][A-Z0-9_]*)$/
+const supportedEnvironmentVariables = new Set([
+  'OPENAI_API_KEY',
+  'FRED_ANTHROPIC_API_KEY',
+])
+const approvedInferenceProviderHosts = new Set(['api.openai.com'])
 
 export class InferenceCredentialReferenceError extends Schema.TaggedError<InferenceCredentialReferenceError>()(
   'InferenceCredentialReferenceError',
@@ -23,9 +28,26 @@ export const resolveInferenceProviderCredential = Effect.fn(
       message: 'Credential reference is invalid',
     })
   }
+  if (!supportedEnvironmentVariables.has(environmentVariable)) {
+    return yield* new InferenceCredentialReferenceError({
+      message: 'Credential reference must name a supported provider key',
+    })
+  }
   const secret = yield* Config.string(environmentVariable)
   return { environmentVariable, secret }
 })
 
 export const inferenceProviderModelsUrl = (endpoint: string | null): URL =>
   new URL('models', endpoint === null || endpoint.endsWith('/') ? endpoint ?? 'https://api.openai.com/v1/' : `${endpoint}/`)
+
+export const isApprovedInferenceProviderUrl = (url: URL): boolean =>
+  url.protocol === 'https:'
+  && url.port === ''
+  && approvedInferenceProviderHosts.has(url.hostname)
+
+export const isSupportedInferenceProviderCredentialReference = (reference: string): boolean => {
+  const match = environmentReference.exec(reference)
+  return match !== null
+    && match[1] !== undefined
+    && supportedEnvironmentVariables.has(match[1])
+}
