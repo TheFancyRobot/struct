@@ -88,6 +88,10 @@ export interface FredRuntimeConfig {
   readonly model: string
   readonly maxElapsedMs: number
   readonly otlpEndpoint?: string
+  readonly providerConfig?: {
+    readonly apiKeyEnvVar: string
+    readonly baseUrl?: string
+  }
 }
 
 export const fredRuntimeConfig = Config.all({
@@ -257,24 +261,28 @@ function shutdownWithinDeadline(
 }
 
 const makeDefaultFactory = (
-  otlpEndpoint: string | undefined,
+  config: FredRuntimeConfig,
 ): FredClientFactory => ({
   create: async (signal) => {
     const { createFred } = await import('@fancyrobot/fred')
     assertActive(signal)
-    return createFred({
+    const fred = await createFred({
       observability: {
         resource: { serviceName: '@struct/workflows' },
         enableConsoleFallback: true,
-        ...(otlpEndpoint === undefined
+        ...(config.otlpEndpoint === undefined
           ? {}
           : {
               otlp: {
-                endpoint: otlpEndpoint,
+                endpoint: config.otlpEndpoint,
               },
             }),
       },
     })
+    if (config.providerConfig !== undefined) {
+      await fred.providers.use(config.providerPackage, config.providerConfig)
+    }
+    return fred
   },
   execute: async (fred, workflow, input, _maxElapsedMs, signal) => {
     assertActive(signal)
@@ -304,7 +312,7 @@ const makeDefaultFactory = (
 
 export const preflightFredRuntime = (
   config: FredRuntimeConfig,
-  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+  factory: FredClientFactory = makeDefaultFactory(config),
 ): Effect.Effect<void, ResearchWorkflowError, never> =>
   Effect.flatMap(Clock.currentTimeMillis, (startedAtMs) => {
     const deadlineMs = startedAtMs + config.maxElapsedMs
@@ -360,7 +368,7 @@ export const runFredResearchPlanning = (
     readonly planner: Omit<typeResearchPlannerInput, 'classification'>
   },
   config: FredRuntimeConfig,
-  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+  factory: FredClientFactory = makeDefaultFactory(config),
 ): Effect.Effect<
   typeResearchPlan,
   typeResearchContractValidationError | ResearchWorkflowError,
@@ -446,7 +454,7 @@ export const runFredBoundedResearchGraph = (
   dependencies: typeResearchRunGraphDependencies,
   config: FredRuntimeConfig,
   signal: AbortSignal,
-  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+  factory: FredClientFactory = makeDefaultFactory(config),
 ): Effect.Effect<
   typeof ResearchGraphState.Type,
   ResearchWorkflowError,
@@ -548,7 +556,7 @@ const runFredRecursiveFocusedWorkflow = (
   ) => Promise<void>,
   config: FredRuntimeConfig,
   signal: AbortSignal,
-  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+  factory: FredClientFactory = makeDefaultFactory(config),
 ): Effect.Effect<
   unknown,
   ResearchProviderFailure,
@@ -609,7 +617,7 @@ export const runFredCorpusAnalysis = (
   input: typeof CorpusAnalystInput.Type,
   config: FredRuntimeConfig,
   signal: AbortSignal,
-  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+  factory: FredClientFactory = makeDefaultFactory(config),
 ): Effect.Effect<
   typeof CorpusAnalystOutput.Type,
   ResearchProviderFailure,
@@ -639,7 +647,7 @@ export const runFredRecursiveCritique = (
   input: typeof RecursiveEvidenceCriticInput.Type,
   config: FredRuntimeConfig,
   signal: AbortSignal,
-  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+  factory: FredClientFactory = makeDefaultFactory(config),
 ): Effect.Effect<
   typeof RecursiveEvidenceCriticOutput.Type,
   ResearchProviderFailure,
@@ -671,7 +679,7 @@ export const runFredHierarchicalSynthesis = (
   input: typeof HierarchicalSynthesisInput.Type,
   config: FredRuntimeConfig,
   signal: AbortSignal,
-  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+  factory: FredClientFactory = makeDefaultFactory(config),
 ): Effect.Effect<
   typeof HierarchicalSynthesisOutput.Type,
   ResearchProviderFailure,
@@ -703,7 +711,7 @@ export const runFredResearchCritique = (
   input: typeResearchEvidenceAgentInput,
   model: string,
   config: FredRuntimeConfig,
-  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+  factory: FredClientFactory = makeDefaultFactory(config),
 ): Effect.Effect<
   typeResearchEvidenceAssessment,
   ResearchProviderFailure,
@@ -759,7 +767,7 @@ export const runFredResearchSynthesis = (
   input: typeResearchEvidenceAgentInput,
   model: string,
   config: FredRuntimeConfig,
-  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+  factory: FredClientFactory = makeDefaultFactory(config),
 ): Effect.Effect<typeResearchAnswer, ResearchProviderFailure, never> =>
   Effect.acquireUseRelease(
     Effect.tryPromise({
@@ -811,7 +819,7 @@ export const runFredHybridResearchSynthesis = (
   input: typeHybridSynthesisPrompt,
   model: string,
   config: FredRuntimeConfig,
-  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+  factory: FredClientFactory = makeDefaultFactory(config),
 ): Effect.Effect<
   typeHybridSynthesisDraft,
   ResearchProviderFailure,
@@ -867,7 +875,7 @@ export const runFredWalkingSkeleton = (
   input: typeof Research.WalkingSkeletonResearchInput.Type,
   deps: WalkingSkeleton.WalkingSkeletonGraphDependencies,
   config: FredRuntimeConfig,
-  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+  factory: FredClientFactory = makeDefaultFactory(config),
 ): Effect.Effect<typeof WalkingSkeletonWorkflowResult.Type, ResearchWorkflowError, never> =>
   Effect.flatMap(Clock.currentTimeMillis, (startedAtMs) => {
     const deadlineMs = startedAtMs + config.maxElapsedMs
@@ -940,7 +948,7 @@ export const runFredDocumentResearch = (
   input: typeof Research.DocumentResearchInput.Type,
   deps: DocumentResearch.DocumentResearchGraphDependencies,
   config: FredRuntimeConfig,
-  factory: FredClientFactory = makeDefaultFactory(config.otlpEndpoint),
+  factory: FredClientFactory = makeDefaultFactory(config),
 ): Effect.Effect<typeof DocumentResearchWorkflowResult.Type, DocumentResearchFailure, never> =>
   Effect.flatMap(Clock.currentTimeMillis, (startedAtMs) => {
     const deadlineMs = startedAtMs + config.maxElapsedMs
