@@ -1,5 +1,6 @@
 import { Cause, Effect, Option, Schema } from 'effect'
 import type { InferenceRole, InferenceSettings } from '@struct/persistence'
+import { isSupportedInferenceProviderCredentialReference } from '@struct/workflows'
 
 const Role = Schema.Literal('chat', 'embedding', 'vision')
 const NonBlank = Schema.String.pipe(Schema.trimmed(), Schema.minLength(1), Schema.maxLength(256))
@@ -19,15 +20,19 @@ const Endpoint = Schema.String.pipe(
   }),
   Schema.maxLength(2048),
 )
+const CredentialReference = NonBlank.pipe(Schema.filter(
+  isSupportedInferenceProviderCredentialReference,
+  { message: () => 'Credential reference must name a supported provider key' },
+))
 const ProviderRequest = Schema.Struct({
   type: ProviderType,
   endpoint: Schema.optional(Schema.NullOr(Endpoint)),
-  credentialReference: NonBlank,
+  credentialReference: CredentialReference,
 })
 const ProviderUpdateRequest = Schema.Struct({
   type: ProviderType,
   endpoint: Schema.optional(Schema.NullOr(Endpoint)),
-  credentialReference: Schema.optional(NonBlank),
+  credentialReference: Schema.optional(CredentialReference),
 })
 const EnabledRequest = Schema.Struct({ enabled: Schema.Boolean })
 const ModelRequest = Schema.Struct({

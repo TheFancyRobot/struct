@@ -1,6 +1,7 @@
 import { Effect } from 'effect'
 import {
   inferenceProviderModelsUrl,
+  isApprovedInferenceProviderUrl,
   resolveInferenceProviderCredential,
 } from '@struct/workflows'
 
@@ -8,12 +9,21 @@ export const testInferenceProviderConnection = (input: {
   readonly endpoint: string | null
   readonly credentialReference: string
 }, fetcher: (input: URL, init: RequestInit) => Promise<Response> = (url, init) => fetch(url, init)): Effect.Effect<{ readonly ok: boolean, readonly message: string }, never> =>
-  resolveInferenceProviderCredential(input.credentialReference).pipe(
-    Effect.flatMap(({ secret }) => Effect.tryPromise({
+  Effect.try({
+    try: () => inferenceProviderModelsUrl(input.endpoint),
+    catch: () => null,
+  }).pipe(
+    Effect.flatMap((url) => isApprovedInferenceProviderUrl(url)
+      ? resolveInferenceProviderCredential(input.credentialReference).pipe(
+          Effect.map((credential) => ({ url, credential })),
+        )
+      : Effect.fail(null),
+    ),
+    Effect.flatMap(({ url, credential }) => Effect.tryPromise({
       try: async (signal) => {
-        const response = await fetcher(inferenceProviderModelsUrl(input.endpoint), {
+        const response = await fetcher(url, {
           method: 'GET',
-          headers: { Authorization: `Bearer ${secret}` },
+          headers: { Authorization: `Bearer ${credential.secret}` },
           signal,
         })
         try {

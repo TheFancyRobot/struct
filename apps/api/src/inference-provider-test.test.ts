@@ -7,7 +7,7 @@ describe('inference provider test', () => {
     let request: RequestInit | undefined
     let url: URL | undefined
     const result = await Effect.runPromise(testInferenceProviderConnection({
-      endpoint: 'https://provider.example/v1',
+      endpoint: 'https://api.openai.com/v1',
       credentialReference: 'env://OPENAI_API_KEY',
     }, async (nextUrl, init) => {
       url = nextUrl
@@ -18,14 +18,14 @@ describe('inference provider test', () => {
     ]))))))
 
     expect(result).toEqual({ ok: true, message: 'Connection succeeded.' })
-    expect(url?.href).toBe('https://provider.example/v1/models')
+    expect(url?.href).toBe('https://api.openai.com/v1/models')
     expect(request?.headers).toEqual({ Authorization: 'Bearer server-only-secret' })
   })
 
   it('always cancels the response body', async () => {
     let cancelled = false
     const result = await Effect.runPromise(testInferenceProviderConnection({
-      endpoint: 'https://provider.example/v1',
+      endpoint: 'https://api.openai.com/v1',
       credentialReference: 'env://OPENAI_API_KEY',
     }, async () => new Response(new ReadableStream({
       cancel: () => { cancelled = true },
@@ -35,5 +35,21 @@ describe('inference provider test', () => {
 
     expect(result).toEqual({ ok: false, message: 'Connection failed.' })
     expect(cancelled).toBe(true)
+  })
+
+  it('never sends a provider credential to an unapproved endpoint', async () => {
+    let called = false
+    const result = await Effect.runPromise(testInferenceProviderConnection({
+      endpoint: 'https://api.openai.com.evil.example/v1',
+      credentialReference: 'env://OPENAI_API_KEY',
+    }, async () => {
+      called = true
+      return new Response('', { status: 200 })
+    }).pipe(Effect.provide(Layer.setConfigProvider(ConfigProvider.fromMap(new Map([
+      ['OPENAI_API_KEY', 'server-only-secret'],
+    ]))))))
+
+    expect(result).toEqual({ ok: false, message: 'Connection failed.' })
+    expect(called).toBe(false)
   })
 })

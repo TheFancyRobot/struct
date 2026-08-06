@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { Effect } from 'effect'
-import { inferenceSettingsRoute, type InferenceSettingsRouteDeps } from './inference-settings'
+import { inferenceSettingsRoute, runInferenceSettingsRoute, type InferenceSettingsRouteDeps } from './inference-settings'
 
 describe('inference settings route', () => {
   it('keeps credentials write-only, normalizes endpoints, and clears assignments', async () => {
@@ -30,7 +30,7 @@ describe('inference settings route', () => {
       randomId: () => `00000000-0000-4000-8000-${String(++sequence).padStart(12, '0')}`,
     }
     const route = async (request: Request) => {
-      const result = await Effect.runPromise(inferenceSettingsRoute(request, 'workspace', deps))
+      const result = await runInferenceSettingsRoute(inferenceSettingsRoute(request, 'workspace', deps))
       if (result === undefined) throw new Error('inference settings route did not respond')
       return result
     }
@@ -39,6 +39,10 @@ describe('inference settings route', () => {
     expect(providers[0]?.endpoint).toBeNull()
     const listed = await route(new Request('http://local/api/settings/inference'))
     expect(await listed.text()).not.toContain('env://OPENAI_API_KEY')
+
+    const unsupportedCredential = await route(new Request('http://local/api/settings/inference/providers', { method: 'POST', body: JSON.stringify({ type: '@fancyrobot/fred-openai', credentialReference: 'env://DATABASE_URL' }) }))
+    expect(unsupportedCredential.status).toBe(400)
+    expect(providers).toHaveLength(1)
     const providerId = providers[0]?.id
     if (providerId === undefined) throw new Error('provider was not created')
     await route(new Request('http://local/api/settings/inference/models', { method: 'POST', body: JSON.stringify({ providerId, name: 'embed', capabilities: ['embedding'] }) }))
